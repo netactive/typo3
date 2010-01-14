@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2008 Ingo Renner <ingo@typo3.org>
+*  (c) 2007-2009 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
 /**
  * class to render the TYPO3 logo in the backend
  *
- * $Id: class.typo3logo.php 5077 2009-02-27 12:00:29Z benni $
+ * $Id: class.typo3logo.php 5165 2009-03-09 18:28:59Z ohader $
  *
  * @author	Ingo Renner <ingo@typo3.org>
  * @package TYPO3

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains class for loading database groups
  *
- * $Id: class.t3lib_loaddbgroup.php 3639 2008-05-02 21:19:06Z ingmars $
+ * $Id: class.t3lib_loaddbgroup.php 5482 2009-05-22 19:08:30Z ohader $
  * Revised for TYPO3 3.6 September/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -62,7 +62,6 @@
 
 
 
-require_once (PATH_t3lib.'class.t3lib_refindex.php');
 
 
 
@@ -831,4 +830,5 @@ class t3lib_loadDBGroup	{
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['t3lib/class.t3lib_loaddbgroup.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['t3lib/class.t3lib_loaddbgroup.php']);
 }
+
 ?>

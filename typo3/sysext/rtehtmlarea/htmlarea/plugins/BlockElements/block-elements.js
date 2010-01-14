@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2008 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2007-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /*
  * BlockElements Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: block-elements.js $
+ * TYPO3 SVN ID: $Id: block-elements.js 6652 2009-12-11 03:05:24Z stan $
  */
 BlockElements = HTMLArea.Plugin.extend({
 		
@@ -71,7 +71,7 @@ BlockElements = HTMLArea.Plugin.extend({
 		}
 		this.allowedAttributes = new Array("id", "title", "lang", "xml:lang", "dir", "class");
 		if (HTMLArea.is_ie) {
-			this.allowedAttributes.push("className");
+			this.addAllowedAttribute("className");
 		}
 		this.indentedList = null;
 		
@@ -194,6 +194,17 @@ BlockElements = HTMLArea.Plugin.extend({
 	},
 	
 	/*
+	 * This function adds an attribute to the array of attributes allowed on block elements
+	 *
+	 * @param	string	attribute: the name of the attribute to be added to the array
+	 *
+	 * @return	void
+	 */
+	addAllowedAttribute : function (attribute) {
+		this.allowedAttributes.push(attribute);
+	},
+	
+	/*
 	 * This function gets called when some block element was selected in the drop-down list
 	 */
 	onChange : function (editor, buttonId) {
@@ -245,7 +256,8 @@ BlockElements = HTMLArea.Plugin.extend({
 		this.editor.focusEditor();
 		var selection = editor._getSelection();
 		var range = editor._createRange(selection);
-		var parentElement = this.editor._statusBarTree.selected ? this.editor._statusBarTree.selected : this.editor.getParentElement(selection, range);
+		var statusBarSelection = this.editor.getPluginInstance("StatusBar") ? this.editor.getPluginInstance("StatusBar").getSelection() : null;
+		var parentElement = statusBarSelection ? statusBarSelection : this.editor.getParentElement(selection, range);
 		if (target) {
 			parentElement = target;
 		}
@@ -678,13 +690,15 @@ BlockElements = HTMLArea.Plugin.extend({
 			first.innerHTML = "<br />";
 			this.editor.selectNodeContents(first,true);
 		} else {
+				// parentElement may be removed by following command
+			var parentNode = parentElement.parentNode;
 			try {
 				this.editor._doc.execCommand(buttonId, false, null);
 			} catch(e) {
 				this.appendToLog("onButtonPress", e + "\n\nby execCommand(" + buttonId + ");");
 			}
 			if (HTMLArea.is_safari) {
-				this.cleanAppleSpanTags(parentElement);
+				this.editor.cleanAppleStyleSpans(parentNode);
 			}
 		}
 	},
@@ -801,18 +815,6 @@ BlockElements = HTMLArea.Plugin.extend({
 	},
 	
 	/*
-	 * Clean Apple span tags
-	 */
-	cleanAppleSpanTags : function(element) {
-		var spans = element.getElementsByTagName("span");
-		for (var i = spans.length; --i >= 0;) {
-			if (HTMLArea._hasClass(spans[i], "Apple-style-span")) {
-				HTMLArea.removeFromParent(spans[i]);
-			}
-		}
-	},
-	
-	/*
 	 * Make XHTML-compliant nested list
 	 * We need this for Opera
 	 */
@@ -912,10 +914,11 @@ BlockElements = HTMLArea.Plugin.extend({
 	 * This function gets called when the toolbar is updated
 	 */
 	onUpdateToolbar : function () {
-		if (this.editor.getMode() === "textmode" || !this.editor.isEditable()) {
+		if (this.getEditorMode() === "textmode" || !this.editor.isEditable()) {
 			return false;
 		}
-		var parentElement = this.editor._statusBarTree.selected ? this.editor._statusBarTree.selected : this.editor.getParentElement();
+		var statusBarSelection = this.editor.getPluginInstance("StatusBar") ? this.editor.getPluginInstance("StatusBar").getSelection() : null;
+		var parentElement = statusBarSelection ? statusBarSelection : this.editor.getParentElement();
 		if (parentElement.nodeName.toLowerCase() === "body") return false;
 		while (parentElement && !HTMLArea.isBlockElement(parentElement) || /^li$/i.test(parentElement.nodeName)) {
 			parentElement = parentElement.parentNode;

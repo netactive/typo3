@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Module: Workspace manager
  *
- * $Id: index.php 3510 2008-04-01 20:42:57Z flyguide $
+ * $Id: index.php 5526 2009-06-02 13:52:04Z benni $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Dmitry Dulepov <typo3@accio.lv>
@@ -80,12 +80,8 @@ $BE_USER->modAccess($MCONF,1);
 	// Include libraries of various kinds used inside:
 $LANG->includeLLFile('EXT:lang/locallang_mod_user_ws.xml');
 $LANG->includeLLFile('EXT:lang/locallang_misc.xml');
-require_once(PATH_t3lib.'class.t3lib_scbase.php');
 require_once(PATH_typo3.'mod/user/ws/class.wslib.php');
 require_once(PATH_typo3.'mod/user/ws/class.wslib_gui.php');
-require_once(PATH_t3lib.'class.t3lib_diff.php');
-require_once(PATH_t3lib.'class.t3lib_pagetree.php');
-require_once(PATH_t3lib.'class.t3lib_tcemain.php');
 
 
 
@@ -253,7 +249,6 @@ class SC_mod_user_ws_index extends t3lib_SCbase {
 		$this->doc = t3lib_div::makeInstance('template');
 		$this->doc->backPath = $BACK_PATH;
 		$this->doc->setModuleTemplate('templates/ws.html');
-		$this->doc->docType = 'xhtml_trans';
 
 			// JavaScript
 		$plusIcon = t3lib_iconWorks::skinImg($BACK_PATH, 'gfx/ol/plusbullet.gif', 'width="18" height="16"', 1);
@@ -377,7 +372,7 @@ class SC_mod_user_ws_index extends t3lib_SCbase {
 			// workspace creation link
 		if ($GLOBALS['BE_USER']->isAdmin() || 0 != ($GLOBALS['BE_USER']->groupData['workspace_perms'] & 4))	{
 			$buttons['new_record'] = '<a href="' . $newWkspUrl . '">' .
-						'<img ' . t3lib_iconWorks::skinImg($BACK_PATH, 'gfx/new_el.gif') . ' alt="' . $LANG->getLL('img_title_create_new_workspace') . '" id="ver-wl-new-workspace-icon" />' .
+						'<img ' . t3lib_iconWorks::skinImg($BACK_PATH, 'gfx/add_workspaces.gif') . ' alt="' . $LANG->getLL('img_title_create_new_workspace') . '" id="ver-wl-new-workspace-icon" />' .
 						'</a>';
 		}
 		return $buttons;
@@ -464,7 +459,7 @@ class SC_mod_user_ws_index extends t3lib_SCbase {
 				$ttlHours = intval($GLOBALS['BE_USER']->getTSConfigVal('options.workspaces.previewLinkTTLHours'));
 				$ttlHours = ($ttlHours ? $ttlHours : 24*2);
 				$previewUrl = t3lib_div::getIndpEnv('TYPO3_SITE_URL').'index.php?ADMCMD_prev='.t3lib_BEfunc::compilePreviewKeyword('', $GLOBALS['BE_USER']->user['uid'],60*60*$ttlHours,$GLOBALS['BE_USER']->workspace).'&id='.intval($GLOBALS['BE_USER']->workspaceRec['db_mountpoints']);
-				$actionLinks.=  '<br/>Any user can browse the workspace frontend using this link for the next '.$ttlHours.' hours (does not require backend login):<br/><br/><a target="_blank" href="'.htmlspecialchars($previewUrl).'">'.$previewUrl.'</a>';
+				$actionLinks.= '<br />Any user can browse the workspace frontend using this link for the next ' . $ttlHours . ' hours (does not require backend login):<br /><br /><a target="_blank" href="' . htmlspecialchars($previewUrl) . '">' . $previewUrl . '</a>';
 			} else {
 				$actionLinks.= '<input type="submit" name="_previewLink" value="Generate Workspace Preview Link" />';
 			}
@@ -492,7 +487,7 @@ class SC_mod_user_ws_index extends t3lib_SCbase {
 				<td class="bgColor4">'.$LANG->getLL('label_access_level').' ' . $GLOBALS['LANG']->getLL('workspace_list_access_' . $wsAccess['_ACCESS']) . '</td>
 			</tr>' : '').'
 		</table>
-		<br/>
+		<br />
 		';
 
 			// Add publishing and review overview:
@@ -502,7 +497,7 @@ class SC_mod_user_ws_index extends t3lib_SCbase {
 			} else {
 				$content.= $this->displayWorkspaceOverview();
 			}
-			$content.='<br/>';
+			$content .= '<br />';
 		}
 
 			// Return content:
@@ -1065,53 +1060,12 @@ class SC_mod_user_ws_index extends t3lib_SCbase {
 		);
 		return $record;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	/**************************************
-	 *
-	 * Helper functions
-	 *
-	 *************************************/
-
-
-
-
-
-
 }
 
-// Include extension?
+
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/index.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/index.php']);
 }
-
-
-
-
-
-
 
 
 
@@ -1121,4 +1075,5 @@ $SOBE->execute();
 $SOBE->init();
 $SOBE->main();
 $SOBE->printContent();
+
 ?>

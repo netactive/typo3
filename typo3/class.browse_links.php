@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  * Used from TCEFORMS an other elements
  * In other words: This is the ELEMENT BROWSER!
  *
- * $Id: class.browse_links.php 5033 2009-02-19 01:14:43Z stan $
+ * $Id: class.browse_links.php 5955 2009-09-17 17:59:16Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -115,33 +115,10 @@
  *
  */
 
-require_once (PATH_t3lib.'class.t3lib_browsetree.php');
-require_once (PATH_t3lib.'class.t3lib_foldertree.php');
-require_once (PATH_t3lib.'class.t3lib_stdgraphic.php');
-require_once (PATH_t3lib.'class.t3lib_basicfilefunc.php');
-
 
 	// Include classes
-require_once (PATH_t3lib.'class.t3lib_page.php');
-require_once (PATH_t3lib.'class.t3lib_recordlist.php');
 require_once (PATH_typo3.'/class.db_list.inc');
 require_once (PATH_typo3.'/class.db_list_extra.inc');
-require_once (PATH_t3lib.'/class.t3lib_pagetree.php');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -162,6 +139,7 @@ class TBE_browser_recordList extends localRecordList {
 	 * @return	void
 	 */
 	function TBE_browser_recordList () {
+		parent::__construct();
 		$this->thisScript = t3lib_div::getIndpEnv('SCRIPT_NAME');
 	}
 
@@ -215,7 +193,7 @@ class TBE_browser_recordList extends localRecordList {
 		if (!$code) {
 			$code = '<i>['.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.no_title',1).']</i>';
 		} else {
-			$code = htmlspecialchars(t3lib_div::fixed_lgd_cs($code,$this->fixedL));
+			$code = t3lib_BEfunc::getRecordTitlePrep($code, $this->fixedL);
 		}
 
 		$title = t3lib_BEfunc::getRecordTitle($table,$row,FALSE,TRUE);
@@ -709,8 +687,8 @@ class browse_links {
 	 *
 	 * Values:
 	 * 0: form field name reference, eg. "data[tt_content][123][image]"
-	 * 1: old/unused?
-	 * 2: old/unused?
+	 * 1: htlmArea RTE parameters: editorNo:contentTypo3Language:contentTypo3Charset
+	 * 2: RTE config parameters: RTEtsConfigParams
 	 * 3: allowed types. Eg. "tt_content" or "gif,jpg,jpeg,tif,bmp,pcx,tga,png,pdf,ai"
 	 * 4: IRRE uniqueness: target level object-id to perform actions/checks on, eg. "data[79][tt_address][1][<field>][<foreign_table>]"
 	 * 5: IRRE uniqueness: name of function in opener window that checks if element is already used, eg. "inline.checkUniqueElement"
@@ -761,7 +739,10 @@ class browse_links {
 	protected $hookObjects = array();
 
 
-	var	$readOnly = FALSE;	// If set, all operations that changes something should be disabled. This is used for alternativeBrowsing file mounts (see options like "options.folderTree.altElementBrowserMountPoints" in browse_links.php).
+	/**
+	 * object for t3lib_basicFileFunctions
+	 */
+	public $fileProcessor;
 
 
 	/**
@@ -787,20 +768,18 @@ class browse_links {
 		if (!$this->mode)	{
 			$this->mode = 'rte';
 		}
-
 			// Creating backend template object:
 		$this->doc = t3lib_div::makeInstance('template');
-		$this->doc->docType= 'xhtml_trans';
-		$this->doc->backPath = $BACK_PATH;
+		$this->doc->backPath = $GLOBALS['BACK_PATH'];
 			// Load the Prototype library and browse_links.js
-		$this->doc->loadJavascriptLib('contrib/prototype/prototype.js');
+		$this->doc->getPageRenderer()->loadPrototype();
 		$this->doc->loadJavascriptLib('js/browse_links.js');
 
 			// init hook objects:
 		$this->hookObjects = array();
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.browse_links.php']['browseLinksHook'])) {
 			foreach($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.browse_links.php']['browseLinksHook'] as $classData) {
-				$processObject = &t3lib_div::getUserObj($classData);
+				$processObject = t3lib_div::getUserObj($classData);
 
 				if(!($processObject instanceof t3lib_browseLinksHook)) {
 					throw new UnexpectedValueException('$processObject must implement interface t3lib_browseLinksHook', 1195039394);
@@ -822,6 +801,7 @@ class browse_links {
 		$this->fileProcessor = t3lib_div::makeInstance('t3lib_basicFileFunctions');
 		$this->fileProcessor->init($GLOBALS['FILEMOUNTS'], $GLOBALS['TYPO3_CONF_VARS']['BE']['fileExtensions']);
 
+
 			// CurrentUrl - the current link url must be passed around if it exists
 		if ($this->mode == 'wizard')	{
 			$currentLinkParts = t3lib_div::trimExplode(' ',$this->P['currentValue']);
@@ -831,12 +811,12 @@ class browse_links {
 				'class'  => $currentLinkParts[2],
 				'title'  => $currentLinkParts[3],
 			);
-			$this->curUrlArray = (is_array(t3lib_div::_GP('curUrl'))) ? 
-				array_merge($initialCurUrlArray, t3lib_div::_GP('curUrl')) : 
+			$this->curUrlArray = (is_array(t3lib_div::_GP('curUrl'))) ?
+				array_merge($initialCurUrlArray, t3lib_div::_GP('curUrl')) :
 				$initialCurUrlArray;
 			$this->curUrlInfo = $this->parseCurUrl($this->siteURL.'?id='.$this->curUrlArray['href'], $this->siteURL);
 			if ($this->curUrlInfo['pageid'] == 0 && $this->curUrlArray['href']) { // pageid == 0 means that this is not an internal (page) link
-				if (@file_exists(PATH_site.rawurldecode($this->curUrlArray['href'])))	{ // check if this is a link to a file
+				if (file_exists(PATH_site.rawurldecode($this->curUrlArray['href'])))	{ // check if this is a link to a file
 					if (t3lib_div::isFirstPartOfStr($this->curUrlArray['href'], PATH_site)) {
 						$currentLinkParts[0] = substr($this->curUrlArray['href'], strlen(PATH_site));
 					}
@@ -857,7 +837,7 @@ class browse_links {
 				$this->act = 'page';
 			} else {
 				$this->curUrlInfo = $this->parseCurUrl($this->siteURL.'?id='.$this->curUrlArray['href'], $this->siteURL);
-			} 
+			}
 		} else {
 			$this->curUrlArray = t3lib_div::_GP('curUrl');
 			if ($this->curUrlArray['all'])	{
@@ -1680,7 +1660,7 @@ class browse_links {
 		$content.='<br /><br />';
 
 			// Setup indexed elements:
-		$this->doc->JScode.= $this->doc->wrapScriptTags('BrowseLinks.addElements('.t3lib_div::array2json($this->elements).');');
+		$this->doc->JScode.= $this->doc->wrapScriptTags('BrowseLinks.addElements(' . json_encode($this->elements) . ');');
 			// Ending page, returning content:
 		$content.= $this->doc->endPage();
 		$content = $this->doc->insertStylesAndJS($content);
@@ -1702,7 +1682,7 @@ class browse_links {
 			// Init variable:
 		$parameters = explode('|', $this->bparams);
 
-			// Create upload/create folder forms, if a path is given:
+
 		$path = $this->expandFolder;
 		if (!$path || !@is_dir($path)) {
 				// The closest TEMP-path is found
@@ -1931,7 +1911,7 @@ class browse_links {
 				//	Add the HTML for the record list to output variable:
 			$out.=$dblist->HTMLcode;
 
-			 	// Add support for fieldselectbox in singleTableMode
+				// Add support for fieldselectbox in singleTableMode
 			if ($dblist->table) {
 				$out.= $dblist->fieldSelectBox($dblist->table);
 			}
@@ -2226,7 +2206,7 @@ class browse_links {
 		return $out;
 	}
 
- 	/**
+	/**
 	 * Render list of folders.
 	 *
 	 * @param	array		List of folders. See t3lib_div::get_dirs
@@ -2377,7 +2357,7 @@ class browse_links {
 							<td colspan="2">'.$this->getMsgBox($GLOBALS['LANG']->getLL('findDragDrop')).'</td>
 						</tr>';
 
-		 				// Traverse files:
+						// Traverse files:
 					while(list(,$filepath)=each($files))	{
 						$fI = pathinfo($filepath);
 
@@ -2479,7 +2459,7 @@ class browse_links {
 	 * @return	boolean		If the input path is found in PATH_site then it returns true.
 	 */
 	function isWebFolder($folder)	{
-		$folder = ereg_replace('\/$','',$folder).'/';
+		$folder = rtrim($folder, '/').'/';
 		return t3lib_div::isFirstPartOfStr($folder,PATH_site) ? TRUE : FALSE;
 	}
 
@@ -2490,7 +2470,7 @@ class browse_links {
 	 * @return	boolean		If the input path is found in the backend users filemounts, then return true.
 	 */
 	function checkFolder($folder)	{
-		return $this->fileProcessor->checkPathAgainstMounts(ereg_replace('\/$', '', $folder) . '/') ? true : false;
+		return $this->fileProcessor->checkPathAgainstMounts(rtrim($folder, '/') . '/') ? true : false;
 	}
 
 	/**
@@ -2500,8 +2480,8 @@ class browse_links {
 	 * @return	boolean		If the input path is found in the backend users filemounts and if the filemount is of type readonly, then return true.
 	 */
 	function isReadOnlyFolder($folder) {
-		return ($GLOBALS['FILEMOUNTS'][$this->fileProcessor->checkPathAgainstMounts(ereg_replace('\/$', '', $folder) . '/')]['type'] == 'readonly');
- 	}
+		return ($GLOBALS['FILEMOUNTS'][$this->fileProcessor->checkPathAgainstMounts(rtrim($folder, '/') . '/')]['type'] == 'readonly');
+	}
 
 	/**
 	 * Prints a 'header' where string is in a tablecell
@@ -2585,7 +2565,7 @@ class browse_links {
 				$info['act']='spec';
 			} elseif (t3lib_div::isFirstPartOfStr($href,$siteUrl))	{	// If URL is on the current frontend website:
 				$rel = substr($href,strlen($siteUrl));
-				if (@file_exists(PATH_site.rawurldecode($rel)))	{	// URL is a file, which exists:
+				if (file_exists(PATH_site.rawurldecode($rel)))	{	// URL is a file, which exists:
 					$info['value']=rawurldecode($rel);
 					if (@is_dir(PATH_site . $info['value'])) {
 						$info['act'] = 'folder';
@@ -2596,7 +2576,8 @@ class browse_links {
 					$uP=parse_url($rel);
 					if (!trim($uP['path']))	{
 						$pp = explode('id=',$uP['query']);
-						$id = $pp[1];
+						$parameters = explode('&', $pp[1]);
+						$id = array_shift($parameters);
 						if ($id)	{
 								// Checking if the id-parameter is an alias.
 							if (!t3lib_div::testInt($id))	{
@@ -2610,6 +2591,7 @@ class browse_links {
 							$info['pageid']=$id;
 							$info['cElement']=$uP['fragment'];
 							$info['act']='page';
+							$info['query'] = $parameters[0]?'&'.implode('&', $parameters):'';
 						}
 					}
 				}
@@ -2644,9 +2626,16 @@ class browse_links {
 	 */
 	function uploadForm($path)	{
 		global $BACK_PATH;
-		$count=3;
 
 		if ($this->isReadOnlyFolder($path)) return '';
+
+			// Read configuration of upload field count
+		$userSetting = $GLOBALS['BE_USER']->getTSConfigVal('options.folderTree.uploadFieldsInLinkBrowser');
+		$count = isset($userSetting) ? $userSetting : 3;
+		if ($count === '0') {
+			return '';
+		}
+		$count = intval($count) == 0 ? 3 : intval($count);
 
 			// Create header, showing upload path:
 		$header = t3lib_div::isFirstPartOfStr($path,PATH_site)?substr($path,strlen(PATH_site)):$path;
@@ -2703,6 +2692,10 @@ class browse_links {
 
 		if ($this->isReadOnlyFolder($path)) return '';
 
+			// Don't show Folder-create form if it's denied
+		if ($GLOBALS['BE_USER']->getTSConfigVal('options.folderTree.hideCreateFolder')) {
+			return '';
+		}
 			// Create header, showing upload path:
 		$header = t3lib_div::isFirstPartOfStr($path,PATH_site)?substr($path,strlen(PATH_site)):$path;
 		$code=$this->barheader($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.pagetitle').':');
@@ -2761,10 +2754,9 @@ class browse_links {
 	}
 }
 
-// Include extension?
+
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/class.browse_links.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/class.browse_links.php']);
 }
-
 
 ?>

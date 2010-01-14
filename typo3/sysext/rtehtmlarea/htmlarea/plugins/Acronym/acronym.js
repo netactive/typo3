@@ -27,7 +27,7 @@
 /*
  * Acronym plugin for htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: acronym.js 5305 2009-04-09 16:44:23Z stan $
+ * TYPO3 SVN ID: $Id: acronym.js 5306 2009-04-09 16:57:19Z stan $
  */
 Acronym = HTMLArea.Plugin.extend({
 	
@@ -48,12 +48,12 @@ Acronym = HTMLArea.Plugin.extend({
 		 * Registering plugin "About" information
 		 */
 		var pluginInformation = {
-			version		: "1.6",
+			version		: "1.7",
 			developer	: "Stanislas Rolland",
-			developerUrl	: "http://www.fructifor.ca/",
+			developerUrl	: "http://www.sjbr.ca/",
 			copyrightOwner	: "Stanislas Rolland",
-			sponsor		: "Fructifor Inc.",
-			sponsorUrl	: "http://www.fructifor.ca/",
+			sponsor		: "SJBR",
+			sponsorUrl	: "http://www.sjbr.ca/",
 			license		: "GPL"
 		};
 		this.registerPluginInformation(pluginInformation);
@@ -88,8 +88,8 @@ Acronym = HTMLArea.Plugin.extend({
 		this.abbr = editor._activeElement(selection);
 		this.abbrType = null;
 			// Working around Safari issue
-		if (!this.abbr && editor._statusBarTree.selected) {
-			this.abbr = editor._statusBarTree.selected;
+		if (!this.abbr && this.getPluginInstance("StatusBar") && this.getPluginInstance("StatusBar").getSelection()) {
+			this.abbr = this.getPluginInstance("StatusBar").getSelection();
 		}
 		if (!(this.abbr != null && /^(acronym|abbr)$/i.test(this.abbr.nodeName))) {
 			this.abbr = editor._getFirstAncestor(selection, ["acronym", "abbr"]);

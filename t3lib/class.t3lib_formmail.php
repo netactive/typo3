@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains a class for formmail
  *
- * $Id: class.t3lib_formmail.php 3439 2008-03-16 19:16:51Z flyguide $
+ * $Id: class.t3lib_formmail.php 6507 2009-11-24 11:57:52Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -165,14 +165,19 @@ class t3lib_formmail extends t3lib_htmlmail {
 
 			for ($a=0;$a<10;$a++)	{
 				$varname = 'attachment'.(($a)?$a:'');
-				if (!is_uploaded_file($_FILES[$varname]['tmp_name']))	{
-					t3lib_div::sysLog('Possible abuse of t3lib_formmail: temporary file "'.$_FILES[$varname]['tmp_name'].'" ("'.$_FILES[$varname]['name'].'") was not an uploaded file.', 'Core', 3);
+				if (!isset($_FILES[$varname])) {
 					continue;
+				}
+				if (!is_uploaded_file($_FILES[$varname]['tmp_name'])) {
+					t3lib_div::sysLog('Possible abuse of t3lib_formmail: temporary file "'.$_FILES[$varname]['tmp_name'].'" ("'.$_FILES[$varname]['name'].'") was not an uploaded file.', 'Core', 3);
+				}
+				if ($_FILES[$varname]['tmp_name']['error'] !== UPLOAD_ERR_OK) {
+					t3lib_div::sysLog('Error in uploaded file in t3lib_formmail: temporary file "'.$_FILES[$varname]['tmp_name'].'" ("'.$_FILES[$varname]['name'].'") Error code: '.$_FILES[$varname]['tmp_name']['error'], 'Core', 3);
 				}
 				$theFile = t3lib_div::upload_to_tempfile($_FILES[$varname]['tmp_name']);
 				$theName = $_FILES[$varname]['name'];
 
-				if ($theFile && @file_exists($theFile))	{
+				if ($theFile && file_exists($theFile))	{
 					if (filesize($theFile) < $GLOBALS['TYPO3_CONF_VARS']['FE']['formmailMaxAttachmentSize'])	{
 						$this->addAttachment($theFile, $theName);
 					}
@@ -243,4 +248,5 @@ class t3lib_formmail extends t3lib_htmlmail {
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['t3lib/class.t3lib_formmail.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['t3lib/class.t3lib_formmail.php']);
 }
+
 ?>

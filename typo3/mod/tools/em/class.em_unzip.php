@@ -3,7 +3,7 @@
 *  Copyright notice
 *
 *  (c) Vincent Blavet <vincent@phpconcept.net>
-*  (c) 2005-2008 Karsten Dambekalns <karsten@typo3.org>
+*  (c) 2005-2009 Karsten Dambekalns <karsten@typo3.org>
 *  All rights reserved
 *
 *  This library is free software; you can redistribute it and/or
@@ -26,7 +26,7 @@
 /**
  * Module: Extension manager
  *
- * $Id: class.em_unzip.php 3439 2008-03-16 19:16:51Z flyguide $
+ * $Id: class.em_unzip.php 5761 2009-08-05 10:05:29Z rupi $
  *
  * @author	Vincent Blavet <vincent@phpconcept.net>
  * @author	Karsten Dambekalns <karsten@typo3.org>
@@ -799,7 +799,7 @@ class em_unzip {
 			$p_header['mtime'] = mktime($v_hour, $v_minute, $v_seconde, $v_month, $v_day, $v_year);
 
 		} else {
-			$p_header['mtime'] = time();
+			$p_header['mtime'] = $GLOBALS['EXEC_TIME'];
 		}
 
 		// Other informations
@@ -895,7 +895,7 @@ class em_unzip {
 			$p_header['mtime'] = mktime($v_hour, $v_minute, $v_seconde, $v_month, $v_day, $v_year);
 
 		} else {
-			$p_header['mtime'] = time();
+			$p_header['mtime'] = $GLOBALS['EXEC_TIME'];
 		}
 
 		// Set the stored filename

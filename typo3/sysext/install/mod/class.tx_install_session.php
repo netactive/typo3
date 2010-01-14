@@ -33,7 +33,7 @@
  * @package TYPO3
  * @subpackage tx_install
  *
- * @version $Id$
+ * @version $Id: class.tx_install_session.php 6536 2009-11-25 14:07:18Z stucki $
  */
 class tx_install_session {
 
@@ -342,11 +342,15 @@ class tx_install_session {
 	 *
 	 * @param integer The setting of session.gc_maxlifetime
 	 *
-	 * @return string
+	 * @return boolean
 	 */
 	public function gc($maxLifeTime) {
 		$sessionSavePath = $this->getSessionSavePath();
-		foreach (glob($sessionSavePath . '/hash_*') as $filename) {
+		$files = glob($sessionSavePath . '/hash_*');
+		if (!is_array($files)) {
+			return TRUE;
+		}
+		foreach ($files as $filename) {
 			if (filemtime($filename) + ($this->expireTimeInMinutes*60) < time()) {
 				@unlink($filename);
 			}

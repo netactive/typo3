@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2001-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -126,11 +126,6 @@
  * (This index is automatically created/updated by the extension "extdeveval")
  *
  */
-
-
-require_once(PATH_t3lib.'class.t3lib_parsehtml.php');
-
-
 /**
  * Indexing class for TYPO3 frontend
  *
@@ -336,7 +331,7 @@ class tx_indexedsearch_indexer {
 		$this->conf['gr_list'] = '0,-1';	// Group list (hardcoded for now...)
 
 			// cHash values:
-		$this->conf['cHash'] = $createCHash ? $this->makeCHash($cHash_array) : '';	// cHash string for additional parameters
+		$this->conf['cHash'] = $createCHash ? t3lib_div::generateCHash(t3lib_div::implodeArrayForUrl('', $cHash_array)) : '';	// cHash string for additional parameters
 		$this->conf['cHash_array'] = $cHash_array;		// Array of the additional parameters
 
 			// Set to defaults
@@ -463,18 +458,18 @@ class tx_indexedsearch_indexer {
 		$lexerObjRef = $TYPO3_CONF_VARS['EXTCONF']['indexed_search']['lexer'] ?
 						$TYPO3_CONF_VARS['EXTCONF']['indexed_search']['lexer'] :
 						'EXT:indexed_search/class.lexer.php:&tx_indexedsearch_lexer';
-		$this->lexerObj = &t3lib_div::getUserObj($lexerObjRef);
+		$this->lexerObj = t3lib_div::getUserObj($lexerObjRef);
 		$this->lexerObj->debug = $this->indexerConfig['debugMode'];
 
 			// Initialize metaphone hook:
 			// Example configuration (localconf.php) for this hook: $TYPO3_CONF_VARS['EXTCONF']['indexed_search']['metaphone'] = 'EXT:indexed_search/class.doublemetaphone.php:&user_DoubleMetaPhone';
 		if ($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['metaphone'])	{
-			$this->metaphoneObj = &t3lib_div::getUserObj($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['metaphone']);
-			$this->metaphoneObj->pObj = &$this;
+			$this->metaphoneObj = t3lib_div::getUserObj($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['metaphone']);
+			$this->metaphoneObj->pObj = $this;
 		}
 
 			// Init charset class:
-		$this->csObj = &t3lib_div::makeInstance('t3lib_cs');
+		$this->csObj = t3lib_div::makeInstance('t3lib_cs');
 	}
 
 	/**
@@ -489,8 +484,8 @@ class tx_indexedsearch_indexer {
 
 		if (is_array($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['external_parsers']))	{
 			foreach($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['external_parsers'] as $extension => $_objRef)	{
-				$this->external_parsers[$extension] = &t3lib_div::getUserObj($_objRef);
-				$this->external_parsers[$extension]->pObj = &$this;
+				$this->external_parsers[$extension] = t3lib_div::getUserObj($_objRef);
+				$this->external_parsers[$extension]->pObj = $this;
 
 					// Init parser and if it returns false, unset its entry again:
 				if (!$this->external_parsers[$extension]->initParser($extension))	{
@@ -661,8 +656,8 @@ class tx_indexedsearch_indexer {
 	 * @return	string		The charset value if found.
 	 */
 	function getHTMLcharset($content)	{
-		if (eregi('<meta[[:space:]]+[^>]*http-equiv[[:space:]]*=[[:space:]]*["\']CONTENT-TYPE["\'][^>]*>',$content,$reg))	{
-			if (eregi('charset[[:space:]]*=[[:space:]]*([[:alnum:]-]+)',$reg[0],$reg2))	{
+		if (preg_match('/<meta[[:space:]]+[^>]*http-equiv[[:space:]]*=[[:space:]]*["\']CONTENT-TYPE["\'][^>]*>/i',$content,$reg))	{
+			if (preg_match('/charset[[:space:]]*=[[:space:]]*([[:alnum:]-]+)/i',$reg[0],$reg2))	{
 				return $reg2[1];
 			}
 		}
@@ -1201,9 +1196,11 @@ class tx_indexedsearch_indexer {
 	 *
 	 * @param	array		Array of content to index, see splitHTMLContent() and splitRegularContent()
 	 * @return	array		Content input array modified so each key is not a unique array of words
-	 * @deprecated
+	 * @deprecated since TYPO3 4.0, this function will be removed in TYPO3 4.5.
 	 */
 	function procesWordsInArrays($contentArr)	{
+		t3lib_div::logDeprecatedFunction();
+
 		return $this->processWordsInArrays($contentArr);
 	}
 
@@ -1358,8 +1355,8 @@ class tx_indexedsearch_indexer {
 			'item_description' => $this->bodyDescription($this->contentParts),
 			'item_mtime' => $this->conf['mtime'],
 			'item_size' => strlen($this->conf['content']),
-			'tstamp' => time(),
-			'crdate' => time(),
+			'tstamp' => $GLOBALS['EXEC_TIME'],
+			'crdate' => $GLOBALS['EXEC_TIME'],
 			'item_crdate' => $this->conf['crdate'],	// Creation date of page
 			'sys_language_uid' => $this->conf['sys_language_uid'],	// Sys language uid of the page. Should reflect which language it DOES actually display!
  			'externalUrl' => 0,
@@ -1517,8 +1514,8 @@ class tx_indexedsearch_indexer {
 			'item_mtime' => $mtime,
 			'item_size' => $size,
 			'item_crdate' => $ctime,
-			'tstamp' => time(),
-			'crdate' => time(),
+			'tstamp' => $GLOBALS['EXEC_TIME'],
+			'crdate' => $GLOBALS['EXEC_TIME'],
 			'gr_list' => $this->conf['gr_list'],
  			'externalUrl' => $fileParts['scheme'] ? 1 : 0,
  			'recordUid' => intval($this->conf['recordUid']),
@@ -1560,8 +1557,14 @@ class tx_indexedsearch_indexer {
 	 */
 	function submitFile_grlist($hash)	{
 			// Testing if there is a gr_list record for a non-logged in user and if so, there is no need to place another one.
-		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('phash', 'index_grlist', 'phash='.intval($hash).' AND (hash_gr_list='.$this->md5inthash($this->defaultGrList).' OR hash_gr_list='.$this->md5inthash($this->conf['gr_list']).')');
-		if (!$GLOBALS['TYPO3_DB']->sql_num_rows($res))	{
+		$count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows(
+			'phash',
+			'index_grlist',
+			'phash=' . intval($hash) .
+				' AND (hash_gr_list=' . $this->md5inthash($this->defaultGrList) .
+				' OR hash_gr_list=' . $this->md5inthash($this->conf['gr_list']) . ')'
+		);
+		if (!$count) {
 			$this->submit_grlist($hash,$hash);
 		}
 	}
@@ -1630,17 +1633,17 @@ class tx_indexedsearch_indexer {
 
 			// If there was an indexing of the page...:
 		if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-			if ($this->tstamp_maxAge && ($row['tstamp']+$this->tstamp_maxAge) < time())	{	// If max age is exceeded, index the page
+			if ($this->tstamp_maxAge && ($row['tstamp'] + $this->tstamp_maxAge) < $GLOBALS['EXEC_TIME']) {	// If max age is exceeded, index the page
 				$out = 1;		// The configured max-age was exceeded for the document and thus it's indexed.
 			} else {
-				if (!$this->tstamp_minAge || ($row['tstamp']+$this->tstamp_minAge)<time())	{	// if minAge is not set or if minAge is exceeded, consider at mtime
+				if (!$this->tstamp_minAge || ($row['tstamp'] + $this->tstamp_minAge) < $GLOBALS['EXEC_TIME']) {	// if minAge is not set or if minAge is exceeded, consider at mtime
 					if ($mtime)	{		// It mtime is set, then it's tested. If not, the page must clearly be indexed.
 						if ($row['item_mtime'] != $mtime)	{	// And if mtime is different from the index_phash mtime, it's about time to re-index.
 							$out = 2;		// The minimum age was exceed and mtime was set and the mtime was different, so the page was indexed.
 						} else {
 							$out = -1;		// mtime matched the document, so no changes detected and no content updated
 							if ($this->tstamp_maxAge)	{
-								$this->log_setTSlogMessage('mtime matched, timestamp NOT updated because a maxAge is set ('.($row['tstamp'] + $this->tstamp_maxAge - time()).' seconds to expire time).',1);
+								$this->log_setTSlogMessage('mtime matched, timestamp NOT updated because a maxAge is set (' . ($row['tstamp'] + $this->tstamp_maxAge - $GLOBALS['EXEC_TIME']) . ' seconds to expire time).', 1);
 							} else {
 								$this->updateTstamp($phash);	// Update the timestatmp
 								$this->log_setTSlogMessage('mtime matched, timestamp updated.',1);
@@ -1690,8 +1693,11 @@ class tx_indexedsearch_indexer {
 	 * @return	void
 	 */
 	function is_grlist_set($phash_x)	{
-		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('phash_x', 'index_grlist', 'phash_x='.intval($phash_x));
-		return $GLOBALS['TYPO3_DB']->sql_num_rows($res);
+		return $GLOBALS['TYPO3_DB']->exec_SELECTcountRows(
+			'phash_x',
+			'index_grlist',
+			'phash_x=' . intval($phash_x)
+		);
 	}
 
 	/**
@@ -1719,7 +1725,7 @@ class tx_indexedsearch_indexer {
 	 */
 	function updateTstamp($phash,$mtime=0)	{
 		$updateFields = array(
-			'tstamp' => time()
+			'tstamp' => $GLOBALS['EXEC_TIME']
 		);
 		if ($mtime)	{ $updateFields['item_mtime'] = intval($mtime); }
 
@@ -1991,8 +1997,11 @@ class tx_indexedsearch_indexer {
 	 *
 	 * @param	array		Array of GET parameters to encode
 	 * @return	void
+	 * @deprecated since TYPO3 4.3, this function will be removed in TYPO3 4.5, use directly t3lib_div::calculateCHash()
 	 */
 	function makeCHash($paramArray)	{
+		t3lib_div::logDeprecatedFunction();
+
 		$addQueryParams = t3lib_div::implodeArrayForUrl('', $paramArray);
 
 		$pA = t3lib_div::cHashParams($addQueryParams);
@@ -2068,20 +2077,13 @@ class tx_indexedsearch_indexer {
 	 * @param	array		Parameters from frontend
 	 * @param	object		TSFE object (reference under PHP5)
 	 * @return	void
+	 * @deprecated since TYPO3 4.3, this function will be removed in TYPO3 4.5, the method was extracted to hooks/class.tx_indexedsearch_tslib_fe_hook.php
 	 */
 	function fe_headerNoCache(&$params, $ref)	{
+		t3lib_div::logDeprecatedFunction();
 
-			// Requirements are that the crawler is loaded, a crawler session is running and re-indexing requested as processing instruction:
-		if (t3lib_extMgm::isLoaded('crawler')
-				&& $params['pObj']->applicationData['tx_crawler']['running']
-				&& in_array('tx_indexedsearch_reindex', $params['pObj']->applicationData['tx_crawler']['parameters']['procInstructions']))	{
-
-				// Setting simple log entry:
-			$params['pObj']->applicationData['tx_crawler']['log'][] = 'RE_CACHE (indexed), old status: '.$params['disableAcquireCacheData'];
-
-				// Disables a look-up for cached page data - thus resulting in re-generation of the page even if cached.
-			$params['disableAcquireCacheData'] = TRUE;
-		}
+		require_once t3lib_extMgm::extPath('indexed_search') . 'hooks/class.tx_indexedsearch_tslib_fe_hook.php';
+		t3lib_div::makeInstance('tx_indexedsearch_tslib_fe_hook')->headerNoCache($params, $ref);
 	}
 }
 

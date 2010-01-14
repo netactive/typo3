@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -84,9 +84,8 @@ class tx_impexp_clickmenu {
 
 			$LL = $this->includeLL();
 
-			$modUrl = $backRef->backPath.t3lib_extMgm::extRelPath('impexp') . 'app/index.php';
-			$url = $modUrl . '?tx_impexp[action]=export';
-
+			$modUrl = $backRef->backPath.t3lib_extMgm::extRelPath('impexp').'app/index.php';
+			$url = $modUrl . '?tx_impexp[action]=export&id=' . ($table == 'pages' ? $uid : $backRef->rec['pid']);
 			if ($table=='pages')	{
 				$url.='&tx_impexp[pagetree][id]='.$uid;
 				$url.='&tx_impexp[pagetree][levels]=0';

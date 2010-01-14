@@ -2,7 +2,7 @@
  * Javascript functions regarding the clickmenu
  * relies on the javascript library "prototype"
  *
- * (c) 2007 Benjamin Mack <www.xnos.org>
+ * (c) 2007-2009 Benjamin Mack <www.xnos.org>
  * All rights reserved
  *
  * This script is part of TYPO3 by
@@ -70,8 +70,6 @@ var Clickmenu = {
 					this.populateData(data, level);
 				}.bind(this)
 			});
-		} else { // fallback with no AJAX, no isCMLayers
-			top.loadTopMenu(this.clickURL + '?' + params);
 		}
 	},
 

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2008 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2007-2009 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -24,9 +24,9 @@
 /**
  * InlineElements plugin for htmlArea RTE
  *
- * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
+ * @author Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_inlineelements.php 4526 2008-12-02 23:45:50Z stan $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_inlineelements.php 5165 2009-03-09 18:28:59Z ohader $
  *
  */
 

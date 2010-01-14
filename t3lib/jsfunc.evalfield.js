@@ -2,13 +2,13 @@
 *
 *  Evaluation of TYPO3 form field content
 *
-* $Id: jsfunc.evalfield.js 5461 2009-05-20 15:47:00Z steffenk $
+* $Id: jsfunc.evalfield.js 5460 2009-05-20 15:45:50Z steffenk $
 *
 *
 *
 *  Copyright notice
 *
-*  (c) 1998-2008 Kasper Skaarhoj
+*  (c) 1998-2009 Kasper Skaarhoj
 *  All rights reserved
 *
 *  This script is part of the TYPO3 t3lib/ library provided by

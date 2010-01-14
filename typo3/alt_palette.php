@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Displays the secondary-options palette for the TCEFORMs wherever they are shown.
  *
- * $Id: alt_palette.php 6245 2009-10-22 08:31:49Z baschny $
+ * $Id: alt_palette.php 6244 2009-10-22 08:30:40Z baschny $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -60,9 +60,6 @@
 
 require('init.php');
 require('template.php');
-require_once(PATH_t3lib.'class.t3lib_tceforms.php');
-require_once(PATH_t3lib.'class.t3lib_transferdata.php');
-require_once(PATH_t3lib.'class.t3lib_loaddbgroup.php');
 $LANG->includeLLFile('EXT:lang/locallang_alt_doc.xml');
 
 
@@ -77,6 +74,7 @@ $LANG->includeLLFile('EXT:lang/locallang_alt_doc.xml');
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
+ * @deprecated since TYPO3 4.3, will be removed in TYPO3 4.5
  */
 class formRender extends t3lib_TCEforms {
 
@@ -268,7 +266,6 @@ class SC_alt_palette {
 		$this->doc->bodyTagMargins['x']=0;
 		$this->doc->bodyTagMargins['y']=0;
 		$this->doc->form='<form action="#" method="post" name="'.htmlspecialchars($this->formName).'" onsubmit="return false;">';
-		$this->doc->docType = 'xhtml_trans';
 		$this->doc->backPath = '';
 
 			// In case the palette is opened in a SEPARATE window (as the case is with frontend editing) then another body-tag id should be used (so we don't get the background image for the palette shown!)
@@ -371,19 +368,10 @@ class SC_alt_palette {
 	}
 }
 
-// Include extension?
+
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_palette.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_palette.php']);
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -392,4 +380,5 @@ $SOBE = t3lib_div::makeInstance('SC_alt_palette');
 $SOBE->init();
 $SOBE->main();
 $SOBE->printContent();
+
 ?>

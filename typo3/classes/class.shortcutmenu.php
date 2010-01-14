@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2008 Ingo Renner <ingo@typo3.org>
+*  (c) 2007-2009 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,11 +27,6 @@
 
 if(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_AJAX) {
 	require_once('interfaces/interface.backend_toolbaritem.php');
-	require_once(PATH_t3lib.'class.t3lib_loadmodules.php');
-	require_once(PATH_typo3.'sysext/lang/lang.php');
-
-	$GLOBALS['LANG'] = t3lib_div::makeInstance('language');
-	$GLOBALS['LANG']->init($GLOBALS['BE_USER']->uc['lang']);
 	$GLOBALS['LANG']->includeLLFile('EXT:lang/locallang_misc.xml');
 
 		// needed to get the correct icons when reloading the menu after saving it
@@ -43,7 +38,7 @@ if(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_AJAX) {
 /**
  * class to render the shortcut menu
  *
- * $Id: class.shortcutmenu.php 4623 2008-12-29 13:53:48Z steffenk $
+ * $Id: class.shortcutmenu.php 5885 2009-09-03 16:49:44Z rupi $
  *
  * @author	Ingo Renner <ingo@typo3.org>
  * @package TYPO3
@@ -104,8 +99,10 @@ class ShortcutMenu implements backend_toolbarItem {
 	 * @return  boolean  true if user has access, false if not
 	 */
 	public function checkAccess() {
-			// Shortcut module is enabled for everybody
-		return true;
+		if ($GLOBALS['BE_USER']->getTSConfigVal('options.enableShortcuts')) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -114,11 +111,12 @@ class ShortcutMenu implements backend_toolbarItem {
 	 * @return	string		workspace selector as HTML select
 	 */
 	public function render() {
+		$title = $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:toolbarItems.shortcuts', true);
 		$this->addJavascriptToBackend();
 
 		$shortcutMenu = array();
 
-		$shortcutMenu[] = '<a href="#" class="toolbar-item"><img'.t3lib_iconWorks::skinImg($this->backPath, 'gfx/toolbar_shortcut.png', 'width="16" height="16"').' title="Shortcuts" alt="" /></a>';
+		$shortcutMenu[] = '<a href="#" class="toolbar-item"><img'.t3lib_iconWorks::skinImg($this->backPath, 'gfx/toolbar_shortcut.png', 'width="16" height="16"').' title="'.$title.'" alt="'.$title.'" /></a>';
 		$shortcutMenu[] = '<div class="toolbar-item-menu" style="display: none;">';
 		$shortcutMenu[] = $this->renderMenu();
 		$shortcutMenu[] = '</div>';
@@ -133,9 +131,13 @@ class ShortcutMenu implements backend_toolbarItem {
 	 */
 	public function renderMenu() {
 
-		$groupIcon  = '<img'.t3lib_iconWorks::skinImg($this->backPath, 'gfx/i/sysf.gif', 'width="18" height="16"').' title="Shortcut Group" alt="" />';
-		$editIcon   = '<img'.t3lib_iconWorks::skinImg($this->backPath, 'gfx/edit2.gif', 'width="11" height="12"').' title="Edit Shortcut" alt=""';
-		$deleteIcon = '<img'.t3lib_iconWorks::skinImg($this->backPath, 'gfx/garbage.gif', 'width="11" height="12"').' title="Delete Shortcut" alt="" />';
+		$shortcutGroup  = $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:toolbarItems.shortcutsGroup', true);
+		$shortcutEdit   = $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:toolbarItems.shortcutsEdit', true);
+		$shortcutDelete = $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:toolbarItems.shortcutsDelete', true);
+
+		$groupIcon  = '<img'.t3lib_iconWorks::skinImg($this->backPath, 'gfx/i/sysf.gif', 'width="18" height="16"').' title="'.$shortcutGroup.'" alt="'.$shortcutGroup.'" />';
+		$editIcon   = '<img'.t3lib_iconWorks::skinImg($this->backPath, 'gfx/edit2.gif', 'width="11" height="12"').' title="'.$shortcutEdit.'" alt="'.$shortcutEdit.'"';
+		$deleteIcon = '<img'.t3lib_iconWorks::skinImg($this->backPath, 'gfx/garbage.gif', 'width="11" height="12"').' title="'.$shortcutDelete.'" alt="'.$shortcutDelete.'" />';
 
 		$shortcutMenu[] = '<table border="0" cellspacing="0" cellpadding="0" class="shortcut-list">';
 
@@ -146,7 +148,7 @@ class ShortcutMenu implements backend_toolbarItem {
 			<tr id="shortcut-'.$shortcut['raw']['uid'].'" class="shortcut">
 				<td class="shortcut-icon">'.$shortcut['icon'].'</td>
 				<td class="shortcut-label">
-					<a id="shortcut-label-'.$shortcut['raw']['uid'].'" href="" onclick="'.$shortcut['action'].'">'.$shortcut['label'].'</a>
+					<a id="shortcut-label-'.$shortcut['raw']['uid'].'" href="#" onclick="'.$shortcut['action'].'; return false;">'.$shortcut['label'].'</a>
 				</td>
 				<td class="shortcut-edit">'.$editIcon.' id="shortcut-edit-'.$shortcut['raw']['uid'].'" /></td>
 				<td class="shortcut-delete">'.$deleteIcon.'</td>
@@ -179,7 +181,7 @@ class ShortcutMenu implements backend_toolbarItem {
 					<tr id="shortcut-'.$shortcut['raw']['uid'].'" class="shortcut'.$firstRow.'">
 						<td class="shortcut-icon">'.$shortcut['icon'].'</td>
 						<td class="shortcut-label">
-							<a id="shortcut-label-'.$shortcut['raw']['uid'].'" href="" onclick="'.$shortcut['action'].'">'.$shortcut['label'].'</a>
+							<a id="shortcut-label-'.$shortcut['raw']['uid'].'" href="#" onclick="'.$shortcut['action'].'; return false;">'.$shortcut['label'].'</a>
 						</td>
 						<td class="shortcut-edit">'.$editIcon.' id="shortcut-edit-'.$shortcut['raw']['uid'].'" /></td>
 						<td class="shortcut-delete">'.$deleteIcon.'</td>
@@ -192,7 +194,8 @@ class ShortcutMenu implements backend_toolbarItem {
 
 		if(count($shortcutMenu) == 1) {
 				//no shortcuts added yet, show a small help message how to add shortcuts
-			$icon  = '<img'.t3lib_iconWorks::skinImg($backPath,'gfx/shortcut.gif','width="14" height="14"').' title="shortcut icon" alt="" />';
+			$title = $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:toolbarItems.shortcuts', true);
+			$icon  = '<img'.t3lib_iconWorks::skinImg($backPath,'gfx/shortcut.gif','width="14" height="14"').' title="'.$title.'" alt="'.$title.'" />';
 			$label = str_replace('%icon%', $icon, $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_misc.php:shortcutDescription'));
 
 			$shortcutMenu[] = '<tr><td style="padding:1px 2px; color: #838383;">'.$label.'</td></tr>';
@@ -314,7 +317,7 @@ class ShortcutMenu implements backend_toolbarItem {
 			if($row['description']) {
 				$shortcut['label'] = $row['description'];
 			} else {
-				$shortcut['label'] = t3lib_div::fixed_lgd(rawurldecode($queryParts['query']), 150);
+				$shortcut['label'] = t3lib_div::fixed_lgd_cs(rawurldecode($queryParts['query']), 150);
 			}
 
 			$shortcut['group']     = $shortcutGroup;
@@ -493,7 +496,7 @@ class ShortcutMenu implements backend_toolbarItem {
 		$shortcutName        = 'Shortcut'; // default name
 		$shortcutNamePrepend = '';
 
-		$url             = t3lib_div::_POST('url');      
+		$url             = t3lib_div::_POST('url');
 		$module          = t3lib_div::_POST('module');
 		$motherModule    = t3lib_div::_POST('motherModName');
 
@@ -530,8 +533,8 @@ class ShortcutMenu implements backend_toolbarItem {
 				}
 			}
 		} else {
-			$dirName = urldecode($pageId);         
-			if (preg_match('/\/$/', $dirName)) {
+			$dirName = urldecode($pageId);
+			if (preg_match('/\/$/', $dirName))	{
 					// if $pageId is a string and ends with a slash,
 					// assume it is a fileadmin reference and set
 					// the description to the basename of that path
@@ -546,7 +549,7 @@ class ShortcutMenu implements backend_toolbarItem {
 				'module_name' => $module.'|'.$motherModule,
 				'url'         => $url,
 				'description' => $shortcutName,
-				'sorting'     => time(),
+				'sorting'     => $GLOBALS['EXEC_TIME'],
 			);
 			$GLOBALS['TYPO3_DB']->exec_INSERTquery('sys_be_shortcuts', $fieldValues);
 
@@ -702,7 +705,7 @@ class ShortcutMenu implements backend_toolbarItem {
 						' AND '.$this->perms_clause :
 						'';
 
-	         		$sqlQueryParts = array(
+					$sqlQueryParts = array(
 						'SELECT' => implode(',', $selectFields),
 						'FROM'   => $table,
 						'WHERE'  => 'uid IN ('.$recordid.') '.$permissionClause.
@@ -740,7 +743,7 @@ class ShortcutMenu implements backend_toolbarItem {
 				}
 		}
 
-		return '<img src="'.$icon.'" alt="shortcut icon" />';
+		return '<img src="' . $icon . '" alt="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:toolbarItems.shortcut', true) . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:toolbarItems.shortcut', true) . '" />';
 	}
 
 	/**

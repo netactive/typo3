@@ -29,7 +29,7 @@
 /**
  * Command Line Interface module dispatcher
  *
- * $Id: cli_dispatch.phpsh 6219 2009-10-21 14:03:51Z rupi $
+ * $Id: cli_dispatch.phpsh 6225 2009-10-21 21:39:56Z rupi $
  *
  * @author      Kasper Skaarhoj <kasperYYYY@typo3.com>
  *
@@ -93,7 +93,7 @@ if ($relativePath) {
 	$workingDirectory = $_SERVER['PWD'] ? $_SERVER['PWD'] : getcwd();
 	if ($workingDirectory) {
 		$temp_PATH_thisScript =
-			$workingDirectory.'/'.ereg_replace('\.\/','',$temp_PATH_thisScript);
+			$workingDirectory.'/'.preg_replace('/\.\//','',$temp_PATH_thisScript);
 		if (!@is_file($temp_PATH_thisScript)) {
 			die ('Relative path found, but an error occured during resolving of the absolute path: '.$temp_PATH_thisScript.chr(10));
 		}
@@ -117,10 +117,7 @@ require(dirname(PATH_thisScript).'/init.php');
 
 	// Make sure output is not buffered,
 	// so that command-line output and interaction can take place
-while (ob_get_level()) {
-	ob_end_clean();
-}
-header('Content-Encoding: None', TRUE);
+t3lib_div::flushOutputBuffers();
 
 if (defined('TYPO3_cliInclude')) {
 	include(TYPO3_cliInclude);

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,13 +27,6 @@
 /**
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-
-require_once(PATH_t3lib."class.t3lib_tceforms.php");
-require_once(PATH_t3lib."class.t3lib_tcemain.php");
-
-require_once(PATH_t3lib."class.t3lib_fullsearch.php");
-require_once(PATH_t3lib."class.t3lib_xml.php");
-require_once(PATH_t3lib."class.t3lib_loaddbgroup.php");
 
 class tx_sysaction extends mod_user_task {
 	var $todoTypesCache = array();
@@ -185,7 +178,7 @@ class tx_sysaction extends mod_user_task {
 								$actionContent="";
 	//		debug($sql_query);
 								$type = $sql_query["qC"]["search_query_makeQuery"];
-								$res = $GLOBALS['TYPO3_DB']->sql(TYPO3_db,$sql_query["qSelect"]);
+								$res = $GLOBALS['TYPO3_DB']->sql_query($sql_query["qSelect"]);
 								if (!$GLOBALS['TYPO3_DB']->sql_error())	{
 									$fullsearch->formW=48;
 									$cP=$fullsearch->getQueryResultCode($type,$res,$sql_query["qC"]["queryTable"]);
@@ -203,14 +196,18 @@ class tx_sysaction extends mod_user_task {
 										'&SET[search]=query'.
 										'&storeControl[STORE]=-'.$actionRow["uid"].
 										'&storeControl[LOAD]=1'.
-										'">Edit Query</a></strong>';
+										'">' . $GLOBALS['LANG']->getLL('action_editQuery') . '</a></strong>';
 								}
 								$theCode.= $this->pObj->doc->section($LANG->getLL("action_t2_result"),$actionContent,0,1);
 							} else {
 								$theCode.= $this->pObj->doc->section($LANG->getLL("action_error"),'<span class="typo3-red">'.$LANG->getLL("action_notReady").'</span>',0,1);
 							}
 						} else {
-							$theCode.= $this->pObj->doc->section($LANG->getLL("action_error"),'<span class="typo3-red">The extension "lowlevel" must be installed in order to create a quiry</span>',0,1);
+							$theCode.= $this->pObj->doc->section(
+								$GLOBALS['LANG']->getLL('action_error'),
+								'<span class="typo3-red">' . $GLOBALS['LANG']->getLL('action_lowlevelMissing', true) . '</span>',
+								0, 1
+							);
 						}
 					break;
 					case 3: //list records
@@ -365,7 +362,7 @@ class tx_sysaction extends mod_user_task {
 	function fixUsername($username,$prefix)	{
 		$username=trim($username);
 		$prefix=trim($prefix);
-		$username=ereg_replace("^".quotemeta($prefix),"",$username);
+		$username=preg_replace('/^'.quotemeta($prefix).'/','',$username);
 
 		if ($username)	{
 			return $prefix.$username;

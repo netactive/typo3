@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2001-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Index search frontend
  *
- * $Id: class.tx_indexedsearch.php 5133 2009-03-06 19:27:32Z jsegars $
+ * $Id: class.tx_indexedsearch.php 5947 2009-09-16 17:57:09Z ohader $
  *
  * Creates a searchform for indexed search. Indexing must be enabled
  * for this to make sense.
@@ -103,10 +103,6 @@
  *
  */
 
-
-
-require_once(PATH_tslib.'class.tslib_pibase.php');
-require_once(PATH_tslib.'class.tslib_search.php');
 require_once(t3lib_extMgm::extPath('indexed_search').'class.indexer.php');
 
 
@@ -217,7 +213,7 @@ class tx_indexedsearch extends tslib_pibase {
 			// Initialize external document parsers for icon display and other soft operations
 		if (is_array($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['external_parsers']))	{
 			foreach ($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['external_parsers'] as $extension => $_objRef)	{
-				$this->external_parsers[$extension] = &t3lib_div::getUserObj($_objRef);
+				$this->external_parsers[$extension] = t3lib_div::getUserObj($_objRef);
 
 					// Init parser and if it returns false, unset its entry again:
 				if (!$this->external_parsers[$extension]->softInit($extension))	{
@@ -230,7 +226,7 @@ class tx_indexedsearch extends tslib_pibase {
 		$lexerObjRef = $TYPO3_CONF_VARS['EXTCONF']['indexed_search']['lexer'] ?
 						$TYPO3_CONF_VARS['EXTCONF']['indexed_search']['lexer'] :
 						'EXT:indexed_search/class.lexer.php:&tx_indexedsearch_lexer';
-		$this->lexerObj = &t3lib_div::getUserObj($lexerObjRef);
+		$this->lexerObj = t3lib_div::getUserObj($lexerObjRef);
 
 			// If "_sections" is set, this value overrides any existing value.
 		if ($this->piVars['_sections'])		$this->piVars['sections'] = $this->piVars['_sections'];
@@ -383,7 +379,7 @@ class tx_indexedsearch extends tslib_pibase {
 		}
 
 			// Calling hook for modification of initialized content
-		if ($hookObj = &$this->hookRequest('initialize_postProc'))	{
+		if ($hookObj = $this->hookRequest('initialize_postProc')) {
 			$hookObj->initialize_postProc();
 		}
 
@@ -438,7 +434,7 @@ class tx_indexedsearch extends tslib_pibase {
 		$inSW = $GLOBALS['TSFE']->csConvObj->utf8_encode($inSW, $GLOBALS['TSFE']->metaCharset);
 		$inSW = $GLOBALS['TSFE']->csConvObj->entities_to_utf8($inSW,TRUE);
 
-		if ($hookObj = &$this->hookRequest('getSearchWords'))	{
+		if ($hookObj = $this->hookRequest('getSearchWords')) {
 			return $hookObj->getSearchWords_splitSWords($inSW, $defOp);
 		} else {
 
@@ -522,7 +518,7 @@ class tx_indexedsearch extends tslib_pibase {
 		foreach ($indexCfgs as $freeIndexUid)	{
 				// Get result rows:
 			$pt1 = t3lib_div::milliseconds();
-			if ($hookObj = &$this->hookRequest('getResultRows'))	{
+			if ($hookObj = $this->hookRequest('getResultRows')) {
 				$resData = $hookObj->getResultRows($sWArr,$freeIndexUid);
 			} else {
 				$resData = $this->getResultRows($sWArr,$freeIndexUid);
@@ -530,7 +526,7 @@ class tx_indexedsearch extends tslib_pibase {
 
 				// Display search results:
 			$pt2 = t3lib_div::milliseconds();
-			if ($hookObj = &$this->hookRequest('getDisplayResults'))	{
+			if ($hookObj = $this->hookRequest('getDisplayResults')) {
 				$content = $hookObj->getDisplayResults($sWArr, $resData, $freeIndexUid);
 			} else {
 				$content = $this->getDisplayResults($sWArr, $resData, $freeIndexUid);
@@ -611,7 +607,7 @@ class tx_indexedsearch extends tslib_pibase {
 						$c++;	// Increase the result pointer
 
 							// All rows for display is put into resultRows[]
-						if ($c > $pointer * $this->piVars['results'])	{
+						if ($c > $pointer * $this->piVars['results'] && $c <= ($pointer * $this->piVars['results'] + $this->piVars['results']))	{
 							$row['result_number'] = $c;
 							$resultRows[] = $row;
 								// This may lead to a problem: If the result check is not stopped here, the search will take longer. However the result counter will not filter out grouped cHashes/pHashes that were not processed yet. You can change this behavior using the "search.exactCount" property (see above).
@@ -1076,7 +1072,7 @@ class tx_indexedsearch extends tslib_pibase {
 		$freeIndexUidClause = $this->freeIndexUidWhere($freeIndexUid);
 
 			// Calling hook for alternative creation of page ID list
-		if ($hookObj = &$this->hookRequest('execFinalQuery_idList'))	{
+		if ($hookObj = $this->hookRequest('execFinalQuery_idList')) {
 			$page_where = $hookObj->execFinalQuery_idList($list);
 		} elseif ($this->join_pages)	{	// Alternative to getting all page ids by ->getTreeList() where "excludeSubpages" is NOT respected.
 			$page_join = ',
@@ -1326,7 +1322,7 @@ class tx_indexedsearch extends tslib_pibase {
 		$html = $this->cObj->getSubpart($this->templateCode, '###SEARCH_FORM###');
 
 			// Multilangual text
-		$substituteArray = array('searchFor', 'extResume', 'atATime', 'orderBy', 'fromSection', 'searchIn', 'match', 'style', 'freeIndexUid');
+		$substituteArray = array('legend', 'searchFor', 'extResume', 'atATime', 'orderBy', 'fromSection', 'searchIn', 'match', 'style', 'freeIndexUid');
 		foreach ($substituteArray as $marker)	{
 			$markerArray['###FORM_'.t3lib_div::strtoupper($marker).'###'] = $this->pi_getLL('form_'.$marker,'',1);
 		}
@@ -1574,7 +1570,7 @@ class tx_indexedsearch extends tslib_pibase {
 			// Get template content:
 		$tmplContent = $this->prepareResultRowTemplateData($row, $headerOnly);
 
-		if ($hookObj = &$this->hookRequest('printResultRow'))	{
+		if ($hookObj = $this->hookRequest('printResultRow')) {
 			return $hookObj->printResultRow($row, $headerOnly, $tmplContent);
 		} else {
 
@@ -1767,7 +1763,7 @@ class tx_indexedsearch extends tslib_pibase {
 		$tmplContent['CSSsuffix'] = $CSSsuffix;
 
 			// Post processing with hook.
-		if ($hookObj = &$this->hookRequest('prepareResultRowTemplateData_postProc'))	{
+		if ($hookObj = $this->hookRequest('prepareResultRowTemplateData_postProc')) {
 			$tmplContent = $hookObj->prepareResultRowTemplateData_postProc($tmplContent, $row, $headerOnly);
 		}
 
@@ -1932,10 +1928,10 @@ class tx_indexedsearch extends tslib_pibase {
 				return ceil(log($total)/log($max)*100).'%';
 			break;
 			case 'crdate':	// Based on creation date
-				return $this->cObj->calcAge(time()-$row['item_crdate'],0); // ,$conf['age']
+				return $this->cObj->calcAge($GLOBALS['EXEC_TIME'] - $row['item_crdate'],0); // ,$conf['age']
 			break;
 			case 'mtime':	// Based on modification time
-				return $this->cObj->calcAge(time()-$row['item_mtime'],0); // ,$conf['age']
+				return $this->cObj->calcAge($GLOBALS['EXEC_TIME'] - $row['item_mtime'],0); // ,$conf['age']
 			break;
 			default:	// fx. title
 				return '&nbsp;';
@@ -2024,17 +2020,17 @@ class tx_indexedsearch extends tslib_pibase {
 					// Possibly shorten string:
 				if (!$k)	{	// First entry at all (only cropped on the frontside)
 					if ($strLen > $postPreLgd)	{
-						$output[$k] = $divider.ereg_replace('^[^[:space:]]+[[:space:]]','',$GLOBALS['TSFE']->csConvObj->crop('utf-8',$parts[$k],-($postPreLgd-$postPreLgd_offset)));
+						$output[$k] = $divider.preg_replace('/^[^[:space:]]+[[:space:]]/','',$GLOBALS['TSFE']->csConvObj->crop('utf-8',$parts[$k],-($postPreLgd-$postPreLgd_offset)));
 					}
 				} elseif ($summaryLgd > $summaryMax || !isset($parts[$k+1])) {	// In case summary length is exceed OR if there are no more entries at all:
 					if ($strLen > $postPreLgd)	{
-						$output[$k] = ereg_replace('[[:space:]][^[:space:]]+$','',$GLOBALS['TSFE']->csConvObj->crop('utf-8',$parts[$k],$postPreLgd-$postPreLgd_offset)).$divider;
+						$output[$k] = preg_replace('/[[:space:]][^[:space:]]+$/','',$GLOBALS['TSFE']->csConvObj->crop('utf-8',$parts[$k],$postPreLgd-$postPreLgd_offset)).$divider;
 					}
 				} else {	// In-between search words:
 					if ($strLen > $postPreLgd*2)	{
-						$output[$k] = ereg_replace('[[:space:]][^[:space:]]+$','',$GLOBALS['TSFE']->csConvObj->crop('utf-8',$parts[$k],$postPreLgd-$postPreLgd_offset)).
+						$output[$k] = preg_replace('/[[:space:]][^[:space:]]+$/','',$GLOBALS['TSFE']->csConvObj->crop('utf-8',$parts[$k],$postPreLgd-$postPreLgd_offset)).
 										$divider.
-										ereg_replace('^[^[:space:]]+[[:space:]]','',$GLOBALS['TSFE']->csConvObj->crop('utf-8',$parts[$k],-($postPreLgd-$postPreLgd_offset)));
+										preg_replace('/^[^[:space:]]+[[:space:]]/','',$GLOBALS['TSFE']->csConvObj->crop('utf-8',$parts[$k],-($postPreLgd-$postPreLgd_offset)));
 					}
 				}
 				$summaryLgd+= $GLOBALS['TSFE']->csConvObj->strlen('utf-8', $output[$k]);;
@@ -2265,7 +2261,7 @@ class tx_indexedsearch extends tslib_pibase {
 	function getFirstSysDomainRecordForPage($id)	{
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('domainName', 'sys_domain', 'pid='.intval($id).$this->cObj->enableFields('sys_domain'), '', 'sorting');
 		$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
-		return ereg_replace('\/$','',$row['domainName']);
+		return rtrim($row['domainName'], '/');
 	}
 
 	/**
@@ -2367,14 +2363,14 @@ class tx_indexedsearch extends tslib_pibase {
 	 * @param	string		Name of the function you want to call / hook key
 	 * @return	object		Hook object, if any. Otherwise null.
 	 */
-	function &hookRequest($functionName)	{
+	function hookRequest($functionName) {
 		global $TYPO3_CONF_VARS;
 
 			// Hook: menuConfig_preProcessModMenu
 		if ($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['pi1_hooks'][$functionName]) {
-			$hookObj = &t3lib_div::getUserObj($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['pi1_hooks'][$functionName]);
+			$hookObj = t3lib_div::getUserObj($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['pi1_hooks'][$functionName]);
 			if (method_exists ($hookObj, $functionName)) {
-				$hookObj->pObj = &$this;
+				$hookObj->pObj = $this;
 				return $hookObj;
 			}
 		}
@@ -2385,4 +2381,5 @@ class tx_indexedsearch extends tslib_pibase {
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/indexed_search/pi/class.tx_indexedsearch.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/indexed_search/pi/class.tx_indexedsearch.php']);
 }
+
 ?>

@@ -16,13 +16,13 @@
  * This code is public domain, you are free to do whatever you want with it,
  * including adding it to your own project which can be under any license.
  *
- * $Id: RemoveXSS.php 6228 2009-10-22 07:40:09Z baschny $
+ * $Id: RemoveXSS.php 4457 2008-11-12 17:15:55Z ohader $
  *
  * @author	Travis Puderbaugh <kallahar@quickwired.com>
  * @author	Jigal van Hemert <jigal@xs4all.nl>
  * @package	RemoveXSS
  */
-class RemoveXSS {
+final class RemoveXSS {
 	/**
 	 * Removes potential XSS code from an input string.
 	 * Wrapper for RemoveXSS::process().
@@ -32,6 +32,7 @@ class RemoveXSS {
 	 * @param	string		Input string
 	 * @param	string		replaceString for inserting in keywords (which destroyes the tags)
 	 * @return	string		Input string with potential XSS code removed
+	 * @deprecated since TYPO3 4.3, use static call RemoveXSS::process() instead
 	 */
 	public function RemoveXSS($val, $replaceString = '<x>') {
 		return self::process($val, $replaceString);
@@ -46,7 +47,7 @@ class RemoveXSS {
 	 * @param	string		replaceString for inserting in keywords (which destroyes the tags)
 	 * @return	string		Input string with potential XSS code removed
 	 */
-	function process($val, $replaceString = '<x>') {
+	public static function process($val, $replaceString = '<x>') {
 		// don't use empty $replaceString because then no XSS-remove will be done
 		if ($replaceString == '') {
 			$replaceString = '<x>';

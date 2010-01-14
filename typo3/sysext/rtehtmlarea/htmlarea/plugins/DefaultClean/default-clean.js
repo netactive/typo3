@@ -26,7 +26,7 @@
 /**
  * Default Clean Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: default-clean.js 2663 2007-11-05 09:22:23Z ingmars $
+ * TYPO3 SVN ID: $Id: default-clean.js 6539 2009-11-25 14:49:14Z stucki $
  */
 DefaultClean = HTMLArea.Plugin.extend({
 	
@@ -45,7 +45,7 @@ DefaultClean = HTMLArea.Plugin.extend({
 		 * Registering plugin "About" information
 		 */
 		var pluginInformation = {
-			version		: "1.1",
+			version		: "1.2",
 			developer	: "Stanislas Rolland",
 			developerUrl	: "http://www.sjbr.ca/",
 			copyrightOwner	: "Stanislas Rolland",
@@ -164,6 +164,9 @@ DefaultClean = HTMLArea.Plugin.extend({
 			}
 		}
 		parseTree(this.editor._doc.body);
+		if (HTMLArea.is_safari) {
+			this.editor.cleanAppleStyleSpans(this.editor._doc.body);
+		}
 	}
 });
 
@@ -172,7 +175,7 @@ DefaultClean = HTMLArea.Plugin.extend({
  */
 DefaultClean.cleanLater = function (editorNumber) {
 	var editor = RTEarea[editorNumber].editor;
-	editor.plugins.DefaultClean.instance.clean();
+	editor.getPluginInstance("DefaultClean").clean();
 };
 
 /*

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -27,7 +27,7 @@
 /**
  * Parent class for "Services" classes
  *
- * $Id: class.t3lib_svbase.php 4934 2009-02-03 20:20:50Z francois $
+ * $Id: class.t3lib_svbase.php 5482 2009-05-22 19:08:30Z ohader $
  * TODO: temp files are not removed
  *
  * @author	Rene Fritz <r.fritz@colorcube.de>
@@ -108,7 +108,6 @@ define ('T3_ERR_SV_PROG_FAILED', -41); // passed subtype is not possible with th
 // define ('T3_ERR_SV_serviceType_myerr, -100); // All errors with prefix T3_ERR_SV_[serviceType]_ and lower than -99 are service type dependent error
 
 
-require_once(PATH_t3lib.'class.t3lib_exec.php');
 
 
 
@@ -122,7 +121,7 @@ require_once(PATH_t3lib.'class.t3lib_exec.php');
  * @package TYPO3
  * @subpackage t3lib
  */
-class t3lib_svbase {
+abstract class t3lib_svbase {
 
 	/**
 	 * service description array
@@ -222,11 +221,9 @@ class t3lib_svbase {
 	 * @return	mixed		configuration value for the service
 	 */
 	function getServiceOption($optionName, $defaultValue='', $includeDefaultConfig=TRUE) {
-		global $TYPO3_CONF_VARS;
-
 		$config = NULL;
 
-		$svOptions = $TYPO3_CONF_VARS['SVCONF'][$this->info['serviceType']];
+		$svOptions = $GLOBALS['TYPO3_CONF_VARS']['SVCONF'][$this->info['serviceType']];
 
 		if(isset($svOptions[$this->info['serviceKey']][$optionName])) {
 			$config = $svOptions[$this->info['serviceKey']][$optionName];
@@ -375,11 +372,7 @@ class t3lib_svbase {
 	 * @return	boolean		return FALSE if one program was not found
 	 */
 	function checkExec($progList) {
-		global $T3_VAR, $TYPO3_CONF_VARS;
-
 		$ret = TRUE;
-
-		require_once(PATH_t3lib.'class.t3lib_exec.php');
 
 		$progList = t3lib_div::trimExplode(',', $progList, 1);
 		foreach($progList as $prog) {

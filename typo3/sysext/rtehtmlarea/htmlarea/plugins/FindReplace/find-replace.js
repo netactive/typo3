@@ -2,7 +2,7 @@
 *  Copyright notice
 *
 *  (c) 2004 Cau guanabara <caugb@ibest.com.br>
-*  (c) 2005-2008 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2005-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
 /*
  * Find and Replace Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: find-replace.js 5037 2009-02-19 18:36:11Z stan $
+ * TYPO3 SVN ID: $Id: find-replace.js 5038 2009-02-19 18:40:14Z stan $
  */
 FindReplace = HTMLArea.Plugin.extend({
 
@@ -51,7 +51,7 @@ FindReplace = HTMLArea.Plugin.extend({
 			developer	: "Cau Guanabara & Stanislas Rolland",
 			developerUrl	: "mailto:caugb@ibest.com.br",
 			copyrightOwner	: "Cau Guanabara & Stanislas Rolland",
-			sponsor		: "Independent production & Fructifor Inc.",
+			sponsor		: "Independent production & SJBR",
 			sponsorUrl	: "http://www.netflash.com.br/gb/HA3-rc1/examples/find-replace.html",
 			license		: "GPL"
 		};
@@ -69,7 +69,7 @@ FindReplace = HTMLArea.Plugin.extend({
 		};
 		this.registerButton(buttonConfiguration);
 
-		this.popupWidth = 420;
+		this.popupWidth = 400;
 		this.popupHeight = 360;
 
 		return true;
@@ -96,12 +96,12 @@ FindReplace = HTMLArea.Plugin.extend({
 		if (/\w/.test(sel)) {
 			param = { fr_pattern: sel };
 		}
-
-		this.dialog = this.openDialog("FindReplace", this.makeUrlFromPopupName("find_replace"), null, param, {width:this.popupWidth, height:this.popupHeight});
 		if (HTMLArea.is_opera) {
 			this.cleanUpFunctionReference = this.makeFunctionReference("cleanUp");
+			this.cleanUpRegularExpression = /(<span\s+[^>]*id=.?frmark[^>]*>)([^<>]*)(<\/span>)/gi;
 			this.editor._iframe.contentWindow.setTimeout(this.cleanUpFunctionReference, 200);
 		}
+		this.dialog = this.openDialog("FindReplace", this.makeUrlFromPopupName("find_replace"), null, param, {width:this.popupWidth, height:this.popupHeight});
 		return false;
 	},
 
@@ -112,8 +112,7 @@ FindReplace = HTMLArea.Plugin.extend({
 	 */
 	cleanUp : function () {
 		if (this.dialog && (!this.dialog.dialogWindow || (this.dialog.dialogWindow && this.dialog.dialogWindow.closed))) {
-			var er = /(<span\s+[^>]*id=.?frmark[^>]*>)([^<>]*)(<\/span>)/gi;
-			this.editor._doc.body.innerHTML = this.editor._doc.body.innerHTML.replace(er,"$2");
+			this.getPluginInstance("EditorMode").setHTML(this.getPluginInstance("EditorMode").getInnerHTML().replace(this.cleanUpRegularExpression,"$2"));
 			this.dialog.close();
 		} else {
 			this.editor._iframe.contentWindow.setTimeout(this.cleanUpFunctionReference, 200);

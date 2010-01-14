@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -50,7 +50,6 @@ unset($MCONF);
 require ('conf.php');
 require ($BACK_PATH.'init.php');
 //require ($BACK_PATH.'template.php');
-require_once (PATH_t3lib.'class.t3lib_page.php');
 $BE_USER->modAccess($MCONF,1);
 
 
@@ -125,23 +124,14 @@ class SC_mod_web_view_index {
 	 * @return	void
 	 */
 	function printContent()	{
-		Header('Location: '.t3lib_div::locationHeaderUrl($this->url));
+		t3lib_utility_Http::redirect($this->url);
 	}
 }
 
-// Include extension?
+
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/viewpage/view/index.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/viewpage/view/index.php']);
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -150,4 +140,5 @@ $SOBE = t3lib_div::makeInstance('SC_mod_web_view_index');
 $SOBE->init();
 $SOBE->main();
 $SOBE->printContent();
+
 ?>

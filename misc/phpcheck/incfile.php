@@ -8,18 +8,22 @@ include('../../t3lib/class.t3lib_div.php');
 
 SetCookie('test_script_cookie', 'Cookie Value!', 0, t3lib_div::getIndpEnv('TYPO3_SITE_PATH'));
 
-error_reporting (E_ALL ^ E_NOTICE);
+if (defined('E_DEPRECATED')) {
+	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
+} else {
+	error_reporting(E_ALL ^ E_NOTICE);
+}
 
 define("TYPO3_OS", stristr(PHP_OS,"win")&&!stristr(PHP_OS,"darwin")?"WIN":"");
 /*
 define("PATH_thisScript",
 	TYPO3_OS=="WIN" ?
 	str_replace('//','/',str_replace('\\','/', $HTTP_SERVER_VARS["PATH_TRANSLATED"]?$HTTP_SERVER_VARS["PATH_TRANSLATED"]:getenv("PATH_TRANSLATED"))) :
-	(php_sapi_name()=="cgi"?(getenv("PATH_TRANSLATED")?getenv("PATH_TRANSLATED"):getenv("SCRIPT_FILENAME")):$HTTP_SERVER_VARS["PATH_TRANSLATED"])
+	(PHP_SAPI=="cgi"?(getenv("PATH_TRANSLATED")?getenv("PATH_TRANSLATED"):getenv("SCRIPT_FILENAME")):$HTTP_SERVER_VARS["PATH_TRANSLATED"])
 );
 	*/
 
-define("PATH_thisScript", str_replace('//','/', str_replace('\\','/', php_sapi_name()=="cgi"||php_sapi_name()=="isapi" ? $HTTP_SERVER_VARS["PATH_TRANSLATED"]:$HTTP_SERVER_VARS["SCRIPT_FILENAME"])));
+define("PATH_thisScript", str_replace('//','/', str_replace('\\','/', PHP_SAPI=="cgi"||PHP_SAPI=="isapi" ? $HTTP_SERVER_VARS["PATH_TRANSLATED"]:$HTTP_SERVER_VARS["SCRIPT_FILENAME"])));
 define('PATH_site', dirname(PATH_thisScript).'/');
 
 
@@ -33,7 +37,7 @@ if (count($_GET) || $_SERVER["HTTP_REFERER"])	{
 		"PHP_OS"=>PHP_OS,
 		"TYPO3_OS"=>TYPO3_OS,
 		"PATH_thisScript"=>PATH_thisScript,
-		"php_sapi_name()" => php_sapi_name()
+		"php_sapi_name()" => PHP_SAPI
 	));
 
 

@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2008 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2005-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /*
  * Remove Format Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: remove-format.js 4102 2008-09-13 23:04:59Z stan $
+ * TYPO3 SVN ID: $Id: remove-format.js 5165 2009-03-09 18:28:59Z ohader $
  */
 RemoveFormat = HTMLArea.Plugin.extend({
 

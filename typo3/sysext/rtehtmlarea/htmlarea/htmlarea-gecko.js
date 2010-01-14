@@ -1,9 +1,9 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2002-2004, interactivetools.com, inc.
+*  (c) 2002-2004 interactivetools.com, inc.
 *  (c) 2003-2004 dynarch.com
-*  (c) 2004-2008 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2004-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /*
- * TYPO3 SVN ID: $Id: htmlarea-gecko.js 4670 2009-01-08 21:10:33Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea-gecko.js 6654 2009-12-11 03:24:33Z stan $
  */
 
 /***************************************************
@@ -445,6 +445,71 @@ HTMLArea.prototype.insertHTML = function(html) {
 	this.insertNodeAtSelection(fragment);
 };
 
+/*
+ * Wrap the range with an inline element
+ *
+ * @param	string	element: the node that will wrap the range
+ * @param	object	selection: the selection object
+ * @param	object	range: the range to be wrapped
+ *
+ * @return	void
+ */
+HTMLArea.prototype.wrapWithInlineElement = function(element, selection, range) {
+		// Sometimes Opera raises a bad boundary points error
+	if (HTMLArea.is_opera) {
+		try {
+			range.surroundContents(element);
+		} catch(e) {
+			element.appendChild(range.extractContents());
+			range.insertNode(element);
+		}
+	} else {
+		range.surroundContents(element);
+		element.normalize();
+	}
+		// Sometimes Firefox inserts empty elements just outside the boundaries of the range
+	var neighbour = element.previousSibling;
+	if (neighbour && (neighbour.nodeType != 3) && !/\S/.test(neighbour.textContent)) {
+		HTMLArea.removeFromParent(neighbour);
+	}
+	neighbour = element.nextSibling;
+	if (neighbour && (neighbour.nodeType != 3) && !/\S/.test(neighbour.textContent)) {
+		HTMLArea.removeFromParent(neighbour);
+	}
+	this.selectNodeContents(element, false);
+};
+
+/*
+ * Clean Apple wrapping span and font tags under the specified node
+ *
+ * @param	object	node: the node in the subtree of which cleaning is performed
+ *
+ * @return	void
+ */
+HTMLArea.prototype.cleanAppleStyleSpans = function(node) {
+	if (HTMLArea.is_safari) {
+		if (node.getElementsByClassName) {
+			var spans = node.getElementsByClassName("Apple-style-span");
+			for (var i = spans.length; --i >= 0;) {
+				this.removeMarkup(spans[i]);
+			}
+		} else {
+			var spans = node.getElementsByTagName("span");
+			for (var i = spans.length; --i >= 0;) {
+				if (HTMLArea._hasClass(spans[i], "Apple-style-span")) {
+					this.removeMarkup(spans[i]);
+				}
+			}
+			var fonts = node.getElementsByTagName("font");
+			for (i = fonts.length; --i >= 0;) {
+				if (HTMLArea._hasClass(fonts[i], "Apple-style-span")) {
+					this.removeMarkup(fonts[i]);
+				}
+			}
+		}
+	}
+};
+
 /***************************************************
  *  EVENTS HANDLERS
  ***************************************************/
@@ -470,14 +535,14 @@ HTMLArea.NestedHandler = function(ev,editor,nestedObj,noOpenCloseAction) {
 		if (navigator.productSub > 20071127) {
 			styleEvent = (ev.attrName == "style");
 		}
-		if (target == nestedObj && editor._editMode == "wysiwyg" && styleEvent && (target.style.display == "" || target.style.display == "block")) {
+		if (target == nestedObj && editor.getMode() == "wysiwyg" && styleEvent && (target.style.display == "" || target.style.display == "block")) {
 				// Check if all affected nested elements are displayed (style.display!='none'):
 			if (HTMLArea.allElementsAreDisplayed(editor.nested.sorted)) {
 				window.setTimeout(function() {
 					try {
 						editor._doc.designMode = "on";
 						if (editor.config.sizeIncludesToolbar && editor._initialToolbarOffsetHeight != editor._toolbar.offsetHeight) {
-							editor.sizeIframe(-2);
+							editor.sizeIframe(2);
 						}
 						if (editor._doc.queryCommandEnabled("insertbronreturn")) editor._doc.execCommand("insertbronreturn", false, editor.config.disableEnterParagraphs);
 						if (editor._doc.queryCommandEnabled("enableObjectResizing")) editor._doc.execCommand("enableObjectResizing", false, !editor.config.disableObjectResizing);
@@ -501,103 +566,43 @@ HTMLArea.NestedHandler = function(ev,editor,nestedObj,noOpenCloseAction) {
 };
 
 /*
- * Handle statusbar element events
- */
-HTMLArea.statusBarHandler = function (ev) {
-	if(!ev) var ev = window.event;
-	var target = (ev.target) ? ev.target : ev.srcElement;
-	var editor = target.editor;
-	target.blur();
-	editor.selectNodeContents(target.el);
-	editor._statusBarTree.selected = target.el;
-	editor.updateToolbar(true);
-	switch (ev.type) {
-		case "click" :
-		case "mousedown" :
-			HTMLArea._stopEvent(ev);
-			return false;
-		case "contextmenu" :
-			return editor.plugins["ContextMenu"] ? editor.plugins["ContextMenu"].instance.popupMenu(ev,target.el) : false;
-	}
-};
-
-/*
- * Paste exception handler
- */
-HTMLArea.prototype._mozillaPasteException = function(cmdID, UI, param) {
-		// Mozilla lauches an exception, but can paste anyway on ctrl-V
-		// UI is false on keyboard shortcut, and undefined on button click
-	if(typeof(UI) != "undefined") {
-		try { this._doc.execCommand(cmdID, UI, param); } catch(e) { }
-		if (cmdID == "Paste" && this._toolbarObjects.CleanWord) {
-			this._toolbarObjects.CleanWord.cmd(this, "CleanWord");
-		}
-	} else if (this.config.enableMozillaExtension) {
-		if (confirm(HTMLArea.I18N.msg["Allow-Clipboard-Helper-Extension"])) {
-			if (InstallTrigger.enabled()) {
-				HTMLArea._mozillaXpi = new Object();
-				HTMLArea._mozillaXpi["AllowClipboard Helper"] = _editor_mozAllowClipboard_url;
-				InstallTrigger.install(HTMLArea._mozillaXpi,HTMLArea._mozillaInstallCallback);
-			} else {
-				alert(HTMLArea.I18N.msg["Mozilla-Org-Install-Not-Enabled"]);
-				HTMLArea._appendToLog("WARNING [HTMLArea::execCommand]: Mozilla install was not enabled.");
-				return;
-			}
-		}
-	} else if (confirm(HTMLArea.I18N.msg["Moz-Clipboard"])) {
-		window.open("http://mozilla.org/editor/midasdemo/securityprefs.html");
-	}
-}
-
-HTMLArea._mozillaInstallCallback = function(url,returnCode) {
-	if (returnCode == 0) {
-		if (HTMLArea._mozillaXpi["TYPO3 htmlArea RTE Preferences"]) alert(HTMLArea.I18N.msg["Moz-Extension-Success"]);
-			else alert(HTMLArea.I18N.msg["Allow-Clipboard-Helper-Extension-Success"]);
-		return;
-	} else {
-		alert(HTMLArea.I18N.msg["Moz-Extension-Failure"]);
-		HTMLArea._appendToLog("WARNING [HTMLArea::execCommand]: Mozilla install return code was: " + returnCode + ".");
-		return;
-	}
-};
-
-/*
  * Backspace event handler
  */
 HTMLArea.prototype._checkBackspace = function() {
-	var self = this;
-	self.focusEditor();
-	var sel = self._getSelection();
-	var range = self._createRange(sel);
-	var SC = range.startContainer;
-	var SO = range.startOffset;
-	var EC = range.endContainer;
-	var EO = range.endOffset;
-	var newr = SC.nextSibling;
-	while (SC.nodeType == 3 || /^a$/i.test(SC.tagName)) SC = SC.parentNode;
-	if (!self.config.disableEnterParagraphs && /^td$/i.test(SC.parentNode.tagName) && SC.parentNode.firstChild == SC && SO == 0 && range.collapsed) return true;
-	window.setTimeout(function() {
-			// Remove br tag inserted by Mozilla
-		if (!self.config.disableEnterParagraphs && (/^p$/i.test(SC.tagName) || !/\S/.test(SC.tagName)) && SO == 0) {
-			if (SC.firstChild && /^br$/i.test(SC.firstChild.tagName)) {
-				HTMLArea.removeFromParent(SC.firstChild);
-				return true;
+	if (!HTMLArea.is_safari && !HTMLArea.is_opera) {
+		var self = this;
+		window.setTimeout(function() {
+			var selection = self._getSelection();
+			var range = self._createRange(selection);
+			var startContainer = range.startContainer;
+			var startOffset = range.startOffset;
+			if (self._selectionEmpty()) {
+				if (/^(body)$/i.test(startContainer.nodeName)) {
+					var node = startContainer.childNodes[startOffset];
+				} else if (/^(body)$/i.test(startContainer.parentNode.nodeName)) {
+					var node = startContainer;
+				} else {
+					return false;
+				}
+				if (/^(br|#text)$/i.test(node.nodeName) && !/\S/.test(node.textContent)) {
+					var previousSibling = node.previousSibling;
+					while (previousSibling && /^(br|#text)$/i.test(previousSibling.nodeName) && !/\S/.test(previousSibling.textContent)) {
+						previousSibling = previousSibling.previousSibling;
+					}
+					HTMLArea.removeFromParent(node);
+					if (/^(ol|ul|dl)$/i.test(previousSibling.nodeName)) {
+						self.selectNodeContents(previousSibling.lastChild, false);
+					} else if (/^(table)$/i.test(previousSibling.nodeName)) {
+						self.selectNodeContents(previousSibling.rows[previousSibling.rows.length-1].cells[previousSibling.rows[previousSibling.rows.length-1].cells.length-1], false);
+					} else if (!/\S/.test(previousSibling.textContent) && previousSibling.firstChild) {
+						self.selectNode(previousSibling.firstChild, true);
+					} else {
+						self.selectNodeContents(previousSibling, false);
+					}
+				}
 			}
-		}
-		if (!/\S/.test(SC.tagName)) {
-			var p = document.createElement("p");
-			while (SC.firstChild) p.appendChild(SC.firstChild);
-			SC.parentNode.insertBefore(p, SC);
-			HTMLArea.removeFromParent(SC);
-			var r = range.cloneRange();
-			r.setStartBefore(newr);
-			r.setEndAfter(newr);
-			r.extractContents();
-			this.emptySelection(sel);
-			this.addRangeToSelection(sel, r);
-			return true;
-		}
-	},10);
+		}, 10);
+	}
 	return false;
 };
 
@@ -685,19 +690,28 @@ HTMLArea.prototype._checkInsertP = function() {
 				if (!HTMLArea.is_opera) {
 					p.innerHTML = "<br />";
 				}
-			}
-			if(/^li$/i.test(p.nodeName) && left_empty && !block.nextSibling) {
-				left = block.parentNode;
-				left.removeChild(block);
-				range.setEndAfter(left);
-				range.collapse(false);
-				p = this.convertNode(p, /^(li|dd|td|th)$/i.test(left.parentNode.nodeName) ? "br" : "p");
+				if(/^li$/i.test(p.nodeName) && left_empty && !block.nextSibling) {
+					left = block.parentNode;
+					left.removeChild(block);
+					range.setEndAfter(left);
+					range.collapse(false);
+					p = this.convertNode(p, /^(li|dd|td|th|p|h[1-6])$/i.test(left.parentNode.nodeName) ? "br" : "p");
+				}
 			}
 			range.insertNode(df);
 				// Remove any anchor created empty
 			if (p.previousSibling) {
 				var a = p.previousSibling.lastChild;
-				if (a && /^a$/i.test(a.nodeName) && !/\S/.test(a.innerHTML)) HTMLArea.removeFromParent(a);
+				if (a && /^a$/i.test(a.nodeName) && !/\S/.test(a.innerHTML)) {
+					if (HTMLArea.is_opera) {
+						this.removeMarkup(a);
+					} else {
+						HTMLArea.removeFromParent(a);
+					}
+				}
+				if (!/\S/.test(p.previousSibling.textContent) && !HTMLArea.is_opera) {
+					p.previousSibling.innerHTML = "<br />";
+				}
 			}
 			if (/^br$/i.test(p.nodeName)) {
 				p = p.parentNode.insertBefore(this._doc.createTextNode("\x20"), p);

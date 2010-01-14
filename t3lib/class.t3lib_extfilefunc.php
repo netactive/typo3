@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * extending class to class t3lib_basicFileFunctions
  *
- * $Id: class.t3lib_extfilefunc.php 6216 2009-10-21 11:45:48Z rupi $
+ * $Id: class.t3lib_extfilefunc.php 6455 2009-11-17 17:10:23Z rupi $
  * Revised for TYPO3 3.6 May/2004 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -163,11 +163,11 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 		$this->unzipPath = $GLOBALS['TYPO3_CONF_VARS']['BE']['unzip_path'];
 
 		$maxFileSize = intval($GLOBALS['TYPO3_CONF_VARS']['BE']['maxFileSize']);
-		if ($maxFileSize>0)	{
+		if ($maxFileSize > 0) {
 			$this->maxCopyFileSize = $maxFileSize;
 			$this->maxMoveFileSize = $maxFileSize;
-			$this->maxUploadFileSize = $maxFileSize;
 		}
+		$this->maxUploadFileSize = t3lib_div::getMaxUploadFileSize();
 
 			// Initializing file processing commands:
 		$this->fileCmdMap = $fileCmds;
@@ -175,9 +175,9 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 
 	/**
 	 * Sets up permission to perform file/directory operations.
-	 * See below or the be_user-table for the significanse of the various bits in $setup ($BE_USER->user['fileoper_perms'])
+	 * See below or the be_user-table for the significance of the various bits in $setup.
 	 *
-	 * @param	integer		File permission integer from BE_USER object.
+	 * @param	integer		File permission integer from BE_USER OR'ed with permissions of back-end groups this user is a member of
 	 * @return	void
 	 */
 	function init_actionPerms($setup)	{
@@ -210,19 +210,24 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 	/**
 	 * Processing the command array in $this->fileCmdMap
 	 *
-	 * @return	void
+	 * @return	mixed	false, if the file functions were not initialized
+	 *					otherwise returns an array of all the results that are returned
+	 *					from each command, separated in each action.
 	 */
-	function processData()	{
-		if (!$this->isInit) return FALSE;
+	function processData() {
+		$result = array();
+		if (!$this->isInit) {
+			return false;
+		}
 
-		if (is_array($this->fileCmdMap))	{
+		if (is_array($this->fileCmdMap)) {
 
 				// Check if there were uploads expected, but no one made
-			if ($this->fileCmdMap['upload'])	{
+			if ($this->fileCmdMap['upload']) {
 				$uploads = $this->fileCmdMap['upload'];
-				foreach ($uploads as $arr)	{
-					if (!$_FILES['upload_'.$arr['data']]['name'])	{
-						unset($this->fileCmdMap['upload'][$arr['data']]);
+				foreach ($uploads as $upload) {
+					if (!$_FILES['upload_' . $upload['data']]['name']) {
+						unset($this->fileCmdMap['upload'][$upload['data']]);
 					}
 				}
 				if (count($this->fileCmdMap['upload']) == 0) {
@@ -231,107 +236,94 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 			}
 
 				// Traverse each set of actions
-			foreach($this->fileCmdMap as $action => $actionData)	{
+			foreach ($this->fileCmdMap as $action => $actionData) {
 
 					// Traverse all action data. More than one file might be affected at the same time.
-				if (is_array($actionData))	{
-					foreach($actionData as $cmdArr)	{
+				if (is_array($actionData)) {
+					$result[$action] = array();
+					foreach ($actionData as $cmdArr) {
 
 							// Clear file stats
 						clearstatcache();
 
 							// Branch out based on command:
-						switch ($action)	{
+						switch ($action) {
 							case 'delete':
-								$this->func_delete($cmdArr);
+								$result[$action][] = $this->func_delete($cmdArr);
 							break;
 							case 'copy':
-								$this->func_copy($cmdArr);
+								$result[$action][] = $this->func_copy($cmdArr);
 							break;
 							case 'move':
-								$this->func_move($cmdArr);
+								$result[$action][] = $this->func_move($cmdArr);
 							break;
 							case 'rename':
-								$this->func_rename($cmdArr);
+								$result[$action][] = $this->func_rename($cmdArr);
 							break;
 							case 'newfolder':
-								$this->func_newfolder($cmdArr);
+								$result[$action][] = $this->func_newfolder($cmdArr);
 							break;
 							case 'newfile':
-								$this->func_newfile($cmdArr);
+								$result[$action][] = $this->func_newfile($cmdArr);
 							break;
 							case 'editfile':
-								$this->func_edit($cmdArr);
+								$result[$action][] = $this->func_edit($cmdArr);
 							break;
 							case 'upload':
-								$this->func_upload($cmdArr);
+								$result[$action][] = $this->func_upload($cmdArr);
 							break;
 							case 'unzip':
-								$this->func_unzip($cmdArr);
+								$result[$action][] = $this->func_unzip($cmdArr);
 							break;
 						}
 					}
 				}
 			}
 		}
+		return $result;
 	}
 
 	/**
-	 * Print log error messages from the operations of this script instance
+	 * Adds log error messages from the operations of this script instance to the FlashMessageQueue
 	 *
 	 * @param	string		Redirect URL (for creating link in message)
-	 * @return	void		(Will exit on error)
+	 * @return	void
 	 */
-	function printLogErrorMessages($redirect='')	{
-
-		$res_log = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-					'*',
-					'sys_log',
-					'type=2 AND userid='.intval($GLOBALS['BE_USER']->user['uid']).' AND tstamp='.intval($GLOBALS['EXEC_TIME']).'	AND error!=0'
-				);
-		$errorJS = array();
-		while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res_log)) {
-			$log_data = unserialize($row['log_data']);
-			$errorJS[] = $row[error].': '.sprintf($row['details'], $log_data[0],$log_data[1],$log_data[2],$log_data[3],$log_data[4]);
-		}
-
-		if (count($errorJS))	{
-			$error_doc = t3lib_div::makeInstance('template');
-			$error_doc->backPath = '';
-
-			$content.= $error_doc->startPage('tce_db.php Error output');
-
-			$lines[] = '
-					<tr class="bgColor5">
-						<td colspan="2" align="center"><strong>Errors:</strong></td>
-					</tr>';
-
-			foreach($errorJS as $line)	{
-				$lines[] = '
-					<tr class="bgColor4">
-						<td valign="top"><img'.t3lib_iconWorks::skinImg('','gfx/icon_fatalerror.gif','width="18" height="16"').' alt="" /></td>
-						<td>'.htmlspecialchars($line).'</td>
-					</tr>';
-			}
-
-			$lines[] = '
-					<tr>
-						<td colspan="2" align="center"><br />'.
-						'<form action=""><input type="submit" value="Continue" onclick="'.htmlspecialchars('window.location.href=\''.$redirect.'\';return false;').'" /></form>'.
-						'</td>
-					</tr>';
-
-			$content.= '
-				<br /><br />
-				<table border="0" cellpadding="1" cellspacing="1" width="300" align="center">
-					'.implode('',$lines).'
-				</table>';
-
-			$content.= $error_doc->endPage();
-			echo $content;
-			exit;
-		}
+	function printLogErrorMessages($redirect = '') {
+		$this->getErrorMessages();
 	}
+
+
+	/**
+	 * Adds log error messages from the previous file operations of this script instance
+	 * to the FlashMessageQueue
+	 *
+	 * @return	void
+	 */
+	function getErrorMessages() {
+		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+				'*',
+				'sys_log',
+				'type = 2 AND userid = ' . intval($GLOBALS['BE_USER']->user['uid'])
+				. ' AND tstamp=' . intval($GLOBALS['EXEC_TIME'])
+				. ' AND error != 0'
+		);
+		while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
+			$logData = unserialize($row['log_data']);
+			$msg = $row['error'] . ': ' . sprintf($row['details'], $logData[0], $logData[1], $logData[2], $logData[3], $logData[4]);
+			$flashMessage = t3lib_div::makeInstance(
+					't3lib_FlashMessage',
+					$msg,
+					'',
+					t3lib_FlashMessage::ERROR,
+					TRUE
+			);
+			t3lib_FlashMessageQueue::addMessage($flashMessage);
+		}
+		$GLOBALS['TYPO3_DB']->sql_free_result($res);
+	}
+
+
 
 	/**
 	 * Goes back in the path and checks in each directory if a folder named $this->recyclerFN (usually '_recycler_') is present.
@@ -434,7 +426,7 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 					$theFile = $this->is_directory($theFile);
 					if ($theFile)	{
 						if ($this->checkPathAgainstMounts($theFile))	{	// I choose not to append '/' to $theFile here as this will prevent us from deleting mounts!! (which makes sense to me...)
-							if ($this->actionPerms['deleteFolderRecursively'])	{
+							if ($this->actionPerms['deleteFolderRecursively']) {
 								if (t3lib_div::rmdir($theFile,true))	{
 									$this->writelog(4,0,2,'Directory "%s" deleted recursively!',Array($theFile));
 									return TRUE;
@@ -487,7 +479,7 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 					} else {
 						$theDestFile = $theDest.'/'.$fI['file'];
 					}
-					if ($theDestFile && !@file_exists($theDestFile))	{
+					if ($theDestFile && !file_exists($theDestFile))	{
 						if ($this->checkIfAllowed($fI['fileext'], $theDest, $fI['file'])) {
 							if ($this->checkPathAgainstMounts($theDestFile) && $this->checkPathAgainstMounts($theFile))	{
 								if ($this->PHPFileFunctions)	{
@@ -520,7 +512,7 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 					} else {
 						$theDestFile = $theDest.'/'.$fI['file'];
 					}
-					if ($theDestFile && !@file_exists($theDestFile))	{
+					if ($theDestFile && !file_exists($theDestFile))	{
 						if (!t3lib_div::isFirstPartOfStr($theDestFile.'/',$theFile.'/'))	{			// Check if the one folder is inside the other or on the same level... to target/dest is the same?
 							if ($this->checkIfFullAccess($theDest) || $this->is_webPath($theDestFile)==$this->is_webPath($theFile))	{	// no copy of folders between spaces
 								if ($this->checkPathAgainstMounts($theDestFile) && $this->checkPathAgainstMounts($theFile))	{
@@ -578,11 +570,11 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 					} else {
 						$theDestFile = $theDest.'/'.$fI['file'];
 					}
-					if ($theDestFile && !@file_exists($theDestFile))	{
+					if ($theDestFile && !file_exists($theDestFile))	{
 						if ($this->checkIfAllowed($fI['fileext'], $theDest, $fI['file'])) {
 							if ($this->checkPathAgainstMounts($theDestFile) && $this->checkPathAgainstMounts($theFile))	{
 								if ($this->PHPFileFunctions)	{
-									rename($theFile, $theDestFile);
+									@rename($theFile, $theDestFile);
 								} else {
 									$cmd = 'mv "'.$theFile.'" "'.$theDestFile.'"';
 									exec($cmd);
@@ -610,12 +602,12 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 					} else {
 						$theDestFile = $theDest.'/'.$fI['file'];
 					}
-					if ($theDestFile && !@file_exists($theDestFile))	{
+					if ($theDestFile && !file_exists($theDestFile))	{
 						if (!t3lib_div::isFirstPartOfStr($theDestFile.'/',$theFile.'/'))	{			// Check if the one folder is inside the other or on the same level... to target/dest is the same?
 							if ($this->checkIfFullAccess($theDest) || $this->is_webPath($theDestFile)==$this->is_webPath($theFile))	{	// // no moving of folders between spaces
 								if ($this->checkPathAgainstMounts($theDestFile) && $this->checkPathAgainstMounts($theFile))	{
 									if ($this->PHPFileFunctions)	{
-										rename($theFile, $theDestFile);
+										@rename($theFile, $theDestFile);
 									} else {
 										$cmd = 'mv "'.$theFile.'" "'.$theDestFile.'"';
 										$errArr = array();
@@ -659,7 +651,7 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 					if ($fileInfo['file']!=$theNewName)	{	// The name should be different from the current. And the filetype must be allowed
 						$theRenameName = $fileInfo['path'].$theNewName;
 						if ($this->checkPathAgainstMounts($fileInfo['path']))	{
-							if (!@file_exists($theRenameName))	{
+							if (!file_exists($theRenameName))	{
 								if ($type=='file')	{
 									if ($this->actionPerms['renameFile'])	{
 										$fI = t3lib_div::split_fileref($theRenameName);
@@ -703,7 +695,7 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 					if ($this->actionPerms['newFolder'])	{
 						$theNewFolder = $theTarget.'/'.$theFolder;
 						if ($this->checkPathAgainstMounts($theNewFolder))	{
-							if (!@file_exists($theNewFolder))	{
+							if (!file_exists($theNewFolder))	{
 								if (t3lib_div::mkdir($theNewFolder)){
 									$this->writelog(6,0,1,'Directory "%s" created in "%s"',Array($theFolder,$theTarget.'/'));
 									return $theNewFolder;
@@ -734,7 +726,7 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 					if ($this->actionPerms['newFile'])	{
 						$theNewFile = $theTarget.'/'.$newName;
 						if ($this->checkPathAgainstMounts($theNewFile))	{
-							if (!@file_exists($theNewFile))	{
+							if (!file_exists($theNewFile))	{
 								$fI = t3lib_div::split_fileref($theNewFile);
 								if ($this->checkIfAllowed($fI['fileext'], $fileInfo['path'], $fI['file'])) {
 									if (t3lib_div::inList($extList, $fI['fileext']))	{
@@ -788,7 +780,7 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 	/**
 	 * Upload of files (action=1)
 	 *
-	 * @param	array		$cmds['data'] is the ID-number (points to the global var that holds the filename-ref  ($_FILES['upload_'.$id]['name']). $cmds['target'] is the target directory
+	 * @param	array		$cmds['data'] is the ID-number (points to the global var that holds the filename-ref  ($_FILES['upload_'.$id]['name']). $cmds['target'] is the target directory, $cmds['charset'] is the the character set of the file name (utf-8 is needed for JS-interaction)
 	 * @return	string		Returns the new filename upon success
 	 */
 	function func_upload($cmds)	{
@@ -797,7 +789,7 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 		if ($_FILES['upload_'.$id]['name'])	{
 			$theFile = $_FILES['upload_'.$id]['tmp_name'];				// filename of the uploaded file
 			$theFileSize = $_FILES['upload_'.$id]['size'];				// filesize of the uploaded file
-			$theName = $this->cleanFileName(stripslashes($_FILES['upload_'.$id]['name']));	// The original filename
+			$theName = $this->cleanFileName(stripslashes($_FILES['upload_'.$id]['name']), (isset($cmds['charset']) ? $cmds['charset'] : ''));	// The original filename
 			if (is_uploaded_file($theFile) && $theName)	{	// Check the file
 				if ($this->actionPerms['uploadFile'])	{
 					if ($theFileSize<($this->maxUploadFileSize*1024))	{
@@ -862,4 +854,5 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['t3lib/class.t3lib_extfilefunc.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['t3lib/class.t3lib_extfilefunc.php']);
 }
+
 ?>

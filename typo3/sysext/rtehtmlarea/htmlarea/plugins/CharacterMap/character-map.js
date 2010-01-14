@@ -31,7 +31,7 @@
 /*
  * Character Map Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: character-map.js 5305 2009-04-09 16:44:23Z stan $
+ * TYPO3 SVN ID: $Id: character-map.js 5306 2009-04-09 16:57:19Z stan $
  */
 CharacterMap = HTMLArea.Plugin.extend({
 
@@ -111,6 +111,6 @@ CharacterMap = HTMLArea.Plugin.extend({
 		if (this.dialog) {
 			this.dialog.focus();
 		}
- 	}
+	}
 });
 

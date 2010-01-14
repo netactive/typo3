@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2001-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -81,19 +81,7 @@
  */
 
 
-require_once(PATH_t3lib.'class.t3lib_pagetree.php');
-require_once(PATH_t3lib.'class.t3lib_extobjbase.php');
 require_once(t3lib_extMgm::extPath('indexed_search').'class.indexer.php');
-
-
-	// ... all for the rootline!
-require_once (PATH_t3lib."class.t3lib_page.php");
-require_once (PATH_t3lib."class.t3lib_tstemplate.php");
-require_once (PATH_t3lib."class.t3lib_tsparser_ext.php");
-
-	// Keywords mgm:
-require_once (PATH_t3lib."class.t3lib_tcemain.php");
-
 
 
 /**
@@ -176,7 +164,7 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 			// Example configuration, see ext_localconf.php of this file!
 		if (is_array($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['external_parsers']))	{
 			foreach($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['external_parsers'] as $extension => $_objRef)	{
-				$this->external_parsers[$extension] = &t3lib_div::getUserObj($_objRef);
+				$this->external_parsers[$extension] = t3lib_div::getUserObj($_objRef);
 
 					// Init parser and if it returns false, unset its entry again:
 				if (!$this->external_parsers[$extension]->softInit($extension))	{
@@ -186,7 +174,7 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 		}
 
 			// Initialize indexer if we need it (metaphone display does...)
-		$this->indexerObj = &t3lib_div::makeInstance('tx_indexedsearch_indexer');
+		$this->indexerObj = t3lib_div::makeInstance('tx_indexedsearch_indexer');
 
 			// Set CSS styles specific for this document:
 		$this->pObj->content = str_replace('/*###POSTCSSMARKER###*/','
@@ -281,7 +269,7 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 		}
 
 		if ($code)	{
-			$code = '<br/><br/>
+			$code = '<br /><br />
 					<table border="0" cellspacing="1" cellpadding="2" class="c-list">'.
 						$this->printPhashRowHeader().
 						$code.
@@ -290,7 +278,7 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 				// Create section to output:
 			$theOutput.=$this->pObj->doc->section('',$code,0,1);
 		} else {
-			$theOutput.=$this->pObj->doc->section('','<br/><br/>'.$this->pObj->doc->icons(1).'There were no indexed pages found in the tree.<br/><br/>',0,1);
+			$theOutput .= $this->pObj->doc->section('', '<br /><br />' . $this->pObj->doc->icons(1) . 'There were no indexed pages found in the tree.<br /><br />', 0, 1);
 		}
 
 		return 	$theOutput;
@@ -561,9 +549,9 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 				$lines[] = '<td>&nbsp;</td>';
 				$lines[] = '<td>Title</td>';
 				$lines[] = '<td bgcolor="red">'.$this->printRemoveIndexed('ALL','Clear ALL phash-rows below!').'</td>';
-				$lines[] = '<td>Content<br/>
+				$lines[] = '<td>Content<br />
 							<img src="clear.gif" width="300" height="1" alt="" /></td>';
-				$lines[] = '<td>Words<br/>
+				$lines[] = '<td>Words<br />
 							<img src="clear.gif" width="300" height="1" alt="" /></td>';
 			break;
 			default:
@@ -781,7 +769,7 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 					</table>'.
 					($stopWordBoxes ? '<input type="submit" value="Change stop-word settings" name="_stopwords" onclick="document.webinfoForm.action=\''.htmlspecialchars(t3lib_div::getIndpEnv('REQUEST_URI')).'\';" />' : '').
 					(is_array($keywords) ? '<input type="submit" value="Set page keywords" name="_pageKeywords" onclick="document.webinfoForm.action=\''.htmlspecialchars(t3lib_div::getIndpEnv('REQUEST_URI')).'\';" /><input type="hidden" name="pageKeyword_pageUid" value="'.$page['uid'].'" />'.
-										'<br/>Current keywords are: <em>'.htmlspecialchars(implode(', ',array_keys($keywords))).'</em>' : '');
+										'<br />Current keywords are: <em>' . htmlspecialchars(implode(', ', array_keys($keywords))) . '</em>' : '');
 	}
 
 	/**
@@ -1049,7 +1037,7 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 	 * @return	string		Link back to list
 	 */
 	function linkList()	{
-		return '<br/><a href="index.php?id='.$this->pObj->id.'">Back to list.</a><br/>';
+		return '<br /><a href="index.php?id=' . $this->pObj->id . '">Back to list.</a><br />';
 	}
 
 	/**
@@ -1076,7 +1064,7 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 			while(list(,$r)=each($extraGrListRows))	{
 				$lines[] = $r['gr_list'];
 			}
-			return "<br/>".$GLOBALS['TBE_TEMPLATE']->dfw(implode('<br/>',$lines));
+			return '<br />' . $GLOBALS['TBE_TEMPLATE']->dfw(implode('<br />', $lines));
 		}
 	}
 
@@ -1193,7 +1181,7 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 			if ($resultRow['item_type'] && $resultRow['item_type']!=='0')	{
 
 					// (Re)-Indexing file on page.
-				$indexerObj = &t3lib_div::makeInstance('tx_indexedsearch_indexer');
+				$indexerObj = t3lib_div::makeInstance('tx_indexedsearch_indexer');
 				$indexerObj->backend_initIndexer($pageId, 0, 0, '', $this->getUidRootLineForClosestTemplate($pageId));
 
 					// URL or local file:
@@ -1294,9 +1282,17 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 					if ($GLOBALS['TYPO3_DB']->sql_num_rows($res))	{
 						$idList = array();
 						while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-							$idList[] = $row['page_id'];
+							$idList[] = (int)$row['page_id'];
 						}
-						$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_pages', 'page_id IN ('.implode(',',$GLOBALS['TYPO3_DB']->cleanIntArray($idList)).')');
+
+						if (TYPO3_UseCachingFramework) {
+							$pageCache = $GLOBALS['typo3CacheManager']->getCache('cache_pages');
+							foreach ($idList as $pageId) {
+								$pageCache->flushByTag('pageId_' . $pageId);
+							}
+						} else {
+							$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_pages', 'page_id IN (' . implode(',', $idList) . ')');
+						}
 					}
 				}
 

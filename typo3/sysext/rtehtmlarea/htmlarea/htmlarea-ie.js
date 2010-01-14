@@ -1,9 +1,9 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2002-2004, interactivetools.com, inc.
+*  (c) 2002-2004 interactivetools.com, inc.
 *  (c) 2003-2004 dynarch.com
-*  (c) 2004-2008 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2004-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /*
- * TYPO3 SVN ID: $Id: htmlarea-ie.js 5305 2009-04-09 16:44:23Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea-ie.js 5306 2009-04-09 16:57:19Z stan $
  */
 
 /***************************************************
@@ -125,10 +125,14 @@ HTMLArea.prototype.getSelectedHTMLContents = function() {
 /*
  * Get the deepest node that contains both endpoints of the current selection.
  */
-HTMLArea.prototype.getParentElement = function(sel) {
-	if(!sel) var sel = this._getSelection();
-	var range = this._createRange(sel);
-	switch (sel.type.toLowerCase()) {
+HTMLArea.prototype.getParentElement = function(selection, range) {
+	if (!selection) {
+		var selection = this._getSelection();
+	}
+	if (typeof(range) === "undefined") {
+		var range = this._createRange(selection);
+	}
+	switch (selection.type.toLowerCase()) {
 		case "text":
 		case "none":
 			var el = range.parentElement();
@@ -147,9 +151,13 @@ HTMLArea.prototype.getParentElement = function(sel) {
  * Borrowed from Xinha (is not htmlArea) - http://xinha.gogo.co.nz/
  */
 HTMLArea.prototype._activeElement = function(sel) {
-	if(sel == null) return null;
-	if(this._selectionEmpty(sel)) return null;
-	if(sel.type.toLowerCase() == "control") {
+	if (sel == null) {
+		return null;
+	}
+	if (this._selectionEmpty(sel)) {
+		return null;
+	}
+	if (sel.type.toLowerCase() == "control") {
 		return sel.createRange().item(0);
 	} else {
 			// If it's not a control, then we need to see if the selection is the _entire_ text of a parent node
@@ -221,36 +229,85 @@ HTMLArea.prototype.insertHTML = function(html) {
 	range.pasteHTML(html);
 };
 
+/*
+ * Wrap the range with an inline element
+ *
+ * @param	string	element: the node that will wrap the range
+ * @param	object	selection: the selection object
+ * @param	object	range: the range to be wrapped
+ *
+ * @return	void
+ */
+HTMLArea.prototype.wrapWithInlineElement = function(element, selection, range) {
+	var nodeName = element.nodeName;
+	var parent = this.getParentElement(selection, range);
+	var bookmark = this.getBookmark(range);
+	if (selection.type !== "Control") {
+		var rangeStart = range.duplicate();
+		rangeStart.collapse(true);
+		var parentStart = rangeStart.parentElement();
+		var rangeEnd = range.duplicate();
+		rangeEnd.collapse(true);
+		var newRange = this._createRange();
+		
+		var parentEnd = rangeEnd.parentElement();
+		var upperParentStart = parentStart;
+		if (parentStart !== parent) {
+			while (upperParentStart.parentNode !== parent) {
+				upperParentStart = upperParentStart.parentNode;
+			}
+		}
+		
+		element.innerHTML = range.htmlText;
+			// IE eats spaces on the start boundary
+		if (range.htmlText.charAt(0) === "\x20") {
+			element.innerHTML = "&nbsp;" + element.innerHTML;
+		}
+		var elementClone = element.cloneNode(true);
+		range.pasteHTML(element.outerHTML);
+			// IE inserts the element as the last child of the start container
+		if (parentStart !== parent
+				&& parentStart.lastChild
+				&& parentStart.lastChild.nodeType === 1
+				&& parentStart.lastChild.nodeName.toLowerCase() === nodeName) {
+			parent.insertBefore(elementClone, upperParentStart.nextSibling);
+			parentStart.removeChild(parentStart.lastChild);
+				// Sometimes an empty previous sibling was created
+			if (elementClone.previousSibling
+					&& elementClone.previousSibling.nodeType === 1
+					&& !elementClone.previousSibling.innerText) {
+				parent.removeChild(elementClone.previousSibling);
+			}
+				// The bookmark will not work anymore
+			newRange.moveToElementText(elementClone);
+			newRange.collapse(false);
+			newRange.select();
+		} else {
+				// Working around IE boookmark bug
+			if (parentStart != parentEnd) {
+				var newRange = this._createRange();
+				if (newRange.moveToBookmark(bookmark)) {
+					newRange.collapse(false);
+					newRange.select();
+				}
+			} else {
+				range.collapse(false);
+			}
+		}
+			// normalize() is not available in IE5.5
+		try {
+			parent.normalize();
+		} catch(e) { }
+	} else {
+		element = parent.parentNode.insertBefore(element, parent);
+		element.appendChild(parent);
+		this.moveToBookmark(bookmark);
+	}
+};
+
 /***************************************************
  *  EVENT HANDLERS
  ***************************************************/
-
-/*
- * Handle statusbar element events
- */
-HTMLArea.statusBarHandler = function (ev) {
-	if(!ev) var ev = window.event;
-	var target = (ev.target) ? ev.target : ev.srcElement;
-	var editor = target.editor;
-	target.blur();
-	var tagname = target.el.tagName.toLowerCase();
-	if(tagname == "table" || tagname == "img") {
-		var range = editor._doc.body.createControlRange();
-		range.addElement(target.el);
-		range.select();
-	} else {
-		editor.selectNode(target.el);
-	}
-	editor._statusBarTree.selected = target.el;
-	editor.updateToolbar(true);
-	switch (ev.type) {
-		case "click" :
-			HTMLArea._stopEvent(ev);
-			return false;
-		case "contextmenu" :
-			return editor.plugins["ContextMenu"] ? editor.plugins["ContextMenu"].instance.popupMenu(ev,target.el) : false;
-	}
-};
 
 /*
  * Handle the backspace event in IE browsers

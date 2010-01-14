@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -60,7 +60,6 @@
 $BACK_PATH = '';
 require('init.php');
 require('template.php');
-require_once(PATH_t3lib.'class.t3lib_stdgraphic.php');
 $LANG->includeLLFile('EXT:lang/locallang_wizards.xml');
 
 /**
@@ -144,7 +143,6 @@ class SC_wizard_colorpicker {
 			// Initialize document object:
 		$this->doc = t3lib_div::makeInstance('smallDoc');
 		$this->doc->backPath = $BACK_PATH;
-		$this->doc->docType = 'xhtml_trans';
 		$this->doc->JScode = $this->doc->wrapScriptTags('
 			function checkReference()	{	//
 				if (parent.opener && parent.opener.document && parent.opener.document.'.$this->formName.' && parent.opener.document.'.$this->formName.'["'.$this->fieldName.'"])	{
@@ -377,7 +375,7 @@ class SC_wizard_colorpicker {
 			<select onchange="document.colorform.colorValue.value = this.options[this.selectedIndex].value; document.colorform.submit(); return false;">
 				'.implode('
 				',$opt).'
-			</select><br/>';
+			</select><br />';
 
 		return $output;
 	}
@@ -438,19 +436,10 @@ class SC_wizard_colorpicker {
 	}
 }
 
-// Include extension?
+
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/wizard_colorpicker.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/wizard_colorpicker.php']);
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -459,4 +448,5 @@ $SOBE = t3lib_div::makeInstance('SC_wizard_colorpicker');
 $SOBE->init();
 $SOBE->main();
 $SOBE->printContent();
+
 ?>

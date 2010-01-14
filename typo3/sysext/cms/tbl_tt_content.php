@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Dynamic configuation of the tt_content table
  * This gets it's own file because it's so huge and central to typical TYPO3 use.
  *
- * $Id: tbl_tt_content.php 4667 2009-01-08 18:43:00Z ohader $
+ * $Id: tbl_tt_content.php 6418 2009-11-15 19:28:50Z benni $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -62,6 +62,7 @@ $TCA['tt_content'] = Array (
 					array('LLL:EXT:cms/locallang_ttc.xml:CType.I.10', 'login', 'i/tt_content_login.gif'),
 					array('LLL:EXT:cms/locallang_ttc.xml:CType.div.special', '--div--'),
 					array('LLL:EXT:cms/locallang_ttc.xml:CType.I.7', 'multimedia', 'i/tt_content_mm.gif'),
+					array('LLL:EXT:cms/locallang_ttc.xml:CType.I.18', 'media', 'i/tt_content_mm.gif'),
 					array('LLL:EXT:cms/locallang_ttc.xml:CType.I.11', 'splash', 'i/tt_content_news.gif'),
 					array('LLL:EXT:cms/locallang_ttc.xml:CType.I.12', 'menu', 'i/tt_content_menu.gif'),
 					array('LLL:EXT:cms/locallang_ttc.xml:CType.I.13', 'shortcut', 'i/tt_content_shortcut.gif'),
@@ -124,7 +125,8 @@ $TCA['tt_content'] = Array (
 					Array('LLL:EXT:lang/locallang_general.php:LGL.usergroups', '--div--')
 				),
 				'exclusiveKeys' => '-1,-2',
-				'foreign_table' => 'fe_groups'
+				'foreign_table' => 'fe_groups',
+				'foreign_table_where' => 'ORDER BY fe_groups.title',
 			)
 		),
 		'sys_language_uid' => Array (
@@ -218,7 +220,7 @@ $TCA['tt_content'] = Array (
 		),
 		'header_link' => Array (
 			'label' => 'LLL:EXT:cms/locallang_ttc.php:header_link',
-			'exclude' => 1,			
+			'exclude' => 1,
 			'config' => Array (
 				'type' => 'input',
 				'size' => '15',
@@ -275,6 +277,7 @@ $TCA['tt_content'] = Array (
 				'rows' => '5',
 				'wizards' => Array(
 					'_PADDING' => 4,
+					'_VALIGN' => 'middle',
 					'RTE' => Array(
 						'notNewRecords' => 1,
 						'RTEonly' => 1,
@@ -576,7 +579,7 @@ $TCA['tt_content'] = Array (
 			'config' => Array (
 				'type' => 'select',
 				'items' => Array (
-					Array('1', 0),
+					Array('1', 1),
 					Array('2', 2),
 					Array('3', 3),
 					Array('4', 4),
@@ -585,7 +588,7 @@ $TCA['tt_content'] = Array (
 					Array('7', 7),
 					Array('8', 8)
 				),
-				'default' => 0
+				'default' => 1
 			)
 		),
 		'imagecaption' => Array (
@@ -662,12 +665,17 @@ $TCA['tt_content'] = Array (
 			'config' => Array (
 				'type' => 'group',
 				'internal_type' => 'db',
-					'allowed' => 'pages',
+				'allowed' => 'pages',
 				'size' => '3',
 				'maxitems' => '22',
 				'minitems' => '0',
-				'show_thumbs' => '1'
-			)
+				'show_thumbs' => '1',
+				'wizards' => array(
+					'suggest' => array(
+						'type' => 'suggest',
+					),
+				),
+			),
 		),
 		'recursive' => Array (
 			'exclude' => 1,
@@ -707,10 +715,12 @@ $TCA['tt_content'] = Array (
 			'config' => Array (
 				'type' => 'select',
 				'items' => Array (
-					Array('','')
+					Array('', '', '')
 				),
 				'default' => '',
 				'authMode' => $GLOBALS['TYPO3_CONF_VARS']['BE']['explicitADmode'],
+				'iconsInOptionTags' => 1,
+				'noIconsBelowSelect' => 1,
 			)
 		),
 		'select_key' => Array (
@@ -811,7 +821,7 @@ $TCA['tt_content'] = Array (
 			'config' => Array (
 				'type' => 'group',
 				'internal_type' => 'file',
-				'allowed' => 'txt,html,htm,class,swf,swa,dcr,wav,avi,au,mov,asf,mpg,wmv,mp3',
+				'allowed' => 'txt,html,htm,class,swf,swa,dcr,wav,avi,au,mov,asf,mpg,wmv,mp3,mp4,m4v',
 				'max_size' => $GLOBALS['TYPO3_CONF_VARS']['BE']['maxFileSize'],
 				'uploadfolder' => 'uploads/media',
 				'size' => '2',
@@ -834,8 +844,13 @@ $TCA['tt_content'] = Array (
 				'size' => '5',
 				'maxitems' => '200',
 				'minitems' => '0',
-				'show_thumbs' => '1'
-			)
+				'show_thumbs' => '1',
+				'wizards' => array(
+					'suggest' => array(
+						'type' => 'suggest',
+					),
+				),
+			),
 		),
 		'spaceBefore' => Array (
 			'exclude' => 1,
@@ -953,6 +968,7 @@ $TCA['tt_content'] = Array (
 						  </ROOT>
 						</T3DataStructure>
 					',
+					',media' => file_get_contents(t3lib_extMgm::extPath('cms') . 'flexform_media.xml'),
 				)
 			)
 		),
@@ -963,7 +979,7 @@ $TCA['tt_content'] = Array (
 			'config' => Array (
 				'type' => 'input',
 				'size' => '30',
-				'max' => '30',
+				'max' => '255',
 			)
 		),
 	),
@@ -1028,6 +1044,12 @@ $TCA['tt_content'] = Array (
 		'multimedia' =>	Array(
 			'showitem' => 'CType;;4;;1-1-1, hidden, header;;3;;2-2-2, linkToTop;;;;3-3-3,
 							--div--;LLL:EXT:cms/locallang_ttc.xml:CType.I.7, multimedia;;;;3-3-3, bodytext;LLL:EXT:lang/locallang_general.php:LGL.parameters;;nowrap,
+							--div--;LLL:EXT:cms/locallang_tca.xml:pages.tabs.access, starttime, endtime'
+		),
+		'media' =>	Array(
+			'showitem' => 'CType;;4;;1-1-1, hidden, header;;3;;2-2-2, linkToTop;;;;3-3-3,
+							--div--;LLL:EXT:cms/locallang_ttc.xml:CType.I.18, pi_flexform;;;;3-3-3,
+							bodytext;LLL:EXT:cms/locallang_ttc.xml:media.alternativeContent;9;richtext:rte_transform[flag=rte_enabled|mode=ts_css];4-4-4,   
 							--div--;LLL:EXT:cms/locallang_tca.xml:pages.tabs.access, starttime, endtime'
 		),
 		'script' =>		Array(

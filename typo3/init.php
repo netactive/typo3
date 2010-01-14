@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -49,7 +49,7 @@
  * For a detailed description of this script, the scope of constants and variables in it,
  * please refer to the document "Inside TYPO3"
  *
- * $Id: init.php 5517 2009-05-30 22:04:47Z lolli $
+ * $Id: init.php 6547 2009-11-25 19:32:03Z rupi $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -60,13 +60,17 @@
 // *******************************
 // Checking PHP version
 // *******************************
-if (version_compare(phpversion(), '5.1', '<'))	die ('TYPO3 requires PHP 5.1.0 or higher.');
+if (version_compare(phpversion(), '5.2', '<'))	die ('TYPO3 requires PHP 5.2.0 or higher.');
 
 
 // *******************************
 // Set error reporting
 // *******************************
-error_reporting (E_ALL ^ E_NOTICE);
+if (defined('E_DEPRECATED')) {
+	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
+} else {
+	error_reporting(E_ALL ^ E_NOTICE);
+}
 
 // *******************************
 // Prevent any unwanted output that may corrupt AJAX/compression. Note: this does
@@ -79,7 +83,7 @@ ob_start();
 // *******************************
 define('TYPO3_OS', stristr(PHP_OS,'win')&&!stristr(PHP_OS,'darwin')?'WIN':'');
 define('TYPO3_MODE','BE');
-define('PATH_thisScript',str_replace('//','/', str_replace('\\','/', (php_sapi_name()=='cgi'||php_sapi_name()=='isapi' ||php_sapi_name()=='cgi-fcgi')&&($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED'])? ($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED']):($_SERVER['ORIG_SCRIPT_FILENAME']?$_SERVER['ORIG_SCRIPT_FILENAME']:$_SERVER['SCRIPT_FILENAME']))));
+define('PATH_thisScript',str_replace('//','/', str_replace('\\','/', (PHP_SAPI=='cgi'||PHP_SAPI=='isapi' ||PHP_SAPI=='cgi-fcgi')&&($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED'])? ($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED']):($_SERVER['ORIG_SCRIPT_FILENAME']?$_SERVER['ORIG_SCRIPT_FILENAME']:$_SERVER['SCRIPT_FILENAME']))));
 define('TYPO3_mainDir', 'typo3/');		// This is the directory of the backend administration for the sites of this TYPO3 installation.
 
 
@@ -110,7 +114,7 @@ if (!$temp_path || substr($temp_path,-strlen(TYPO3_mainDir))!=TYPO3_mainDir)	{	/
 		$thisPath_base = basename(substr($temp_path,-strlen(TYPO3_mainDir)));
 		$mainPath_base = basename(TYPO3_mainDir);
 		if (!strcasecmp($thisPath, $mainPath))	{	// Seems like the requested URL is not case-specific. This may happen on Windows only. -case. Otherwise, redirect to the correct URL. TYPO3_mainDir must be lower-case!!
-			$script_name = (php_sapi_name()=='cgi'||php_sapi_name()=='cgi-fcgi')&&($_SERVER['ORIG_PATH_INFO']?$_SERVER['ORIG_PATH_INFO']:$_SERVER['PATH_INFO']) ? ($_SERVER['ORIG_PATH_INFO']?$_SERVER['ORIG_PATH_INFO']:$_SERVER['PATH_INFO']) : ($_SERVER['ORIG_SCRIPT_NAME']?$_SERVER['ORIG_SCRIPT_NAME']:$_SERVER['SCRIPT_NAME']);	// Copied from t3lib_div::getIndpEnv()
+			$script_name = (PHP_SAPI=='cgi'||PHP_SAPI=='cgi-fcgi')&&($_SERVER['ORIG_PATH_INFO']?$_SERVER['ORIG_PATH_INFO']:$_SERVER['PATH_INFO']) ? ($_SERVER['ORIG_PATH_INFO']?$_SERVER['ORIG_PATH_INFO']:$_SERVER['PATH_INFO']) : ($_SERVER['ORIG_SCRIPT_NAME']?$_SERVER['ORIG_SCRIPT_NAME']:$_SERVER['SCRIPT_NAME']);	// Copied from t3lib_div::getIndpEnv()
 			header('Location: '.str_replace($thisPath_base, $mainPath_base, $script_name));
 			exit;
 		}
@@ -134,16 +138,16 @@ if (!$temp_path || substr($temp_path,-strlen(TYPO3_mainDir))!=TYPO3_mainDir)	{	/
 // Remove this line if you want to debug this problem a little more...
 die();
 	echo '<br /><br /><strong>If you expect any help from anybody on this issue, you should save this page as an html document and send it along with your request for help!</strong>';
-	echo '<HR><pre>';
+	echo '<hr /><pre>';
 	print_r(array(
 		'TYPO3_OS'=>TYPO3_OS,
 		'PATH_thisScript'=>PATH_thisScript,
-		'php_sapi_name()'=>php_sapi_name(),
+		'php_sapi_name()'=>PHP_SAPI,
 		'TYPO3_MOD_PATH'=>TYPO3_MOD_PATH,
 		'PATH_TRANSLATED'=>$_SERVER['PATH_TRANSLATED'],
 		'SCRIPT_FILENAME'=>$_SERVER['SCRIPT_FILENAME']
 	));
-	echo '</pre><HR>';
+	echo '</pre><hr />';
 	phpinfo();
 	exit;
 } else {
@@ -153,6 +157,14 @@ die();
 	$temp_path_t3lib = @is_dir(PATH_site.'t3lib/') ? PATH_site.'t3lib/' : PATH_typo3.'t3lib/';
 	define('PATH_t3lib', $temp_path_t3lib);			// Abs. path to t3lib/ (general TYPO3 library) within the TYPO3 admin dir
 	define('PATH_typo3conf', PATH_site.'typo3conf/');	// Abs. TYPO3 configuration path (local, not part of source)
+
+	if (!defined('PATH_tslib')) {
+		if (@is_dir(PATH_site . TYPO3_mainDir . 'sysext/cms/tslib/')) {
+			define('PATH_tslib', PATH_site . TYPO3_mainDir . 'sysext/cms/tslib/');
+		} elseif (@is_dir(PATH_site . 'tslib/')) {
+			define('PATH_tslib', PATH_site . 'tslib/');
+		}
+	}
 }
 
 
@@ -168,16 +180,43 @@ require_once(PATH_t3lib.'class.t3lib_extmgm.php');	// Extension API Management l
 require(PATH_t3lib.'config_default.php');
 if (!defined ('TYPO3_db')) 	die ('The configuration file was not included.');
 
-require_once(PATH_t3lib.'class.t3lib_db.php');		// The database library
+
+
+
+// *********************
+// Error & Exception handling
+// *********************
+if ($TYPO3_CONF_VARS['SC_OPTIONS']['errors']['exceptionHandler'] !== '') {
+	if ($TYPO3_CONF_VARS['SYS']['errorHandler'] !== '') {
+			// 	register an error handler for the given errorHandlerErrors
+		$errorHandler = t3lib_div::makeInstance($TYPO3_CONF_VARS['SYS']['errorHandler'], $TYPO3_CONF_VARS['SYS']['errorHandlerErrors']);
+			// set errors which will be converted in an exception
+		$errorHandler->setExceptionalErrors($TYPO3_CONF_VARS['SC_OPTIONS']['errors']['exceptionalErrors']);
+	}
+	$exceptionHandler = t3lib_div::makeInstance($TYPO3_CONF_VARS['SC_OPTIONS']['errors']['exceptionHandler']);
+}
+
+/** @var TYPO3_DB t3lib_db */
 $TYPO3_DB = t3lib_div::makeInstance('t3lib_DB');
 $TYPO3_DB->debugOutput = $TYPO3_CONF_VARS['SYS']['sqlDebug'];
 
 $CLIENT = t3lib_div::clientInfo();					// $CLIENT includes information about the browser/user-agent
 $PARSETIME_START = t3lib_div::milliseconds();		// Is set to the system time in milliseconds. This could be used to output script parsetime in the end of the script
 
+// ***********************************
+// Initializing the Caching System
+// ***********************************
 
+if (TYPO3_UseCachingFramework) {
+	$typo3CacheManager = t3lib_div::makeInstance('t3lib_cache_Manager');
+	$typo3CacheFactory = t3lib_div::makeInstance('t3lib_cache_Factory');
+	$typo3CacheFactory->setCacheManager($typo3CacheManager);
 
-
+	t3lib_cache::initPageCache();
+	t3lib_cache::initPageSectionCache();
+	t3lib_cache::initContentHashCache();
+	unset($cacheFactoryClass);
+}
 // *************************
 // CLI dispatch processing
 // *************************
@@ -207,17 +246,6 @@ if (defined('TYPO3_cliMode') && TYPO3_cliMode && basename(PATH_thisScript)=='cli
 }
 
 
-
-// *********************
-// Libraries included
-// *********************
-require_once(PATH_t3lib.'class.t3lib_userauth.php');
-require_once(PATH_t3lib.'class.t3lib_userauthgroup.php');
-require_once(PATH_t3lib.'class.t3lib_beuserauth.php');
-require_once(PATH_t3lib.'class.t3lib_iconworks.php');
-require_once(PATH_t3lib.'class.t3lib_befunc.php');
-require_once(PATH_t3lib.'class.t3lib_cs.php');
-
 // **********************
 // Check Hardcoded lock on BE:
 // **********************
@@ -225,6 +253,20 @@ if ($TYPO3_CONF_VARS['BE']['adminOnly'] < 0)	{
 	header('Status: 404 Not Found');	// Send Not Found header - if the webserver can make use of it...
 	header('Location: http://');	// Just point us away from here...
 	exit;	// ... and exit good!
+}
+if (!(defined('TYPO3_cliMode') && TYPO3_cliMode) && @is_file(PATH_typo3conf.'LOCK_BACKEND'))	{
+	if (TYPO3_PROCEED_IF_NO_USER == 2) {
+		// ajax poll for login, let him pass
+	} else {
+		$fContent = t3lib_div::getUrl(PATH_typo3conf.'LOCK_BACKEND');
+		if ($fContent)	{
+			header('Location: '.$fContent);	// Redirect
+		} else {
+			t3lib_BEfunc::typo3printError('Backend locked', 'Browser backend is locked for maintenance. Remove lock by removing the file "typo3conf/LOCK_BACKEND" or use CLI-scripts.');
+		}
+		exit;
+	}
+
 }
 
 // **********************
@@ -287,7 +329,7 @@ if (!get_magic_quotes_gpc())	{
 // ********************************************
 if (defined('TYPO3_enterInstallScript') && TYPO3_enterInstallScript)	{
 	if(!t3lib_extMgm::isLoaded('install')) {
-		die('Install Tool is not loaded as an extension.<br/>You must add the key "install" to the list of installed extensions in typo3conf/localconf.php, $TYPO3_CONF_VARS[\'EXT\'][\'extList\'].');
+		die('Install Tool is not loaded as an extension.<br />You must add the key "install" to the list of installed extensions in typo3conf/localconf.php, $TYPO3_CONF_VARS[\'EXT\'][\'extList\'].');
 	}
 
 	require_once(t3lib_extMgm::extPath('install').'mod/class.tx_install.php');
@@ -303,14 +345,14 @@ if (defined('TYPO3_enterInstallScript') && TYPO3_enterInstallScript)	{
 // *************************
 if ($TYPO3_DB->sql_pconnect(TYPO3_db_host, TYPO3_db_username, TYPO3_db_password))	{
 	if (!TYPO3_db)	{
-		t3lib_BEfunc::typo3PrintError ('No database selected','Database Error');
+		t3lib_BEfunc::typo3PrintError('Database Error', 'No database selected');
 		exit;
 	} elseif (!$TYPO3_DB->sql_select_db(TYPO3_db))	{
-		t3lib_BEfunc::typo3PrintError ('Cannot connect to the current database, "'.TYPO3_db.'"','Database Error');
+		t3lib_BEfunc::typo3PrintError('Database Error', 'Cannot connect to the current database, "' . TYPO3_db . '"');
 		exit;
 	}
 } else {
-	t3lib_BEfunc::typo3PrintError ('The current username, password or host was not accepted when the connection to the database was attempted to be established!','Database Error');
+	t3lib_BEfunc::typo3PrintError('Database Error', 'The current username, password or host was not accepted when the connection to the database was attempted to be established!');
 	exit;
 }
 
@@ -356,11 +398,16 @@ $BE_USER->OS = TYPO3_OS;
 $BE_USER->start();			// Object is initialized
 $BE_USER->checkCLIuser();
 $BE_USER->backendCheckLogin();	// Checking if there's a user logged in
-$BE_USER->trackBeUser($TYPO3_CONF_VARS['BE']['trackBeUser']);	// Tracking backend user script hits
 
 	// Setting the web- and filemount global vars:
 $WEBMOUNTS = $BE_USER->returnWebmounts();		// ! WILL INCLUDE deleted mount pages as well!
 $FILEMOUNTS = $BE_USER->returnFilemounts();
+
+// *******************************
+// $GLOBALS['LANG'] initialisation
+// *******************************
+$GLOBALS['LANG'] = t3lib_div::makeInstance('language');
+$GLOBALS['LANG']->init($BE_USER->uc['lang']);
 
 
 // ****************
@@ -388,4 +435,5 @@ if (extension_loaded('zlib') && $TYPO3_CONF_VARS['BE']['compressionLevel'])	{
 	}
 	ob_start('ob_gzhandler');
 }
+
 ?>

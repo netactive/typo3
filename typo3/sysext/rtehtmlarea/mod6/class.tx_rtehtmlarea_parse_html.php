@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2008 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 2005-2009 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,10 +29,8 @@
  *
  * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * $Id: class.tx_rtehtmlarea_parse_html.php 3439 2008-03-16 19:16:51Z flyguide $  *
+ * $Id: class.tx_rtehtmlarea_parse_html.php 5947 2009-09-16 17:57:09Z ohader $  *
  */
-
-require_once (PATH_t3lib.'class.t3lib_parsehtml.php');
 
 class tx_rtehtmlarea_parse_html {
 	var $content;
@@ -134,7 +132,7 @@ class tx_rtehtmlarea_parse_html {
 
 		if (is_array ($TYPO3_CONF_VARS['EXTCONF'][$this->extKey][$this->prefixId]['cleanPastedContent'])) {
 			foreach  ($TYPO3_CONF_VARS['EXTCONF'][$this->extKey][$this->prefixId]['cleanPastedContent'] as $classRef) {
-				$hookObj = &t3lib_div::getUserObj($classRef);
+				$hookObj = t3lib_div::getUserObj($classRef);
 				if (method_exists($hookObj, 'cleanPastedContent_afterCleanWord')) {
 					$html = $hookObj->cleanPastedContent_afterCleanWord($html, $thisConfig);
 				}

@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -26,7 +26,7 @@
 /**
  * Contains JavaScript for TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: jsfunc.tbe_editor.js 5480 2009-05-22 18:59:18Z ohader $
+ * $Id: jsfunc.tbe_editor.js 6277 2009-10-26 23:18:47Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Oliver Hader <oh@inpublica.de>
@@ -36,7 +36,7 @@
 var TBE_EDITOR = {
 	/* Example:
 		elements: {
-			'data[table][uid]': {
+			'data-parentPid-table-uid': {
 				'field': {
 					'range':		[0, 100],
 					'rangeImg':		'',
@@ -397,10 +397,12 @@ var TBE_EDITOR = {
 	 */
 	checkSubmit: function(sendAlert) {
 		var funcIndex, funcMax, funcRes;
-		if (TBE_EDITOR.checkLoginTimeout() && confirm(TBE_EDITOR.labels.refresh_login)) {
-			vHWin=window.open(TBE_EDITOR.backPath+'login_frameset.php?','relogin','height=300,width=400,status=0,menubar=0');
-			vHWin.focus();
-			return false;
+		if (TBE_EDITOR.backend_interface == "backend_old") {
+			if (TBE_EDITOR.checkLoginTimeout() && confirm(TBE_EDITOR.labels.refresh_login)) {
+				vHWin=window.open(TBE_EDITOR.backPath+'login_frameset.php?','relogin','height=300,width=400,status=0,menubar=0');
+				vHWin.focus();
+				return false;
+			}
 		}
 		var OK=1;
 

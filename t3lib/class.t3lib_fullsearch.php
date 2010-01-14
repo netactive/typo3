@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Class used in module tools/dbint (advanced search) and which may hold code specific for that module
  * However the class has a general principle in it which may be used in the web/export module.
  *
- * $Id: class.t3lib_fullsearch.php 6247 2009-10-22 08:37:11Z baschny $
+ * $Id: class.t3lib_fullsearch.php 5647 2009-06-27 20:08:24Z steffenk $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Jo Hasenau <info@cybercraft.de>
@@ -230,7 +230,7 @@ class t3lib_fullsearch {
 				$qCount = $GLOBALS['TYPO3_DB']->SELECTquery('count(*)', $qGen->table, $qString.t3lib_BEfunc::deleteClause($qGen->table));
 				$qSelect = $qGen->getSelectQuery($qString);
 
-				$res = @$GLOBALS['TYPO3_DB']->sql(TYPO3_db,$qCount);
+				$res = @$GLOBALS['TYPO3_DB']->sql_query($qCount);
 				if (!$GLOBALS['TYPO3_DB']->sql_error())	{
 					$dA = array();
 					$dA['t2_data'] = serialize(array(
@@ -396,7 +396,7 @@ class t3lib_fullsearch {
 				$output.= $GLOBALS['SOBE']->doc->section('SQL query',$this->tableWrap(htmlspecialchars($qExplain)),0,1);
 		}
 
-				$res = @$GLOBALS['TYPO3_DB']->sql(TYPO3_db,$qExplain);
+				$res = @$GLOBALS['TYPO3_DB']->sql_query($qExplain);
 				if ($GLOBALS['TYPO3_DB']->sql_error())	{
 					$out.='<BR><strong>Error:</strong><BR><font color="red"><strong>'.$GLOBALS['TYPO3_DB']->sql_error().'</strong></font>';
 					$output.= $GLOBALS['SOBE']->doc->section('SQL error',$out,0,1);
@@ -475,8 +475,7 @@ class t3lib_fullsearch {
 				$cPR['content']=$out;
 			break;
 			case 'xml':
-				$className=t3lib_div::makeInstanceClassName('t3lib_xml');
-				$xmlObj = new $className('typo3_export');
+				$xmlObj = t3lib_div::makeInstance('t3lib_xml', 'typo3_export');
 				$xmlObj->includeNonEmptyValues=1;
 				$xmlObj->renderHeader();
 				$first=1;
@@ -585,8 +584,7 @@ class t3lib_fullsearch {
 				$qp = $GLOBALS['TYPO3_DB']->searchQuery(array($swords), $list, $table);
 
 					// Count:
-				$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('count(*)', $table, $qp.t3lib_BEfunc::deleteClause($table));
-				list($count) = $GLOBALS['TYPO3_DB']->sql_fetch_row($res);
+				$count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('*', $table, $qp . t3lib_BEfunc::deleteClause($table));
 				if($count || $showAlways)	{
 						// Output header:
 					$out.='<strong>TABLE:</strong> '.$GLOBALS['LANG']->sL($conf['ctrl']['title']).'<BR>';
@@ -618,9 +616,11 @@ class t3lib_fullsearch {
 	 * @return	[type]		...
 	 */
 	function resultRowDisplay($row,$conf,$table)	{
+		static $even = false;
 		$tce = t3lib_div::makeInstance('t3lib_TCEmain');
 		$SET = $GLOBALS['SOBE']->MOD_SETTINGS;
-		$out='<tr class="bgColor4">';
+		$out='<tr class="bgColor' . ($even ? '6' : '4') . '">';
+		$even = !$even;
 		reset($row);
 		while(list($fN,$fV)=each($row))	{
 			if (t3lib_div::inList($SET['queryFields'], $fN) || (!$SET['queryFields'] && $fN!='pid' && $fN!='deleted'))	{
@@ -629,19 +629,19 @@ class t3lib_fullsearch {
 				} else {
 					$fVnew = htmlspecialchars($fV);
 				}
-				$out.='<td'.$TDparams.'>'.$fVnew.'</td>';
+				$out.='<td>' . $fVnew . '</td>';
 			}
 		}
 		$params = '&edit['.$table.']['.$row['uid'].']=edit';
 		$out.='<td nowrap>';
 		if (!$row['deleted'])	{
-			$out .= '<a href="#" onClick="top.launchView(\''.$table.'\','.$row['uid'].',\''.$GLOBALS['BACK_PATH'].'\');return false;"><img src="'.$GLOBALS['BACK_PATH'].'gfx/zoom2.gif" width="12" height="12" alt="" /></a>';
-			$out .= '<a href="#" onClick="'.t3lib_BEfunc::editOnClick($params, $GLOBALS['BACK_PATH'], t3lib_div::getIndpEnv('REQUEST_URI').t3lib_div::implodeArrayForUrl('SET', (array)t3lib_div::_POST('SET'))).'"><img src="'.$GLOBALS['BACK_PATH'].'gfx/edit2.gif" width="11" height="12" border="0" alt=""></a>';
+			$out .= '<a href="#" onClick="top.launchView(\''.$table.'\','.$row['uid'].',\''.$GLOBALS['BACK_PATH'].'\');return false;"><img ' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], 'gfx/zoom2.gif', 'width="12" height="12"') . ' alt="" /></a>';
+			$out .= '<a href="#" onClick="'.t3lib_BEfunc::editOnClick($params, $GLOBALS['BACK_PATH'], t3lib_div::getIndpEnv('REQUEST_URI').t3lib_div::implodeArrayForUrl('SET', (array)t3lib_div::_POST('SET'))).'"><img ' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], 'gfx/edit2.gif', 'width="11" height="12"') . ' border="0" alt=""></a>';
 		} else {
 			$out.= '<a href="'.t3lib_div::linkThisUrl($GLOBALS['BACK_PATH'].'tce_db.php', array('cmd['.$table.']['.$row['uid'].'][undelete]' => '1', 'redirect' => t3lib_div::linkThisScript(array()))).'">';
-			$out.= '<img src="'.$GLOBALS['BACK_PATH'].'gfx/undelete.gif" width="13" height="12" border="0" alt="undelete" only></A>';
+			$out.= '<img ' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], 'gfx/undelete.gif', 'width="13" height="12"') . ' border="0" alt="undelete" only></a>';
 			$out.= '<a href="'.t3lib_div::linkThisUrl($GLOBALS['BACK_PATH'].'tce_db.php', array('cmd['.$table.']['.$row['uid'].'][undelete]' => '1', 'redirect' => t3lib_div::linkThisUrl('alt_doc.php', array('edit['.$table.']['.$row['uid'].']' => 'edit', 'returnUrl' => t3lib_div::linkThisScript(array()))))).'">';
-			$out.= '<img src="'.$GLOBALS['BACK_PATH'].'gfx/undelete_and_edit.gif" width="13" height="12" border="0" alt="undelete and edit">';
+			$out.= '<img '. t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], 'gfx/undelete_and_edit.gif', 'width="13" height="12"') . ' border="0" alt="undelete and edit">';
 		}
 		$_params = array($table=>$row);
 		if (is_array($this->hookArray['additionalButtons']))	{
@@ -674,15 +674,15 @@ class t3lib_fullsearch {
 			$fields = $fC['config'];
 			$fields['exclude'] = $fC['exclude'];
 			if (is_array($fC) && $fC['label'])	{
-				$fields['label'] = ereg_replace(":$", '', trim($GLOBALS['LANG']->sL($fC['label'])));
+				$fields['label'] = preg_replace('/:$/', '', trim($GLOBALS['LANG']->sL($fC['label'])));
 
 				switch ($fields['type'])	{
 					case 'input':
-						if (eregi('int|year', $fields['eval']))	{
+						if (preg_match('/int|year/i', $fields['eval']))	{
 							$fields['type'] = 'number';
-						} elseif (eregi('time', $fields['eval']))	{
+						} elseif (preg_match('/time/i', $fields['eval']))	{
 							$fields['type'] = 'time';
-						} elseif (eregi('date', $fields['eval']))	{
+						} elseif (preg_match('/date/i', $fields['eval']))	{
 							$fields['type'] = 'date';
 						} else {
 							$fields['type'] = 'text';

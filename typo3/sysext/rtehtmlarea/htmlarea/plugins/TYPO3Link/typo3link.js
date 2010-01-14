@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2008 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2005-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /*
  * TYPO3Link plugin for htmlArea RTE
  *
- * TYPO3 SVN ID: $Id$
+ * TYPO3 SVN ID: $Id: typo3link.js 6658 2009-12-12 02:52:07Z stan $
  */
 TYPO3Link = HTMLArea.Plugin.extend({
 	
@@ -121,6 +121,14 @@ TYPO3Link = HTMLArea.Plugin.extend({
 			if (node.target) additionalParameter += "&curUrl[target]=" + encodeURIComponent(node.target);
 			if (node.className) additionalParameter += "&curUrl[class]=" + encodeURIComponent(node.className);
 			if (node.title) additionalParameter += "&curUrl[title]=" + encodeURIComponent(node.title);
+			if (this.pageTSConfiguration && this.pageTSConfiguration.additionalAttributes) {
+				var additionalAttributes = this.pageTSConfiguration.additionalAttributes.split(",");
+				for (var i = additionalAttributes.length; --i >= 0;) {
+					if (node.hasAttribute(additionalAttributes[i])) {
+						additionalParameter += "&curUrl[" + additionalAttributes[i] + "]=" + encodeURIComponent(node.getAttribute(additionalAttributes[i]));
+					}
+				}
+			}
 		} else if (this.editor.hasSelectedText()) {
 			var text = this.editor.getSelectedHTML();
 			if (text && text != null) {
@@ -140,8 +148,16 @@ TYPO3Link = HTMLArea.Plugin.extend({
 	/*
 	 * Add a link to the selection.
 	 * This function is called from the TYPO3 link popup.
+	 *
+	 * @param	string	theLink: the href attribute of the link to be created
+	 * @param	string	cur_target: value for the target attribute
+	 * @param	string	cur_class: value for the class attribute
+	 * @param	string	cur_title: value for the title attribute
+	 * @param	object	additionalValues: values for additional attributes (may be used by extension)
+	 *
+	 * @return void
 	 */
-	createLink : function(theLink,cur_target,cur_class,cur_title) {
+	createLink : function(theLink,cur_target,cur_class,cur_title,additionalValues) {
 		var selection, range, anchorClass, imageNode = null, addIconAfterLink;
 		this.editor.focusEditor();
 		var node = this.editor.getParentElement();
@@ -159,7 +175,12 @@ TYPO3Link = HTMLArea.Plugin.extend({
 		if (HTMLArea.is_gecko && node != null && /^a$/i.test(node.nodeName)) {
 				// If the class attribute is not removed, UnLink folowed by CreateLink will create a span element inside the new link
 			node.removeAttribute("class");
+				// Moreover, the selection is sometimes lost after the unlink operation
+			selection = this.editor._getSelection();
+			range = this.editor._createRange(selection);
+			var bookmark = this.editor.getBookmark(range);
 			this.editor._doc.execCommand("UnLink", false, null);
+			this.editor.selectRange(this.editor.moveToBookmark(bookmark));
 		}
 		if (HTMLArea.is_gecko && !HTMLArea.is_safari && !HTMLArea.is_opera) {
 			this.editor._doc.execCommand("CreateLink", false, encodeURI(theLink));
@@ -186,7 +207,7 @@ TYPO3Link = HTMLArea.Plugin.extend({
 				}
 			}
 				// We may have created multiple links in as many blocks
-			this.setLinkAttributes(node, range, cur_target, cur_class, cur_title, imageNode, addIconAfterLink);
+			this.setLinkAttributes(node, range, cur_target, cur_class, cur_title, imageNode, addIconAfterLink, additionalValues);
 		}
 		this.dialog.close();
 	},
@@ -220,8 +241,19 @@ TYPO3Link = HTMLArea.Plugin.extend({
 	
 	/*
 	* Set attributes of anchors intersecting a range in the given node
+	*
+	* @param	object	node: a node that may interesect the range
+	* @param	object	range: set attributes on all nodes intersecting this range
+	* @param	string	cur_target: value for the target attribute
+	* @param	string	cur_class: value for the class attribute
+	* @param	string	cur_title: value for the title attribute
+	* @param	object	imageNode: image to clone and append to the anchor
+	* @param	boolean	addIconAfterLink: add icon after rather than before the link
+	* @param	object	additionalValues: values for additional attributes (may be used by extension)
+	*
+	* @return	void
 	*/
-	setLinkAttributes : function(node, range, cur_target, cur_class, cur_title, imageNode, addIconAfterLink) {
+	setLinkAttributes : function(node, range, cur_target, cur_class, cur_title, imageNode, addIconAfterLink, additionalValues) {
 		if (/^a$/i.test(node.nodeName)) {
 			var nodeInRange = false;
 			if (HTMLArea.is_gecko) {
@@ -264,11 +296,22 @@ TYPO3Link = HTMLArea.Plugin.extend({
 					node.removeAttribute("title");
 					node.removeAttribute("rtekeep");
 				}
+				if (this.pageTSConfiguration && this.pageTSConfiguration.additionalAttributes && typeof(additionalValues) == "object") {
+					for (additionalAttribute in additionalValues) {
+						if (additionalValues.hasOwnProperty(additionalAttribute)) {
+							if (additionalValues[additionalAttribute].toString().trim()) {
+								node.setAttribute(additionalAttribute, additionalValues[additionalAttribute]);
+							} else {
+								node.removeAttribute(additionalAttribute);
+							}
+						}
+					}
+				}
 			}
 		} else {
 			for (var i = node.firstChild;i;i = i.nextSibling) {
 				if (i.nodeType == 1 || i.nodeType == 11) {
-					this.setLinkAttributes(i, range, cur_target, cur_class, cur_title, imageNode, addIconAfterLink);
+					this.setLinkAttributes(i, range, cur_target, cur_class, cur_title, imageNode, addIconAfterLink, additionalValues);
 				}
 			}
 		}

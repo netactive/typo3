@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  * Provides links to registered shortcuts
  * If the 'cms' extension is loaded you will also have a field for entering page id/alias which will be found/edited
  *
- * $Id: alt_shortcut.php 4623 2008-12-29 13:53:48Z steffenk $
+ * $Id: alt_shortcut.php 6135 2009-10-11 14:02:27Z steffenk $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant output
  *
@@ -68,8 +68,6 @@
 require('init.php');
 require('template.php');
 $LANG->includeLLFile('EXT:lang/locallang_misc.xml');
-require_once(PATH_t3lib.'class.t3lib_loadmodules.php');
-require_once(PATH_t3lib.'class.t3lib_basicfilefunc.php');
 
 
 
@@ -168,7 +166,7 @@ class SC_alt_shortcut {
 		$url = urldecode($this->URL);
 
 			// Lookup the title of this page and use it as default description
-		$page_id = $this->getLinkedPageId($url);         
+		$page_id = $this->getLinkedPageId($url);
 		if (t3lib_div::testInt($page_id))	{
 			if (preg_match('/\&edit\[(.*)\]\[(.*)\]=edit/',$url,$matches))	{
 					// Edit record
@@ -196,7 +194,7 @@ class SC_alt_shortcut {
 				'module_name' => $this->modName.'|'.$this->M_modName,
 				'url' => $this->URL,
 				'description' => $description,
-				'sorting' => time(),
+				'sorting' => $GLOBALS['EXEC_TIME'],
 			);
 			$GLOBALS['TYPO3_DB']->exec_INSERTquery('sys_be_shortcuts', $fields_values);
 		}
@@ -250,7 +248,6 @@ class SC_alt_shortcut {
 		$this->doc = t3lib_div::makeInstance('template');
 		$this->doc->backPath = $BACK_PATH;
 		$this->doc->form='<form action="alt_shortcut.php" name="shForm" method="post">';
-		$this->doc->docType='xhtml_trans';
 		$this->doc->divClass='typo3-shortcut';
 		$this->doc->JScode.=$this->doc->wrapScriptTags('
 			function jump(url,modName,mainModName)	{	//
@@ -383,7 +380,7 @@ class SC_alt_shortcut {
 			if ($row['description']&&($row['uid']!=$this->editSC))	{
 				$label = $row['description'];
 			} else {
-				$label = t3lib_div::fixed_lgd(rawurldecode($qParts['query']),150);
+				$label = t3lib_div::fixed_lgd_cs(rawurldecode($qParts['query']),150);
 			}
 			$titleA = $this->itemLabel($label,$row['module_name'],$row['M_module_name']);
 
@@ -429,8 +426,12 @@ class SC_alt_shortcut {
 						-->
 						<table border="0" cellpadding="0" cellspacing="2" id="typo3-shortcuts">
 							<tr>
-							'.implode('
-							',$this->lines).$editIdCode.'
+							';
+							if ($GLOBALS['BE_USER']->getTSConfigVal('options.enableShortcuts')) {
+								$this->content .= implode('
+								', $this->lines);
+							}
+							$this->content .= $editIdCode . '
 							</tr>
 						</table>
 					</td>
@@ -610,7 +611,6 @@ class SC_alt_shortcut {
 		$this->content = $this->doc->insertStylesAndJS($this->content);
 
 		if($this->editPage && $this->isAjaxCall) {
-			require_once('contrib/json/json.php');
 			$data = array();
 
 				// edit page
@@ -635,8 +635,7 @@ class SC_alt_shortcut {
 				$data['searchFor']       = rawurlencode($this->searchFor);
 			}
 
-			$json = new Services_JSON();
-			$content = $json->encode($data);
+			$content = json_encode($data);
 
 			header('Content-type: application/json; charset=utf-8');
 			header('X-JSON: '.$content);
@@ -821,18 +820,10 @@ class SC_alt_shortcut {
 	}
 }
 
-// Include extension?
+
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_shortcut.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_shortcut.php']);
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -843,4 +834,5 @@ $SOBE->preprocess();
 $SOBE->init();
 $SOBE->main();
 $SOBE->printContent();
+
 ?>

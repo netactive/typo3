@@ -26,7 +26,7 @@
 /**
  * TYPO3HtmlParser Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: typo3html-parser.js 5930 2009-09-15 16:16:38Z stan $
+ * TYPO3 SVN ID: $Id: typo3html-parser.js 6404 2009-11-11 22:16:30Z stan $
  */
 TYPO3HtmlParser = HTMLArea.Plugin.extend({
 	
@@ -94,16 +94,19 @@ TYPO3HtmlParser = HTMLArea.Plugin.extend({
 	
 	clean : function() {
 		var editor = this.editor;
+		if (HTMLArea.is_safari) {
+			editor.cleanAppleStyleSpans(editor._doc.body);
+		}
 		var bookmark = editor.getBookmark(editor._createRange(editor._getSelection()));
 		var content = {
 			editorNo : this.editorNumber,
-			content	 : editor._doc.body.innerHTML
+			content	 : this.getPluginInstance("EditorMode").getInnerHTML()
 		};
-			// Invoke server-based synchronous pasted content cleaning
+			// Server-based synchronous pasted content cleaning
 		this.postData(	this.parseHtmlModulePath,
 				content,
 				function(response) {
-					editor.setHTML(response);
+					editor.getPluginInstance("EditorMode").setHTML(response);
 					editor.selectRange(editor.moveToBookmark(bookmark));
 				},
 				false
@@ -116,7 +119,7 @@ TYPO3HtmlParser = HTMLArea.Plugin.extend({
  */
 TYPO3HtmlParser.cleanLater = function (editorNumber) {
 	var editor = RTEarea[editorNumber].editor;
-	editor.plugins.TYPO3HtmlParser.instance.clean();
+	editor.getPluginInstance("TYPO3HtmlParser").clean();
 };
 
 /*

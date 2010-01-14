@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2008-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_tableoperations.php 4131 2008-09-15 17:24:40Z stan $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_tableoperations.php 5489 2009-05-23 15:26:20Z ohader $
  *
  */
 
@@ -44,7 +44,7 @@ class tx_rtehtmlarea_tableoperations extends tx_rtehtmlareaapi {
 	protected $LOCAL_LANG; 					// Frontend language array
 	protected $requiresClassesConfiguration = true;		// True if the registered plugin requires the PageTSConfig Classes configuration
 	protected $requiredPlugins = 'TYPO3Color';		// The comma-separated list of names of prerequisite plugins
-	
+
 	protected $pluginButtons = 'table, toggleborders, tableproperties, tablerestyle, rowproperties, rowinsertabove, rowinsertunder, rowdelete, rowsplit,
 						columnproperties, columninsertbefore, columninsertafter, columndelete, columnsplit,
 						cellproperties, cellinsertbefore, cellinsertafter, celldelete, cellsplit, cellmerge';
@@ -72,7 +72,9 @@ class tx_rtehtmlarea_tableoperations extends tx_rtehtmlareaapi {
 		);
 
 	public function main($parentObject) {
+
 		$available = parent::main($parentObject);
+
 		if ($this->htmlAreaRTE->client['BROWSER'] == 'opera') {
 			$this->thisConfig['hideTableOperationsInToolbar'] = 0;
 		}
@@ -95,10 +97,10 @@ class tx_rtehtmlarea_tableoperations extends tx_rtehtmlareaapi {
 	 */
 	public function buildJavascriptConfiguration($RTEcounter) {
 		global $TSFE, $LANG;
-		
+
 		$registerRTEinJavascriptString = '';
 		if (in_array('table', $this->toolbar)) {
-			
+
 				// Combining fieldset disablers as a list
 			$disabledFieldsets = array('Alignment', 'Borders', 'Color', 'Description', 'Layout', 'RowGroup', 'Spacing', 'Style');
 			foreach ($disabledFieldsets as $index => $fieldset) {
@@ -107,7 +109,7 @@ class tx_rtehtmlarea_tableoperations extends tx_rtehtmlareaapi {
 				}
 			}
 			$disabledFieldsets = strtolower(implode(',', $disabledFieldsets));
-			
+
 				// Dialogue fieldsets removal configuration
 			$dialogues = array('table', 'tableproperties', 'rowproperties', 'columnproperties', 'cellproperties');
 			foreach ($dialogues as $dialogue) {
@@ -123,10 +125,10 @@ class tx_rtehtmlarea_tableoperations extends tx_rtehtmlareaapi {
 			RTEarea['.$RTEcounter.'].buttons.'.$dialogue.'.removeFieldsets = ",' . $disabledFieldsets . '";';
 				}
 			}
-			
+
 			$registerRTEinJavascriptString .= '
 			RTEarea['.$RTEcounter.'].hideTableOperationsInToolbar = ' . (trim($this->thisConfig['hideTableOperationsInToolbar']) ? 'true' : 'false') . ';';
-			
+
 				// Deprecated toggleborders button configuration
 			if (in_array('toggleborders',$this->toolbar) && $this->thisConfig['keepToggleBordersInToolbar']) {
 				if (!is_array($this->thisConfig['buttons.']['toggleborders.'])) {
@@ -141,8 +143,8 @@ class tx_rtehtmlarea_tableoperations extends tx_rtehtmlareaapi {
 		}
 		return $registerRTEinJavascriptString;
 	}
-	
-	 
+
+
 	/**
 	 * Return an updated array of toolbar enabled buttons
 	 *
