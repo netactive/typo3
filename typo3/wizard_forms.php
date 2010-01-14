@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Wizard to help make forms (fx. for tt_content elements) of type 'form'.
  *
- * $Id: wizard_forms.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: wizard_forms.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -175,7 +175,12 @@ $LANG->includeLLFile('EXT:lang/locallang_wizards.xml');
 class SC_wizard_forms {
 
 		// Internal, dynamic:
-	var $doc;					// Document template object
+	/**
+	 * document template object
+	 *
+	 * @var mediumDoc
+	 */
+	var $doc;
 	var $content;				// Content accumulation for the module.
 	var $include_once=array();	// List of files to include.
 	var $attachmentCounter = 0;	// Used to numerate attachments automatically.

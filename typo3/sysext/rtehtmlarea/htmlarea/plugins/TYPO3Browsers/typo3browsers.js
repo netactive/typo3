@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2008 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2005, 2006 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -26,13 +26,12 @@
 /**
  * TYPO3 Image & Link Browsers Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 CVS ID: $Id: typo3browsers.js 5597 2009-06-18 07:15:31Z ohader $
+ * TYPO3 SVN ID: $Id: typo3browsers.js 3437 2008-03-16 16:22:11Z flyguide $
  */
 
 TYPO3Browsers = function(editor,args) {
 	this.editor = editor;
 	var cfg = this.editor.config;
-	cfg.btnList.InsertImage[1] = this.editor.imgURL("ed_image.gif", "TYPO3Browsers");
 	cfg.btnList.CreateLink[1] = this.editor.imgURL("ed_link.gif", "TYPO3Browsers");
 };
 
@@ -47,37 +46,6 @@ TYPO3Browsers._pluginInfo = {
 	sponsor		: "Fructifor Inc.",
 	sponsor_url 	: "http://www.fructifor.ca/",
 	license		: "GPL"
-};
-
-/*
- *  Insert Image TYPO3 RTE function.
- */
-HTMLArea.prototype.renderPopup_image = function() {
-	var editorNumber = this._editorNumber,
-		backreturn,
-		addParams = "?" + RTEarea[editorNumber]["RTEtsConfigParams"],
-		image = this.getParentElement();
-		
-	this._selectedImage = null;
-	if (image && image.tagName.toLowerCase() == "img") {
-		addParams = "?act=image" + RTEarea[editorNumber]["RTEtsConfigParams"];
-		this._selectedImage = image;
-	}
-	
-	this._popupDialog(RTEarea[0]["pathImageModule"] + addParams + "&editorNo=" + editorNumber + "&sys_language_content=" + RTEarea[editorNumber]["sys_language_content"], null, backreturn, 550, 350, null, "yes");
-	return false;
-};
-
-/*
- * Insert the Image.
- * This function is called from the typo3-image-popup.
- */
-HTMLArea.prototype.renderPopup_insertImage = function(image) {
-	this.focusEditor();
-	this.insertHTML(image);
-	this._selectedImage = null;
-	Dialog._modal.close();
-	this.updateToolbar();
 };
 
 /*
@@ -141,12 +109,9 @@ HTMLArea.prototype.renderPopup_addLink = function(theLink,cur_target,cur_class,c
 		range = this._createRange(sel);
 		this.cleanAllLinks(node, range, true);
 	}
-	if (HTMLArea.is_gecko && !HTMLArea.is_safari && !HTMLArea.is_opera) {
-		this._doc.execCommand("CreateLink", false, encodeURI(theLink));
-	} else {
-		this._doc.execCommand("CreateLink", false, theLink);
-	}
-	
+
+	this._doc.execCommand("CreateLink", false, theLink);
+
 	sel = this._getSelection();
 	range = this._createRange(sel);
 	node = this.getParentElement();
@@ -167,7 +132,7 @@ HTMLArea.prototype.renderPopup_addLink = function(theLink,cur_target,cur_class,c
 			// We may have created multiple links in as many blocks
 		this.setLinkAttributes(node, range, cur_target, cur_class, cur_title, imageNode);
 	}
-	
+
 	Dialog._modal.close();
 	this.updateToolbar();
 };
@@ -192,14 +157,11 @@ HTMLArea.prototype.setLinkAttributes = function(node,range,cur_target,cur_class,
 		}
 		if (nodeInRange) {
 			if (imageNode != null) node.insertBefore(imageNode.cloneNode(false), node.firstChild);
-			if (HTMLArea.is_gecko && !HTMLArea.is_safari && !HTMLArea.is_opera) {
-				node.href = decodeURI(node.href);
-			}
 			if (cur_target.trim()) node.target = cur_target.trim();
 				else node.removeAttribute("target");
 			if (cur_class.trim()) {
 				node.className = cur_class.trim();
-			} else { 
+			} else {
 				if (HTMLArea.is_gecko) node.removeAttribute('class');
 					else node.removeAttribute('className');
 			}
@@ -292,7 +254,7 @@ HTMLArea.prototype.renderPopup_unLink = function() {
 			this.cleanAllLinks(node, range, true);
 			this._doc.execCommand("Unlink", false, "");
 		}
-			
+
 	} else {
 		this._doc.execCommand("Unlink", false, "");
 	}
@@ -309,7 +271,7 @@ HTMLArea.prototype.nonStripBaseURL = function(url) {
 
 TYPO3Browsers.prototype.onGenerate = function() {
 	var editor = this.editor;
-	editor._insertImage = editor.renderPopup_image;
+	//editor._insertImage = editor.renderPopup_image;
 	editor._createLink = editor.renderPopup_link;
 	editor.stripBaseURL = editor.nonStripBaseURL;
 };

@@ -2,13 +2,13 @@
 *
 *  JavaScript menu
 *
-* $Id: jsfunc.menu.js 2393 2007-07-07 12:50:01Z ohader $
+* $Id: jsfunc.menu.js 3439 2008-03-16 19:16:51Z flyguide $
 *
 *
 *
 *  Copyright notice
 *
-*  (c) 1998-2003 Kasper Skaarhoj
+*  (c) 1998-2008 Kasper Skaarhoj
 *  All rights reserved
 *
 *  This script is part of the TYPO3 t3lib/ library provided by

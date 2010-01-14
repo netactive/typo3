@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -33,7 +33,7 @@
  * are NOT located in their actual module directories (fx. mod/web/list/) but in the
  * backend root directory. This has some historical and practical causes.
  *
- * $Id: db_list.php 1997 2007-02-05 18:24:44Z ingmars $
+ * $Id: db_list.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -66,6 +66,7 @@ require_once (PATH_t3lib.'class.t3lib_page.php');
 require_once (PATH_t3lib.'class.t3lib_pagetree.php');
 require_once (PATH_t3lib.'class.t3lib_recordlist.php');
 require_once (PATH_t3lib.'class.t3lib_clipboard.php');
+require_once (PATH_t3lib.'class.t3lib_parsehtml.php');
 require_once ($BACK_PATH.'class.db_list.inc');
 require_once ($BACK_PATH.'class.db_list_extra.inc');
 $BE_USER->modAccess($MCONF,1);
@@ -106,7 +107,13 @@ class SC_db_list {
 	var $perms_clause;			// Page select perms clause
 	var $modTSconfig;			// Module TSconfig
 	var $pageinfo;				// Current ids page record
-	var $doc;					// Document template object
+
+	/**
+	 * Document template object
+	 *
+	 * @var template
+	 */
+	var $doc;
 
 	var $MCONF=array();			// Module configuration
 	var $MOD_MENU=array();		// Menu configuration
@@ -198,6 +205,7 @@ class SC_db_list {
 			// Start document template object:
 		$this->doc = t3lib_div::makeInstance('template');
 		$this->doc->backPath = $BACK_PATH;
+		$this->doc->setModuleTemplate('templates/db_list.html');
 		$this->doc->docType='xhtml_trans';
 
 			// Loading current page record and checking access:
@@ -216,12 +224,15 @@ class SC_db_list {
 		$dblist->disableSingleTableView = $this->modTSconfig['properties']['disableSingleTableView'];
 		$dblist->listOnlyInSingleTableMode = $this->modTSconfig['properties']['listOnlyInSingleTableView'];
 		$dblist->hideTables = $this->modTSconfig['properties']['hideTables'];
+		$dblist->tableTSconfigOverTCA = $this->modTSconfig['properties']['table.'];
 		$dblist->clickTitleMode = $this->modTSconfig['properties']['clickTitleMode'];
 		$dblist->alternateBgColors=$this->modTSconfig['properties']['alternateBgColors']?1:0;
-		$dblist->allowedNewTables = t3lib_div::trimExplode(',',$this->modTSconfig['properties']['allowedNewTables'],1);
+		$dblist->allowedNewTables = t3lib_div::trimExplode(',', $this->modTSconfig['properties']['allowedNewTables'], 1);
+		$dblist->deniedNewTables = t3lib_div::trimExplode(',', $this->modTSconfig['properties']['deniedNewTables'], 1);
 		$dblist->newWizards=$this->modTSconfig['properties']['newWizards']?1:0;
-
-
+		$dblist->pageRow = $this->pageinfo;
+		$dblist->counter++;
+		$dblist->MOD_MENU = array('bigControlPanel' => '', 'clipBoard' => '', 'localization' => '');
 
 			// Clipboard is initialized:
 		$dblist->clipObj = t3lib_div::makeInstance('t3lib_clipboard');		// Start clipboard
@@ -276,9 +287,6 @@ class SC_db_list {
 			$this->pointer = t3lib_div::intInRange($this->pointer,0,100000);
 			$dblist->start($this->id,$this->table,$this->pointer,$this->search_field,$this->search_levels,$this->showLimit);
 			$dblist->setDispFields();
-
-				// Render the page header:
-			$dblist->writeTop($this->pageinfo);
 
 				// Render versioning selector:
 			$dblist->HTMLcode.= $this->doc->getVersionSelector($this->id);
@@ -343,46 +351,25 @@ class SC_db_list {
 			');
 
 				// Setting up the context sensitive menu:
-			$CMparts=$this->doc->getContextMenuCode();
-			$this->doc->bodyTagAdditions = $CMparts[1];
-			$this->doc->JScode.=$CMparts[0];
-			$this->doc->postCode.= $CMparts[2];
+			$this->doc->getContextMenuCode();
 		} // access
 
-
-
 			// Begin to compile the whole page, starting out with page header:
-		$this->content='';
-		$this->content.=$this->doc->startPage('DB list');
-		$this->content.= '<form action="'.htmlspecialchars($dblist->listURL()).'" method="post" name="dblistForm">';
-
-			// List Module CSH:
-		if (!strlen($this->id))	{
-			$this->content.= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'list_module_noId', $GLOBALS['BACK_PATH'],'<br/>|');
-		} elseif (!$this->id)	{	// zero...:
-			$this->content.= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'list_module_root', $GLOBALS['BACK_PATH'],'<br/>|');
-		}
-
-			// Add listing HTML code:
-		$this->content.= $dblist->HTMLcode;
-		$this->content.= '<input type="hidden" name="cmd_table" /><input type="hidden" name="cmd" /></form>';
-
-			// List Module CSH:
-		if ($this->id)	{
-			$this->content.= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'list_module', $GLOBALS['BACK_PATH'],'<br/>|');
-		}
-
+		$this->body='';
+		$this->body.= '<form action="'.htmlspecialchars($dblist->listURL()).'" method="post" name="dblistForm">';
+		$this->body.= $dblist->HTMLcode;
+		$this->body.= '<input type="hidden" name="cmd_table" /><input type="hidden" name="cmd" /></form>';
 
 			// If a listing was produced, create the page footer with search form etc:
 		if ($dblist->HTMLcode)	{
 
 				// Making field select box (when extended view for a single table is enabled):
 			if ($dblist->table)	{
-				$this->content.=$dblist->fieldSelectBox($dblist->table);
+				$this->body.=$dblist->fieldSelectBox($dblist->table);
 			}
 
 				// Adding checkbox options for extended listing and clipboard display:
-			$this->content.='
+			$this->body.='
 
 					<!--
 						Listing options for clipboard and thumbnails
@@ -390,51 +377,41 @@ class SC_db_list {
 					<div id="typo3-listOptions">
 						<form action="" method="post">';
 
-			$this->content.=t3lib_BEfunc::getFuncCheck($this->id,'SET[bigControlPanel]',$this->MOD_SETTINGS['bigControlPanel'],'db_list.php',($this->table?'&table='.$this->table:''),'id="checkLargeControl"').' <label for="checkLargeControl">'.$LANG->getLL('largeControl',1).'</label><br />';
+			$this->body.=t3lib_BEfunc::getFuncCheck($this->id,'SET[bigControlPanel]',$this->MOD_SETTINGS['bigControlPanel'],'db_list.php',($this->table?'&table='.$this->table:''),'id="checkLargeControl"').' <label for="checkLargeControl">'.$LANG->getLL('largeControl',1).'</label><br />';
 			if ($dblist->showClipboard)	{
-				$this->content.=t3lib_BEfunc::getFuncCheck($this->id,'SET[clipBoard]',$this->MOD_SETTINGS['clipBoard'],'db_list.php',($this->table?'&table='.$this->table:''),'id="checkShowClipBoard"').' <label for="checkShowClipBoard">'.$LANG->getLL('showClipBoard',1).'</label><br />';
+				$this->body.=t3lib_BEfunc::getFuncCheck($this->id,'SET[clipBoard]',$this->MOD_SETTINGS['clipBoard'],'db_list.php',($this->table?'&table='.$this->table:''),'id="checkShowClipBoard"').' <label for="checkShowClipBoard">'.$LANG->getLL('showClipBoard',1).'</label><br />';
 			}
-			$this->content.=t3lib_BEfunc::getFuncCheck($this->id,'SET[localization]',$this->MOD_SETTINGS['localization'],'db_list.php',($this->table?'&table='.$this->table:''),'id="checkLocalization"').' <label for="checkLocalization">'.$LANG->getLL('localization',1).'</label><br />';
-			$this->content.='
+			$this->body.=t3lib_BEfunc::getFuncCheck($this->id,'SET[localization]',$this->MOD_SETTINGS['localization'],'db_list.php',($this->table?'&table='.$this->table:''),'id="checkLocalization"').' <label for="checkLocalization">'.$LANG->getLL('localization',1).'</label><br />';
+			$this->body.='
 						</form>
 					</div>';
-			$this->content.= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'list_options', $GLOBALS['BACK_PATH']);
+			$this->body.= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'list_options', $GLOBALS['BACK_PATH']);
 
 				// Printing clipboard if enabled:
 			if ($this->MOD_SETTINGS['clipBoard'] && $dblist->showClipboard)	{
-				$this->content.= $dblist->clipObj->printClipboard();
-				$this->content.= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'list_clipboard', $GLOBALS['BACK_PATH']);
-			}
-
-				// Link for creating new records:
-			if (!$this->modTSconfig['properties']['noCreateRecordsLink']) 	{
-				$this->content.='
-
-					<!--
-						Link for creating a new record:
-					-->
-					<div id="typo3-newRecordLink">
-					<a href="'.htmlspecialchars($this->doc->backPath . 'db_new.php?id='.$this->id.'&returnUrl='.rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI'))).'">'.
-								'<img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/new_el.gif','width="11" height="12"').' alt="" />'.
-								$LANG->getLL('newRecordGeneral',1).
-								'</a>
-					</div>';
+				$this->body.= $dblist->clipObj->printClipboard();
+				$this->body.= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'list_clipboard', $GLOBALS['BACK_PATH']);
 			}
 
 				// Search box:
-			$this->content.=$dblist->getSearchBox();
+			$this->body.=$dblist->getSearchBox();
 
 				// Display sys-notes, if any are found:
-			$this->content.=$dblist->showSysNotesForPage();
-
-				// ShortCut:
-			if ($BE_USER->mayMakeShortcut())	{
-				$this->content.='<br/>'.$this->doc->makeShortcutIcon('id,imagemode,pointer,table,search_field,search_levels,showLimit,sortField,sortRev',implode(',',array_keys($this->MOD_MENU)),$this->MCONF['name']);
-			}
+			$this->body.=$dblist->showSysNotesForPage();
 		}
 
-			// Finally, close off the page:
+			// Setting up the buttons and markers for docheader
+		$docHeaderButtons = $dblist->getButtons();
+		$markers = array(
+			'CSH' => $docHeaderButtons['csh'],
+			'CONTENT' => $this->body
+		);
+
+			// Build the <body> for the module
+		$this->content = $this->doc->startPage('DB list');
+		$this->content.= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
 		$this->content.= $this->doc->endPage();
+		$this->content = $this->doc->insertStylesAndJS($this->content);
 	}
 
 	/**

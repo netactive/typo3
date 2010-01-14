@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains class for loading database groups
  *
- * $Id: class.t3lib_loaddbgroup.php 3768 2008-06-06 07:17:07Z baschny $
+ * $Id: class.t3lib_loaddbgroup.php 3639 2008-05-02 21:19:06Z ingmars $
  * Revised for TYPO3 3.6 September/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -62,6 +62,7 @@
 
 
 
+require_once (PATH_t3lib.'class.t3lib_refindex.php');
 
 
 
@@ -100,7 +101,6 @@ class t3lib_loadDBGroup	{
 	var $MM_match_fields = array();	// array of fields value pairs that should match while SELECT and will be written into MM table if $MM_insert_fields is not set
 	var $MM_insert_fields = array();	// array of fields and value pairs used for insert in MM table
 	var $MM_table_where = ''; // extra MM table where
-	var $MM_multiple = 0;			// set to true if MM table can hold repeated references to the same uid
 
 
 	/**
@@ -119,10 +119,10 @@ class t3lib_loadDBGroup	{
 		$this->MM_is_foreign = ($conf['MM_opposite_field']?1:0);
 		$this->MM_oppositeField = $conf['MM_opposite_field'];
 		$this->MM_table_where = $conf['MM_table_where'];
+		$this->MM_hasUidField = $conf['MM_hasUidField'];
 		$this->MM_match_fields = is_array($conf['MM_match_fields']) ? $conf['MM_match_fields'] : array();
 		$this->MM_insert_fields = is_array($conf['MM_insert_fields']) ? $conf['MM_insert_fields'] : $this->MM_match_fields;
-		$this->MM_multiple = $conf['multiple'];
-		
+
 		$this->currentTable = $currentTable;
 		if ($this->MM_is_foreign)	{
 			$tmp = ($conf['type']==='group'?$conf['allowed']:$conf['foreign_table']);
@@ -132,6 +132,7 @@ class t3lib_loadDBGroup	{
 			unset($tmp);
 
 				// only add the current table name if there is more than one allowed field
+			t3lib_div::loadTCA($this->MM_oppositeTable);	// We must be sure this has been done at least once before accessing the "columns" part of TCA for a table.
 			$this->MM_oppositeFieldConf = $GLOBALS['TCA'][$this->MM_oppositeTable]['columns'][$this->MM_oppositeField]['config'];
 
 			if ($this->MM_oppositeFieldConf['allowed'])	{
@@ -171,7 +172,11 @@ class t3lib_loadDBGroup	{
 
 			// Now, populate the internal itemArray and tableArray arrays:
 		if ($MMtable)	{	// If MM, then call this function to do that:
-			$this->readMM($MMtable,$MMuid);
+			if ($MMuid)	{
+				$this->readMM($MMtable, $MMuid);
+			} else	{ // Revert to readList() for new records in order to load possible default values from $itemlist
+				$this->readList($itemlist);
+			}
 		} elseif ($MMuid && $conf['foreign_field']) {
 				// If not MM but foreign_field, the read the records by the foreign_field
 			$this->readForeignField($MMuid, $conf);
@@ -233,7 +238,7 @@ class t3lib_loadDBGroup	{
 	 * Does a sorting on $this->itemArray depending on a default sortby field.
 	 * This is only used for automatic sorting of comma separated lists.
 	 * This function is only relevant for data that is stored in comma separated lists!
-	 * 
+	 *
 	 * @param	string		$sortby: The default_sortby field/command (e.g. 'price DESC')
 	 * @return	void
 	 */
@@ -250,7 +255,7 @@ class t3lib_loadDBGroup	{
 			if ($uidList) {
 				$this->itemArray = array();
 				$this->tableArray = array();
-				
+
 				$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', $table, 'uid IN ('.$uidList.')', '', $sortby);
 				while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
 					$this->itemArray[] = array('id' => $row['uid'], 'table' => $table);
@@ -272,7 +277,7 @@ class t3lib_loadDBGroup	{
 	function readMM($tableName,$uid)	{
 		$key=0;
 		$additionalWhere = '';
-		
+
 		if ($this->MM_is_foreign)	{	// in case of a reverse relation
 			$uidLocal_field = 'uid_foreign';
 			$uidForeign_field = 'uid_local';
@@ -299,7 +304,7 @@ class t3lib_loadDBGroup	{
 		foreach ($this->MM_match_fields as $field => $value) {
 			$additionalWhere.= ' AND '.$field.'='.$GLOBALS['TYPO3_DB']->fullQuoteStr($value, $tableName);
 		}
-		
+
 			// Select all MM relations:
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $tableName, $uidLocal_field.'='.intval($uid).$additionalWhere, '', $sorting_field);
 		while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
@@ -329,7 +334,7 @@ class t3lib_loadDBGroup	{
 	 * @param	boolean		If set, then table names will always be written.
 	 * @return	void
 	 */
-	function writeMM($tableName,$uid,$prependTableName=0)	{
+	function writeMM($MM_tableName,$uid,$prependTableName=0)	{
 
 		if ($this->MM_is_foreign)	{	// in case of a reverse relation
 			$uidLocal_field = 'uid_foreign';
@@ -359,24 +364,26 @@ class t3lib_loadDBGroup	{
 			}
 				// Select, update or delete only those relations that match the configured fields
 			foreach ($this->MM_match_fields as $field => $value) {
-				$additionalWhere.= ' AND '.$field.'='.$GLOBALS['TYPO3_DB']->fullQuoteStr($value, $tableName);
+				$additionalWhere.= ' AND '.$field.'='.$GLOBALS['TYPO3_DB']->fullQuoteStr($value, $MM_tableName);
 			}
 
+			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+				$uidForeign_field.($prep?', tablenames':'').($this->MM_hasUidField?', uid':''),
+				$MM_tableName,
+				$uidLocal_field.'='.$uid.$additionalWhere_tablenames.$additionalWhere,
+				'',
+				$sorting_field
+			);
+
 			$oldMMs = array();
-			if ($this->MM_multiple)	{
-					// If repeated values are allowed, we need to recreate them all from scratch
-				$GLOBALS['TYPO3_DB']->exec_DELETEquery($tableName, $uidLocal_field.'='.$uid.$additionalWhere_tablenames.$additionalWhere);
-
-			} else	{
-				$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($uidForeign_field.($prep?', tablenames':''), $tableName, $uidLocal_field.'='.$uid.$additionalWhere_tablenames.$additionalWhere);
-
-				while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-					if (!$this->MM_is_foreign && $prep)	{
-						$oldMMs[] = array($row['tablenames'], $row[$uidForeign_field]);
-					} else {
-						$oldMMs[] = $row[$uidForeign_field];
-					}
+			$oldMMs_inclUid = array();	// This array is similar to $oldMMs but also holds the uid of the MM-records, if any (configured by MM_hasUidField). If the UID is present it will be used to update sorting and delete MM-records. This is necessary if the "multiple" feature is used for the MM relations. $oldMMs is still needed for the in_array() search used to look if an item from $this->itemArray is in $oldMMs
+			while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
+				if (!$this->MM_is_foreign && $prep)	{
+					$oldMMs[] = array($row['tablenames'], $row[$uidForeign_field]);
+				} else {
+					$oldMMs[] = $row[$uidForeign_field];
 				}
+				$oldMMs_inclUid[] = array($row['tablenames'], $row[$uidForeign_field], $row['uid']);
 			}
 
 				// For each item, insert it:
@@ -400,13 +407,17 @@ class t3lib_loadDBGroup	{
 				}
 
 				if (in_array($item, $oldMMs))	{
-					unset($oldMMs[array_search($item, $oldMMs)]);	// remove the item from the $oldMMs array so after this foreach loop only the ones that need to be deleted are in there.
+					$oldMMs_index = array_search($item, $oldMMs);
 
-					$whereClause = $uidLocal_field.'='.$uid.' AND '.$uidForeign_field.'='.$val['id'];
+					$whereClause = $uidLocal_field.'='.$uid.' AND '.$uidForeign_field.'='.$val['id'].
+									($this->MM_hasUidField ? ' AND uid='.intval($oldMMs_inclUid[$oldMMs_index][2]) : ''); 	// In principle, selecting on the UID is all we need to do if a uid field is available since that is unique! But as long as it "doesn't hurt" we just add it to the where clause. It should all match up.
 					if ($tablename) {
 						$whereClause .= ' AND tablenames="'.$tablename.'"';
 					}
-					$GLOBALS['TYPO3_DB']->exec_UPDATEquery($tableName, $whereClause.$additionalWhere, array($sorting_field => $c));
+					$GLOBALS['TYPO3_DB']->exec_UPDATEquery($MM_tableName, $whereClause.$additionalWhere, array($sorting_field => $c));
+
+					unset($oldMMs[$oldMMs_index]);	// remove the item from the $oldMMs array so after this foreach loop only the ones that need to be deleted are in there.
+					unset($oldMMs_inclUid[$oldMMs_index]);	// remove the item from the $oldMMs array so after this foreach loop only the ones that need to be deleted are in there.
 				} else {
 
 					$insertFields = $this->MM_insert_fields;
@@ -417,23 +428,91 @@ class t3lib_loadDBGroup	{
 						$insertFields['tablenames'] = $tablename;
 					}
 
-					$GLOBALS['TYPO3_DB']->exec_INSERTquery($tableName, $insertFields);
+					$GLOBALS['TYPO3_DB']->exec_INSERTquery($MM_tableName, $insertFields);
+
+					if ($this->MM_is_foreign)	{
+						$this->updateRefIndex($val['table'], $val['id']);
+					}
 				}
 			}
 
 				// Delete all not-used relations:
 			if(is_array($oldMMs) && count($oldMMs) > 0) {
 				$removeClauses = array();
-				foreach($oldMMs as $mmItem) {
-					if(is_array($mmItem)) {
-						$removeClauses[] = 'tablenames="'.$mmItem[0].'" AND '.$uidForeign_field.'='.$mmItem[1];
+				$updateRefIndex_records = array();
+				foreach($oldMMs as $oldMM_key => $mmItem) {
+					if ($this->MM_hasUidField)	{	// If UID field is present, of course we need only use that for deleting...:
+						$removeClauses[] = 'uid='.intval($oldMMs_inclUid[$oldMM_key][2]);
+						$elDelete = $oldMMs_inclUid[$oldMM_key];
 					} else {
-						$removeClauses[] = $uidForeign_field.'='.$mmItem;
+						if(is_array($mmItem)) {
+							$removeClauses[] = 'tablenames="'.$mmItem[0].'" AND '.$uidForeign_field.'='.$mmItem[1];
+						} else {
+							$removeClauses[] = $uidForeign_field.'='.$mmItem;
+						}
+					}
+					if ($this->MM_is_foreign)	{
+						if(is_array($mmItem)) {
+							$updateRefIndex_records[] = array($mmItem[0],$mmItem[1]);
+						} else {
+							$updateRefIndex_records[] = array($this->firstTable,$mmItem);
+						}
 					}
 				}
 				$deleteAddWhere = ' AND ('.implode(' OR ', $removeClauses).')';
-				$GLOBALS['TYPO3_DB']->exec_DELETEquery($tableName, $uidLocal_field.'='.intval($uid).$deleteAddWhere.$additionalWhere_tablenames.$additionalWhere);
+				$GLOBALS['TYPO3_DB']->exec_DELETEquery($MM_tableName, $uidLocal_field.'='.intval($uid).$deleteAddWhere.$additionalWhere_tablenames.$additionalWhere);
+
+					// Update ref index:
+				foreach($updateRefIndex_records as $pair)	{
+					$this->updateRefIndex($pair[0],$pair[1]);
+				}
 			}
+
+				// Update ref index; In tcemain it is not certain that this will happen because if only the MM field is changed the record itself is not updated and so the ref-index is not either. This could also have been fixed in updateDB in tcemain, however I decided to do it here ...
+			$this->updateRefIndex($this->currentTable,$uid);
+		}
+	}
+
+	/**
+	 * Remaps MM table elements from one local uid to another
+	 * Does NOT update the reference index for you, must be called subsequently to do that!
+	 *
+	 * @param	string		MM table name
+	 * @param	integer		Local, current UID
+	 * @param	integer		Local, new UID
+	 * @param	boolean		If set, then table names will always be written.
+	 * @return	void
+	 */
+	function remapMM($MM_tableName,$uid,$newUid,$prependTableName=0)	{
+
+		if ($this->MM_is_foreign)	{	// in case of a reverse relation
+			$uidLocal_field = 'uid_foreign';
+		} else {	// default
+			$uidLocal_field = 'uid_local';
+		}
+
+			// If there are tables...
+		$tableC = count($this->tableArray);
+		if ($tableC)	{
+			$prep = ($tableC>1||$prependTableName||$this->MM_isMultiTableRelationship) ? 1 : 0;	// boolean: does the field "tablename" need to be filled?
+			$c=0;
+
+			$additionalWhere_tablenames = '';
+			if ($this->MM_is_foreign && $prep)	{
+				$additionalWhere_tablenames = ' AND tablenames="'.$this->currentTable.'"';
+			}
+
+			$additionalWhere = '';
+				// add WHERE clause if configured
+			if ($this->MM_table_where) {
+				$additionalWhere.= "\n".str_replace('###THIS_UID###', intval($uid), $this->MM_table_where);
+			}
+				// Select, update or delete only those relations that match the configured fields
+			foreach ($this->MM_match_fields as $field => $value) {
+				$additionalWhere.= ' AND '.$field.'='.$GLOBALS['TYPO3_DB']->fullQuoteStr($value, $MM_tableName);
+			}
+
+			$GLOBALS['TYPO3_DB']->exec_UPDATEquery($MM_tableName, $uidLocal_field.'='.intval($uid).$additionalWhere_tablenames.$additionalWhere, array($uidLocal_field => $newUid));
 		}
 	}
 
@@ -468,7 +547,7 @@ class t3lib_loadDBGroup	{
 		if ($foreign_table_field && $this->currentTable) {
 			$whereClause .= ' AND '.$foreign_table_field.'='.$GLOBALS['TYPO3_DB']->fullQuoteStr($this->currentTable, $foreign_table);
 		}
-		
+
 			// get the correct sorting field
 		if ($conf['foreign_sortby']) {											// specific manual sortby for data handled by this field
 			if ($conf['symmetric_sortby'] && $conf['symmetric_field']) {
@@ -511,7 +590,7 @@ class t3lib_loadDBGroup	{
 	 *
 	 * @param	array		$conf: TCA configuration for current field
 	 * @param	integer		$parentUid: The uid of the parent record
-	 * @param	boolean		$updateForeignField: Whether to update the foreign field with the $parentUid (on Copy)
+	 * @param	boolean		$updateToUid: Whether to update the foreign field with the $parentUid (on Copy)
 	 * @param 	boolean		$skipSorting: Do not update the sorting columns, this could happen for imported values
 	 * @return	void
 	 */
@@ -525,7 +604,9 @@ class t3lib_loadDBGroup	{
 			// if there are table items and we have a proper $parentUid
 		if (t3lib_div::testInt($parentUid) && count($this->tableArray)) {
 				// if updateToUid is not a positive integer, set it to '0', so it will be ignored
-			if (!(t3lib_div::testInt($updateToUid) && $updateToUid > 0)) $updateToUid = 0;
+			if (!(t3lib_div::testInt($updateToUid) && $updateToUid > 0)) {
+				$updateToUid = 0;
+			}
 			$fields = 'uid,'.$foreign_field.($symmetric_field ? ','.$symmetric_field : '');
 
 				// update all items
@@ -550,7 +631,7 @@ class t3lib_loadDBGroup	{
 					} else {
 						$updateValues[$foreign_field] = $parentUid;
 					}
-					
+
 						// if it is configured in TCA also to store the parent table in the child record, just do it
 					if ($foreign_table_field && $this->currentTable) {
 						$updateValues[$foreign_table_field] = $this->currentTable;
@@ -559,7 +640,7 @@ class t3lib_loadDBGroup	{
 						// update sorting columns if not to be skipped
 					if (!$skipSorting) {
 							// get the correct sorting field
-						if ($conf['foreign_sortby']) {									// specific manual sortby for data handled by this field 
+						if ($conf['foreign_sortby']) {									// specific manual sortby for data handled by this field
 							$sortby = $conf['foreign_sortby'];
 						} elseif ($GLOBALS['TCA'][$foreign_table]['ctrl']['sortby']) {	// manual sortby for all table records
 							$sortby = $GLOBALS['TCA'][$foreign_table]['ctrl']['sortby'];
@@ -567,7 +648,7 @@ class t3lib_loadDBGroup	{
 							// strip a possible "ORDER BY" in front of the $sortby value
 						$sortby = $GLOBALS['TYPO3_DB']->stripOrderBy($sortby);
 						$symSortby = $conf['symmetric_sortby'];
-	
+
 							// set the sorting on the right side, it depends on who created the relation, so what uid is in the symmetric_field
 						if ($isOnSymmetricSide && $symSortby) {
 							$updateValues[$symSortby] = ++$c;
@@ -587,7 +668,7 @@ class t3lib_loadDBGroup	{
 				}
 
 				if (count($updateValues)) {
-					$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, "uid='$uid'", $updateValues);
+					$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, 'uid=' . intval($uid), $updateValues);
 					$this->updateRefIndex($table, $uid);
 				}
 			}

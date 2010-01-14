@@ -7,6 +7,7 @@
 	<data type="array">
 		<languageKey index="default" type="array">
 			<label index="CharacterMapTooltip">Insert special character</label>
+			<label index="InsertCharacter-Tooltip">Insert special character</label>
 			<label index="Insert special character">Insert special character</label>
 			<label index="HTML value:">HTML value:</label>
 			<label index="Close">Close</label>

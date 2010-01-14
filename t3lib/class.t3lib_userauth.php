@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains a base class for authentication of users in TYPO3, both frontend and backend.
  *
- * $Id: class.t3lib_userauth.php 5299 2009-04-08 19:48:06Z lolli $
+ * $Id: class.t3lib_userauth.php 5300 2009-04-08 19:48:14Z lolli $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -326,28 +326,7 @@ class t3lib_userAuth {
 	}
 
 	/**
-	 * Determine whether there's an according session record to a given session_id
-	 * in the database. Don't care if session record is still valid or not.
-	 *
-	 * @param	integer		Claimed Session ID
-	 * @return	boolean		Returns true if a corresponding session was found in the database
-	 */
-	function isExistingSessionRecord($id) {
-		$count = false;
-		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-						'COUNT(ses_id)',
-						$this->session_table,
-						'ses_id=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($id, $this->session_table)
-					);
-		if ($dbres !== false) {
-			list($count) = $GLOBALS['TYPO3_DB']->sql_fetch_row($dbres);
-			$GLOBALS['TYPO3_DB']->sql_free_result($dbres);
-		}
-		return (($count ? true : false));
-	}
-
-	/**
-	 * Determins whether a session cookie needs to be set (lifetime=0)
+	 * Determine whether a session cookie needs to be set (lifetime=0)
 	 *
 	 * @return	boolean
 	 * @internal
@@ -357,7 +336,7 @@ class t3lib_userAuth {
 	}
 
 	/**
-	 * Determins whether a non-session cookie needs to be set (lifetime>0)
+	 * Determine whether a non-session cookie needs to be set (lifetime>0)
 	 *
 	 * @return	boolean
 	 * @internal
@@ -442,7 +421,9 @@ class t3lib_userAuth {
 			if ($haveSession)	{
 				t3lib_div::devLog('User session found: '.t3lib_div::arrayToLogString($authInfo['userSession'], array($this->userid_column,$this->username_column)), 't3lib_userAuth', 0);
 			}
-			t3lib_div::devLog('SV setup: '.t3lib_div::arrayToLogString($this->svConfig['setup']), 't3lib_userAuth', 0);
+			if (is_array($this->svConfig['setup']))	{
+				t3lib_div::devLog('SV setup: '.t3lib_div::arrayToLogString($this->svConfig['setup']), 't3lib_userAuth', 0);
+			}
 		}
 
 			// fetch user if ...
@@ -572,9 +553,15 @@ class t3lib_userAuth {
 
 			if($GLOBALS['TYPO3_CONF_VARS']['BE']['lockSSL'] == 3 && $this->user_table == 'be_users')	{
 				$requestStr = substr(t3lib_div::getIndpEnv('TYPO3_REQUEST_SCRIPT'), strlen(t3lib_div::getIndpEnv('TYPO3_SITE_URL').TYPO3_mainDir));
-				if($requestStr == 'alt_main.php' && t3lib_div::getIndpEnv('TYPO3_SSL'))	{
+				$backendScript = t3lib_BEfunc::getBackendScript();
+				if($requestStr == $backendScript && t3lib_div::getIndpEnv('TYPO3_SSL'))	{
 					list(,$url) = explode('://',t3lib_div::getIndpEnv('TYPO3_SITE_URL'),2);
-					header('Location: http://'.$url.TYPO3_mainDir.'alt_main.php');
+					list($server,$address) = explode('/',$url,2);
+					if (intval($TYPO3_CONF_VARS['BE']['lockSSLPort'])) {
+						$sslPortSuffix = ':'.intval($TYPO3_CONF_VARS['BE']['lockSSLPort']);
+						$server = str_replace($sslPortSuffix,'',$server);	// strip port from server
+					}
+					header('Location: http://'.$server.'/'.$address.TYPO3_mainDir.$backendScript);
 					exit;
 				}
 			}
@@ -747,6 +734,27 @@ class t3lib_userAuth {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Determine whether there's an according session record to a given session_id
+	 * in the database. Don't care if session record is still valid or not.
+	 *
+	 * @param	integer		Claimed Session ID
+	 * @return	boolean		Returns true if a corresponding session was found in the database
+	 */
+	function isExistingSessionRecord($id) {
+		$count = false;
+		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+						'COUNT(ses_id)',
+						$this->session_table,
+						'ses_id=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($id, $this->session_table)
+					);
+		if ($dbres !== false) {
+			list($count) = $GLOBALS['TYPO3_DB']->sql_fetch_row($dbres);
+			$GLOBALS['TYPO3_DB']->sql_free_result($dbres);
+		}
+		return (($count ? true : false));
 	}
 
 

@@ -2,7 +2,7 @@
 *  Copyright notice
 *
 *  (c) 2004  Ki Master George <kimastergeorge@gmail.com>
-*  (c) 2005, 2006 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 2005-2008 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,55 +30,85 @@
 /*
  * Insert Smiley Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 CVS ID: $Id: insert-smiley.js 1421 2006-04-10 09:27:15Z stucki $
+ * TYPO3 SVN ID: $Id: insert-smiley.js 3439 2008-03-16 19:16:51Z flyguide $
  */
 
-var HTMLAreaeditor;
+InsertSmiley = HTMLArea.Plugin.extend({
 
-InsertSmiley = function(editor) {
-	this.editor = editor;
-	var cfg = editor.config;
-	var actionHandlerFunctRef = InsertSmiley.actionHandler(this);
-	cfg.registerButton("InsertSmiley", InsertSmiley_langArray["Insert Smiley"],  editor.imgURL("ed_smiley.gif", "InsertSmiley"), false, actionHandlerFunctRef);
-};
+	constructor : function(editor, pluginName) {
+		this.base(editor, pluginName);
+	},
 
-InsertSmiley.I18N = InsertSmiley_langArray;
+	/*
+	 * This function gets called by the class constructor
+	 */
+	configurePlugin : function(editor) {
 
-InsertSmiley.actionHandler = function(instance) {
-	return (function(editor) {
-		instance.buttonPress(editor);
-	});
-};
+		this.pageTSConfiguration = this.editorConfiguration.buttons.emoticon;
 
-InsertSmiley.prototype.buttonPress = function(editor) { 
-	var sel = editor.getSelectedHTML().replace(/(<[^>]*>|&nbsp;|\n|\r)/g,""); 
-	var param = new Object();
-	param.editor = editor;
-	param.editor_url = _typo3_host_url + _editor_url;
-	if(param.editor_url == "../") {
-		param.editor_url = document.URL;
-		param.editor_url = param.editor_url.replace(/^(.*\/).*\/.*$/g, "$1");
-	}
-	var setTagHandlerFunctRef = InsertSmiley.setTagHandler(this);
-  	editor._popupDialog("plugin://InsertSmiley/insertsmiley", setTagHandlerFunctRef, param, 250, 220);
-};
+		/*
+		 * Registering plugin "About" information
+		 */
+		var pluginInformation = {
+			version		: "1.2",
+			developer	: "Ki Master George & Stanislas Rolland",
+			developerUrl	: "http://www.fructifor.ca/",
+			copyrightOwner	: "Ki Master George & Stanislas Rolland",
+			sponsor		: "Ki Master George & Fructifor Inc.",
+			sponsorUrl	: "http://www.fructifor.ca/",
+			license		: "GPL"
+		};
+		this.registerPluginInformation(pluginInformation);
 
-InsertSmiley.setTagHandler = function(instance) {
-	return (function(param) {
-		if(param && typeof(param.imgURL) != "undefined") {
-			instance.editor.focusEditor();
-			instance.editor.insertHTML("<img src=\"" + param.imgURL + "\" alt=\"Smiley\" />");
+		/*
+		 * Registering the button
+		 */
+		var buttonId = "InsertSmiley";
+		var buttonConfiguration = {
+			id		: buttonId,
+			tooltip		: this.localize("Insert Smiley"),
+			action		: "onButtonPress",
+			hotKey		: (this.pageTSConfiguration ? this.pageTSConfiguration.hotKey : null),
+			dialog		: true
+		};
+		this.registerButton(buttonConfiguration);
+
+		return true;
+	},
+
+	/*
+	 * This function gets called when the button was pressed.
+	 *
+	 * @param	object		editor: the editor instance
+	 * @param	string		id: the button id or the key
+	 *
+	 * @return	boolean		false if action is completed
+	 */
+	onButtonPress : function (editor, id) {
+
+		var sel = this.editor.getSelectedHTML().replace(/(<[^>]*>|&nbsp;|\n|\r)/g,"");
+		var param = new Object();
+		param.editor_url = _typo3_host_url + _editor_url;
+		if (param.editor_url == "../") {
+			param.editor_url = document.URL;
+			param.editor_url = param.editor_url.replace(/^(.*\/).*\/.*$/g, "$1");
 		}
-	});
-};
+		this.dialog = this.openDialog("InsertSmiley", this.makeUrlFromPopupName("insertsmiley"), "insertImageTag", param, {width:250, height:220});
+	},
 
-InsertSmiley._pluginInfo = {
-	name          : "InsertSmiley",
-	version       : "1.1",
-	developer     : "Ki Master George & Stanislas Rolland",
-	developer_url : "http://www.fructifor.ca/",
-	c_owner       : "Ki Master George & Stanislas Rolland",
-	sponsor       : "Ki Master George & Fructifor Inc.",
-	sponsor_url   : "http://www.fructifor.ca/",
-	license       : "GPL"
-};
+	/*
+	 * Insert the selected smiley
+	 *
+	 * @param	object		param: the selected smiley
+	 *
+	 * @return	boolean		false
+	 */
+	insertImageTag : function (param) {
+		if (param && typeof(param.imgURL) != "undefined") {
+			this.editor.focusEditor();
+			this.editor.insertHTML('<img src="' + param.imgURL + '" alt="Smiley" />');
+		}
+		return false;
+	}
+});
+

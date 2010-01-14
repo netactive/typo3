@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2003 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -27,7 +27,7 @@
 /**
  * Super admin configuration and main script (sample)
  *
- * $Id: superadmin.php 593 2005-04-01 14:37:15Z kasper $
+ * $Id: superadmin.php 3437 2008-03-16 16:22:11Z flyguide $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

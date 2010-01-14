@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2007 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Standard graphical functions
  *
- * $Id: class.t3lib_stdgraphic.php 6261 2009-10-22 10:26:25Z baschny $
+ * $Id: class.t3lib_stdgraphic.php 6259 2009-10-22 10:23:37Z baschny $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -219,7 +219,11 @@ class t3lib_stdGraphic	{
 		'white' => Array(255,255,255)
 	);
 
-		// Charset conversion object:
+	/**
+	 * Charset conversion object:
+	 *
+	 * @var t3lib_cs
+	 */
 	var $csConvObj;
 	var $nativeCharset='';		// Is set to the native character set of the input strings.
 
@@ -2563,7 +2567,7 @@ class t3lib_stdGraphic	{
 	 *
 	 * @return string $inputName escaped as needed
 	 */
-	function wrapFileName($inputName) {
+	protected function wrapFileName($inputName) {
 		return escapeshellarg($inputName);
 	}
 
@@ -2740,52 +2744,56 @@ class t3lib_stdGraphic	{
 	 * @param	pointer		The GDlib image resource pointer
 	 * @param	string		The filename to write to
 	 * @param	integer		The image quality (for JPEGs)
-	 * @return	mixed		The output of either imageGif, imagePng or imageJpeg based on the filename to write
+	 * @return	boolean		The output of either imageGif, imagePng or imageJpeg based on the filename to write
 	 * @see maskImageOntoImage(), scale(), output()
 	 */
 	function ImageWrite($destImg, $theImage, $quality=0)	{
 		imageinterlace ($destImg,0);
- 		$ext = strtolower(substr($theImage, strrpos($theImage, '.')+1));
- 		switch ($ext)	{
- 			case 'jpg':
- 			case 'jpeg':
- 				if (function_exists('imageJpeg'))	{
+		$ext = strtolower(substr($theImage, strrpos($theImage, '.')+1));
+		$result = FALSE;
+		switch ($ext)	{
+			case 'jpg':
+			case 'jpeg':
+				if (function_exists('imageJpeg'))	{
 					if ($quality == 0)	{
 						$quality = $this->jpegQuality;
 					}
- 					return imageJpeg($destImg, $theImage, $quality);
- 				}
- 			break;
- 			case 'gif':
- 				if (function_exists('imageGif'))	{
+					$result = imageJpeg($destImg, $theImage, $quality);
+				}
+			break;
+			case 'gif':
+				if (function_exists('imageGif'))	{
 					if ($this->truecolor)	{
 						imagetruecolortopalette($destImg, true, 256);
 					}
- 					return imageGif($destImg, $theImage);
- 				}
- 			break;
- 			case 'png':
- 				if (function_exists('imagePng'))	{
- 					return ImagePng($destImg, $theImage);
- 				}
- 			break;
- 		}
- 		return false;		// Extension invalid or write-function does not exist
- 	}
+					$result = imageGif($destImg, $theImage);
+				}
+			break;
+			case 'png':
+				if (function_exists('imagePng'))	{
+					$result = ImagePng($destImg, $theImage);
+				}
+			break;
+		}
+		if ($result) {
+			t3lib_div::fixPermissions($theImage); 
+		}
+		return $result;
+	}
 
 
 
- 	/**
- * Writes the input GDlib image pointer to file. Now just a wrapper to ImageWrite.
- *
- * @param	pointer		The GDlib image resource pointer
- * @param	string		The filename to write to
- * @return	mixed		The output of either imageGif, imagePng or imageJpeg based on the filename to write
- * @see imageWrite()
- * @deprecated
- */
- 	function imageGif($destImg, $theImage)	{
- 		return $this->imageWrite($destImg, $theImage);
+	/**
+	 * Writes the input GDlib image pointer to file. Now just a wrapper to ImageWrite.
+	 *
+	 * @param	pointer		The GDlib image resource pointer
+	 * @param	string		The filename to write to
+	 * @return	mixed		The output of either imageGif, imagePng or imageJpeg based on the filename to write
+	 * @see imageWrite()
+	 * @deprecated
+	 */
+	function imageGif($destImg, $theImage)	{
+		return $this->imageWrite($destImg, $theImage);
 	}
 
 	/**

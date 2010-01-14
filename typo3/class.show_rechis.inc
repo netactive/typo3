@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
-*  (c) 2006 Sebastian Kurfuerst (sebastian@garbage-group.de)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2006-2008 Sebastian Kurfuerst (sebastian@garbage-group.de)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
 /**
  * Class for the record history display script (show_rechis.php)
  *
- * $Id: class.show_rechis.inc 1868 2006-12-12 11:24:10Z ingmars $
+ * $Id: class.show_rechis.inc 3439 2008-03-16 19:16:51Z flyguide $
  * XHTML Compliant
  *
  * @author	Sebastian Kurfuerst <sebastian@garbage-group.de>

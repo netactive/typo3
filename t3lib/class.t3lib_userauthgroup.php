@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains an extension class specifically for authentication/initialization of backend users in TYPO3
  *
- * $Id: class.t3lib_userauthgroup.php 5962 2009-09-17 19:40:43Z rupi $
+ * $Id: class.t3lib_userauthgroup.php 5961 2009-09-17 19:37:22Z rupi $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -342,9 +342,9 @@ class t3lib_userAuthGroup extends t3lib_userAuth {
 			$perms = intval($perms);	// Make sure it's integer.
 			$str= ' ('.
 				'(pages.perms_everybody & '.$perms.' = '.$perms.')'.	// Everybody
-				'OR(pages.perms_userid = '.$this->user['uid'].' AND pages.perms_user & '.$perms.' = '.$perms.')';	// User
+				' OR (pages.perms_userid = '.$this->user['uid'].' AND pages.perms_user & '.$perms.' = '.$perms.')';	// User
 			if ($this->groupList)	{
-				$str.= 'OR(pages.perms_groupid in ('.$this->groupList.') AND pages.perms_group & '.$perms.' = '.$perms.')';	// Group (if any is set)
+				$str.= ' OR (pages.perms_groupid in ('.$this->groupList.') AND pages.perms_group & '.$perms.' = '.$perms.')';	// Group (if any is set)
 			}
 			$str.=')';
 
@@ -529,7 +529,7 @@ class t3lib_userAuthGroup extends t3lib_userAuth {
 	 * @return	boolean		Returns true if the language value is allowed, otherwise false.
 	 */
 	function checkLanguageAccess($langValue)	{
-		if (strcmp($this->groupData['allowed_languages'],''))	{	// The users language list must be non-blank - otherwise all languages are allowed.
+		if (strcmp(trim($this->groupData['allowed_languages']),''))	{	// The users language list must be non-blank - otherwise all languages are allowed.
 			$langValue = intval($langValue);
 			if ($langValue != -1 && !$this->check('allowed_languages',$langValue))	{	// Language must either be explicitly allowed OR the lang Value be "-1" (all languages)
 				return FALSE;
@@ -740,7 +740,7 @@ class t3lib_userAuthGroup extends t3lib_userAuth {
 	function workspaceAllowLiveRecordsInPID($pid, $table)	{
 
 			// Always for Live workspace AND if live-edit is enabled and tables are completely without versioning it is ok as well.
-		if ($this->workspace===0 || ($this->workspaceRec['live_edit'] && !$GLOBALS['TCA'][$table]['ctrl']['versioningWS']))	{
+		if ($this->workspace===0 || ($this->workspaceRec['live_edit'] && !$GLOBALS['TCA'][$table]['ctrl']['versioningWS']) || $GLOBALS['TCA'][$table]['ctrl']['versioningWS_alwaysAllowLiveEdit'])	{
 			return 2;	// OK to create for this table.
 		} elseif (t3lib_BEfunc::isPidInVersionizedBranch($pid, $table)) {	// Check if records from $table can be created with this PID: Either if inside "branch" versioning type or a "versioning_followPages" table on a "page" versioning type.
 				// Now, check what the stage of that "page" or "branch" version type is:
@@ -865,11 +865,17 @@ class t3lib_userAuthGroup extends t3lib_userAuth {
 	function workspaceVersioningTypeAccess($type)	{
 		$retVal = FALSE;
 
+		$type = t3lib_div::intInRange($type,-1);
+
+			// Check if only element versioning is allowed:
+		if ($GLOBALS['TYPO3_CONF_VARS']['BE']['elementVersioningOnly'] && $type!=-1)	{
+			return FALSE;
+		}
+
 		if ($this->workspace>0 && !$this->isAdmin())	{
 			$stat = $this->checkWorkspaceCurrent();
 			if ($stat['_ACCESS']!=='owner')	{
 
-				$type = t3lib_div::intInRange($type,-1);
 				switch((int)$type)	{
 					case -1:
 						$retVal = $this->workspaceRec['vtypes']&1 ? FALSE : TRUE;

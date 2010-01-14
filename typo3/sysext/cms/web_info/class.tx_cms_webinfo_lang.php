@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains a class with functions for page related overview of translations.
  *
- * $Id: class.tx_cms_webinfo_lang.php 1997 2007-02-05 18:24:44Z ingmars $
+ * $Id: class.tx_cms_webinfo_lang.php 4166 2008-09-23 08:44:14Z masi $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -136,23 +136,21 @@ class tx_cms_webinfo_lang extends t3lib_extobjbase {
 			#debug($tree->tree);
 
 				// Add CSS needed:
-			$css_content = '
-				TABLE#langTable {
+			$this->pObj->doc->inDocStylesArray[] = '
+				table#langTable {
 					margin-top: 10px;
 				}
-				TABLE#langTable TR TD {
+				table#langTable tr td {
 					padding-left : 2px;
 					padding-right : 2px;
 					white-space: nowrap;
 				}
-				TD.c-blocked { background-color: red; }
-				TD.c-ok { background-color: #669966; }
-				TD.c-fallback {  }
-				TD.c-leftLine {border-left: 2px solid black; }
+				td.c-blocked { background-color: #f72116; }
+				td.c-ok { background-color: #86b571; }
+				td.c-fallback {  }
+				td.c-leftLine {border-left: 2px solid black; }
 				.bgColor5 { font-weight: bold; }
 			';
-			$marker = '/*###POSTCSSMARKER###*/';
-			$this->pObj->content = str_replace($marker,$css_content.chr(10).$marker,$this->pObj->content);
 
 				// Render information table:
 			$theOutput.= $this->renderL10nTable($tree);
@@ -337,6 +335,12 @@ class tx_cms_webinfo_lang extends t3lib_extobjbase {
 	 * @return	array		System language records in an array.
 	 */
 	function getSystemLanguages()	{
+		if (!$GLOBALS['BE_USER']->user['admin'] &&
+			strlen($GLOBALS['BE_USER']->groupData['allowed_languages'])) {
+
+			$allowed_languages = array_flip(explode(',', $GLOBALS['BE_USER']->groupData['allowed_languages']));
+		}
+
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 			'*',
 			'sys_language',
@@ -345,7 +349,14 @@ class tx_cms_webinfo_lang extends t3lib_extobjbase {
 
 		$outputArray = array();
 		while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-			$outputArray[] = $row;
+			if (is_array($allowed_languages) && count($allowed_languages)) {
+				if (isset($allowed_languages[$row['uid']])) {
+					$outputArray[] = $row;
+				}
+			}
+			else {
+				$outputArray[] = $row;
+			}
 		}
 
 		return $outputArray;
@@ -369,8 +380,8 @@ class tx_cms_webinfo_lang extends t3lib_extobjbase {
 		);
 
 		$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
+		t3lib_BEfunc::workspaceOL('pages_language_overlay',$row);
 		if (is_array($row))	{
-			t3lib_BEfunc::workspaceOL('pages_language_overlay',$row);
 			$row['_COUNT'] = $GLOBALS['TYPO3_DB']->sql_num_rows($res);
 			$row['_HIDDEN'] = $row['hidden'] ||
 							(intval($row['endtime']) > 0 && intval($row['endtime']) < time()) ||
@@ -406,4 +417,5 @@ class tx_cms_webinfo_lang extends t3lib_extobjbase {
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/cms/web_info/class.tx_cms_webinfo_lang.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/cms/web_info/class.tx_cms_webinfo_lang.php']);
 }
+
 ?>

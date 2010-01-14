@@ -1,10 +1,12 @@
 <?php
-# TYPO3 CVS ID: $Id: ext_tables.php 937 2005-12-26 23:59:37Z sebastian $
+# TYPO3 SVN ID: $Id: ext_tables.php 4667 2009-01-08 18:43:00Z ohader $
 if (!defined ('TYPO3_MODE')) 	die ('Access denied.');
 
 	// add flexform
-t3lib_extMgm::addPiFlexFormValue('default', 'FILE:EXT:css_styled_content/flexform_ds.xml');
-t3lib_extMgm::addToAllTCAtypes('tt_content','pi_flexform;;;;1-1-1','table');
+t3lib_extMgm::addPiFlexFormValue('*', 'FILE:EXT:css_styled_content/flexform_ds.xml','table');
+$TCA['tt_content']['types']['table']['showitem']='CType;;4;;1-1-1, hidden, header;;3;;2-2-2, linkToTop;;;;4-4-4,
+			--div--;LLL:EXT:cms/locallang_ttc.xml:CType.I.5, layout;;10;;3-3-3, cols, bodytext;;9;nowrap:wizards[table], text_properties, pi_flexform,
+			--div--;LLL:EXT:cms/locallang_tca.xml:pages.tabs.access, starttime, endtime';
 
 t3lib_extMgm::addStaticFile($_EXTKEY,'static/','CSS Styled Content');
 ?>

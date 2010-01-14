@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2003-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2003-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -30,7 +30,7 @@
  * which are default for most TYPO3 installations. Soft References can also be userdefined.
  * The Soft Reference parsers are used by the system to find these references and process them accordingly in import/export actions and copy operations.
  *
- * $Id: class.t3lib_softrefproc.php 1770 2006-10-25 10:27:07Z kasper $
+ * $Id: class.t3lib_softrefproc.php 3439 2008-03-16 19:16:51Z flyguide $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -640,7 +640,7 @@ class t3lib_softrefproc {
 		if (strlen($cssClass))	$finalTagParts['class'] = $cssClass;
 
 			// Parse URL:
-		$pU = parse_url($link_param);
+		$pU = @parse_url($link_param);
 
 			// Detecting the kind of reference:
 		if(strstr($link_param,'@') && !$pU['scheme'])	{		// If it's a mail address:

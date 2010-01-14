@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2004-2007 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2004-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Contains the class "t3lib_db" containing functions for building SQL queries and mysql wrappers, thus providing a foundational API to all database interaction.
  * This class is instantiated globally as $TYPO3_DB in TYPO3 scripts.
  *
- * $Id: class.t3lib_db.php 4016 2008-08-21 09:35:07Z dmitry $
+ * $Id: class.t3lib_db.php 6149 2009-10-15 08:56:07Z rupi $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -142,9 +142,13 @@ class t3lib_DB {
 	var $debugOutput = FALSE;		// Set "TRUE" if you want database errors outputted.
 	var $debug_lastBuiltQuery = '';		// Internally: Set to last built query (not necessarily executed...)
 	var $store_lastBuiltQuery = FALSE;	// Set "TRUE" if you want the last built query to be stored in $debug_lastBuiltQuery independent of $this->debugOutput
+	var $explainOutput = 0;			// Set this to 1 to get queries explained (devIPmask must match). Set the value to 2 to the same but disregarding the devIPmask. There is an alternative option to enable explain output in the admin panel under "TypoScript", which will produce much nicer output, but only works in FE.
 
 		// Default link identifier:
 	var $link = FALSE;
+
+		// Default character set, applies unless character set or collation are explicitely set
+	var $default_charset = 'utf8';
 
 
 
@@ -223,8 +227,16 @@ class t3lib_DB {
 	 * @return	pointer		MySQL result pointer / DBAL object
 	 */
 	function exec_SELECTquery($select_fields,$from_table,$where_clause,$groupBy='',$orderBy='',$limit='')	{
-		$res = mysql_query($this->SELECTquery($select_fields,$from_table,$where_clause,$groupBy,$orderBy,$limit), $this->link);
-		if ($this->debugOutput)	$this->debug('exec_SELECTquery');
+		$query = $this->SELECTquery($select_fields,$from_table,$where_clause,$groupBy,$orderBy,$limit);
+		$res = mysql_query($query, $this->link);
+
+		if ($this->debugOutput) {
+			$this->debug('exec_SELECTquery');
+		}
+		if ($this->explainOutput) {
+			$this->explain($query, $from_table, $this->sql_num_rows($res));
+		}
+
 		return $res;
 	}
 
@@ -256,7 +268,7 @@ class t3lib_DB {
 		$mmWhere.= ($local_table AND $foreign_table) ? ' AND ' : '';
 		$mmWhere.= $foreign_table ? ($foreign_table_as ? $foreign_table_as : $foreign_table).'.uid='.$mm_table.'.uid_foreign' : '';
 
-		return $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+		return $this->exec_SELECTquery(
 					$select,
 					($local_table ? $local_table.',' : '').$mm_table.($foreign_table ? ','. $foreign_table.($foreign_table_as ? ' AS '.$foreign_table_as : '') : ''),
 					$mmWhere.' '.$whereClause,		// whereClauseMightContainGroupOrderBy
@@ -491,8 +503,9 @@ class t3lib_DB {
 	 * @return	string		WHERE clause for a query
 	 */
 	function listQuery($field, $value, $table)	{
-		$command = $this->quoteStr($value, $table);
-		$where = '('.$field.' LIKE \'%,'.$command.',%\' OR '.$field.' LIKE \''.$command.',%\' OR '.$field.' LIKE \'%,'.$command.'\' OR '.$field.'=\''.$command.'\')';
+		$pattern = $this->quoteStr($value, $table);
+		$patternForLike = $this->escapeStrForLike($pattern, $table);
+		$where = '('.$field.' LIKE \'%,'.$patternForLike.',%\' OR '.$field.' LIKE \''.$patternForLike.',%\' OR '.$field.' LIKE \'%,'.$patternForLike.'\' OR '.$field.'=\''.$pattern.'\')';
 		return $where;
 	}
 
@@ -776,11 +789,14 @@ class t3lib_DB {
 	 * Usage count/core: 85
 	 *
 	 * @param	pointer		MySQL result pointer (of SELECT query) / DBAL object
-	 * @return	integer		Number of resulting rows.
+	 * @return	integer		Number of resulting rows
 	 */
 	function sql_num_rows($res)	{
-		$this->debug_check_recordset($res);
-		return mysql_num_rows($res);
+		if ($this->debug_check_recordset($res)) {
+			return mysql_num_rows($res);
+		} else {
+			return FALSE;
+		}
 	}
 
 	/**
@@ -792,8 +808,11 @@ class t3lib_DB {
 	 * @return	array		Associative array of result row.
 	 */
 	function sql_fetch_assoc($res)	{
-		$this->debug_check_recordset($res);
-		return mysql_fetch_assoc($res);
+		if ($this->debug_check_recordset($res)) {
+			return mysql_fetch_assoc($res);
+		} else {
+			return FALSE;
+		}
 	}
 
 	/**
@@ -806,8 +825,11 @@ class t3lib_DB {
 	 * @return	array		Array with result rows.
 	 */
 	function sql_fetch_row($res)	{
-		$this->debug_check_recordset($res);
-		return mysql_fetch_row($res);
+		if ($this->debug_check_recordset($res)) {
+			return mysql_fetch_row($res);
+		} else {
+			return FALSE;
+		}
 	}
 
 	/**
@@ -819,8 +841,11 @@ class t3lib_DB {
 	 * @return	boolean		Returns TRUE on success or FALSE on failure.
 	 */
 	function sql_free_result($res)	{
-		$this->debug_check_recordset($res);
-		return mysql_free_result($res);
+		if ($this->debug_check_recordset($res)) {
+			return mysql_free_result($res);
+		} else {
+			return FALSE;
+		}
 	}
 
 	/**
@@ -854,9 +879,12 @@ class t3lib_DB {
 	 * @param	integer		Seek result number.
 	 * @return	boolean		Returns TRUE on success or FALSE on failure.
 	 */
-	function sql_data_seek($res,$seek)	{
-		$this->debug_check_recordset($res);
-		return mysql_data_seek($res,$seek);
+	function sql_data_seek($res, $seek)	{
+		if ($this->debug_check_recordset($res)) {
+			return mysql_data_seek($res, $seek);
+		} else {
+			return FALSE;
+		}
 	}
 
 	/**
@@ -868,9 +896,12 @@ class t3lib_DB {
 	 * @param	integer		Field index.
 	 * @return	string		Returns the name of the specified field index
 	 */
-	function sql_field_type($res,$pointer)	{
-		$this->debug_check_recordset($res);
-		return mysql_field_type($res,$pointer);
+	function sql_field_type($res, $pointer)	{
+		if ($this->debug_check_recordset($res)) {
+			return mysql_field_type($res, $pointer);
+		} else {
+			return FALSE;
+		}
 	}
 
 	/**
@@ -967,16 +998,20 @@ class t3lib_DB {
 	 * In a DBAL this method should 1) look up all tables from the DBMS  of the _DEFAULT handler and then 2) add all tables *configured* to be managed by other handlers
 	 * Usage count/core: 2
 	 *
-	 * @return	array		Tables in an array (tablename is in both key and value)
+	 * @return	array		Array with tablenames as key and arrays with status information as value
 	 */
 	function admin_get_tables()	{
 		$whichTables = array();
-		$tables_result = mysql_list_tables(TYPO3_db, $this->link);
+
+		$tables_result = mysql_query('SHOW TABLE STATUS FROM `'.TYPO3_db.'`', $this->link);
 		if (!mysql_error())	{
 			while ($theTable = mysql_fetch_assoc($tables_result)) {
-				$whichTables[current($theTable)] = current($theTable);
+				$whichTables[$theTable['Name']] = $theTable;
 			}
+
+			$this->sql_free_result($tables_result);
 		}
+
 		return $whichTables;
 	}
 
@@ -991,10 +1026,12 @@ class t3lib_DB {
 	function admin_get_fields($tableName)	{
 		$output = array();
 
-		$columns_res = mysql_query('SHOW columns FROM `'.$tableName.'`', $this->link);
+		$columns_res = mysql_query('SHOW COLUMNS FROM `'.$tableName.'`', $this->link);
 		while($fieldRow = mysql_fetch_assoc($columns_res))	{
 			$output[$fieldRow['Field']] = $fieldRow;
 		}
+
+		$this->sql_free_result($columns_res);
 
 		return $output;
 	}
@@ -1009,9 +1046,35 @@ class t3lib_DB {
 	function admin_get_keys($tableName)	{
 		$output = array();
 
-		$keyRes = mysql_query('SHOW keys FROM `'.$tableName.'`', $this->link);
+		$keyRes = mysql_query('SHOW KEYS FROM `'.$tableName.'`', $this->link);
 		while($keyRow = mysql_fetch_assoc($keyRes))	{
 			$output[] = $keyRow;
+		}
+
+		$this->sql_free_result($keyRes);
+
+		return $output;
+	}
+
+	/**
+	 * Returns information about the character sets supported by the current DBM
+	 * This function is important not only for the Install Tool but probably for DBALs as well since they might need to look up table specific information in order to construct correct queries. In such cases this information should probably be cached for quick delivery.
+	 *
+	 * This is used by the Install Tool to convert tables tables with non-UTF8 charsets
+	 * Use in Install Tool only!
+	 *
+	 * @return	array		Array with Charset as key and an array of "Charset", "Description", "Default collation", "Maxlen" as values
+	 */
+	function admin_get_charsets()	{
+		$output = array();
+
+		$columns_res = mysql_query('SHOW CHARACTER SET', $this->link);
+		if ($columns_res) {
+			while (($row = mysql_fetch_assoc($columns_res))) {
+				$output[$row['Charset']] = $row;
+			}
+
+			$this->sql_free_result($columns_res);
 		}
 
 		return $output;
@@ -1123,11 +1186,112 @@ class t3lib_DB {
 			}
 			$msg .= ': function t3lib_DB->' . $trace[0]['function'] . ' called from file ' . substr($trace[0]['file'],strlen(PATH_site)+2) . ' in line ' . $trace[0]['line'];
 			t3lib_div::sysLog($msg.'. Use a devLog extension to get more details.', 'Core/t3lib_db', 3);
-			t3lib_div::devLog($msg.'.', 'Core/t3lib_db', 3, $trace);
+			// Send to devLog if enabled
+			if (TYPO3_DLOG) {
+				$debugLogData = array(
+					'SQL Error' => $this->sql_error(),
+					'Backtrace' => $trace,
+				);
+				if ($this->debug_lastBuiltQuery) {
+					$debugLogData = array('SQL Query' => $this->debug_lastBuiltQuery) + $debugLogData;
+				}
+				t3lib_div::devLog($msg . '.', 'Core/t3lib_db', 3, $debugLogData);
+			}
 
 			return FALSE;
 		}
 		return TRUE;
+	}
+
+	/**
+	 * Explain select queries
+	 * If $this->explainOutput is set, SELECT queries will be explained here. Only queries with more than one possible result row will be displayed.
+	 * The output is either printed as raw HTML output or embedded into the TS admin panel (checkbox must be enabled!)
+	 *
+	 * TODO: Feature is not DBAL-compliant
+	 *
+	 * @param	string		SQL query
+	 * @param	string		Table(s) from which to select. This is what comes right after "FROM ...". Required value.
+	 * @param	integer		Number of resulting rows
+	 * @return	boolean		True if explain was run, false otherwise
+	 */
+	protected function explain($query,$from_table,$row_count)	{
+
+		if ((int)$this->explainOutput==1 || ((int)$this->explainOutput==2 && t3lib_div::cmpIP(t3lib_div::getIndpEnv('REMOTE_ADDR'), $GLOBALS['TYPO3_CONF_VARS']['SYS']['devIPmask']))) {
+			$explainMode = 1;	// raw HTML output
+		} elseif ((int)$this->explainOutput==3 && is_object($GLOBALS['TT'])) {
+			$explainMode = 2;	// embed the output into the TS admin panel
+		} else {
+			return false;
+		}
+
+		$error = $this->sql_error();
+		$trail = t3lib_div::debug_trail();
+
+		$explain_tables = array();
+		$explain_output = array();
+		$res = $this->sql_query('EXPLAIN '.$query, $this->link);
+		if (is_resource($res)) {
+			while ($tempRow = $this->sql_fetch_assoc($res)) {
+				$explain_output[] = $tempRow;
+				$explain_tables[] = $tempRow['table'];
+			}
+			$this->sql_free_result($res);
+		}
+
+		$indices_output = array();
+		if ($explain_output[0]['rows']>1 || t3lib_div::inList('ALL',$explain_output[0]['type'])) {	// Notice: Rows are skipped if there is only one result, or if no conditions are set
+			$debug = true;	// only enable output if it's really useful
+
+			foreach ($explain_tables as $table) {
+				$res = $this->sql_query('SHOW INDEX FROM '.$table, $this->link);
+				if (is_resource($res)) {
+					while ($tempRow = $this->sql_fetch_assoc($res)) {
+						$indices_output[] = $tempRow;
+					}
+					$this->sql_free_result($res);
+				}
+			}
+		} else {
+			$debug = false;
+		}
+
+		if ($debug) {
+			if ($explainMode==1) {
+				t3lib_div::debug('QUERY: '.$query);
+				t3lib_div::debug(array('Debug trail:'=>$trail), 'Row count: '.$row_count);
+
+				if ($error) {
+					t3lib_div::debug($error);
+				}
+				if (count($explain_output)) {
+					t3lib_div::debug($explain_output);
+				}
+				if (count($indices_output)) {
+					t3lib_div::debugRows($indices_output);
+				}
+
+			} elseif ($explainMode==2) {
+				$data = array();
+				$data['query'] = $query;
+				$data['trail'] = $trail;
+				$data['row_count'] = $row_count;
+
+				if ($error) {
+					$data['error'] = $error;
+				}
+				if (count($explain_output)) {
+					$data['explain'] = $explain_output;
+				}
+				if (count($indices_output)) {
+					$data['indices'] = $indices_output;
+				}
+				$GLOBALS['TT']->setTSselectQuery($data);
+			}
+			return true;
+		}
+
+		return false;
 	}
 
 }

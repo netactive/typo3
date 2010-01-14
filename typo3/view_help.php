@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Document for viewing the online help texts, also known as TCA_DESCR.
  * See Inside TYPO3 for details.
  *
- * $Id: view_help.php 6240 2009-10-22 08:18:44Z baschny $
+ * $Id: view_help.php 6239 2009-10-22 08:18:20Z baschny $
  * Revised for TYPO3 3.7 5/2004 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -129,6 +129,7 @@ class SC_view_help {
 
 		// Internal, static: GPvar:
 	var $tfID;			// Table/FIeld id.
+	var $ffID;			// Flexform file/field information
 	var $back;			// Back (previous tfID)
 	var $renderALL;		// If set, then in TOC mode the FULL manual will be printed as well!
 
@@ -151,6 +152,11 @@ class SC_view_help {
 			// Sanitizes the tfID using whitelisting.
 		if (!preg_match('/^[a-zA-Z0-9_\-\.]*$/', $this->tfID)) {
 			$this->tfID = '';
+		}
+		if (!$this->tfID) {
+			if (($this->ffID = t3lib_div::_GP('ffID'))) {
+				$this->ffID = unserialize(base64_decode($this->ffID));
+			}
 		}
 		$this->back = t3lib_div::_GP('back');
 		$this->renderALL = t3lib_div::_GP('renderALL');
@@ -182,6 +188,9 @@ class SC_view_help {
 		} elseif ($this->tfID) { // ... otherwise show only single field:
 			$this->createGlossaryIndex();
 			$this->content.= $this->render_Single($this->table,$this->field);
+		}
+		elseif (is_array($this->ffID)) {
+			$this->content.= $this->render_SingleFlex();
 		} else {	// Render Table Of Contents if nothing else:
 			$this->content.= $this->render_TOC();
 		}
@@ -297,16 +306,16 @@ class SC_view_help {
 		$output.= '
 
 			<h1>'.$LANG->getLL('manual_title',1).'</h1>
-			<p>'.t3lib_BEfunc::TYPO3_copyRightNotice().'</p>';
+			';
 
 		$output.= '
 
-			<h1>'.$LANG->getLL('introduction',1).'</h1>
-			<p>'.$LANG->getLL('description',1).'</p>';
+			<h2>'.$LANG->getLL('introduction',1).'</h2>
+			<p class="introduction">'.$LANG->getLL('description',1).'</p>';
 
 		$output.= '
 
-			<h1>'.$LANG->getLL('TOC',1).'</h1>'.
+			<h2>'.$LANG->getLL('TOC',1).'</h2>'.
 			$this->render_TOC_makeTocList($tocArray);
 
 		if (!$this->renderALL)	{
@@ -318,14 +327,16 @@ class SC_view_help {
 		if ($this->renderALL)	{
 			$output.= '
 
-				<h1>'.$LANG->getLL('full_manual_chapters',1).'</h1>'.
+				<h2>'.$LANG->getLL('full_manual_chapters',1).'</h2>'.
 				implode('
 
 
 				<!-- NEW SECTION: -->
 				',$outputSections);
 		}
-
+		
+		$output .= '<hr /><p class="manual-title">'.t3lib_BEfunc::TYPO3_copyRightNotice().'</p>';
+		
 		return $output;
 	}
 
@@ -494,13 +505,22 @@ class SC_view_help {
 	}
 
 
+	/**
+	 * Renders CSH for a single field.
+	 *
+	 * @param	string		CSH key / table name
+	 * @param	string		Sub key / field name
+	 * @return	string		HTML output
+	 */
+	function render_SingleFlex() {
+		$output = '';
 
+			// Render
+		$output.= $this->printItemFlex();
 
-
-
-
-
-
+			// Substitute glossary words:
+		return $this->substituteGlossaryWords($output);
+	}
 
 
 	/************************************
@@ -519,8 +539,8 @@ class SC_view_help {
 	function make_seeAlso($value,$anchorTable='')	{
 		global $TCA,$BE_USER,$TCA_DESCR;
 
-			// Split references by comma, vert.line or linebreak
-		$items = split(',|'.chr(10),$value);
+			// Split references by comma or linebreak
+		$items = split('[,' . chr(10) . ']', $value);
 		$lines = array();
 
 		foreach($items as $val)	{
@@ -571,7 +591,7 @@ class SC_view_help {
 		$imgArray = t3lib_div::trimExplode(',', $images, 1);
 		if (count($imgArray))	{
 			$descrArray = explode(chr(10),$descr,count($imgArray));
-#debug($descrArray);
+
 			foreach($imgArray as $k => $image)	{
 				$descr = $descrArray[$k];
 
@@ -658,6 +678,35 @@ class SC_view_help {
 					($this->back ? '<br /><p><a href="'.htmlspecialchars('view_help.php?tfID='.rawurlencode($this->back)).'" class="typo3-goBack">'.htmlspecialchars($LANG->getLL('goBack')).'</a></p>' : '').
 			'<br />';
 		}
+		return $out;
+	}
+
+	/**
+	 * Prints a single $table/$field information piece
+	 * If $anchors is set, then seeAlso references to the same table will be page-anchors, not links.
+	 *
+	 * @param	string		Table name
+	 * @param	string		Field name
+	 * @param	boolean		If anchors is to be shown.
+	 * @return	string		HTML content
+	 */
+	function printItemFlex() {
+		// Get all texts
+		foreach (explode(',', 'description,details,syntax,image,image_descr,seeAlso') as $var) {
+			// Double $ below is not a error!
+			$$var = $GLOBALS['LANG']->sL($this->ffID['cshFile'] . ':' . $this->ffID['field'] . '.' . $var);
+		}
+		// Make seeAlso references.
+		$seeAlsoRes = $this->make_seeAlso($seeAlso);
+
+			// Making item:
+		$out= $this->headerLine($this->ffID['title'], 1) .
+				$this->prepareContent($description) .
+				($details ? $this->headerLine($GLOBALS['LANG']->getLL('details').':') . $this->prepareContent($details) : '') .
+				($syntax ? $this->headerLine($GLOBALS['LANG']->getLL('syntax').':') . $this->prepareContent($syntax) : '') .
+				($image ? $this->printImage($image, $image_descr) : '') .
+				($seeAlso && $seeAlsoRes ? $this->headerLine($GLOBALS['LANG']->getLL('seeAlso').':').'<p>'.$seeAlsoRes.'</p>' : '') .
+		'<br />';
 		return $out;
 	}
 

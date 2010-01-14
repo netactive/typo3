@@ -1,5 +1,5 @@
 <?php
-# TYPO3 CVS ID: $Id: testscript_INT.php 48 2003-10-26 17:07:44Z kasper $
+# TYPO3 SVN ID: $Id: testscript_INT.php 3437 2008-03-16 16:22:11Z flyguide $
 
 if (!is_object($this)) die ('Error: No parent object present.');
 

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  * Will display the list of main- and sub-modules available to the user.
  * Each module will be show with description and a link to the module.
  *
- * $Id: alt_intro.php 4977 2009-02-10 07:49:06Z stucki $
+ * $Id: alt_intro.php 4978 2009-02-10 07:50:24Z stucki $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -73,6 +73,12 @@ $LANG->includeLLFile('EXT:lang/locallang_alt_intro.xml');
  * @subpackage core
  */
 class SC_alt_intro {
+
+	/**
+	 * Object for backend modules.
+	 *
+	 * @var t3lib_loadModules
+	 */
 	var $loadModules;
 	var $content;
 

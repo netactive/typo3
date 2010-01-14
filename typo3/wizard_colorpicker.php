@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -89,7 +89,13 @@ class SC_wizard_colorpicker {
 		// Internal:
 	var $pickerImage = '';
 	var $imageError = '';		// Error message if image not found.
-	var $doc;					// Template Object
+
+	/**
+	 * document template object
+	 *
+	 * @var smallDoc
+	 */
+	var $doc;
 	var $content;				// Accumulated content.
 
 

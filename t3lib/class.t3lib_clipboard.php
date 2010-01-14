@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2007 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains class for TYPO3 clipboard for records and files
  *
- * $Id: class.t3lib_clipboard.php 1965 2007-02-02 20:38:13Z masi $
+ * $Id: class.t3lib_clipboard.php 5322 2009-04-16 16:15:46Z steffenk $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -317,8 +317,17 @@ class t3lib_clipboard {
 
 			// Button/menu header:
 		$thumb_url = t3lib_div::linkThisScript(array('CB'=>array('setThumb'=>$this->clipData['_setThumb']?0:1)));
-		$copymode_url = t3lib_div::linkThisScript(array('CB'=>array('setCopyMode'=>($this->currentMode()=='copy'?'':'copy'))));
 		$rmall_url = t3lib_div::linkThisScript(array('CB'=>array('removeAll'=>$this->current)));
+
+			// Copymode Selector menu
+		$copymode_url = t3lib_div::linkThisScript();
+		$moveLabel = htmlspecialchars($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_misc.php:moveElements'));
+		$copyLabel = htmlspecialchars($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_misc.php:copyElements'));
+		$opt=array();
+		$opt[]='<option style="padding-left: 20px; background-image: url(\''.t3lib_iconWorks::skinImg($this->backPath, 'gfx/clip_cut.gif', '', 1).'\'); background-repeat: no-repeat;" value="" '.(($this->currentMode()=='copy')?'':'selected="selected"').'>'.$moveLabel .'</option>';
+		$opt[]='<option style="padding-left: 20px; background-image: url(\''.t3lib_iconWorks::skinImg($this->backPath, 'gfx/clip_copy.gif', '', 1).'\'); background-repeat: no-repeat;" value="1" '.(($this->currentMode()=='copy')?'selected="selected"':'').'>'.$copyLabel .'</option>';
+
+		$copymode_selector = ' <select name="CB[setCopyMode]" onchange="this.form.method=\'POST\'; this.form.action=\''.$copymode_url.'&CB[setCopyMode]=\'+(this.options[this.selectedIndex].value); this.form.submit(); return true;" >'.implode('',$opt).'</select>';
 
 			// Selector menu + clear button
 		$opt=array();
@@ -329,18 +338,18 @@ class t3lib_clipboard {
 		}
 				// Edit:
 		if (!$this->fileMode && $elCount)	{
-			$opt[]='<option value="'.htmlspecialchars("window.location.href='".$this->editUrl()."&returnUrl='+top.rawurlencode(window.location.href);").'">'.$this->clLabel('edit','rm').'</option>';
+			$opt[]='<option value="' . htmlspecialchars("window.location.href='" . $this->editUrl() . "&returnUrl='+top.rawurlencode(window.location.href);") . '">' . $this->clLabel('edit', 'rm') . '</option>';
 		}
 				// Delete:
 		if ($elCount)	{
 			if($GLOBALS['BE_USER']->jsConfirmation(4))	{
 				$js = "
 			if(confirm(".$GLOBALS['LANG']->JScharCode(sprintf($LANG->sL('LLL:EXT:lang/locallang_core.php:mess.deleteClip'),$elCount)).")){
-				window.location.href='".$this->deleteUrl(0,$this->fileMode?1:0)."&redirect='+top.rawurlencode(window.location.href);
+				window.location.href='" . $this->deleteUrl(0, $this->fileMode ? 1 : 0) . "&redirect='+top.rawurlencode(window.location.href);
 			}
 					";
 			} else {
-				$js = " window.location.href='".$this->deleteUrl(0,$this->fileMode?1:0)."&redirect='+top.rawurlencode(window.location.href); ";
+				$js = " window.location.href='" . $this->deleteUrl(0, $this->fileMode ? 1 : 0) . "&redirect='+top.rawurlencode(window.location.href); ";
 			}
 			$opt[]='<option value="'.htmlspecialchars($js).'">'.$this->clLabel('delete','rm').'</option>';
 		}
@@ -352,11 +361,11 @@ class t3lib_clipboard {
 				'<a href="'.htmlspecialchars($thumb_url).'#clip_head">'.
 					'<img'.t3lib_iconWorks::skinImg($this->backPath,'gfx/thumb_'.($this->clipData['_setThumb']?'s':'n').'.gif','width="21" height="16"').' vspace="2" border="0" title="'.$this->clLabel('thumbmode_clip').'" alt="" />'.
 					'</a>'.
-				'<a href="'.htmlspecialchars($copymode_url).'#clip_head">'.
-					'<img'.t3lib_iconWorks::skinImg($this->backPath,'gfx/copymode_'.($this->currentMode()=='copy'?'s':'n').'.gif','width="21" height="16"').' vspace="2" border="0" title="'.$this->clLabel('copymode').'" alt="" />'.
-					'</a>'.
 				'</td>
-				<td width="95%">'.$selector_menu.'</td>
+				<td width="95%" nowrap="nowrap">'.
+					$copymode_selector.' '.
+					$selector_menu.
+				'</td>
 				<td>'.
 				'<a href="'.htmlspecialchars($rmall_url).'#clip_head">'.
 					'<img'.t3lib_iconWorks::skinImg($this->backPath,'gfx/closedok_2.gif','width="21" height="16"').' vspace="2" border="0" title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:buttons.clear',1).'" alt="" />'.

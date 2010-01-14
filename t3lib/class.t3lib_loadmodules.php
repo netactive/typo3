@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * This document provides a class that loads the modules for the TYPO3 interface.
  *
- * $Id: class.t3lib_loadmodules.php 1770 2006-10-25 10:27:07Z kasper $
+ * $Id: class.t3lib_loadmodules.php 3439 2008-03-16 19:16:51Z flyguide $
  * Modifications by Rene Fritz, 2001
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
@@ -83,7 +83,12 @@ class t3lib_loadModules {
 	var $modListGroup = Array();		// this array will hold the elements that should go into the select-list of modules for groups...
 	var $modListUser = Array();		// this array will hold the elements that should go into the select-list of modules for users...
 
-	var $BE_USER = '';	// The backend user for use internally
+	/**
+	 * The backend user for use internally
+	 *
+	 * @var t3lib_beUserAuth
+	 */
+	var $BE_USER = '';
 	var $observeWorkspaces = FALSE;		// If set true, workspace "permissions" will be observed so non-allowed modules will not be included in the array of modules.
 
 
@@ -113,7 +118,6 @@ class t3lib_loadModules {
 			(
 			    [web] => list,info,perm,func
 			    [file] => list
-			    [doc] =>
 			    [user] =>
 			    [tools] => em,install,txphpmyadmin
 			    [help] => about
@@ -148,7 +152,6 @@ class t3lib_loadModules {
 				            [0] => list
 				        )
 
-				    [doc] => 1
 				    [user] => 1
 				    [tools] => Array
 				        (
@@ -205,8 +208,8 @@ class t3lib_loadModules {
 			if ($theMainMod && !is_null($path))	{
 				$this->modules[$mods] = $theMainMod;
 
-					// SUBMODULES - if any - are loaded (The 'doc' module cannot have submodules...)
-				if ($mods!='doc' && is_array($subMod))	{
+					// SUBMODULES - if any - are loaded
+				if (is_array($subMod))	{
 					foreach($subMod as $valsub)	{
 						$extModRelPath = $this->checkExtensionModule($mods.'_'.$valsub);
 						if ($extModRelPath)	{	// EXTENSION submodule:
@@ -230,7 +233,7 @@ class t3lib_loadModules {
 					}
 				}
 			} else {	// This must be done in order to fill out the select-lists for modules correctly!!
-				if ($mods!='doc' && is_array($subMod))	{
+				if (is_array($subMod))	{
 					foreach($subMod as $valsub)	{
 // FIXME path can only be NULL here, or not?
 						$this->checkMod($mods.'_'.$valsub,$path.$mods.'/'.$valsub);
@@ -293,12 +296,6 @@ class t3lib_loadModules {
 
 		                )
 
-		        )
-
-		    [doc] => Array
-		        (
-		            [name] => doc
-		            [script] => mod/doc/../../alt_doc.php
 		        )
 
 		    [user] => Array

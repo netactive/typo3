@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Creates the frameset for 'Frameset modules' like Web>* and File>*
  *
- * $Id: alt_mod_frameset.php 6237 2009-10-22 08:14:29Z baschny $
+ * $Id: alt_mod_frameset.php 6236 2009-10-22 08:14:02Z baschny $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant content (with exception of a few attributes for the <frameset> tags)
  *
@@ -49,8 +49,6 @@
 
 require ('init.php');
 require ('template.php');
-
-
 
 
 /**
@@ -107,11 +105,11 @@ class SC_alt_mod_frameset {
 			// Navigation frame URL:
 		$script = t3lib_div::sanitizeBackEndUrl(t3lib_div::_GP('script'));
 		$nav = t3lib_div::sanitizeBackEndUrl(t3lib_div::_GP('nav'));
-		$URL_nav = htmlspecialchars($nav.'?currentSubScript='.rawurlencode($script));
+		$URL_nav = htmlspecialchars($nav.'&currentSubScript='.rawurlencode($script));
 
 			// List frame URL:
 		$URL_list = htmlspecialchars($this->exScript ? $this->exScript : ($script . ($this->id ? (strpos($script, '?') ? '&' : '?' ) . 'id=' . rawurlencode($this->id) : '')));
-
+			
 			// Start page output
 		$TBE_TEMPLATE->docType='xhtml_frames';
 		$this->content = $TBE_TEMPLATE->startPage('Frameset');
@@ -121,7 +119,7 @@ class SC_alt_mod_frameset {
 
 		if ($this->resizable)	{
 			$this->content.= '
-	<frameset cols="'.$width.',*"'.$onLoadHandler.'>
+	<frameset id="typo3-content-frameset" cols="'.$width.',*"'.$onLoadHandler.'>
 		<frame name="nav_frame" src="'.$URL_nav.'" marginwidth="0" marginheight="0" scrolling="auto" />
 		<frame name="list_frame" src="'.$URL_list.'" marginwidth="0" marginheight="0" scrolling="auto" />
 	</frameset>
@@ -131,7 +129,7 @@ class SC_alt_mod_frameset {
 		} else {
 			$this->content.= '
 
-	<frameset cols="'.$width.',8,*" framespacing="0" frameborder="0" border="0"'.$onLoadHandler.'>
+	<frameset id="typo3-content-frameset" cols="'.$width.',8,*" framespacing="0" frameborder="0" border="0"'.$onLoadHandler.'>
 		<frame name="nav_frame" src="'.$URL_nav.'" marginwidth="0" marginheight="0" frameborder="0" scrolling="auto" noresize="noresize" />
 		<frame name="border_frame" src="'.(isset($GLOBALS['TBE_STYLES']['border']) ? $GLOBALS['TBE_STYLES']['border'] : 'border.html').'" marginwidth="0" marginheight="0" frameborder="0" scrolling="no" noresize="noresize" />
 		<frame name="list_frame" src="'.$URL_list.'" marginwidth="0" marginheight="0" frameborder="0" scrolling="auto" noresize="noresize" />

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Folder tree in the File main module.
  *
- * $Id: alt_file_navframe.php 4694 2009-01-12 11:28:51Z steffenk $
+ * $Id: alt_file_navframe.php 4571 2008-12-18 18:38:49Z steffenk $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -55,7 +55,7 @@
  */
 
 $BACK_PATH = '';
-require('init.php');
+require_once('init.php');
 require('template.php');
 require_once('class.filelistfoldertree.php');
 
@@ -72,11 +72,16 @@ class SC_alt_file_navframe {
 		// Internal, dynamic:
 	var $content;		// Content accumulates in this variable.
 	var $foldertree;	// Folder tree object.
-	var $doc;			// Template object.
+
+	/**
+	 * document template object
+	 *
+	 * @var template
+	 */
+	var $doc;
 	var $backPath;
 
 		// Internal, static: GPvar:
-	var $ajax;							// Is set, if an AJAX call should be handled.
 	var $currentSubScript;
 	var $cMR;
 
@@ -87,14 +92,12 @@ class SC_alt_file_navframe {
 	 * @return	void
 	 */
 	function init()	{
-		global $BE_USER,$BACK_PATH,$CLIENT;
+		global $BE_USER, $BACK_PATH;
 
 			// Setting backPath
 		$this->backPath = $BACK_PATH;
-		$this->doc->backPath = $BACK_PATH;
 
 			// Setting GPvars:
-		$this->ajax = t3lib_div::_GP('ajax');
 		$this->currentSubScript = t3lib_div::_GP('currentSubScript');
 		$this->cMR = t3lib_div::_GP('cMR');
 
@@ -102,61 +105,62 @@ class SC_alt_file_navframe {
 		$this->foldertree = t3lib_div::makeInstance('filelistFolderTree');
 		$this->foldertree->ext_IconMode = $BE_USER->getTSConfigVal('options.folderTree.disableIconLinkToContextmenu');
 		$this->foldertree->thisScript = 'alt_file_navframe.php';
-
-			// Use template rendering only if this is a non-AJAX call:
-		if (!$this->ajax) {
-				// Setting highlight mode:
-			$this->doHighlight = !$BE_USER->getTSConfigVal('options.pageTree.disableTitleHighlight');
-
-				// Create template object:
-			$this->doc = t3lib_div::makeInstance('template');
-			$this->doc->docType = 'xhtml_trans';
-
-				// Adding javascript code for AJAX (prototype), drag&drop and the pagetree
-			$this->doc->JScode  = '
-			<script type="text/javascript" src="'.$this->backPath.'contrib/prototype/prototype.js"></script>
-			<script type="text/javascript" src="'.$this->backPath.'tree.js"></script>'."\n";
-
-				// Setting JavaScript for menu.
-			$this->doc->JScode .= $this->doc->wrapScriptTags(
-			($this->currentSubScript?'top.currentSubScript=unescape("'.rawurlencode($this->currentSubScript).'");':'').'
-
-			// setting prefs for pagetree and drag & drop
-			Tree.thisScript    = "'.$this->foldertree->thisScript.'";
-			DragDrop.changeURL = "'.$this->backPath.'alt_clickmenu.php";
-			DragDrop.backPath  = "'.t3lib_div::shortMD5(''.'|'.$GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']).'";
-			DragDrop.table     = "folders";
-
-			// Function, loading the list frame from navigation tree:
-			function jumpTo(id, linkObj, highlightID, bank)	{
-				var theUrl = top.TS.PATH_typo3 + top.currentSubScript ;
-				if (theUrl.indexOf("?") != -1) {
-					theUrl += "&id=" + id
-				} else {
-					theUrl += "?id=" + id		    	
-				}	
-				top.fsMod.currentBank = bank;
-
-				if (top.condensedMode)	{
-					top.content.location.href=theUrl;
-				} else {
-					parent.list_frame.location.href=theUrl;
-				}
-
-				'.($this->doHighlight ? 'Tree.highlightActiveItem("file", highlightID + "_" + bank);' : '').'
-				'.(!$GLOBALS['CLIENT']['FORMSTYLE'] ? '' : 'if (linkObj) linkObj.blur(); ').'
-				return false;
-			}
-			'.($this->cMR ? " jumpTo(top.fsMod.recentIds['file'],'');" : '')
-			);
-
-				// Click menu code is added:
-			$CMparts=$this->doc->getContextMenuCode();
-			$this->doc->bodyTagAdditions = $CMparts[1];
-			$this->doc->JScode.= $CMparts[0];
-			$this->doc->postCode.= $CMparts[2];
-		}
 	}
+
+
+	/**
+	 * initialization for the visual parts of the class
+	 * Use template rendering only if this is a non-AJAX call
+	 *
+	 * @return	void
+	 */
+	public function initPage() {
+		global $BE_USER, $BACK_PATH, $CLIENT;
+
+			// Setting highlight mode:
+		$this->doHighlight = !$BE_USER->getTSConfigVal('options.pageTree.disableTitleHighlight');
+
+			// Create template object:
+		$this->doc = t3lib_div::makeInstance('template');
+		$this->doc->backPath = $BACK_PATH;
+		$this->doc->docType = 'xhtml_trans';
+
+			// Adding javascript code for AJAX (prototype), drag&drop and the filetree as well as the click menu code
+		$this->doc->getDragDropCode('folders');
+		$this->doc->getContextMenuCode();
+
+			// Setting JavaScript for menu.
+		$this->doc->JScode .= $this->doc->wrapScriptTags(
+
+		($this->currentSubScript?'top.currentSubScript=unescape("'.rawurlencode($this->currentSubScript).'");':'').'
+
+		// setting prefs for foldertree
+		Tree.ajaxID = "SC_alt_file_navframe::expandCollapse";
+
+		// Function, loading the list frame from navigation tree:
+		function jumpTo(id, linkObj, highlightID, bank)	{
+			var theUrl = top.TS.PATH_typo3 + top.currentSubScript ;
+			if (theUrl.indexOf("?") != -1) {
+				theUrl += "&id=" + id
+			} else {
+				theUrl += "?id=" + id		    	
+			}	
+			top.fsMod.currentBank = bank;
+
+			if (top.condensedMode) {
+				top.content.location.href = theUrl;
+			} else {
+				parent.list_frame.location.href=theUrl;
+			}
+
+			'.($this->doHighlight ? 'Tree.highlightActiveItem("file", highlightID + "_" + bank);' : '').'
+			'.(!$CLIENT['FORMSTYLE'] ? '' : 'if (linkObj) linkObj.blur(); ').'
+			return false;
+		}
+		'.($this->cMR ? " jumpTo(top.fsMod.recentIds['file'],'');" : '')
+		);
+	}
+
 
 	/**
 	 * Main function, rendering the folder tree
@@ -169,12 +173,7 @@ class SC_alt_file_navframe {
 			// Produce browse-tree:
 		$tree = $this->foldertree->getBrowsableTree();
 
-			// Output only the tree if this is an AJAX call:
-		if ($this->ajax) {
-			$this->content = $LANG->csConvObj->utf8_encode($tree, $LANG->charSet);
-			return;
-		}
-
+			// Start page
 		$this->content = $this->doc->startPage('TYPO3 Folder Tree');
 
 			// Outputting page tree:
@@ -200,22 +199,43 @@ class SC_alt_file_navframe {
 
 	}
 
+
 	/**
 	 * Outputting the accumulated content to screen
 	 *
 	 * @return	void
 	 */
 	function printContent()	{
-			// If we handle an AJAX call, send headers:
-		if ($this->ajax) {
-			header('X-JSON: ('.($this->foldertree->ajaxStatus?'true':'false').')');
-			header('Content-type: text/html; charset=utf-8');
-			// If it's the regular call to fully output the tree:
-		} else {
-			$this->content.= $this->doc->endPage();
-			$this->content = $this->doc->insertStylesAndJS($this->content);
-		}
+		$this->content.= $this->doc->endPage();
+		$this->content = $this->doc->insertStylesAndJS($this->content);
 		echo $this->content;
+	}
+
+
+	/**********************************
+	 *
+	 * AJAX Calls
+	 *
+	 **********************************/
+
+	/**
+	 * Makes the AJAX call to expand or collapse the foldertree.
+	 * Called by typo3/ajax.php
+	 *
+	 * @param	array		$params: additional parameters (not used here)
+	 * @param	TYPO3AJAX	&$ajaxObj: reference of the TYPO3AJAX object of this request
+	 * @return	void
+	 */
+	public function ajaxExpandCollapse($params, &$ajaxObj)	{
+		global $LANG;
+
+		$this->init();
+		$tree = $this->foldertree->getBrowsableTree();
+		if (!$this->foldertree->ajaxStatus)	{
+			$ajaxObj->setError($tree);
+		} else	{
+			$ajaxObj->addContent('tree', $tree);
+		}
 	}
 }
 
@@ -225,19 +245,12 @@ if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_f
 }
 
 
-
-
-
-
-
-
-
-
-
-
-// Make instance:
-$SOBE = t3lib_div::makeInstance('SC_alt_file_navframe');
-$SOBE->init();
-$SOBE->main();
-$SOBE->printContent();
+// Make instance if it is not an AJAX call
+if (!(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_AJAX)) {
+	$SOBE = t3lib_div::makeInstance('SC_alt_file_navframe');
+	$SOBE->init();
+	$SOBE->initPage();
+	$SOBE->main();
+	$SOBE->printContent();
+}
 ?>

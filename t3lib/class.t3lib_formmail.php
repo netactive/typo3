@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2007 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains a class for formmail
  *
- * $Id: class.t3lib_formmail.php 2583 2007-10-17 10:24:53Z stucki $
+ * $Id: class.t3lib_formmail.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -173,7 +173,7 @@ class t3lib_formmail extends t3lib_htmlmail {
 				$theName = $_FILES[$varname]['name'];
 
 				if ($theFile && @file_exists($theFile))	{
-					if (filesize($theFile) < 250000)	{
+					if (filesize($theFile) < $GLOBALS['TYPO3_CONF_VARS']['FE']['formmailMaxAttachmentSize'])	{
 						$this->addAttachment($theFile, $theName);
 					}
 				}

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  * THIS IS AN EXAMPLE designed to work with the official TYPO3 testsite, section "Another site in the ..."
  * You will have to program a similar menu for your own case.
  *
- * $Id: example_languageMenu.php 1425 2006-04-12 19:42:41Z ingmars $
+ * $Id: example_languageMenu.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

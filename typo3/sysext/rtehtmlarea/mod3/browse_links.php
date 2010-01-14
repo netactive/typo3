@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2004 Kasper Skaarhoj (kasperYYYY@typo3.com)
-*  (c) 2005-2006 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2005-2008 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -32,10 +32,10 @@
  *
  * Adapted for htmlArea RTE by Stanislas Rolland
  *
- * $Id: browse_links.php 1462 2006-05-05 20:35:09Z stan $
+ * $Id: browse_links.php 4152 2008-09-19 05:17:01Z stan $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
- * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+ * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  */
 
 error_reporting (E_ALL ^ E_NOTICE);
@@ -55,29 +55,37 @@ $LANG->includeLLFile('EXT:rtehtmlarea/htmlarea/locallang_dialogs.xml');
  * @subpackage core
  */
 class tx_rtehtmlarea_SC_browse_links {
-	var $mode;
-	
+	public $mode = 'rte';
+	public $button = 'link';
+	protected $content = '';
+
 	/**
-	 * Main function, detecting the current mode of the element browser and branching out to internal methods.
+	 * Main function, rendering the element browser in RTE mode.
 	 *
 	 * @return	void
 	 */
 	function main()	{
-		global $BE_USER, $SOBE;
-		
-		$this->mode = t3lib_div::_GP('mode');
-		if (!$this->mode)	{
-			$this->mode = 'rte';
+			// Setting alternative web browsing mounts (ONLY local to browse_links.php this script so they stay "read-only")
+		$altMountPoints = trim($GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.altElementBrowserMountPoints'));
+		if ($altMountPoints) {
+			$GLOBALS['BE_USER']->groupData['webmounts'] = implode(',', array_unique(t3lib_div::intExplode(',', $altMountPoints)));
+			$GLOBALS['WEBMOUNTS'] = $GLOBALS['BE_USER']->returnWebmounts();
 		}
-
-		$this->content = '';
-
-			// render type by user func
+			// Setting alternative file browsing mounts (ONLY local to browse_links.php this script so they stay "read-only")
+		$altMountPoints = trim($GLOBALS['BE_USER']->getTSConfigVal('options.folderTree.altElementBrowserMountPoints'));
+		if ($altMountPoints) {
+			$altMountPoints = t3lib_div::trimExplode(',', $altMountPoints);
+			foreach ($altMountPoints as $filePathRelativeToFileadmindir) {
+				$GLOBALS['BE_USER']->addFileMount('', $filePathRelativeToFileadmindir, $filePathRelativeToFileadmindir, 1, 'readonly');
+			}
+			$GLOBALS['FILEMOUNTS'] = $GLOBALS['BE_USER']->returnFilemounts();
+		}
+			// Render type by user function
 		$browserRendered = false;
-		if (is_array ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/browse_links.php']['browserRendering'])) {
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/browse_links.php']['browserRendering'])) {
 			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/browse_links.php']['browserRendering'] as $classRef) {
 				$browserRenderObj = t3lib_div::getUserObj($classRef);
-				if(is_object($browserRenderObj) && method_exists($browserRenderObj, 'isValid') && method_exists($browserRenderObj, 'render'))	{
+				if (is_object($browserRenderObj) && method_exists($browserRenderObj, 'isValid') && method_exists($browserRenderObj, 'render'))	{
 					if ($browserRenderObj->isValid($this->mode, $this)) {
 						$this->content .=  $browserRenderObj->render($this->mode, $this);
 						$browserRendered = true;
@@ -86,33 +94,14 @@ class tx_rtehtmlarea_SC_browse_links {
 				}
 			}
 		}
-
-			// if type was not rendered use default rendering functions
-		if(!$browserRendered) {
-
-			$SOBE->browser = t3lib_div::makeInstance('tx_rtehtmlarea_browse_links');
-			$SOBE->browser->init();
-			
-			$modData = $BE_USER->getModuleData('browse_links.php','ses');
-			list($modData, $store) = $SOBE->browser->processSessionData($modData);
-			$BE_USER->pushModuleData('browse_links.php',$modData);
-
-							// Output the correct content according to $this->mode
-			switch((string)$this->mode)	{
-				case 'rte':
-					$this->content = $SOBE->browser->main_rte();
-				break;
-				case 'db':
-					$this->content = $SOBE->browser->main_db();
-				break;
-				case 'file':
-				case 'filedrag':
-					$this->content = $SOBE->browser->main_file();
-				break;
-				case 'wizard':
-					$this->content = $SOBE->browser->main_rte(1);
-				break;
-			}
+			// If type was not rendered, use default rendering functions
+		if (!$browserRendered) {
+			$GLOBALS['SOBE']->browser = t3lib_div::makeInstance('tx_rtehtmlarea_browse_links');
+			$GLOBALS['SOBE']->browser->init();
+			$modData = $GLOBALS['BE_USER']->getModuleData('browse_links.php','ses');
+			list($modData, $store) = $GLOBALS['SOBE']->browser->processSessionData($modData);
+			$GLOBALS['BE_USER']->pushModuleData('browse_links.php',$modData);
+			$this->content = $GLOBALS['SOBE']->browser->main_rte();
 		}
 	}
 
@@ -124,15 +113,13 @@ class tx_rtehtmlarea_SC_browse_links {
 	function printContent()	{
 		echo $this->content;
 	}
-
-
 }
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod3/browse_links.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod3/browse_links.php']);
 }
 
-// Make instance:
+	// Make instance:
 $SOBE = t3lib_div::makeInstance('tx_rtehtmlarea_SC_browse_links');
 $SOBE->main();
 $SOBE->printContent();

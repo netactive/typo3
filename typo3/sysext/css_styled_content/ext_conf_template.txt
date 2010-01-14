@@ -6,4 +6,4 @@ removePositionTypes = 1
 
 
 
-# TYPO3 CVS ID: $Id: ext_conf_template.txt 1421 2006-04-10 09:27:15Z stucki $
+# TYPO3 SVN ID: $Id: ext_conf_template.txt 3438 2008-03-16 16:23:51Z flyguide $

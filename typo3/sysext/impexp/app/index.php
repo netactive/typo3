@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -293,6 +293,7 @@ class SC_mod_tools_log_index extends t3lib_SCbase {
 		$this->doc = t3lib_div::makeInstance('mediumDoc');
 		$this->doc->backPath = $BACK_PATH;
 		$this->doc->docType = 'xhtml_trans';
+		$this->doc->bodyTagId = 'imp-exp-mod';
 
 				// JavaScript
 		$this->doc->JScode = $this->doc->wrapScriptTags('
@@ -943,7 +944,7 @@ class SC_mod_tools_log_index extends t3lib_SCbase {
 		$presets = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
 						'*',
 						'tx_impexp_presets',
-						'(public>0 || user_uid='.intval($GLOBALS['BE_USER']->user['uid']).')'.
+						'(public>0 OR user_uid='.intval($GLOBALS['BE_USER']->user['uid']).')'.
 							($inData['pagetree']['id'] ? ' AND (item_uid='.intval($inData['pagetree']['id']).' OR item_uid=0)' : '')
 
 					);
@@ -1094,16 +1095,21 @@ class SC_mod_tools_log_index extends t3lib_SCbase {
 				// OUTPUT creation:
 			$menuItems = array();
 
+			// Make input selector:
+			$path = $GLOBALS['TYPO3_CONF_VARS']['BE']['fileadminDir'];	// must have trailing slash.
+			$filesInDir = t3lib_div::getFilesInDir(PATH_site.$path, 't3d,xml', 1, 1);
 
-				// Make input selector:
-			$path = 'fileadmin/';	// must have trailing slash.
-			$filesInDir = t3lib_div::getFilesInDir(PATH_site.$path,'t3d,xml',1,1);
+			$userPath = $this->userSaveFolder(); //Files from User-Dir
+			$filesInUserDir = t3lib_div::getFilesInDir($userPath, 't3d,xml', 1, 1);
+
+			$filesInDir = array_merge($filesInUserDir, $filesInDir);
+
 			if (is_dir(PATH_site.$path.'export/'))	{
-				$filesInDir = array_merge($filesInDir, t3lib_div::getFilesInDir(PATH_site.$path.'export/','t3d,xml',1,1));
+				$filesInDir = array_merge($filesInDir, t3lib_div::getFilesInDir(PATH_site . $path . 'export/', 't3d,xml', 1, 1));
 			}
 			$tempFolder = $this->userTempFolder();
 			if ($tempFolder)	{
-				$temp_filesInDir = t3lib_div::getFilesInDir($tempFolder,'t3d,xml',1,1);
+				$temp_filesInDir = t3lib_div::getFilesInDir($tempFolder, 't3d,xml', 1, 1);
 				$filesInDir = array_merge($filesInDir, $temp_filesInDir);
 			}
 
@@ -1260,7 +1266,7 @@ class SC_mod_tools_log_index extends t3lib_SCbase {
 						$thisScriptUrl = t3lib_div::getIndpEnv('REQUEST_URI').'?M=xMOD_tximpexp&id='.$this->id.t3lib_div::implodeArrayForUrl('tx_impexp',$passParams);
 						$emURL = $this->doc->backPath.'mod/tools/em/index.php?CMD[requestInstallExtensions]='.implode(',',$extKeysToInstall).'&returnUrl='.rawurlencode($thisScriptUrl);
 						$extensionInstallationMessage = 'Before you can install this T3D file you need to install the extensions "'.implode('", "',$extKeysToInstall).'". Clicking Import will first take you to the Extension Manager so these dependencies can be resolved.';
-					} 
+					}
 
 					if ($inData['import_file'])	{
 						if (!count($extKeysToInstall))	{

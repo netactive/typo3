@@ -27,7 +27,7 @@
 /**
  * Generate a page-tree, non-browsable.
  *
- * $Id: class.t3lib_pagetree.php 3318 2008-02-28 21:27:37Z ohader $
+ * $Id: class.t3lib_pagetree.php 3319 2008-02-28 21:28:57Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Generate a page-tree, browsable.
  *
- * $Id: class.t3lib_browsetree.php 3855 2008-07-03 14:06:52Z baschny $
+ * $Id: class.t3lib_browsetree.php 3856 2008-07-03 14:09:13Z baschny $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -106,7 +106,7 @@ class t3lib_browseTree extends t3lib_treeView {
 			$this->MOUNTS = array_diff($this->MOUNTS,$hideList);
 		}
 
-		$this->fieldArray = array_merge($this->fieldArray,array('doktype','php_tree_stop','t3ver_id','t3ver_state','t3ver_wsid','t3ver_swapmode'));
+		$this->fieldArray = array_merge($this->fieldArray,array('doktype','php_tree_stop','t3ver_id','t3ver_state','t3ver_wsid','t3ver_swapmode','t3ver_state','t3ver_move_id'));
 		if (t3lib_extMgm::isLoaded('cms'))	{
 			$this->fieldArray = array_merge(
 				$this->fieldArray,
@@ -149,7 +149,7 @@ class t3lib_browseTree extends t3lib_treeView {
 	}
 
 	/**
-	 * Returns the title for the input record. If blank, a "no title" labele (localized) will be returned.
+	 * Returns the title for the input record. If blank, a "no title" label (localized) will be returned.
 	 * Do NOT htmlspecialchar the string from this function - has already been done.
 	 *
 	 * @param	array		The input row array (where the key "title" is used for the title)
@@ -157,7 +157,8 @@ class t3lib_browseTree extends t3lib_treeView {
 	 * @return	string		The title.
 	 */
 	function getTitleStr($row,$titleLen=30)	{
-		$title = (!strcmp(trim($row['title']),'')) ? '<em>['.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.no_title',1).']</em>' : htmlspecialchars(t3lib_div::fixed_lgd_cs($row['title'],$titleLen));
+			// get the basic title from the parent implementation in t3lib_treeview
+		$title = parent::getTitleStr($row,$titleLen);
 		if (isset($row['is_siteroot']) && $row['is_siteroot'] != 0 && $GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.showDomainNameWithTitle')) {
 			$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('domainName,sorting', 'sys_domain',
 						'pid=' . $GLOBALS['TYPO3_DB']->quoteStr($row['uid'], 'sys_domain'), '', 'sorting', 1);

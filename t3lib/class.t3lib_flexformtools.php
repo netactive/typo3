@@ -27,7 +27,7 @@
 /**
  * Contains functions for manipulating flex form data
  *
- * $Id: class.t3lib_flexformtools.php 1839 2006-12-01 14:55:42Z kasper $
+ * $Id: class.t3lib_flexformtools.php 5207 2009-03-18 22:07:58Z steffenk $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -72,7 +72,7 @@ class t3lib_flexformtools {
 
 	var $convertCharset = FALSE;		// If set, the charset of data XML is converted to system charset.
 	var $reNumberIndexesOfSectionData = FALSE;	// If set, section indexes are re-numbered before processing
-	
+
 	var $traverseFlexFormXMLData_DS = array();	// Contains data structure when traversing flexform
 	var $traverseFlexFormXMLData_Data = array();	// Contains data array when traversing flexform
 
@@ -92,7 +92,10 @@ class t3lib_flexformtools {
 		);
 
 		// Internal:
-	var $callBackObj = NULL;		// Reference to object called
+	/**
+	 * Reference to object called
+	 */
+	var $callBackObj = NULL;
 	var $cleanFlexFormXML = array();		// Used for accumulation of clean XML
 
 	/**
@@ -232,17 +235,19 @@ class t3lib_flexformtools {
 								}
 
 								foreach($editData[$key]['el'] as $k3 => $v3)	{
-									$cc=$k3;
-									$theType = key($v3);
-									$theDat = $v3[$theType];
-									$newSectionEl = $value['el'][$theType];
-									if (is_array($newSectionEl))	{
-										$this->traverseFlexFormXMLData_recurse(
-											array($theType => $newSectionEl),
-											array($theType => $theDat),
-											$PA,
-											$path.'/'.$key.'/el/'.$cc
-										);
+									if (is_array($v3))	{
+										$cc=$k3;
+										$theType = key($v3);
+										$theDat = $v3[$theType];
+										$newSectionEl = $value['el'][$theType];
+										if (is_array($newSectionEl))	{
+											$this->traverseFlexFormXMLData_recurse(
+												array($theType => $newSectionEl),
+												array($theType => $theDat),
+												$PA,
+												$path.'/'.$key.'/el/'.$cc
+											);
+										}
 									}
 								}
 							}
@@ -359,6 +364,14 @@ class t3lib_flexformtools {
 		#debug(array($dsArr, $data, $PA),$path);
 			// Just setting value in our own result array, basically replicating the structure:
 		$pObj->setArrayValueByPath($path,$this->cleanFlexFormXML,$data);
+
+			// Looking if an "extension" called ".vDEFbase" is found and if so, accept that too:
+		if ($GLOBALS['TYPO3_CONF_VARS']['BE']['flexFormXMLincludeDiffBase'])	{
+			$vDEFbase = $pObj->getArrayValueByPath($path.'.vDEFbase',$pObj->traverseFlexFormXMLData_Data);
+			if (isset($vDEFbase))	{
+				$pObj->setArrayValueByPath($path.'.vDEFbase',$this->cleanFlexFormXML,$vDEFbase);
+			}
+		}
 	}
 
 
@@ -442,7 +455,10 @@ class t3lib_flexformtools {
 	 * @return	string		XML content.
 	 */
 	function flexArray2Xml($array, $addPrologue=FALSE)	{
-
+		if ($GLOBALS['TYPO3_CONF_VARS']['BE']['flexformForceCDATA']) {
+			$this->flexArray2Xml_options['useCDATA'] = 1;
+		}
+		
 		$options = $GLOBALS['TYPO3_CONF_VARS']['BE']['niceFlexFormXMLtags'] ? $this->flexArray2Xml_options : array();
 		$spaceInd = ($GLOBALS['TYPO3_CONF_VARS']['BE']['compactFlexFormXML'] ? -1 : 4);
 		$output = t3lib_div::array2xml($array,'',0,'T3FlexForms', $spaceInd, $options);

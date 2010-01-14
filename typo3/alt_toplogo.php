@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Top logo frame
  * Displays the logo in the top frame (upper left corner)
  *
- * $Id: alt_toplogo.php 593 2005-04-01 14:37:15Z kasper $
+ * $Id: alt_toplogo.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant content
  *
@@ -52,6 +52,7 @@
 
 require ('init.php');
 require ('template.php');
+require ('classes/class.typo3logo.php');
 
 
 
@@ -80,18 +81,8 @@ class SC_alt_toplogo {
 		$this->content.=$TBE_TEMPLATE->startPage('Logo frame');
 
 			// Set logo:
-		if ($TBE_STYLES['logo'])	{
-			if (substr($TBE_STYLES['logo'],0,3)=='../')	{
-				$imgInfo = @getimagesize(PATH_site.substr($TBE_STYLES['logo'],3));
-			}
-			$this->content.='<a href="http://www.typo3.com/" target="_blank" onclick="'.$TBE_TEMPLATE->thisBlur().'">'.
-				'<img src="'.$TBE_STYLES['logo'].'" '.$imgInfo[3].' title="TYPO3 Content Management Framework" alt="" />'.
-				'</a>';
-		} else {
-			$this->content.='<a href="http://www.typo3.com/" target="_blank" onclick="'.$TBE_TEMPLATE->thisBlur().'">'.
-				'<img'.t3lib_iconWorks::skinImg('','gfx/alt_backend_logo.gif','width="117" height="32"').' title="TYPO3 Content Management Framework" alt="" />'.
-				'</a>';
-		}
+		$logo = t3lib_div::makeInstance('TYPO3logo');
+		$this->content .= $logo->render();
 
 			// End page:
 		$this->content.=$TBE_TEMPLATE->endPage();

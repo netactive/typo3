@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,16 @@
  * Main frameset of the TYPO3 backend
  * Sending the GET var "alt_main.php?edit=[page id]" will load the page id in the editing module configured.
  *
- * $Id: alt_main.php 6243 2009-10-22 08:26:55Z baschny $
+ *
+ *    IMPORTANT!
+ *
+ *    This file is deprecated since TYPO3 4.2 and will be removed with TYPO3 4.4
+ *
+ *
+ *
+ *
+ *
+ * $Id: alt_main.php 6242 2009-10-22 08:24:31Z baschny $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML Compliant (almost)
  *
@@ -74,7 +83,19 @@ class SC_alt_main {
 		// Internal, dynamic:
 	var $content;
 	var $mainJScode;
+
+	/**
+	 * Object for backend modules, load modules-object
+	 *
+	 * @var t3lib_loadModules
+	 */
 	var $loadModules;		// Load modules-object
+
+	/**
+	 * Menu functions object
+	 *
+	 * @var alt_menu_functions
+	 */
 	var $alt_menuObj;		// Menu functions object.
 
 		// Internal, static:
@@ -95,12 +116,12 @@ class SC_alt_main {
 		$this->loadModules = t3lib_div::makeInstance('t3lib_loadModules');
 		$this->loadModules->load($TBE_MODULES);
 
-			// Instantiates thee menu object which will generate some JavaScript for the goToModule() JS function in this frameset.
+			// Instantiates the menu object which will generate some JavaScript for the goToModule() JS function in this frameset.
 		$this->alt_menuObj = t3lib_div::makeInstance('alt_menu_functions');
 
 			// Check for distances defined in the styles array:
 		if ($TBE_STYLES['dims']['leftMenuFrameW'])		$this->leftMenuFrameW = $TBE_STYLES['dims']['leftMenuFrameW'];
-		if ($TBE_STYLES['dims']['topFrameH'])		$this->topFrameH = $TBE_STYLES['dims']['topFrameH'];
+		if ($TBE_STYLES['dims']['topFrameH'])			$this->topFrameH = $TBE_STYLES['dims']['topFrameH'];
 		if ($TBE_STYLES['dims']['shortcutFrameH'])		$this->shortcutFrameH = $TBE_STYLES['dims']['shortcutFrameH'];
 		if ($TBE_STYLES['dims']['selMenuFrame'])		$this->selMenuFrame = $TBE_STYLES['dims']['selMenuFrame'];
 	}
@@ -120,6 +141,11 @@ class SC_alt_main {
 			// If another page module was specified, replace the default Page module with the new one
 		$newPageModule = trim($GLOBALS['BE_USER']->getTSConfigVal('options.overridePageModule'));
 		$pageModule = t3lib_BEfunc::isModuleSetInTBE_MODULES($newPageModule) ? $newPageModule : 'web_layout';
+
+		$menuFrameName = 'menu';
+		if ($GLOBALS['BE_USER']->uc['noMenuMode'] === 'icons') {
+			$menuFrameName = 'topmenuFrame';
+		}
 
 		$this->mainJScode='
 	/**
@@ -330,20 +356,23 @@ class SC_alt_main {
 	}
 
 	/**
-	 * Function used to switch switch module.
+	 * Wrapper for the actual goToModule function in the menu frame
 	 */
 	var currentModuleLoaded = "";
-	function goToModule(modName,cMR_flag,addGetVars)	{	//
-		var additionalGetVariables = "";
-		if (addGetVars)	additionalGetVariables = addGetVars;
-
-		var cMR = 0;
-		if (cMR_flag)	cMR = 1;
-
-		currentModuleLoaded = modName;
-
-		switch(modName)	{'.$goToModule_switch.'
+	function goToModule(modName, cMR_flag, addGetVars)	{	//
+		if (top.'.$menuFrameName.' && top.'.$menuFrameName.'.goToModule) {
+			currentModuleLoaded = modName;
+			top.'.$menuFrameName.'.goToModule(modName, cMR_flag, addGetVars);
+		} else {
+			window.setTimeout(function() { top.goToModule(modName, cMR_flag, addGetVars); }, 500);
 		}
+	}
+
+	/**
+	 * reloads the menu frame
+	 */
+	function refreshMenu() {
+		top.'.$menuFrameName.'.location.href = top.'.$menuFrameName.'.document.URL
 	}
 
 	/**
@@ -437,15 +466,20 @@ class SC_alt_main {
 	function startModule() {
 		global $BE_USER;
 		$module = preg_replace('/[^[:alnum:]_]/','',t3lib_div::_GET('module'));
-		if (!$module && $BE_USER->uc['startInTaskCenter']) {
-			$module = 'user_task';
+
+		if (!$module)	{
+			if ($BE_USER->uc['startModule'])	{
+				$module = $BE_USER->uc['startModule'];
+			} elseif ($BE_USER->uc['startInTaskCenter'])	{
+				$module = 'user_task';
+			}
 		}
 
 		$params = t3lib_div::_GET('modParams');
 		if ($module) {
 			$this->mainJScode.='
 		// open in module:
-	window.setTimeout("top.goToModule(\''.$module.'\',false,'.t3lib_div::quoteJSvalue($params).');",500);
+	top.goToModule(\''.$module.'\',false,'.t3lib_div::quoteJSvalue($params).');
 			';
 		}
 	}
@@ -467,6 +501,7 @@ class SC_alt_main {
 		$GLOBALS['TBE_TEMPLATE']->JScode= '
 			<script type="text/javascript" src="md5.js"></script>
 			<script type="text/javascript" src="../t3lib/jsfunc.evalfield.js"></script>
+			<script type="text/javascript" src="js/backend.js"></script>
 			';
 		$GLOBALS['TBE_TEMPLATE']->JScode.=$GLOBALS['TBE_TEMPLATE']->wrapScriptTags($this->mainJScode);
 

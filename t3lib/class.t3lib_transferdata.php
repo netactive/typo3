@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains class for getting and transforming data for display in backend forms (TCEforms)
  *
- * $Id: class.t3lib_transferdata.php 4282 2008-10-04 17:45:01Z dmitry $
+ * $Id: class.t3lib_transferdata.php 4281 2008-10-04 17:44:00Z dmitry $
  * Revised for TYPO3 3.6 September/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -160,6 +160,18 @@ class t3lib_transferData {
 							foreach($TCAdefaultOverride[$table.'.'] as $theF => $theV)	{
 								if (isset($TCA[$table]['columns'][$theF]))	{
 									$newRow[$theF]=$theV;
+								}
+							}
+						}
+
+						$pageTS = t3lib_beFunc::getPagesTSconfig($id, true);
+						if (isset($pageTS['TCAdefaults.'])) {
+							$TCAPageTSOverride  = $pageTS['TCAdefaults.'];
+							if (is_array($TCAPageTSOverride[$table.'.']))	{
+								foreach($TCAPageTSOverride[$table.'.'] as $theF => $theV)	{
+									if (isset($TCA[$table]['columns'][$theF]))	{
+										$newRow[$theF]=$theV;
+									}
 								}
 							}
 						}
@@ -385,6 +397,7 @@ class t3lib_transferData {
 			break;
 			case 'db':
 				$loadDB = t3lib_div::makeInstance('t3lib_loadDBGroup');
+				/* @var $loadDB t3lib_loadDBGroup */
 				$loadDB->start($data, $fieldConfig['config']['allowed'], $fieldConfig['config']['MM'], $row['uid'], $table, $fieldConfig['config']);
 				$loadDB->getFromDB();
 				$data = $loadDB->readyForInterface();
@@ -550,7 +563,22 @@ class t3lib_transferData {
 		$elements = t3lib_div::trimExplode(',',$data);	// Current data set.
 		$dataAcc=array();	// New data set, ready for interface (list of values, rawurlencoded)
 
-		$dataAcc = $this->selectAddForeign($dataAcc, $elements, $fieldConfig, $field, $TSconfig, $row, $table);
+			// At this point all records that CAN be selected is found in $recordList
+			// Now, get the data from loadDBgroup based on the input list of values.
+		$dataIds = $this->getDataIdList($elements, $fieldConfig, $row, $table);
+
+			// After this we can traverse the loadDBgroup values and match values with the list of possible values in $recordList:
+		foreach($dataIds as $theId)	{
+			if ($fieldConfig['config']['MM'] || $fieldConfig['config']['foreign_field'])	{
+				$dataAcc[]=$theId;
+			} else {
+				foreach($elements as $eKey => $value)	{
+					if (!strcmp($theId,$value))	{
+						$dataAcc[$eKey]=$theId;
+					}
+				}
+			}
+		}
 
 		return implode(',',$dataAcc);
 	}
@@ -622,13 +650,15 @@ class t3lib_transferData {
 					if (is_array($dataValues[$key]['el']))	{
 						if ($DSelements[$key]['section'])	{
 							foreach($dataValues[$key]['el'] as $ik => $el)	{
-								$theKey = key($el);
-								if (is_array($dataValues[$key]['el'][$ik][$theKey]['el']))	{
-									$this->renderRecord_flexProc_procInData_travDS(
-											$dataValues[$key]['el'][$ik][$theKey]['el'],
-											$DSelements[$key]['el'][$theKey]['el'],
-											$pParams
-										);
+								if (is_array($el))	{
+									$theKey = key($el);
+									if (is_array($dataValues[$key]['el'][$ik][$theKey]['el']))	{
+										$this->renderRecord_flexProc_procInData_travDS(
+												$dataValues[$key]['el'][$ik][$theKey]['el'],
+												$DSelements[$key]['el'][$theKey]['el'],
+												$pParams
+											);
+									}
 								}
 							}
 						} else {

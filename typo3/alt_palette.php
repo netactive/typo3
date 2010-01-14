@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Displays the secondary-options palette for the TCEFORMs wherever they are shown.
  *
- * $Id: alt_palette.php 6246 2009-10-22 08:32:30Z baschny $
+ * $Id: alt_palette.php 6245 2009-10-22 08:31:49Z baschny $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -304,10 +304,8 @@ class SC_alt_palette {
 	 *
 	 * @return string the unchanged $input if $input is considered to be harmless,
 	 *                an empty string otherwise
-	 *
-	 * @access protected
 	 */
-	function sanitizeHtmlName($input) {
+	protected function sanitizeHtmlName($input) {
 		$result = $input;
 
 		if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_\-\.]*$/', $result)) {
@@ -325,7 +323,6 @@ class SC_alt_palette {
 	function main()	{
 
 		$this->content='';
-		$this->content.=$this->doc->startPage('TYPO3 Edit Palette');
 
 		$inData = explode(':',$this->inData);
 
@@ -355,6 +352,11 @@ class SC_alt_palette {
 				// Add all the content, including JavaScript as needed.
 			$this->content.=$tceforms->printNeededJSFunctions_top().$formContent.$tceforms->printNeededJSFunctions();
 		}
+
+		// Assemble the page:
+		$tempContent = $this->content;
+		$this->content = $this->doc->startPage('TYPO3 Edit Palette');
+		$this->content.= $tempContent;
 	}
 
 	/**

@@ -54,6 +54,9 @@
 			<label index="lang_fo">Faroese</label>
 			<label index="lang_fa">Persian</label>
 			<label index="lang_sr">Serbian</label>
+			<label index="lang_sq">Albanian</label>
+			<label index="lang_ge">Georgian</label>
+			<label index="lang_ga">Galician</label>
 			<label index="default">Default</label>
 			<label index="simulate">Simulate backend user</label>
 			<label index="opening">Startup</label>
@@ -64,11 +67,12 @@
 			<label index="noMenuMode_def">Left frame menu (default)</label>
 			<label index="noMenuMode_sel">Selectorbox in top frame</label>
 			<label index="noMenuMode_icons">Icons in top frame</label>
-			<label index="startInTaskCenter">Start up in the module 'Task Center'</label>
+			<label index="startModule">Start up in the following module</label>
 			<label index="emailMeAtLogin">Notify me by email, when somebody logs in &lt;br /&gt;from my account</label>
 			<label index="helpText">Show help text when applicable</label>
 			<label index="maxTitleLen">Max. Title Length</label>
 			<label index="edit_showFieldHelp">Context Sensitive Help mode</label>
+			<label index="edit_showFieldHelp_none">Display no help information</label>
 			<label index="edit_showFieldHelp_icon">Display help icon only</label>
 			<label index="edit_showFieldHelp_message">Display full text message</label>
 			<label index="edit_wideDocument">Wide document background</label>
@@ -77,6 +81,7 @@
 			<label index="edit_functions">Edit</label>
 			<label index="disableCMlayers">Disable Popup Context Menus</label>
 			<label index="setToStandard">Reset all Values to default</label>
+			<label index="setToStandardQuestion">Are you sure you want to reset all values to default?</label>
 			<label index="functions">Advanced functions</label>
 			<label index="copyLevels">&lt;b&gt;Recursive Copy:&lt;/b&gt; Enter the number of page&lt;br /&gt;sublevels to include, when a page is copied</label>
 			<label index="recursiveDelete">&lt;b&gt;Recursive Delete(!):&lt;/b&gt; Allow ALL subpages&lt;br /&gt;to be deleted when deleting a page</label>
@@ -89,6 +94,7 @@
 			<label index="newPasswordAgain">New password, again</label>
 			<label index="newPassword_ok">Password was updated</label>
 			<label index="newPassword_failed">Password was NOT updated because you didn't enter the same password twice.</label>
+			<label index="adminFunctions">Admin functions</label>
 			<label index="enableInstallTool.headerTitle">Admin control for re-enabling Install Tool access</label>
 			<label index="enableInstallTool.description">By clicking this button, a file typo3conf/ENABLE_INSTALL_TOOL is created (or removed if it already exists).&lt;br /&gt;It unlocks the access to the Install Tool (password is still needed!) and will be removed automatically after 1 hour.</label>
 			<label index="enableInstallTool.createFile">Create Install Tool Enable File</label>

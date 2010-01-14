@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2004-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2004-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -83,6 +83,7 @@ require ($BACK_PATH.'init.php');
 require ($BACK_PATH.'template.php');
 $LANG->includeLLFile('EXT:version/locallang.xml');
 require_once (PATH_t3lib.'class.t3lib_scbase.php');
+require_once (PATH_t3lib.'class.t3lib_parsehtml.php');
 	// DEFAULT initialization of a module [END]
 
 require_once(PATH_t3lib.'class.t3lib_diff.php');
@@ -105,7 +106,13 @@ class tx_version_cm1 extends t3lib_SCbase {
 	var $MCONF = array();				// Module configuration
 	var $MOD_MENU = array();			// Module menu items
 	var $MOD_SETTINGS = array();		// Module session settings
-	var $doc;							// Document Template Object
+
+	/**
+	 * document template object
+	 *
+	 * @var mediumDoc
+	 */
+	var $doc;
 	var $content;						// Accumulated content
 
 
@@ -176,15 +183,24 @@ class tx_version_cm1 extends t3lib_SCbase {
 	function main()	{
 		global $BE_USER,$LANG,$BACK_PATH,$TCA_DESCR,$TCA,$CLIENT,$TYPO3_CONF_VARS;
 
+			// Template markers
+		$markers = array(
+			'CSH' => '',
+			'FUNC_MENU' => '',
+			'WS_MENU' => '',
+			'CONTENT' => ''
+		);
+
 			// Setting module configuration:
 		$this->MCONF = $GLOBALS['MCONF'];
-		
+
 		$this->REQUEST_URI = str_replace('&sendToReview=1','',t3lib_div::getIndpEnv('REQUEST_URI'));
 
 			// Draw the header.
-		$this->doc = t3lib_div::makeInstance('mediumDoc');
+		$this->doc = t3lib_div::makeInstance('template');
 		$this->doc->backPath = $BACK_PATH;
-		$this->doc->form='<form action="" method="post">';
+		$this->doc->setModuleTemplate('templates/version.html');
+		$this->doc->docType = 'xhtml_trans';
 
 	        // Add styles
 		$this->doc->inDocStylesArray[$GLOBALS['MCONF']['name']] = '
@@ -193,10 +209,7 @@ class tx_version_cm1 extends t3lib_SCbase {
 ';
 
 			// Setting up the context sensitive menu:
-		$CMparts = $this->doc->getContextMenuCode();
-		$this->doc->JScode.= $CMparts[0];
-		$this->doc->bodyTagAdditions = $CMparts[1];
-		$this->doc->postCode.= $CMparts[2];
+		$this->doc->getContextMenuCode();
 
 			// Getting input data:
 		$this->id = intval(t3lib_div::_GP('id'));		// Page id. If set, indicates activation from Web>Versioning module
@@ -219,10 +232,14 @@ class tx_version_cm1 extends t3lib_SCbase {
 		if ($record['pid']==-1)	{
 			$record = t3lib_BEfunc::getRecord($this->table,$record['t3ver_oid']);
 		}
+
+		$this->recordFound = is_array($record);
+
 		$pidValue = $this->table==='pages' ? $this->uid : $record['pid'];
 
 			// Checking access etc.
-		if (is_array($record) && $TCA[$this->table]['ctrl']['versioningWS'])	{
+		if ($this->recordFound && $TCA[$this->table]['ctrl']['versioningWS'])	{
+			$this->doc->form='<form action="" method="post">';
 			$this->uid = $record['uid']; 	// Might have changed if new live record was found!
 
 				// Access check!
@@ -265,34 +282,35 @@ class tx_version_cm1 extends t3lib_SCbase {
 					// Setting publish access permission for workspace:
 				$this->publishAccess = $BE_USER->workspacePublishAccess($BE_USER->workspace);
 
-
-				$headerSection = $this->doc->getHeader('pages',$this->pageinfo,$this->pageinfo['_thePath']).'<br/>'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.path').': '.t3lib_div::fixed_lgd_pre($this->pageinfo['_thePath'],50);
-
-				$this->content.=$this->doc->startPage($LANG->getLL('title'));
-				$this->content.=$this->doc->header($LANG->getLL('title'));
-				$this->content.=$this->doc->spacer(5);
-				$this->content.=$this->doc->section('',$headerSection);
-				$this->content.=$this->doc->divider(5);
-
 					// Render content:
 				if ($this->id)	{
 					$this->workspaceMgm();
 				} else {
 					$this->versioningMgm();
 				}
-
-					// ShortCut
-				if ($BE_USER->mayMakeShortcut())	{
-					$this->content.=$this->doc->spacer(20).$this->doc->section('',$this->doc->makeShortcutIcon('id',implode(',',array_keys($this->MOD_MENU)),$this->MCONF['name']));
-				}
 			}
 
 			$this->content.=$this->doc->spacer(10);
+
+				// Setting up the buttons and markers for docheader
+			$docHeaderButtons = $this->getButtons();
+			$markers['CSH'] = $docHeaderButtons['csh'];
+			$markers['FUNC_MENU'] = t3lib_BEfunc::getFuncMenu($this->id, 'SET[function]', $this->MOD_SETTINGS['function'], $this->MOD_MENU['function']);
+			$markers['WS_MENU'] = $this->workspaceMenu();
+			$markers['CONTENT'] = $this->content;
 		} else {
-				// If no access or id value, create empty document:
-			$this->content.=$this->doc->startPage($LANG->getLL('title'));
-			$this->content.=$this->doc->section($LANG->getLL('clickAPage_header'),$LANG->getLL('clickAPage_content'),0,1);
+				// If no access or id value, create empty document
+			$this->content = $this->doc->section($LANG->getLL('clickAPage_header'), $LANG->getLL('clickAPage_content'), 0, 1);
+
+				// Setting up the buttons and markers for docheader
+			$docHeaderButtons = $this->getButtons();
+			$markers['CONTENT'] = $this->content;
 		}
+			// Build the <body> for the module
+		$this->content = $this->doc->startPage($LANG->getLL('title'));
+		$this->content.= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
+		$this->content.= $this->doc->endPage();
+		$this->content = $this->doc->insertStylesAndJS($this->content);
 	}
 
 	/**
@@ -301,12 +319,47 @@ class tx_version_cm1 extends t3lib_SCbase {
 	 * @return	void
 	 */
 	function printContent()	{
-
-		$this->content.=$this->doc->endPage();
 		echo $this->content;
 	}
 
+	/**
+	 * Create the panel of buttons for submitting the form or otherwise perform operations.
+	 *
+	 * @return	array	all available buttons as an assoc. array
+	 */
+	protected function getButtons()	{
+		global $TCA, $LANG, $BACK_PATH, $BE_USER;
 
+		$buttons = array(
+			'csh' => '',
+			'view' => '',
+			'record_list' => '',
+			'shortcut' => '',
+		);
+			// CSH
+		//$buttons['csh'] = t3lib_BEfunc::cshItem('_MOD_web_txversionM1', '', $GLOBALS['BACK_PATH']);
+
+		if ($this->recordFound && $TCA[$this->table]['ctrl']['versioningWS']) {
+				// View page
+			$buttons['view'] = '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::viewOnClick($this->pageinfo['uid'], $BACK_PATH, t3lib_BEfunc::BEgetRootLine($this->pageinfo['uid']))) . '">' .
+					'<img' . t3lib_iconWorks::skinImg($BACK_PATH, 'gfx/zoom.gif') . ' title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showPage', 1) . '" hspace="3" alt="" />' .
+					'</a>';
+
+				// Shortcut
+			if ($BE_USER->mayMakeShortcut())	{
+				$buttons['shortcut'] = $this->doc->makeShortcutIcon('id, edit_record, pointer, new_unique_uid, search_field, search_levels, showLimit', implode(',', array_keys($this->MOD_MENU)), $this->MCONF['name']);
+			}
+
+				// If access to Web>List for user, then link to that module.
+			if ($BE_USER->check('modules','web_list'))	{
+				$href = $BACK_PATH . 'db_list.php?id=' . $this->pageinfo['uid'] . '&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI'));
+				$buttons['record_list'] = '<a href="' . htmlspecialchars($href) . '">' .
+						'<img' . t3lib_iconWorks::skinImg($BACK_PATH, 'gfx/list.gif') . ' title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showList', 1) . '" alt="" />' .
+						'</a>';
+			}
+		}
+		return $buttons;
+	}
 
 
 
@@ -634,19 +687,6 @@ class tx_version_cm1 extends t3lib_SCbase {
 	 */
 	function workspaceMgm()	{
 
-		$menu = '';
-		if ($GLOBALS['BE_USER']->workspace===0)	{
-			$menu.= t3lib_BEfunc::getFuncMenu($this->id,'SET[filter]',$this->MOD_SETTINGS['filter'],$this->MOD_MENU['filter']);
-			$menu.= t3lib_BEfunc::getFuncMenu($this->id,'SET[display]',$this->MOD_SETTINGS['display'],$this->MOD_MENU['display']);
-		}
-		if (!$this->details && $GLOBALS['BE_USER']->workspace && !$this->diffOnly)	{
-			$menu.= t3lib_BEfunc::getFuncCheck($this->id,'SET[diff]',$this->MOD_SETTINGS['diff'],'','','id="checkDiff"').' <label for="checkDiff">Show difference view</label>';
-		}
-
-		if ($menu)	{
-			$this->content.=$this->doc->section('',$menu,0,1);
-		}
-
 			// Perform workspace publishing action if buttons are pressed:
 		$errors = $this->publishAction();
 
@@ -674,16 +714,36 @@ class tx_version_cm1 extends t3lib_SCbase {
 		}
 
 		if (t3lib_div::_POST('_previewLink'))	{
-			$params = 'id='.$this->id.'&ADMCMD_view=1&ADMCMD_editIcons=1&ADMCMD_previewWS='.$GLOBALS['BE_USER']->workspace;
-			$previewUrl = t3lib_div::getIndpEnv('TYPO3_SITE_URL').'index.php?ADMCMD_prev='.t3lib_BEfunc::compilePreviewKeyword($params, $GLOBALS['BE_USER']->user['uid']);
+			$ttlHours = intval($GLOBALS['BE_USER']->getTSConfigVal('options.workspaces.previewLinkTTLHours'));
+			$ttlHours = ($ttlHours ? $ttlHours : 24*2);
 
-			$this->content.= $this->doc->section('Preview Url:','You can preview this page from the workspace using this link for the next 48 hours (does not require backend login):<br/><br/><a target="_blank" href="'.htmlspecialchars($previewUrl).'">'.$previewUrl.'</a>',0,1);
+			$params = 'id='.$this->id.'&ADMCMD_previewWS='.$GLOBALS['BE_USER']->workspace;
+			$previewUrl = t3lib_div::getIndpEnv('TYPO3_SITE_URL').'index.php?ADMCMD_prev='.t3lib_BEfunc::compilePreviewKeyword($params, $GLOBALS['BE_USER']->user['uid'],60*60*$ttlHours);
+
+			$this->content.= $this->doc->section('Preview Url:','You can preview this page from the workspace using this link for the next '.$ttlHours.' hours (does not require backend login):<br/><br/><a target="_blank" href="'.htmlspecialchars($previewUrl).'">'.$previewUrl.'</a>',0,1);
 		}
 
 			// Output overview content:
 		$this->content.= $this->doc->spacer(15);
 		$this->content.= $this->doc->section($this->details ? 'Details for version' : 'Workspace management', $WSoverview,0,1);
 
+	}
+
+	function workspaceMenu() {
+		if($this->id) {
+			$menu = '';
+			if ($GLOBALS['BE_USER']->workspace===0)	{
+				$menu.= t3lib_BEfunc::getFuncMenu($this->id,'SET[filter]',$this->MOD_SETTINGS['filter'],$this->MOD_MENU['filter']);
+				$menu.= t3lib_BEfunc::getFuncMenu($this->id,'SET[display]',$this->MOD_SETTINGS['display'],$this->MOD_MENU['display']);
+			}
+			if (!$this->details && $GLOBALS['BE_USER']->workspace && !$this->diffOnly)	{
+				$menu.= t3lib_BEfunc::getFuncCheck($this->id,'SET[diff]',$this->MOD_SETTINGS['diff'],'','','id="checkDiff"').' <label for="checkDiff">Show difference view</label>';
+			}
+
+			if ($menu)	{
+				return $menu;
+			}
+		}
 	}
 
 	/**
@@ -737,7 +797,7 @@ class tx_version_cm1 extends t3lib_SCbase {
 			$tableRows[] = '
 				<tr class="bgColor5 tableheader">
 					'.($this->diffOnly?'':'<td nowrap="nowrap" colspan="2">Live Version:</td>').'
-					<td nowrap="nowrap" colspan="2">Draft Versions:</td>
+					<td nowrap="nowrap" colspan="2">Workspace Versions:</td>
 					<td nowrap="nowrap"'.($this->diffOnly?' colspan="2"':' colspan="4"').'>Controls:</td>
 				</tr>';
 
@@ -811,7 +871,7 @@ class tx_version_cm1 extends t3lib_SCbase {
 						} else {
 							$vType = 'element';
 						}
-						
+
 						// Get icon
 						$icon = t3lib_iconWorks::getIconImage($table, $rec_off, $this->doc->backPath, ' align="top" title="'.t3lib_BEfunc::getRecordIconAltText($rec_off,$table).'"');
 						$tempUid = ($table != 'pages' || $vType==='branch' || $GLOBALS['BE_USER']->workspace===0 ? $rec_off['uid'] : $rec_on['uid']);
@@ -826,6 +886,10 @@ class tx_version_cm1 extends t3lib_SCbase {
 								$diffCode.= $diffHTML;
 							} elseif ($rec_off['t3ver_state']==2)	{
 								$diffCode.= $this->doc->icons(2).'Deleted element<br/>';
+							} elseif ($rec_on['t3ver_state']==3)	{
+								$diffCode.= $this->doc->icons(1).'Move-to placeholder (destination)<br/>';
+							} elseif ($rec_off['t3ver_state']==4)	{
+								$diffCode.= $this->doc->icons(1).'Move-to pointer (source)<br/>';
 							} else {
 								$diffCode.= ($diffPct<0 ? 'N/A' : ($diffPct ? $diffPct.'% change:' : ''));
 								$diffCode.= $diffHTML;
@@ -1007,7 +1071,7 @@ class tx_version_cm1 extends t3lib_SCbase {
 				$onClick.= ' return false;';
 				$actionLinks.=
 					'<input type="submit" name="_" value="'.htmlspecialchars($titleAttrib).'" onclick="'.htmlspecialchars($onClick).'" />';
-			}	
+			}
 		} elseif (t3lib_div::_GP('sendToReview'))	{
 			$onClick = 'window.location.href = "'.$this->REQUEST_URI.'";';
 			$actionLinks.=
@@ -1615,7 +1679,7 @@ class tx_version_cm1 extends t3lib_SCbase {
 						)).'">'.
 				'<img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/insert1.gif','width="14" height="14"').' alt="" align="top" title="Publish" />'.
 				'</a>';
-			if ($GLOBALS['BE_USER']->workspaceSwapAccess() && (int)$rec_on['t3ver_state']!==1 && (int)$rec_off['t3ver_state']!==2)	{
+			if ($GLOBALS['BE_USER']->workspaceSwapAccess())	{
 				$actionLinks.=
 					'<a href="'.htmlspecialchars($this->doc->issueCommand(
 							'&cmd['.$table.']['.$rec_on['uid'].'][version][action]=swap'.

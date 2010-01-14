@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2006 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 2005-2008 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is 
@@ -29,7 +29,7 @@
  *
  * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * $Id: acronym.php 1462 2006-05-05 20:35:09Z stan $  *
+ * $Id: acronym.php 2864 2008-01-06 07:40:51Z stan $  *
  */
 
 error_reporting (E_ALL ^ E_NOTICE);
@@ -37,12 +37,12 @@ unset($MCONF);
 require('conf.php');
 require($BACK_PATH.'init.php');
 require($BACK_PATH.'template.php');
-require_once('class.tx_rtehtmlarea_acronym.php');
+require_once('class.tx_rtehtmlarea_acronym_mod.php');
 $LANG->includeLLFile('EXT:rtehtmlarea/mod2/locallang.xml');
 $LANG->includeLLFile('EXT:rtehtmlarea/htmlarea/locallang_dialogs.xml');
 
 // Make instance:
-$SOBE = t3lib_div::makeInstance('tx_rtehtmlarea_acronym');
+$SOBE = t3lib_div::makeInstance('tx_rtehtmlarea_acronym_mod');
 $SOBE->init();
 $SOBE->main();
 $SOBE->printContent();

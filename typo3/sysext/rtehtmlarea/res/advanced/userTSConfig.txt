@@ -5,7 +5,7 @@
 #
 # @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
 #
-# TYPO3 CVS ID: $Id: userTSConfig.txt 1421 2006-04-10 09:27:15Z stucki $
+# TYPO3 SVN ID: $Id: userTSConfig.txt 3437 2008-03-16 16:22:11Z flyguide $
 # ***************************************************************************************
 
 	## Enable the RTE by default for all users

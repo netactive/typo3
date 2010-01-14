@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Module: Workspace publisher
  *
- * $Id: index.php 1613 2006-07-10 09:42:27Z liels_bugs $
+ * $Id: publish.php 3439 2008-03-16 19:16:51Z flyguide $
  *
  * @author	Dmitry Dulepov <typo3@accio.lv>
  */
@@ -74,6 +74,13 @@ class SC_mod_user_ws_publish extends t3lib_SCbase {
 	var	$nextRecordNumber;
 	var	$publishData;
 	var	$recordCount;
+
+	/**
+	 * Document Template Object
+	 *
+	 * @var mediumDoc
+	 */
+	var $doc;
 
 	/**
 	 * Initializes the module. See <code>t3lib_SCbase::init()</code> for more information.

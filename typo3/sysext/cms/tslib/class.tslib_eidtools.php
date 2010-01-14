@@ -33,7 +33,7 @@
  * initialize parts of the FE environment as needed,
  * eg. Frontend User session, Database connection etc.
  *
- * $Id: class.tslib_eidtools.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: class.tslib_eidtools.php 3347 2008-03-03 10:01:01Z dmitry $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -108,6 +108,7 @@ class tslib_eidtools {
 	function connectDB()	{
 		global $TYPO3_DB;
 
+		/* @var $TYPO3_DB t3lib_db */
 		$TYPO3_DB->connectDB();
 	}
 }

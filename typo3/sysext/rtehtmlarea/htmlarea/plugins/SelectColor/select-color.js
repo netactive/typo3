@@ -27,7 +27,7 @@
 /*
  * Color Select Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 CVS ID: $Id: select-color.js 1421 2006-04-10 09:27:15Z stucki $
+ * TYPO3 SVN ID: $Id: select-color.js 3437 2008-03-16 16:22:11Z flyguide $
  */
 
 SelectColor = function(editor) {
@@ -41,7 +41,7 @@ SelectColor = function(editor) {
 		var id = "CO-" + btn[0];
 		this.editor.eventHandlers[id] = SelectColor.actionHandler(this);
 		cfg.registerButton(
-			id, 
+			id,
 			SelectColor_langArray[id],
 			editor.imgURL(id + ".gif", "SelectColor"),
 			false,

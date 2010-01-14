@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains the base class for 'Extension Objects' in backend modules.
  *
- * $Id: class.t3lib_extobjbase.php 593 2005-04-01 14:37:15Z kasper $
+ * $Id: class.t3lib_extobjbase.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -145,7 +145,9 @@
 class t3lib_extobjbase {
 
 	/**
-	 * Contains a reference to the parent object.
+	 * Contains a reference to the parent (calling) object (which is probably an instance of an extension class to t3lib_SCbase)
+	 *
+	 * @var t3lib_SCbase
 	 * @see init()
 	 */
 	var $pObj;	// parent SC object
@@ -240,7 +242,9 @@ class t3lib_extobjbase {
 		#	include($this->thisPath.'/'.$this->localLangFile);
 		if ($this->localLangFile && (@is_file($this->thisPath.'/'.$this->localLangFile) || @is_file($this->thisPath.'/'.substr($this->localLangFile,0,-4).'.xml')))	{
 			$LOCAL_LANG = $LANG->includeLLFile($this->thisPath.'/'.$this->localLangFile, FALSE);
-			if (is_array($LOCAL_LANG))	$GLOBALS['LOCAL_LANG'] = t3lib_div::array_merge_recursive_overrule($GLOBALS['LOCAL_LANG'],$LOCAL_LANG);
+			if (is_array($LOCAL_LANG)) {
+				$GLOBALS['LOCAL_LANG'] = t3lib_div::array_merge_recursive_overrule((array)$GLOBALS['LOCAL_LANG'], $LOCAL_LANG);
+			}
 		}
 	}
 

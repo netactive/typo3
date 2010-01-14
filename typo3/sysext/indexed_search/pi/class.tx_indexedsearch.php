@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2001-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Index search frontend
  *
- * $Id: class.tx_indexedsearch.php 2158 2007-02-27 13:49:53Z ohader $
+ * $Id: class.tx_indexedsearch.php 5133 2009-03-06 19:27:32Z jsegars $
  *
  * Creates a searchform for indexed search. Indexing must be enabled
  * for this to make sense.
@@ -154,7 +154,20 @@ class tx_indexedsearch extends tslib_pibase {
 	var $resultSections = array();		// Page tree sections for search result.
 	var $external_parsers = array();	// External parser objects
 	var $iconFileNameCache = array();	// Storage of icons....
-	var $lexerObj;				// Lexer object
+
+	/**
+	 * Lexer object
+	 *
+	 * @var tx_indexedsearch_lexer
+	 */
+	var $lexerObj;
+
+	/**
+	 * Indexer object
+	 *
+	 * @var tx_indexedsearch_indexer
+	 */
+	var $indexerObj;
 	var $templateCode;			// Will hold the content of $conf['templateFile']
 	var $hiddenFieldList = 'ext, type, defOp, media, order, group, lang, desc, results';
 
@@ -304,6 +317,10 @@ class tx_indexedsearch extends tslib_pibase {
 			}
 		}
 
+			// Should we use join_pages instead of long lists of uids?
+		if ($this->conf['search.']['skipExtendToSubpagesChecking'])	{
+			$this->join_pages = 1;
+		}
 
 			// Add media to search in:
 		if (strlen(trim($this->conf['search.']['mediaList'])))	{
@@ -332,12 +349,14 @@ class tx_indexedsearch extends tslib_pibase {
 		if ($this->conf['show.']['L1sections'])	{
 			$firstLevelMenu = $this->getMenu($this->wholeSiteIdList);
 			while(list($kk,$mR) = each($firstLevelMenu))	{
-				if ($mR['doktype']!=5)	{
+					// @TODO: RFC #7370: doktype 2&5 are deprecated since TYPO3 4.2-beta1
+				if ($mR['doktype']!=5 && !$mR['nav_hide']) {
 					$this->optValues['sections']['rl1_'.$mR['uid']] = trim($this->pi_getLL('opt_RL1').' '.$mR['title']);
 					if ($this->conf['show.']['L2sections'])	{
 						$secondLevelMenu = $this->getMenu($mR['uid']);
 						while(list($kk2,$mR2) = each($secondLevelMenu))	{
-							if ($mR['doktype']!=5)	{
+								// @TODO: RFC #7370: doktype 2&5 are deprecated since TYPO3 4.2-beta1
+							if ($mR2['doktype']!=5 && !$mR2['nav_hide']) {
 								$this->optValues['sections']['rl2_'.$mR2['uid']] = trim($this->pi_getLL('opt_RL2').' '.$mR2['title']);
 							} else unset($secondLevelMenu[$kk2]);
 						}
@@ -564,8 +583,10 @@ class tx_indexedsearch extends tslib_pibase {
 			$c = 0;	// Result pointer: Counts up the position in the current search-result
 			$grouping_phashes = array();	// Used to filter out duplicates.
 			$grouping_chashes = array();	// Used to filter out duplicates BASED ON cHash.
-			$firstRow = Array();	// Will hold the first row in result - used to calculate relative hit-ratings.
-			$resultRows = Array();	// Will hold the results rows for display.
+			$firstRow = array();	// Will hold the first row in result - used to calculate relative hit-ratings.
+			$resultRows = array();	// Will hold the results rows for display.
+
+			$exactCount = $this->conf['search.']['exactCount'];	// Continue counting and checking of results even if we are sure they are not displayed in this request. This will slow down your page rendering, but it allows precise search result counters.
 
 				// Now, traverse result and put the rows to be displayed into an array
 				// Each row should contain the fields from 'ISEC.*, IP.*' combined + artificial fields "show_resume" (boolean) and "result_number" (counter)
@@ -593,8 +614,8 @@ class tx_indexedsearch extends tslib_pibase {
 						if ($c > $pointer * $this->piVars['results'])	{
 							$row['result_number'] = $c;
 							$resultRows[] = $row;
-								// This may lead to a problem: If the result check is not stopped here, the search will take longer. However the result counter will not filter out grouped cHashes/pHashes that were not processed yet.
-							if (($c+1) > ($pointer+1)*$this->piVars['results'])	break;
+								// This may lead to a problem: If the result check is not stopped here, the search will take longer. However the result counter will not filter out grouped cHashes/pHashes that were not processed yet. You can change this behavior using the "search.exactCount" property (see above).
+							if (!$exactCount && (($c+1) > ($pointer+1)*$this->piVars['results']))	{ break; }
 						}
 					} else {
 						$count--;	// Skip this row if the user cannot view it (missing permission)
@@ -1307,7 +1328,7 @@ class tx_indexedsearch extends tslib_pibase {
 			// Multilangual text
 		$substituteArray = array('searchFor', 'extResume', 'atATime', 'orderBy', 'fromSection', 'searchIn', 'match', 'style', 'freeIndexUid');
 		foreach ($substituteArray as $marker)	{
-			$markerArray['###FORM_'.strtoupper($marker).'###'] = $this->pi_getLL('form_'.$marker,'',1);
+			$markerArray['###FORM_'.t3lib_div::strtoupper($marker).'###'] = $this->pi_getLL('form_'.$marker,'',1);
 		}
 
 		$markerArray['###FORM_SUBMIT###'] = $this->pi_getLL('submit_button_label','',1);
@@ -1575,7 +1596,7 @@ class tx_indexedsearch extends tslib_pibase {
 
 			if (is_array($tmplContent))	{
 				foreach ($tmplContent AS $k => $v)	{
-					$markerArray['###'.strtoupper($k).'###'] = $v;
+					$markerArray['###'.t3lib_div::strtoupper($k).'###'] = $v;
 				}
 			}
 
@@ -2313,6 +2334,7 @@ class tx_indexedsearch extends tslib_pibase {
 			while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
 				$output[$row['uid']] = $GLOBALS['TSFE']->sys_page->getPageOverlay($row);
 			}
+			$GLOBALS['TYPO3_DB']->sql_free_result($res);
 			return $output;
 		} else {
 			return $GLOBALS['TSFE']->sys_page->getMenu($id);

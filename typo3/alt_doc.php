@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  * By sending certain parameters to this script you can bring up a form
  * which allows the user to edit the content of one or more database records.
  *
- * $Id: alt_doc.php 2618 2007-10-27 16:47:18Z ingmars $
+ * $Id: alt_doc.php 4256 2008-09-28 19:52:42Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -117,11 +117,10 @@ class SC_alt_doc {
 	var $mirror;			// GPvar (for processing only) : ?
 	var $cacheCmd;			// GPvar (for processing only) : Clear-cache cmd.
 	var $redirect;			// GPvar (for processing only) : Redirect (not used???)
-	var $disableRTE;		// GPvar (for processing only) : If set, the rich text editor is disabled in the forms.
 	var $returnNewPageId;	// GPvar (for processing only) : Boolean: If set, then the GET var "&id=" will be added to the retUrl string so that the NEW id of something is returned to the script calling the form.
 	var $vC;				// GPvar (for processing only) : Verification code, internal stuff.
 	var $uc;				// GPvar : update BE_USER->uc
-	
+
 	var $popViewId;			// GPvar (module) : ID for displaying the page in the frontend (used for SAVE/VIEW operations)
 	var $popViewId_addParams;	// GPvar (module) : Additional GET vars for the link, eg. "&L=xxx"
 	var $viewUrl;			// GPvar (module) : Alternative URL for viewing the frontend pages.
@@ -134,7 +133,13 @@ class SC_alt_doc {
 
 
 		// Internal, static:
-	var $doc;				// Document template object
+	/**
+	 * document template object
+	 *
+	 * @var mediumDoc
+	 */
+	var $doc;
+	var $template;			// a static HTML template, usually in templates/alt_doc.html
 	var $content;			// Content accumulation
 
 	var $retUrl;			// Return URL script, processed. This contains the script (if any) that we should RETURN TO from the alt_doc.php script IF we press the close button. Thus this variable is normally passed along from the calling script so we can properly return if needed.
@@ -159,7 +164,13 @@ class SC_alt_doc {
 	var $viewId;			// Is set to the pid value of the last shown record - thus indicating which page to show when clicking the SAVE/VIEW button
 	var $viewId_addParams;	// Is set to additional parameters (like "&L=xxx") if the record supports it.
 	var $modTSconfig;		// Module TSconfig, loaded from main() based on the page id value of viewId
-	var $tceforms;			// Contains the instance of TCEforms class.
+
+	/**
+	 * instance of TCEforms class
+	 *
+	 * @var t3lib_TCEforms
+	 */
+	var $tceforms;
 	var $generalPathOfForm;	// Contains the root-line path of the currently edited record(s) - for display.
 
 
@@ -235,15 +246,17 @@ class SC_alt_doc {
 		}
 	}
 
+
 	/**
 	 * Detects, if a save command has been triggered.
 	 *
 	 * @return	boolean		True, then save the document (data submitted)
 	 */
 	function doProcessData()	{
-		$out = $this->doSave || isset($_POST['_savedok_x']) || isset($_POST['_saveandclosedok_x']) || isset($_POST['_savedokview_x']) || isset($_POST['_savedoknew_x']);
+		$out = $this->doSave || isset($_POST['_savedok_x']) || isset($_POST['_saveandclosedok_x']) || isset($_POST['_savedokview_x']) || isset($_POST['_savedoknew_x']) || isset($_POST['_translation_savedok_x']);
 		return $out;
 	}
+
 
 	/**
 	 * Do processing of data, submitting it to TCEmain.
@@ -259,7 +272,6 @@ class SC_alt_doc {
 		$this->mirror = t3lib_div::_GP('mirror');
 		$this->cacheCmd = t3lib_div::_GP('cacheCmd');
 		$this->redirect = t3lib_div::_GP('redirect');
-		$this->disableRTE = t3lib_div::_GP('_disableRTE');
 		$this->returnNewPageId = t3lib_div::_GP('returnNewPageId');
 		$this->vC = t3lib_div::_GP('vC');
 
@@ -267,6 +279,9 @@ class SC_alt_doc {
 			// Only options related to $this->data submission are included here.
 		$tce = t3lib_div::makeInstance('t3lib_TCEmain');
 		$tce->stripslashes_values=0;
+		if (isset($_POST['_translation_savedok_x']))	{
+			$tce->updateModeL10NdiffData = 'FORCE_FFUPD';
+		}
 
 			// Setting default values specific for the user:
 		$TCAdefaultOverride = $BE_USER->getTSConfigProp('TCAdefaults');
@@ -275,17 +290,21 @@ class SC_alt_doc {
 		}
 
 			// Setting internal vars:
-		if ($BE_USER->uc['neverHideAtCopy'])	{	$tce->neverHideAtCopy = 1;	}
+		if ($BE_USER->uc['neverHideAtCopy'])	{
+			$tce->neverHideAtCopy = 1;
+		}
 		$tce->debug=0;
-		$tce->disableRTE = $this->disableRTE;
+		$tce->disableRTE = !$BE_USER->isRTE();
 
 			// Loading TCEmain with data:
 		$tce->start($this->data,$this->cmd);
-		if (is_array($this->mirror))	{	$tce->setMirror($this->mirror);	}
+		if (is_array($this->mirror))	{
+			$tce->setMirror($this->mirror);
+		}
 
 			// If pages are being edited, we set an instruction about updating the page tree after this operation.
 		if (isset($this->data['pages']))	{
-			t3lib_BEfunc::getSetUpdateSignal('updatePageTree');
+			t3lib_BEfunc::setUpdateSignal('updatePageTree');
 		}
 
 
@@ -322,7 +341,7 @@ class SC_alt_doc {
 								}
 								$newEditConf[$tableName][$editId] = 'edit';
 							}
-	
+
 								// Traverse all new records and forge the content of ->editconf so we can continue to EDIT these records!
 							if ($tableName=='pages' && $this->retUrl!='dummy.php' && $this->returnNewPageId)	{
 								$this->retUrl.='&id='.$tce->substNEWwithIDs[$key];
@@ -337,7 +356,7 @@ class SC_alt_doc {
 				if (count($newEditConf)) {
 					$this->editconf = $newEditConf;
 				}
-				
+
 					// Finally, set the editconf array in the "getvars" so they will be passed along in URLs as needed.
 				$this->R_URL_getvars['edit']=$this->editconf;
 
@@ -408,6 +427,8 @@ class SC_alt_doc {
 		$this->disHelp = t3lib_div::_GP('disHelp');
 		$this->noView = t3lib_div::_GP('noView');
 
+		$this->perms_clause = $BE_USER->getPagePermsClause(1);
+
 			// Set other internal variables:
 		$this->R_URL_getvars['returnUrl']=$this->retUrl;
 		$this->R_URI = $this->R_URL_parts['path'].'?'.t3lib_div::implodeArrayForUrl('',$this->R_URL_getvars);
@@ -417,9 +438,7 @@ class SC_alt_doc {
 			// If empty string it's just a variable, that'll be saved.
 			// Values NOT in this array will not be saved in the settings-array for the module.
 		$this->MOD_MENU = array(
-			'showPalettes' => '',
-			'showDescriptions' => '',
-			'disableRTE' => ''
+			'showPalettes' => ''
 		);
 
 			// Setting virtual document name
@@ -429,14 +448,13 @@ class SC_alt_doc {
 		$this->MOD_SETTINGS = t3lib_BEfunc::getModuleData($this->MOD_MENU, t3lib_div::_GP('SET'), $this->MCONF['name']);
 
 			// Create an instance of the document template object
-		$this->doc = t3lib_div::makeInstance('mediumDoc');
-		$this->doc->bodyTagMargins['x']=5;
-		$this->doc->bodyTagMargins['y']=5;
+		$this->doc = $GLOBALS['TBE_TEMPLATE'];
 		$this->doc->backPath = $BACK_PATH;
+		$this->doc->setModuleTemplate('templates/alt_doc.html');
 		$this->doc->docType = 'xhtml_trans';
+		$this->doc->form = '<form action="'.htmlspecialchars($this->R_URI).'" method="post" enctype="'.$GLOBALS['TYPO3_CONF_VARS']['SYS']['form_enctype'].'" name="editform" onsubmit="document.editform._scrollPosition.value=(document.documentElement.scrollTop || document.body.scrollTop); return TBE_EDITOR.checkSubmit(1);">';
 
-		$this->doc->form='<form action="'.htmlspecialchars($this->R_URI).'" method="post" enctype="'.$GLOBALS['TYPO3_CONF_VARS']['SYS']['form_enctype'].'" name="editform" onsubmit="return TBE_EDITOR.checkSubmit(1);">';
-
+		$this->doc->loadJavascriptLib('contrib/prototype/prototype.js');
 		$this->doc->JScode = $this->doc->wrapScriptTags('
 			function jumpToUrl(URL,formEl)	{	//
 				if (!TBE_EDITOR.isFormChanged())	{
@@ -445,7 +463,6 @@ class SC_alt_doc {
 					formEl.checked = formEl.checked ? 0 : 1;
 				}
 			}
-
 				// Object: TS:
 			function typoSetup	()	{	//
 				this.uniqueID = "";
@@ -479,10 +496,8 @@ class SC_alt_doc {
 		).$this->doc->getDynTabMenuJScode();
 
 			// Setting up the context sensitive menu:
-		$CMparts = $this->doc->getContextMenuCode();
-		$this->doc->JScode.= $CMparts[0];
-		$this->doc->bodyTagAdditions = $CMparts[1];
-		$this->doc->postCode.= $CMparts[2];
+		$this->doc->getContextMenuCode();
+		$this->doc->bodyTagAdditions = 'onload="window.scrollTo(0,'.t3lib_div::intInRange(t3lib_div::_GP('_scrollPosition'),0,10000).');"';
 	}
 
 	/**
@@ -493,13 +508,9 @@ class SC_alt_doc {
 	function main()	{
 		global $BE_USER,$LANG;
 
-			// Starting content accumulation:
-		$this->content='';
-		$this->content.=$this->doc->startPage('TYPO3 Edit Document');
-
 			// Begin edit:
 		if (is_array($this->editconf))	{
-			
+
 				// Initialize TCEforms (rendering the forms)
 			$this->tceforms = t3lib_div::makeInstance('t3lib_TCEforms');
 			$this->tceforms->initDefaultBEMode();
@@ -507,7 +518,7 @@ class SC_alt_doc {
 			$this->tceforms->localizationMode = t3lib_div::inList('text,media',$this->localizationMode) ? $this->localizationMode : '';	// text,media is keywords defined in TYPO3 Core API..., see "l10n_cat"
 			$this->tceforms->returnUrl = $this->R_URI;
 			$this->tceforms->palettesCollapsed = !$this->MOD_SETTINGS['showPalettes'];
-			$this->tceforms->disableRTE = $this->MOD_SETTINGS['disableRTE'];
+			$this->tceforms->disableRTE = !$BE_USER->isRTE();
 			$this->tceforms->enableClickMenu = TRUE;
 			$this->tceforms->enableTabMenu = TRUE;
 
@@ -516,50 +527,56 @@ class SC_alt_doc {
 			$this->tceforms->clipObj->initializeClipboard();	// Initialize - reads the clipboard content from the user session
 
 				// Setting external variables:
-			if ($BE_USER->uc['edit_showFieldHelp']!='text' && $this->MOD_SETTINGS['showDescriptions'])	$this->tceforms->edit_showFieldHelp='text';
+			$this->tceforms->edit_showFieldHelp = $BE_USER->uc['edit_showFieldHelp'];
 
 			if ($this->editRegularContentFromId)	{
 				$this->editRegularContentFromId();
 			}
 
+
 				// Creating the editing form, wrap it with buttons, document selector etc.
 			$editForm = $this->makeEditForm();
 
 			if ($editForm)	{
-				reset($this->elementsData);
-				$this->firstEl = current($this->elementsData);
+				$this->firstEl = reset($this->elementsData);
 
-					// language switch/selector for editing
-					// show only when a single record is edited - multiple records are too confusing
-				if (count($this->elementsData)==1) {
-					$languageSwitch = $this->languageSwitch($this->firstEl['table'], $this->firstEl['uid'], $this->firstEl['pid']);
+					// Checking if the currently open document is stored in the list of "open documents" - if not, then add it:
+				if ((strcmp($this->docDat[1], $this->storeUrlMd5) || !isset($this->docHandler[$this->storeUrlMd5])) && !$this->dontStoreDocumentRef) {
+						$this->docHandler[$this->storeUrlMd5] = array($this->storeTitle, $this->storeArray, $this->storeUrl, $this->firstEl);
+						$BE_USER->pushModuleData('alt_doc.php', array($this->docHandler, $this->storeUrlMd5));
+						t3lib_BEfunc::setUpdateSignal('tx_opendocs::updateNumber', count($this->docHandler));
 				}
 
 
-				if ($this->viewId)	{
-						// Module configuration:
-					$this->modTSconfig = t3lib_BEfunc::getModTSconfig($this->viewId,'mod.xMOD_alt_doc');
-				} else $this->modTSconfig=array();
+					// Module configuration
+				$this->modTSconfig = ($this->viewId ? t3lib_BEfunc::getModTSconfig($this->viewId,'mod.xMOD_alt_doc') : array());
 
-				$panel = $this->makeButtonPanel();
-				$docSel = $this->makeDocSel();
-				$cMenu = $this->makeCmenu();
-
-				$formContent = $this->compileForm($panel,$docSel,$cMenu,$editForm,$languageSwitch);
-
-				$this->content.= $this->tceforms->printNeededJSFunctions_top().
-									$formContent.
-									$this->tceforms->printNeededJSFunctions();
-				$this->content.= $this->functionMenus();
-
-					// Add CSH:
-				$this->content.= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'TCEforms', $GLOBALS['BACK_PATH'],'<br/>|',FALSE,'margin-top: 20px;');
-
-				$this->content.= $this->shortCutLink();
-
-				$this->tceformMessages();
+				$body.= $this->tceforms->printNeededJSFunctions_top();
+				$body.= $this->compileForm($editForm);
+				$body.= $this->tceforms->printNeededJSFunctions();
+				$body.= $this->functionMenus();
+				$body.= $this->tceformMessages();
 			}
 		}
+
+		// Access check...
+		// The page will show only if there is a valid page and if this page may be viewed by the user
+		$this->pageinfo = t3lib_BEfunc::readPageAccess($this->viewId, $this->perms_clause);
+
+			// Setting up the buttons and markers for docheader
+		$docHeaderButtons = $this->getButtons();
+		$markers = array(
+			'LANGSELECTOR' => $this->langSelector(),
+			'EXTRAHEADER' => $this->extraFormHeaders(),
+			'CSH' => $docHeaderButtons['csh'],
+			'CONTENT' => $body
+		);
+
+			// Build the <body> for the module
+		$this->content = $this->doc->startPage('TYPO3 Edit Document');
+		$this->content.= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
+		$this->content.= $this->doc->endPage();
+		$this->content = $this->doc->insertStylesAndJS($this->content);
 	}
 
 
@@ -569,8 +586,6 @@ class SC_alt_doc {
 	 * @return	void
 	 */
 	function printContent()	{
-		$this->content.= $this->doc->endPage();
-		$this->content = $this->doc->insertStylesAndJS($this->content);
 		echo $this->content;
 	}
 
@@ -697,7 +712,7 @@ class SC_alt_doc {
 								$trData->addRawData = TRUE;
 								$trData->defVals = $this->defVals;
 								$trData->lockRecords=1;
-								$trData->disableRTE = $this->MOD_SETTINGS['disableRTE'];
+								$trData->disableRTE = !$BE_USER->isRTE();
 								$trData->prevPageID = $prevPageID;
 								$trData->fetchRecord($table,$theUid,$cmd=='new'?'new':'');	// 'new'
 								reset($trData->regTableItems_data);
@@ -756,9 +771,7 @@ class SC_alt_doc {
 									if ($lockInfo = t3lib_BEfunc::isRecordLocked($table,$rec['uid']))	{
 										$lockIcon = '
 
-											<!--
-											 	Warning box:
-											-->
+											<!-- Warning box: -->
 											<table border="0" cellpadding="0" cellspacing="0" class="warningbox">
 												<tr>
 													<td><img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/recordlock_warning3.gif','width="17" height="12"').' alt="" /></td>
@@ -790,38 +803,54 @@ class SC_alt_doc {
 	/**
 	 * Create the panel of buttons for submitting the form or otherwise perform operations.
 	 *
-	 * @return	string		HTML code, comprised of images linked to various actions.
+	 * @return	array	all available buttons as an assoc. array
 	 */
-	function makeButtonPanel()	{
+	protected function getButtons()	{
 		global $TCA,$LANG;
-
-		$panel='';
+		$buttons = array(
+			'save' => '',
+			'save_view' => '',
+			'save_new' => '',
+			'save_close' => '',
+			'close' => '',
+			'delete' => '',
+			'undo' => '',
+			'history' => '',
+			'columns_only' => '',
+			'csh' => '',
+		);
 
 			// Render SAVE type buttons:
 			// The action of each button is decided by its name attribute. (See doProcessData())
 		if (!$this->errorC && !$TCA[$this->firstEl['table']]['ctrl']['readOnly'])	{
 
 				// SAVE button:
-			$panel.= '<input type="image" class="c-inputButton" name="_savedok"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/savedok.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveDoc',1).'" />';
+			$buttons['save'] = '<input type="image" class="c-inputButton" name="_savedok"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/savedok.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveDoc',1).'" />';
 
 				// SAVE / VIEW button:
 			if ($this->viewId && !$this->noView && t3lib_extMgm::isLoaded('cms')) {
-				$panel.= '<input type="image" class="c-inputButton" name="_savedokview"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/savedokshow.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveDocShow',1).'" />';
+				$buttons['save_view'] = '<input type="image" class="c-inputButton" name="_savedokview"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/savedokshow.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveDocShow',1).'" />';
 			}
 
 				// SAVE / NEW button:
 			if (count($this->elementsData)==1 && $this->getNewIconMode($this->firstEl['table'])) {
-				$panel.= '<input type="image" class="c-inputButton" name="_savedoknew"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/savedoknew.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveNewDoc',1).'" />';
+				$buttons['save_new'] = '<input type="image" class="c-inputButton" name="_savedoknew"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/savedoknew.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveNewDoc',1).'" />';
 			}
 
 				// SAVE / CLOSE
-			$panel.= '<input type="image" class="c-inputButton" name="_saveandclosedok"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/saveandclosedok.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveCloseDoc',1).'" />';
+			$buttons['save_close'] = '<input type="image" class="c-inputButton" name="_saveandclosedok"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/saveandclosedok.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveCloseDoc',1).'" />';
+
+				// FINISH TRANSLATION / SAVE / CLOSE
+			if ($GLOBALS['TYPO3_CONF_VARS']['BE']['explicitConfirmationOfTranslation'])	{
+				$buttons['translation_save'] = '<input type="image" class="c-inputButton" name="_translation_savedok"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/translationsavedok.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.translationSaveDoc',1).'" />';
+			}
 		}
 
 			// CLOSE button:
-		$panel.= '<a href="#" onclick="document.editform.closeDoc.value=1; document.editform.submit(); return false;">'.
+		$buttons['close'] = '<a href="#" onclick="document.editform.closeDoc.value=1; document.editform.submit(); return false;">'.
 				'<img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/closedok.gif','width="21" height="16"').' class="c-inputButton" title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.closeDoc',1).'" alt="" />'.
 				'</a>';
+
 
 			// DELETE + UNDO buttons:
 		if (!$this->errorC && !$TCA[$this->firstEl['table']]['ctrl']['readOnly'] && count($this->elementsData)==1)	{
@@ -830,175 +859,101 @@ class SC_alt_doc {
 					// Delete:
 				if ($this->firstEl['deleteAccess'] && !$TCA[$this->firstEl['table']]['ctrl']['readOnly'] && !$this->getNewIconMode($this->firstEl['table'],'disableDelete')) {
 					$aOnClick = 'return deleteRecord(\''.$this->firstEl['table'].'\',\''.$this->firstEl['uid'].'\',unescape(\''.rawurlencode($this->retUrl).'\'));';
-					$panel.= '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.
+					$buttons['delete'] = '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.
 							'<img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/deletedok.gif','width="21" height="16"').' class="c-inputButton" title="'.$LANG->getLL('deleteItem',1).'" alt="" />'.
 							'</a>';
 				}
 
 					// Undo:
-				$undoButton = 0;
 				$undoRes = $GLOBALS['TYPO3_DB']->exec_SELECTquery('tstamp', 'sys_history', 'tablename='.$GLOBALS['TYPO3_DB']->fullQuoteStr($this->firstEl['table'], 'sys_history').' AND recuid='.intval($this->firstEl['uid']), '', 'tstamp DESC', '1');
 				if ($undoButtonR = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($undoRes))	{
-					$undoButton = 1;
-				}
-				if ($undoButton) {
 					$aOnClick = 'window.location.href=\'show_rechis.php?element='.rawurlencode($this->firstEl['table'].':'.$this->firstEl['uid']).'&revert=ALL_FIELDS&sumUp=-1&returnUrl='.rawurlencode($this->R_URI).'\'; return false;';
-					$panel.= '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.
+					$buttons['undo'] = '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.
 							'<img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/undo.gif','width="21" height="16"').' class="c-inputButton" title="'.htmlspecialchars(sprintf($LANG->getLL('undoLastChange'),t3lib_BEfunc::calcAge(time()-$undoButtonR['tstamp'],$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.minutesHoursDaysYears')))).'" alt="" />'.
 							'</a>';
 				}
 				if ($this->getNewIconMode($this->firstEl['table'],'showHistory'))	{
 					$aOnClick = 'window.location.href=\'show_rechis.php?element='.rawurlencode($this->firstEl['table'].':'.$this->firstEl['uid']).'&returnUrl='.rawurlencode($this->R_URI).'\'; return false;';
-					$panel.= '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.
+					$buttons['history'] = '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.
 							'<img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/history2.gif','width="13" height="12"').' class="c-inputButton" alt="" />'.
 							'</a>';
 				}
 
 					// If only SOME fields are shown in the form, this will link the user to the FULL form:
 				if ($this->columnsOnly)	{
-					$panel.= '<a href="'.htmlspecialchars($this->R_URI.'&columnsOnly=').'">'.
+					$buttons['columns_only'] = '<a href="'.htmlspecialchars($this->R_URI.'&columnsOnly=').'">'.
 							'<img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/edit2.gif','width="11" height="12"').' class="c-inputButton" title="'.$LANG->getLL('editWholeRecord',1).'" alt="" />'.
 							'</a>';
 				}
 			}
 		}
-		return $panel;
+
+			// add the CSH icon
+		$buttons['csh'] = t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'TCEforms', $GLOBALS['BACK_PATH'], '', TRUE);
+		$buttons['shortcut'] = $this->shortCutLink();
+		$buttons['open_in_new_window'] = $this->openInNewWindowLink();
+		return $buttons;
 	}
 
 	/**
-	 * Create the selector box form element which allows to select between open documents.
-	 * Can be disabled through Page TSconfig.
-	 *
-	 * @return	string		HTML <select> element  (if applicable)
+	 * Returns the language switch/selector for editing,
+	 * show only when a single record is edited
+	 * - multiple records are too confusing
+	 * @return	string		the HTML
 	 */
-	function makeDocSel()	{
-		global $BE_USER,$LANG;
-
-			// Render the selector ONLY if it has not been disabled:
-		if (!$this->modTSconfig['properties']['disableDocSelector'])	{
-
-				// Checking if the currently open document is stored in the list of "open documents" - if not, then add it:
-			if ((strcmp($this->docDat[1],$this->storeUrlMd5)||!isset($this->docHandler[$this->storeUrlMd5])) && !$this->dontStoreDocumentRef)	{
-				$this->docHandler[$this->storeUrlMd5]=array($this->storeTitle,$this->storeArray,$this->storeUrl);
-				$BE_USER->pushModuleData('alt_doc.php',array($this->docHandler,$this->storeUrlMd5));
-			}
-
-				// Now, create the document selector box:
-			$docSel='';
-			if (is_array($this->docHandler))	{
-				$opt = array();
-				$opt[] = '<option value="">[ '.$LANG->getLL('openDocs',1).': ]</option>';
-
-					// Traverse the list of open documents:
-				foreach($this->docHandler as $md5k => $setupArr)	{
-					$theValue = 'alt_doc.php?'.$setupArr[2].'&returnUrl='.rawurlencode($this->retUrl);
-					$opt[]='<option value="'.htmlspecialchars($theValue).'"'.(!strcmp($md5k,$this->storeUrlMd5)?' selected="selected"':'').'>'.htmlspecialchars(strip_tags(t3lib_div::htmlspecialchars_decode($setupArr[0]))).'</option>';
-				}
-
-					// Compile the selector box finally:
-				$onChange = 'if(this.options[this.selectedIndex].value && !TBE_EDITOR.isFormChanged()){window.location.href=(this.options[this.selectedIndex].value);}';
-				$docSel='<select name="_docSelector" onchange="'.htmlspecialchars($onChange).'">'.implode('',$opt).'</select>';
-
-					// Add CSH:
-				$docSel.=t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'TCEforms_docSelector', $GLOBALS['BACK_PATH'],'', TRUE);
-			}
-		} else $docSel='';
-		return $docSel;
+	function langSelector() {
+		$langSelector = '';
+		if (count($this->elementsData) == 1) {
+			$langSelector = $this->languageSwitch($this->firstEl['table'], $this->firstEl['uid'], $this->firstEl['pid']);
+		}
+		return $langSelector;
 	}
+
 
 	/**
-	 * Create the selector box form element which allows to select a clear-cache operation.
-	 * Can be disabled through Page TSconfig.
+	 * Compiles the extra form headers if the tceforms
 	 *
-	 * @return	string		HTML <select> element (if applicable)
-	 * @see template::clearCacheMenu()
+	 * @return	string		the HTML
 	 */
-	function makeCmenu()	{
+	function extraFormHeaders() {
+		$extraTemplate = '';
 
-			// Generate the menu if NOT disabled:
-		if (!$this->modTSconfig['properties']['disableCacheSelector'])	{
-			$cMenu = $this->doc->clearCacheMenu(intval($this->viewId),!$this->modTSconfig['properties']['disableDocSelector']);
-
-				// Add CSH:
-			$cMenu.=t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'TCEforms_cacheSelector', $GLOBALS['BACK_PATH'],'', TRUE);
-		} else $cMenu ='';
-		return $cMenu;
+		if (is_array($this->tceforms->extraFormHeaders)) {
+			$extraTemplate = t3lib_parsehtml::getSubpart($this->doc->moduleTemplate, '###DOCHEADER_EXTRAHEADER###');
+			$extraTemplate = t3lib_parsehtml::substituteMarker($extraTemplate, '###EXTRAHEADER###', implode(chr(10), $this->tceforms->extraFormHeaders));
+		}
+		return $extraTemplate;
 	}
+
 
 	/**
 	 * Put together the various elements (buttons, selectors, form) into a table
 	 *
-	 * @param	string		The button panel HTML
-	 * @param	string		Document selector HTML
-	 * @param	string		Clear-cache menu HTML
 	 * @param	string		HTML form.
-	 * @param	string		Language selector HTML for localization
 	 * @return	string		Composite HTML
 	 */
-	function compileForm($panel,$docSel,$cMenu,$editForm, $langSelector='')	{
+	function compileForm($editForm)	{
 		global $LANG;
 
-
-		$formContent='';
-		$formContent.='
-
-			<!--
-			 	Header of the editing page.
-				Contains the buttons for saving/closing, the document selector and menu selector.
-				Shows the path of the editing operation as well.
-			-->
-			<table border="0" cellpadding="0" cellspacing="1" width="470" id="typo3-altdoc-header">
-				<tr>
-					<td nowrap="nowrap" valign="top">'.$panel.'</td>
-					<td nowrap="nowrap" valign="top" align="right">'.$docSel.$cMenu.'</td>
-				</tr>';
-
-		if ($langSelector) {
-			$langSelector ='<div id="typo3-altdoc-lang-selector">'.$langSelector.'</div>';
-		}
-
-		if (is_array($this->tceforms->extraFormHeaders))	{
-			$formContent .= implode(chr(10), $this->tceforms->extraFormHeaders);
-		}
-
-		$pagePath = '<div id="typo3-altdoc-page-path">'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.path',1).': '.htmlspecialchars($this->generalPathOfForm).'</div>';
-
-		$formContent.='
-				<tr>
-					<td colspan="2"><div id="typo3-altdoc-header-info-options">'.$pagePath.$langSelector.'</div></td>
-				</tr>
-			</table>
-
-
-
-
-			<!--
-			 	EDITING FORM:
-			-->
-
+		$formContent = '
+			<!-- EDITING FORM -->
 			'.$editForm.'
 
-
-
-			<!--
-			 	Saving buttons (same as in top)
-			-->
-
-			'.$panel.
-			'<input type="hidden" name="returnUrl" value="'.htmlspecialchars($this->retUrl).'" />
+			<input type="hidden" name="returnUrl" value="'.htmlspecialchars($this->retUrl).'" />
 			<input type="hidden" name="viewUrl" value="'.htmlspecialchars($this->viewUrl).'" />';
 
 		if ($this->returnNewPageId)	{
-			$formContent.='<input type="hidden" name="returnNewPageId" value="1" />';
+			$formContent .= '<input type="hidden" name="returnNewPageId" value="1" />';
 		}
-		$formContent.='<input type="hidden" name="popViewId" value="'.htmlspecialchars($this->viewId).'" />';
+		$formContent .= '<input type="hidden" name="popViewId" value="'.htmlspecialchars($this->viewId).'" />';
 		if ($this->viewId_addParams) {
-			$formContent.='<input type="hidden" name="popViewId_addParams" value="'.htmlspecialchars($this->viewId_addParams).'" />';
+			$formContent .= '<input type="hidden" name="popViewId_addParams" value="'.htmlspecialchars($this->viewId_addParams).'" />';
 		}
-		$formContent.='<input type="hidden" name="closeDoc" value="0" />';
-		$formContent.='<input type="hidden" name="doSave" value="0" />';
-		$formContent.='<input type="hidden" name="_serialNumber" value="'.md5(microtime()).'" />';
-		$formContent.='<input type="hidden" name="_disableRTE" value="'.$this->tceforms->disableRTE.'" />';
+		$formContent .= '
+			<input type="hidden" name="closeDoc" value="0" />
+			<input type="hidden" name="doSave" value="0" />
+			<input type="hidden" name="_serialNumber" value="'.md5(microtime()).'" />
+			<input type="hidden" name="_scrollPosition" value="" />';
 
 		return $formContent;
 	}
@@ -1009,77 +964,60 @@ class SC_alt_doc {
 	 * @return	string		HTML for function menus.
 	 */
 	function functionMenus()	{
-		global $BE_USER,$LANG;
-
-		$funcMenus = '';
+		global $LANG;
 
 			// Show palettes:
-		$funcMenus.= '<br /><br />'.t3lib_BEfunc::getFuncCheck('','SET[showPalettes]',$this->MOD_SETTINGS['showPalettes'],'alt_doc.php',t3lib_div::implodeArrayForUrl('',array_merge($this->R_URL_getvars,array('SET'=>''))),'id="checkShowPalettes"').'<label for="checkShowPalettes">'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.showPalettes',1).'</label>';
-
-			// Show descriptions/help texts:
-		if ($BE_USER->uc['edit_showFieldHelp']!='text') {
-			$funcMenus.= '<br />'.t3lib_BEfunc::getFuncCheck('','SET[showDescriptions]',$this->MOD_SETTINGS['showDescriptions'],'alt_doc.php',t3lib_div::implodeArrayForUrl('',array_merge($this->R_URL_getvars,array('SET'=>''))),'id="checkShowDescriptions"').'<label for="checkShowDescriptions">'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.showDescriptions',1).'</label>';
-		}
-
-			// Show disable RTE checkbox:
-		if ($BE_USER->isRTE())	{
-			$funcMenus.= '<br />'.t3lib_BEfunc::getFuncCheck('','SET[disableRTE]',$this->MOD_SETTINGS['disableRTE'],'alt_doc.php',t3lib_div::implodeArrayForUrl('',array_merge($this->R_URL_getvars,array('SET'=>''))),'id="checkDisableRTE"').'<label for="checkDisableRTE">'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.disableRTE',1).'</label>';
-		}
-
 		return '
-
-				<!--
-				 	Function menus (checkboxes for selecting options):
-				-->
-				'.$funcMenus;
+				<!-- Function menus (checkboxes for selecting options): -->
+				<br />'.t3lib_BEfunc::getFuncCheck('','SET[showPalettes]',$this->MOD_SETTINGS['showPalettes'],'alt_doc.php',t3lib_div::implodeArrayForUrl('',array_merge($this->R_URL_getvars,array('SET'=>''))),'id="checkShowPalettes"').'<label for="checkShowPalettes">'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.showPalettes',1).'</label>';
 	}
 
+
 	/**
-	 * Create shortcut and open-in-window link in the bottom of the page
+	 * Create shortcut icon
 	 *
 	 * @return	string
 	 */
 	function shortCutLink()	{
 		global $BE_USER,$LANG;
 
-			// ShortCut
-		if ($this->returnUrl!='close.html')	{
-			$content.='<br /><br />';
-
-				// Shortcut:
-			if ($BE_USER->mayMakeShortcut())	{
-				$content.=$this->doc->makeShortcutIcon('returnUrl,edit,defVals,overrideVals,columnsOnly,returnNewPageId,editRegularContentFromId,disHelp,noView',implode(',',array_keys($this->MOD_MENU)),$this->MCONF['name'],1);
-			}
-
-				// Open in new window:
-			$aOnClick = 'vHWin=window.open(\''.t3lib_div::linkThisScript(array('returnUrl'=>'close.html')).'\',\''.md5($this->R_URI).'\',\''.($BE_USER->uc['edit_wideDocument']?'width=670,height=500':'width=600,height=400').',status=0,menubar=0,scrollbars=1,resizable=1\');vHWin.focus();return false;';
-			$content.='<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.
-					'<img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/open_in_new_window.gif','width="19" height="14"').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.openInNewWindow',1).'" alt="" />'.
-					'</a>';
+		if ($this->returnUrl == 'close.html' || !$BE_USER->mayMakeShortcut()) {
+			return '';
 		}
-		return '
-
-				<!--
-				 	Shortcut link:
-				-->
-				'.$content;
+		return $this->doc->makeShortcutIcon('returnUrl,edit,defVals,overrideVals,columnsOnly,returnNewPageId,editRegularContentFromId,disHelp,noView',implode(',',array_keys($this->MOD_MENU)),$this->MCONF['name'],1);
 	}
 
+
 	/**
-	 * Reads comment messages from TCEforms and prints them in a HTML comment in the buttom of the page.
+	 * Creates open-in-window link
+	 *
+	 * @return	string
+	 */
+	function openInNewWindowLink()	{
+		global $BE_USER, $LANG;
+		if ($this->returnUrl == 'close.html') {
+			return '';
+		}
+		$aOnClick = 'vHWin=window.open(\''.t3lib_div::linkThisScript(array('returnUrl'=>'close.html')).'\',\''.md5($this->R_URI).'\',\'width=670,height=500,status=0,menubar=0,scrollbars=1,resizable=1\');vHWin.focus();return false;';
+		return '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.
+				'<img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/open_in_new_window.gif','width="19" height="14"').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.openInNewWindow',1).'" alt="" /></a>';
+	}
+
+
+	/**
+	 * Reads comment messages from TCEforms and prints them in a HTML comment in the bottom of the page.
 	 *
 	 * @return	void
 	 */
 	function tceformMessages()	{
 		if (count($this->tceforms->commentMessages))	{
-			$this->content.='
-
-<!-- TCEFORM messages
-'.htmlspecialchars(implode(chr(10),$this->tceforms->commentMessages)).'
--->
-
-';
+			$tceformMessages = '
+				<!-- TCEFORM messages
+				'.htmlspecialchars(implode(chr(10),$this->tceforms->commentMessages)).'
+				-->
+			';
 		}
+		return $tceformMessages;
 	}
 
 
@@ -1441,12 +1379,32 @@ class SC_alt_doc {
 	function closeDocument($code=0)	{
 		global $BE_USER;
 
-			// If current document is found in docHandler, then unset it, possibly unset it ALL and finally, write it to the session data:
-		if (isset($this->docHandler[$this->storeUrlMd5]))	{
+			// If current document is found in docHandler,
+			// then unset it, possibly unset it ALL and finally, write it to the session data
+		if (isset($this->docHandler[$this->storeUrlMd5])) {
+
+				// add the closing document to the recent documents
+			$recentDocs = $BE_USER->getModuleData('opendocs::recent');
+			if (!is_array($recentDocs)) {
+				$recentDocs = array();
+			}
+			$closedDoc = $this->docHandler[$this->storeUrlMd5];
+			$recentDocs = array_merge(array($this->storeUrlMd5 => $closedDoc), $recentDocs);
+			if (count($recentDocs) > 8) {
+				$recentDocs = array_slice($recentDocs, 0, 8);
+			}
+
+				// remove it from the list of the open documents
 			unset($this->docHandler[$this->storeUrlMd5]);
-			if ($code=='3')	$this->docHandler=array();
-			$BE_USER->pushModuleData('alt_doc.php',array($this->docHandler,$this->docDat[1]));
+			if ($code == '3') {
+				$recentDocs = array_merge($this->docHandler, $recentDocs);
+				$this->docHandler = array();
+			}
+			$BE_USER->pushModuleData('opendocs::recent', $recentDocs);
+			$BE_USER->pushModuleData('alt_doc.php', array($this->docHandler, $this->docDat[1]));
+			t3lib_BEfunc::setUpdateSignal('tx_opendocs::updateNumber', count($this->docHandler));
 		}
+
 
 			// If ->returnEditConf is set, then add the current content of editconf to the ->retUrl variable: (used by other scripts, like wizard_add, to know which records was created or so...)
 		if ($this->returnEditConf && $this->retUrl!='dummy.php')	{

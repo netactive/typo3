@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  * Will make the vertical, horizontal, selectorbox based menus AND the "about modules" display.
  * Basically it traverses the module structure and generates output based on that.
  *
- * $Id: class.alt_menu_functions.inc 3801 2008-06-11 07:27:08Z flyguide $
+ * $Id: class.alt_menu_functions.inc 4623 2008-12-29 13:53:48Z steffenk $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant content
  *
@@ -112,11 +112,6 @@ class alt_menu_functions {
 
 		$selectItems[] = '<option value="">[ '.$LANG->sL('LLL:EXT:lang/locallang_core.php:buttons.selMenu_modules',1).' ]</option>';
 		$mC=0;
-
-			// Remove the 'doc' module?
-		if ($BE_USER->getTSConfigVal('options.disableDocModuleInAB'))	{
-			unset($theModules['doc']);
-		}
 
 			// Get collapsed configuration
 		if ($collapsable == 1) {
@@ -206,7 +201,7 @@ class alt_menu_functions {
 				$mIcons[] = '<a href="#" onclick="top.goToModule(\''.$moduleName.'\');'.$onBlur.'return false;" class="c-mainitem" id="'.$moduleCSSId.'">'.$descr3_imageCode.'</a>';
 
 				$JScmd = '
-						top.document.getElementsByName(\'content\')[0].src=top.getModuleUrl(top.TS.PATH_typo3+"'.$this->wrapLinkWithAB($link).'"+additionalGetVariables);
+						top.content.location=top.getModuleUrl(top.TS.PATH_typo3+"'.$this->wrapLinkWithAB($link).'"+additionalGetVariables);
 						top.highlightModuleMenuItem("'.$moduleCSSId.'",1);';
 				$mJScmds[] = "case '".$moduleName."': \n ".$JScmd." \n break;";
 			}
@@ -293,7 +288,7 @@ class alt_menu_functions {
 
 						// Setting additional JavaScript if frameset script:
 					$addJS = '';
-					if ($moduleInfo['navFrameScript'])	{$addJS="+'&id='+top.rawurlencode(top.fsMod.recentIds['".$moduleName."'])";}
+					if ($moduleInfo['navFrameScript'])	{$addJS = "+'&id='+top.rawurlencodeAndRemoveSiteUrl(top.fsMod.recentIds['" . $moduleName . "'])";}
 
 						// If there is a script to link to (and linking is not disabled.
 					if ($link && !$dontLink)	{
@@ -302,7 +297,7 @@ class alt_menu_functions {
 
 							// Command for the selector box:
 						$JScmd = '
-								top.document.getElementsByName(\'content\')[0].src=top.getModuleUrl(top.TS.PATH_typo3+"'.$this->wrapLinkWithAB($link).'"'.$addJS.'+additionalGetVariables);
+								top.content.location=top.getModuleUrl(top.TS.PATH_typo3+"'.$this->wrapLinkWithAB($link).'"'.$addJS.'+additionalGetVariables);
 								top.fsMod.currentMainLoaded="'.$moduleName.'";
 								';
 
@@ -330,7 +325,7 @@ class alt_menu_functions {
 										top.content.nav_frame.location=top.getModuleUrl(top.TS.PATH_typo3+"'.$subNavFrameScript.'");
 									}
 								} else {
-									top.document.getElementsByName(\'content\')[0].src=top.TS.PATH_typo3+(
+									top.content.location=top.TS.PATH_typo3+(
 										top.nextLoadModuleUrl?
 										"'.($prefix?$this->wrapLinkWithAB($link).'&exScript=':'').'listframe_loader.php":
 										"'.$this->wrapLinkWithAB($link).'"'.$addJS.'+additionalGetVariables
@@ -620,6 +615,37 @@ class alt_menu_functions {
 		if (!strstr($link,'?'))	{
 			return $link.'?';
 		} else return $link;
+	}
+
+	/**
+	 * Generates some JavaScript code for the frame.
+	 *
+	 * @return	string	goToModule javascript function
+	 */
+	function generateMenuJScode($loadedModules, $menuType = 4)	{
+		global $TBE_TEMPLATE;
+
+		$goToModuleSwitch = $this->topMenu($loadedModules, 0, '', $menuType);
+
+		$jsCode = '
+	/**
+	 * Function used to switch switch module.
+	 */
+	var currentModuleLoaded = "";
+	function goToModule(modName,cMR_flag,addGetVars)	{	//
+		var additionalGetVariables = "";
+		if (addGetVars)	additionalGetVariables = addGetVars;
+
+		var cMR = 0;
+		if (cMR_flag)	cMR = 1;
+
+		currentModuleLoaded = modName;
+
+		switch(modName)	{'.$goToModuleSwitch.'
+		}
+	}';
+
+		return $jsCode;
 	}
 }
 

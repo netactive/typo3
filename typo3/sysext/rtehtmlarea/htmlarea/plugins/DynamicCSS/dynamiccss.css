@@ -1,10 +1,9 @@
 /****************************************************************************************
-# Default css file for content edited with htmlArea RTE
+# This file is DEPRECATED.
 #
-# Defines a few class selectors that can be simply taken as examples by anyone who needs to configure the RTE.
-# This css file is referenced by property RTE.default.contentCSS in the default configuration of htmlArea RTE
+# The default css file for content edited with htmlArea RTE is now: EXT:rtehtmlarea/res/contentcss/default.css
 #
-# TYPO3 CVS ID: $Id: dynamiccss.css 955 2005-12-28 00:49:12Z stucki $
+# TYPO3 SVN ID: $Id: dynamiccss.css 4132 2008-09-15 21:44:35Z stan $
 # ***************************************************************************************/
 
 /* Left, center and right alignment of text in paragraphs and cells.*/

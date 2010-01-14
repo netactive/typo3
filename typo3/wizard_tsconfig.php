@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Wizard for inserting TSconfig in form fields. (page,user or TS)
  *
- * $Id: wizard_tsconfig.php 1991 2007-02-04 22:46:30Z stucki $
+ * $Id: wizard_tsconfig.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -127,7 +127,12 @@ class ext_TSparser extends t3lib_tsparser_ext {
 class SC_wizard_tsconfig {
 
 		// Internal, dynamic:
-	var $doc;					// Document template object
+	/**
+	 * document template object
+	 *
+	 * @var mediumDoc
+	 */
+	var $doc;
 	var $content;				// Content accumulation for the module.
 
 		// Internal, static: GPvars

@@ -43,7 +43,7 @@ class tx_install_session {
 	 *
 	 * @var string
 	 */
-	var $typo3tempPath;
+	private $typo3tempPath;
 
 	/**
 	 * Path where to store our session files in typo3temp. %s will be
@@ -51,35 +51,35 @@ class tx_install_session {
 	 *
 	 * @var string
 	 */
-	var $sessionPath = 'sessions%s';
+	private $sessionPath = 'sessions%s';
 
 	/**
 	 * the cookie to store the session ID of the install tool
 	 *
 	 * @var string
 	 */
-	var $cookieName = 'Typo3InstallTool';
+	private $cookieName = 'Typo3InstallTool';
 
 	/**
 	 * time (minutes) to expire an ununsed session
 	 *
 	 * @var integer
 	 */
-	var $expireTimeInMinutes = 60;
+	private $expireTimeInMinutes = 60;
 
 	/**
 	 * time (minutes) to generate a new session id for our current session
 	 *
 	 * @var integer
 	 */
-	var $regenerateSessionIdTime = 5;
+	private $regenerateSessionIdTime = 5;
 
 	/**
-	 * Constructor. Starts PHP session handling in our own var store
+	 * Constructor. Starts PHP session handling in our own private store
 	 *
 	 * Side-effect: might set a cookie, so must be called before any other output.
 	 */
-	function tx_install_session() {
+	public function __construct() {
 		$this->typo3tempPath = PATH_site . 'typo3temp/';
 
 		// Start our PHP session early so that hasSession() works
@@ -119,7 +119,7 @@ class tx_install_session {
 	/**
 	 * Returns the path where to store our session files
 	 */
-	function getSessionSavePath() {
+	private function getSessionSavePath() {
 		return sprintf(
 			$this->typo3tempPath . '/' . $this->sessionPath,
 			md5(
@@ -134,7 +134,7 @@ class tx_install_session {
 	 *
 	 * @return string The session ID
 	 */
-	function startSession() {
+	public function startSession() {
 		$_SESSION['created'] = time();
 		return session_id();
 	}
@@ -147,7 +147,7 @@ class tx_install_session {
 	 *
 	 * @return string the new session ID
 	 */
-	function renewSession() {
+	private function renewSession() {
 		if (version_compare(phpversion(), '5.1', '<')) {
 			session_regenerate_id(TRUE);
 		} else {
@@ -161,7 +161,7 @@ class tx_install_session {
 	 *
 	 * @return boolean true if there is an active session, false otherwise
 	 */
-	function hasSession() {
+	public function hasSession() {
 		return (isset($_SESSION['created']));
 	}
 
@@ -170,7 +170,7 @@ class tx_install_session {
 	 *
 	 * @return string the session ID
 	 */
-	function getSessionId() {
+	public function getSessionId() {
 		return session_id();
 	}
 
@@ -182,7 +182,7 @@ class tx_install_session {
 	 *
 	 * @return string the session hash
 	 */
-	function getSessionHash($sessionId = '') {
+	private function getSessionHash($sessionId = '') {
 		if (!$sessionId) {
 			$sessionId = $this->getSessionId();
 		}
@@ -197,7 +197,7 @@ class tx_install_session {
 	 *
 	 * @return void
 	 */
-	function setAuthorized() {
+	public function setAuthorized() {
 		$_SESSION['authorized'] = TRUE;
 		$_SESSION['lastSessionId'] = time();
 		$_SESSION['tstamp'] = time();
@@ -209,7 +209,7 @@ class tx_install_session {
 	 *
 	 * @return boolean True if this session has been authorized before (by a correct password)
 	 */
-	function isAuthorized() {
+	public function isAuthorized() {
 		if (!$_SESSION['authorized']) {
 			return FALSE;
 		}
@@ -227,7 +227,7 @@ class tx_install_session {
 	 *
 	 * @return boolean True if an authorized session exists, but is expired
 	 */
-	function isExpired() {
+	public function isExpired() {
 		if (!$_SESSION['authorized']) {
 			// Session never existed, means it is not "expired"
 			return FALSE;
@@ -246,7 +246,7 @@ class tx_install_session {
 	 *
 	 * @return void
 	 */
-	function refreshSession() {
+	public function refreshSession() {
 		$_SESSION['tstamp'] = time();
 		$_SESSION['expires'] = time() + ($this->expireTimeInMinutes*60);
 		if (time() > $_SESSION['lastSessionId']+$this->regenerateSessionIdTime*60) {
@@ -269,7 +269,7 @@ class tx_install_session {
 	 *
 	 * @return string A filename
 	 */
-	function getSessionFile($id) {
+	private function getSessionFile($id) {
 		$sessionSavePath = $this->getSessionSavePath();
 		return $sessionSavePath . '/hash_' . $this->getSessionHash($id);
 	}
@@ -281,7 +281,7 @@ class tx_install_session {
 	 * @param string $sessionName
 	 * @return boolean
 	 */
-	function open($savePath, $sessionName) {
+	public function open($savePath, $sessionName) {
 		return TRUE;
 	}
 
@@ -290,7 +290,7 @@ class tx_install_session {
 	 *
 	 * @return boolean
 	 */
-	function close() {
+	public function close() {
 		return TRUE;
 	}
 
@@ -301,7 +301,7 @@ class tx_install_session {
 	 *
 	 * @return string
 	 */
-	function read($id) {
+	public function read($id) {
 		$sessionFile = $this->getSessionFile($id);
 		return (string) @file_get_contents($sessionFile);
 	}
@@ -314,7 +314,7 @@ class tx_install_session {
 	 *
 	 * @return boolean
 	 */
-	function write($id, $sessionData) {
+	public function write($id, $sessionData) {
 		$sessionFile = $this->getSessionFile($id);
 		if ($fp = @fopen($sessionFile, 'w')) {
 			$return = fwrite($fp, $sessionData);
@@ -332,7 +332,7 @@ class tx_install_session {
 	 *
 	 * @return string
 	 */
-	function destroy($id) {
+	public function destroy($id) {
 		$sessionFile = $this->getSessionFile($id);
 		return(@unlink($sessionFile));
 	}
@@ -344,7 +344,7 @@ class tx_install_session {
 	 *
 	 * @return string
 	 */
-	function gc($maxLifeTime) {
+	public function gc($maxLifeTime) {
 		$sessionSavePath = $this->getSessionSavePath();
 		foreach (glob($sessionSavePath . '/hash_*') as $filename) {
 			if (filemtime($filename) + ($this->expireTimeInMinutes*60) < time()) {

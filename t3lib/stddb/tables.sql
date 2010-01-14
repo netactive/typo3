@@ -1,10 +1,6 @@
-# MySQL dump 6.4
 #
-# Host: localhost    Database: t3_testsite
-#--------------------------------------------------------
-# Server version	3.22.27
+# TYPO3 SVN ID: $Id: tables.sql 5778 2009-08-12 08:55:12Z stucki $
 #
-# TYPO3 CVS ID: $Id: tables.sql 2236 2007-04-02 19:13:04Z stucki $
 
 #
 # Table structure for table 'be_groups'
@@ -14,25 +10,25 @@ CREATE TABLE be_groups (
   pid int(11) unsigned DEFAULT '0' NOT NULL,
   tstamp int(11) unsigned DEFAULT '0' NOT NULL,
   title varchar(50) DEFAULT '' NOT NULL,
-  non_exclude_fields text NOT NULL,
-  explicit_allowdeny text NOT NULL,
-  allowed_languages tinytext NOT NULL,
-  custom_options text NOT NULL,
+  non_exclude_fields text,
+  explicit_allowdeny text,
+  allowed_languages varchar(255) DEFAULT '' NOT NULL,
+  custom_options text,
   db_mountpoints varchar(255) DEFAULT '' NOT NULL,
-  pagetypes_select tinytext NOT NULL,
-  tables_select text NOT NULL,
-  tables_modify text NOT NULL,
+  pagetypes_select varchar(255) DEFAULT '' NOT NULL,
+  tables_select text,
+  tables_modify text,
   crdate int(11) unsigned DEFAULT '0' NOT NULL,
   cruser_id int(11) unsigned DEFAULT '0' NOT NULL,
-  groupMods text NOT NULL,
+  groupMods text,
   file_mountpoints varchar(255) DEFAULT '' NOT NULL,
   hidden tinyint(1) unsigned DEFAULT '0' NOT NULL,
   inc_access_lists tinyint(3) unsigned DEFAULT '0' NOT NULL,
-  description text NOT NULL,
+  description text,
   lockToDomain varchar(50) DEFAULT '' NOT NULL,
   deleted tinyint(1) unsigned DEFAULT '0' NOT NULL,
-  TSconfig text NOT NULL,
-  subgroup tinytext NOT NULL,
+  TSconfig text,
+  subgroup varchar(255) DEFAULT '' NOT NULL,
   hide_in_lists tinyint(4) DEFAULT '0' NOT NULL,
   workspace_perms tinyint(3) DEFAULT '1' NOT NULL,
   PRIMARY KEY (uid),
@@ -49,7 +45,7 @@ CREATE TABLE be_sessions (
   ses_hashlock int(11) DEFAULT '0' NOT NULL,
   ses_userid int(11) unsigned DEFAULT '0' NOT NULL,
   ses_tstamp int(11) unsigned DEFAULT '0' NOT NULL,
-  ses_data longtext NOT NULL,
+  ses_data longtext,
   ses_backuserid int(11) NOT NULL default '0',
   PRIMARY KEY (ses_id,ses_name)
 );
@@ -64,7 +60,7 @@ CREATE TABLE be_users (
   username varchar(50) DEFAULT '' NOT NULL,
   password varchar(40) DEFAULT '' NOT NULL,
   admin tinyint(4) unsigned DEFAULT '0' NOT NULL,
-  usergroup tinytext NOT NULL,
+  usergroup varchar(255) DEFAULT '' NOT NULL,
   disable tinyint(1) unsigned DEFAULT '0' NOT NULL,
   starttime int(11) unsigned DEFAULT '0' NOT NULL,
   endtime int(11) unsigned DEFAULT '0' NOT NULL,
@@ -75,19 +71,19 @@ CREATE TABLE be_users (
   crdate int(11) unsigned DEFAULT '0' NOT NULL,
   cruser_id int(11) unsigned DEFAULT '0' NOT NULL,
   realName varchar(80) DEFAULT '' NOT NULL,
-  userMods tinytext NOT NULL,
-  allowed_languages tinytext NOT NULL,
-  uc text NOT NULL,
+  userMods varchar(255) DEFAULT '' NOT NULL,
+  allowed_languages varchar(255) DEFAULT '' NOT NULL,
+  uc text,
   file_mountpoints varchar(255) DEFAULT '' NOT NULL,
   fileoper_perms tinyint(4) DEFAULT '0' NOT NULL,
   workspace_perms tinyint(3) DEFAULT '1' NOT NULL,
   lockToDomain varchar(50) DEFAULT '' NOT NULL,
   disableIPlock tinyint(1) unsigned DEFAULT '0' NOT NULL,
   deleted tinyint(1) unsigned DEFAULT '0' NOT NULL,
-  TSconfig text NOT NULL,
+  TSconfig text,
   lastlogin int(10) unsigned DEFAULT '0' NOT NULL,
   createdByAction int(11) DEFAULT '0' NOT NULL,
-  usergroup_cached_list tinytext NOT NULL,
+  usergroup_cached_list varchar(255) DEFAULT '' NOT NULL,
   workspace_id int(11) DEFAULT '0' NOT NULL,
   workspace_preview tinyint(3) DEFAULT '1' NOT NULL,
   PRIMARY KEY (uid),
@@ -104,17 +100,17 @@ CREATE TABLE cache_extensions (
   alldownloadcounter int(11) unsigned NOT NULL default '0',
   downloadcounter int(11) unsigned NOT NULL default '0',
   title varchar(150) NOT NULL default '',
-  description mediumtext NOT NULL,
+  description mediumtext,
   state int(4) NOT NULL default '0',
   reviewstate int(4) NOT NULL default '0',
   category int(4) NOT NULL default '0',
   lastuploaddate int(11) unsigned NOT NULL default '0',
-  dependencies mediumtext NOT NULL,
+  dependencies mediumtext,
   authorname varchar(100) NOT NULL default '',
   authoremail varchar(100) NOT NULL default '',
   ownerusername varchar(50) NOT NULL default '',
   t3xfilemd5 varchar(35) NOT NULL default '',
-  uploadcomment mediumtext NOT NULL,
+  uploadcomment mediumtext,
   authorcompany varchar(100) NOT NULL default '',
   intversion int(11) NOT NULL default '0',
   lastversion int(3) NOT NULL default '0',
@@ -127,9 +123,9 @@ CREATE TABLE cache_extensions (
 #
 CREATE TABLE cache_hash (
   hash varchar(32) DEFAULT '' NOT NULL,
-  content mediumblob NOT NULL,
+  content mediumblob,
   tstamp int(11) unsigned DEFAULT '0' NOT NULL,
-  ident varchar(20) DEFAULT '' NOT NULL,
+  ident varchar(32) DEFAULT '' NOT NULL,
   PRIMARY KEY (hash)
 ) ENGINE=InnoDB;
 
@@ -140,7 +136,7 @@ CREATE TABLE cache_imagesizes (
   md5hash varchar(32) DEFAULT '' NOT NULL,
   md5filename varchar(32) DEFAULT '' NOT NULL,
   tstamp int(11) DEFAULT '0' NOT NULL,
-  filename tinytext NOT NULL,
+  filename varchar(255) DEFAULT '' NOT NULL,
   imagewidth mediumint(11) unsigned DEFAULT '0' NOT NULL,
   imageheight mediumint(11) unsigned DEFAULT '0' NOT NULL,
   PRIMARY KEY (md5filename)
@@ -161,6 +157,7 @@ CREATE TABLE pages (
   t3ver_count int(11) DEFAULT '0' NOT NULL,
   t3ver_tstamp int(11) DEFAULT '0' NOT NULL,
   t3ver_swapmode tinyint(4) DEFAULT '0' NOT NULL,
+  t3ver_move_id int(11) DEFAULT '0' NOT NULL,
   t3_origuid int(11) DEFAULT '0' NOT NULL,
   tstamp int(11) unsigned DEFAULT '0' NOT NULL,
   sorting int(11) unsigned DEFAULT '0' NOT NULL,
@@ -173,16 +170,17 @@ CREATE TABLE pages (
   editlock tinyint(4) unsigned DEFAULT '0' NOT NULL,
   crdate int(11) unsigned DEFAULT '0' NOT NULL,
   cruser_id int(11) unsigned DEFAULT '0' NOT NULL,
-  title tinytext NOT NULL,
+  hidden tinyint(4) unsigned DEFAULT '0' NOT NULL,
+  title varchar(255) DEFAULT '' NOT NULL,
   doktype tinyint(3) unsigned DEFAULT '0' NOT NULL,
-  TSconfig text NOT NULL,
+  TSconfig text,
   storage_pid int(11) DEFAULT '0' NOT NULL,
   is_siteroot tinyint(4) DEFAULT '0' NOT NULL,
   php_tree_stop tinyint(4) DEFAULT '0' NOT NULL,
   tx_impexp_origuid int(11) DEFAULT '0' NOT NULL,
   PRIMARY KEY (uid),
   KEY t3ver_oid (t3ver_oid,t3ver_wsid),
-  KEY parent (pid,sorting)
+  KEY parent (pid,sorting,deleted,hidden)
 );
 
 #
@@ -191,9 +189,9 @@ CREATE TABLE pages (
 CREATE TABLE sys_be_shortcuts (
   uid int(11) unsigned NOT NULL auto_increment,
   userid int(11) unsigned DEFAULT '0' NOT NULL,
-  module_name tinytext NOT NULL,
-  url text NOT NULL,
-  description tinytext NOT NULL,
+  module_name varchar(255) DEFAULT '' NOT NULL,
+  url text,
+  description varchar(255) DEFAULT '' NOT NULL,
   sorting int(11) DEFAULT '0' NOT NULL,
   sc_group tinyint(4) DEFAULT '0' NOT NULL,
   PRIMARY KEY (uid),
@@ -208,7 +206,7 @@ CREATE TABLE sys_preview (
   keyword varchar(32) DEFAULT '' NOT NULL,
   tstamp int(11) DEFAULT '0' NOT NULL,
   endtime int(11) DEFAULT '0' NOT NULL,
-  config text NOT NULL,
+  config text,
   PRIMARY KEY (keyword)
 );
 
@@ -238,10 +236,10 @@ CREATE TABLE sys_workspace (
   tstamp int(11) DEFAULT '0' NOT NULL,
   deleted tinyint(1) DEFAULT '0' NOT NULL,
   title varchar(30) DEFAULT '' NOT NULL,
-  description tinytext NOT NULL,
-  adminusers tinytext NOT NULL,
-  members text NOT NULL,
-  reviewers text NOT NULL,
+  description varchar(255) DEFAULT '' NOT NULL,
+  adminusers varchar(255) DEFAULT '' NOT NULL,
+  members text,
+  reviewers text,
   db_mountpoints varchar(255) DEFAULT '' NOT NULL,
   file_mountpoints varchar(255) DEFAULT '' NOT NULL,
   publish_time int(11) DEFAULT '0' NOT NULL,
@@ -265,12 +263,12 @@ CREATE TABLE sys_workspace (
 CREATE TABLE sys_history (
   uid int(11) unsigned NOT NULL auto_increment,
   sys_log_uid int(11) DEFAULT '0' NOT NULL,
-  history_data mediumtext NOT NULL,
-  fieldlist text NOT NULL,
+  history_data mediumtext,
+  fieldlist text,
   recuid int(11) DEFAULT '0' NOT NULL,
   tablename varchar(40) DEFAULT '' NOT NULL,
   tstamp int(11) DEFAULT '0' NOT NULL,
-  history_files mediumtext NOT NULL,
+  history_files mediumtext,
   snapshot tinyint(4) DEFAULT '0' NOT NULL,
   PRIMARY KEY (uid),
   KEY recordident (tablename,recuid,tstamp),
@@ -300,7 +298,7 @@ CREATE TABLE sys_refindex (
   tablename varchar(40) DEFAULT '' NOT NULL,
   recuid int(11) DEFAULT '0' NOT NULL,
   field varchar(40) DEFAULT '' NOT NULL,
-  flexpointer tinytext NOT NULL,
+  flexpointer varchar(255) DEFAULT '' NOT NULL,
   softref_key varchar(30) DEFAULT '' NOT NULL,
   softref_id varchar(40) DEFAULT '' NOT NULL,
   sorting int(11) DEFAULT '0' NOT NULL,
@@ -355,12 +353,12 @@ CREATE TABLE sys_log (
   tablename varchar(40) DEFAULT '' NOT NULL,
   recpid int(11) DEFAULT '0' NOT NULL,
   error tinyint(4) unsigned DEFAULT '0' NOT NULL,
-  details tinytext NOT NULL,
+  details varchar(255) DEFAULT '' NOT NULL,
   tstamp int(11) unsigned DEFAULT '0' NOT NULL,
   type tinyint(3) unsigned DEFAULT '0' NOT NULL,
   details_nr tinyint(3) unsigned DEFAULT '0' NOT NULL,
   IP varchar(39) DEFAULT '' NOT NULL,
-  log_data tinytext NOT NULL,
+  log_data varchar(255) DEFAULT '' NOT NULL,
   event_pid int(11) DEFAULT '-1' NOT NULL,
   workspace int(11) DEFAULT '0' NOT NULL,
   NEWid varchar(20) DEFAULT '' NOT NULL,
@@ -383,4 +381,3 @@ CREATE TABLE sys_language (
   PRIMARY KEY (uid),
   KEY parent (pid)
 );
-

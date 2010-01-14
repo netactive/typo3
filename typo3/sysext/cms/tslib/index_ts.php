@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2007 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,13 +30,18 @@
  * The script configures constants, includes libraries and does a little logic here and there in order to instantiate the right classes to create the webpage.
  * All the real data processing goes on in the "tslib/" classes which this script will include and use as needed.
  *
- * $Id: index_ts.php 3276 2008-02-23 08:42:52Z ohader $
+ * $Id: index_ts.php 4353 2008-10-27 23:06:49Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage tslib
  */
+
+// *******************************
+// Checking PHP version
+// *******************************
+if (version_compare(phpversion(), '5.1', '<'))	die ('TYPO3 requires PHP 5.1.0 or higher.');
 
 // *******************************
 // Set error reporting
@@ -111,8 +116,6 @@ $TT->pull();
 // *******************************
 // Checking environment
 // *******************************
-if (t3lib_div::int_from_ver(phpversion())<4003000)	die ('TYPO3 requires PHP 4.3.0 or higher.');
-
 if (isset($_POST['GLOBALS']) || isset($_GET['GLOBALS']))	die('You cannot set the GLOBALS-array from outside the script.');
 if (!get_magic_quotes_gpc())	{
 	$TT->push('Add slashes to GET/POST arrays','');
@@ -163,6 +166,13 @@ $TSFE = new $temp_TSFEclassName(
 		t3lib_div::_GP('MP'),
 		t3lib_div::_GP('RDCT')
 	);
+
+if($TYPO3_CONF_VARS['FE']['pageUnavailable_force'] && 
+   !t3lib_div::cmpIP(t3lib_div::getIndpEnv('REMOTE_ADDR'), $TYPO3_CONF_VARS['SYS']['devIPmask'])) {
+	$TSFE->pageUnavailableAndExit('This page is temporarily unavailable.');
+}
+	
+	
 $TSFE->connectToDB();
 
 	// In case of a keyword-authenticated preview, re-initialize the TSFE object:
@@ -195,6 +205,7 @@ if ($TYPO3_CONF_VARS['FE']['compressionLevel'])	{
 // FE_USER
 // *********
 $TT->push('Front End user initialized','');
+	/* @var $TSFE tslib_fe */
 	$TSFE->initFEuser();
 $TT->pull();
 
@@ -306,6 +317,13 @@ if ($TSFE->beUserLogin && $BE_USER->extAdmEnabled)	{
 	$TSFE->displayEditIcons = $BE_USER->extGetFeAdminValue('edit', 'displayIcons');
 	$TSFE->displayFieldEditIcons = $BE_USER->extGetFeAdminValue('edit', 'displayFieldIcons');
 
+	if ($BE_USER->extGetFeAdminValue('tsdebug','displayQueries')) {
+		if ($GLOBALS['TYPO3_DB']->explainOutput == 0) {		// do not override if the value is already set in t3lib_db
+				// Enable execution of EXPLAIN SELECT queries
+			$GLOBALS['TYPO3_DB']->explainOutput = 3;
+		}
+	}
+
 	if (t3lib_div::_GP('ADMCMD_editIcons'))	{
 		$TSFE->displayFieldEditIcons=1;
 		$BE_USER->uc['TSFE_adminConfig']['edit_editNoPopup']=1;
@@ -369,13 +387,13 @@ $TSFE->getConfigArray();
 
 
 // ********************************
-// Convert POST data to internal "renderCharset" if different from the metaCharset:
+// Convert POST data to internal "renderCharset" if different from the metaCharset
 // *******************************
 $TSFE->convPOSTCharset();
 
 
 // *******************************************
-// Setting the internal var, sys_language_uid + locale settings
+// Setting language and locale
 // *******************************************
 $TSFE->settingLanguage();
 $TSFE->settingLocale();
@@ -414,22 +432,24 @@ switch($TSFE->checkDataSubmission())	{
 $TSFE->setUrlIdToken();
 
 $TT->push('Page generation','');
-if ($TSFE->doXHTML_cleaning())	{require_once(PATH_t3lib.'class.t3lib_parsehtml.php');}
-if ($TSFE->isGeneratePage())	{
+	if ($TSFE->doXHTML_cleaning()) {
+		require_once(PATH_t3lib.'class.t3lib_parsehtml.php');
+	}
+	if ($TSFE->isGeneratePage()) {
 		$TSFE->generatePage_preProcessing();
 		$temp_theScript=$TSFE->generatePage_whichScript();
 
-		if ($temp_theScript)	{
+		if ($temp_theScript) {
 			include($temp_theScript);
 		} else {
 			require_once(PATH_tslib.'class.tslib_pagegen.php');
 			include(PATH_tslib.'pagegen.php');
 		}
 		$TSFE->generatePage_postProcessing();
-} elseif ($TSFE->isINTincScript())	{
-	require_once(PATH_tslib.'class.tslib_pagegen.php');
-	include(PATH_tslib.'pagegen.php');
-}
+	} elseif ($TSFE->isINTincScript()) {
+		require_once(PATH_tslib.'class.tslib_pagegen.php');
+		include(PATH_tslib.'pagegen.php');
+	}
 $TT->pull();
 
 
@@ -456,7 +476,7 @@ if ($TSFE->isOutputting())	{
 		$TT->push('External PHP-script','');
 				// Important global variables here are $EXTiS_*, they must not be overridden in include-scripts!!!
 			$EXTiS_config = $TSFE->config['EXTincScript'];
-			$EXTiS_splitC = explode('<!--EXT_SCRIPT.',$TSFE->content);			// Splits content with the key.
+			$EXTiS_splitC = explode('<!--EXT_SCRIPT.',$TSFE->content);	// Splits content with the key
 
 				// Special feature: Include libraries
 			reset($EXTiS_config);
@@ -483,7 +503,7 @@ if ($TSFE->isOutputting())	{
 					if (is_array($EXTiS_config[$EXTiS_key]))	{
 						$REC = $EXTiS_config[$EXTiS_key]['data'];
 						$CONF = $EXTiS_config[$EXTiS_key]['conf'];
-						$content='';
+						$content = '';
 						include($EXTiS_config[$EXTiS_key]['file']);
 						echo $content;	// The script MAY return content in $content or the script may just output the result directly!
 					}
@@ -578,7 +598,9 @@ if (is_object($BE_USER)
 if(@is_callable(array($error,'debugOutput'))) {
 	$error->debugOutput();
 }
-if (TYPO3_DLOG)	t3lib_div::devLog('END of FRONTEND session','',0,array('_FLUSH'=>TRUE));
+if (TYPO3_DLOG) {
+	t3lib_div::devLog('END of FRONTEND session', 'cms', 0, array('_FLUSH' => TRUE));
+}
 
 
 // *************

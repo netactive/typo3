@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Shows a picture from uploads/* in enlarged format in a separate window.
  * Picture file and settings is supplied by GET-parameters: file, width, height, sample, alternativeTempPath, effects, frame, bodyTag, title, wrap, md5
  *
- * $Id: showpic.php 4706 2009-01-13 12:39:41Z dmitry $
+ * $Id: showpic.php 4705 2009-01-13 12:38:29Z dmitry $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author		Kasper Skaarhoj	<kasperYYYY@typo3.com>

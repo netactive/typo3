@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains class for creating a position map.
  *
- * $Id: class.t3lib_positionmap.php 1868 2006-12-12 11:24:10Z ingmars $
+ * $Id: class.t3lib_positionmap.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant (should be)
  *
@@ -424,8 +424,10 @@ class t3lib_positionMap {
 			$lines[$kk][]=$this->insertPositionIcon('',$vv,$kk,$moveUid,$pid);
 			while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))		{
 				t3lib_BEfunc::workspaceOL('tt_content',$row);
-				$lines[$kk][]=$this->wrapRecordHeader($this->getRecordHeader($row),$row);
-				$lines[$kk][]=$this->insertPositionIcon($row,$vv,$kk,$moveUid,$pid);
+				if (is_array($row))	{
+					$lines[$kk][]=$this->wrapRecordHeader($this->getRecordHeader($row),$row);
+					$lines[$kk][]=$this->insertPositionIcon($row,$vv,$kk,$moveUid,$pid);
+				}
 			}
 			$GLOBALS['TYPO3_DB']->sql_free_result($res);
 		}

@@ -1,14 +1,14 @@
 <?php
-# TYPO3 CVS ID: $Id: ext_localconf.php 1660 2006-07-30 21:50:38Z stucki $
+# TYPO3 CVS ID: $Id: ext_localconf.php 2761 2007-11-24 17:58:50Z benni $
 
 if (!defined ('TYPO3_MODE')) 	die ('Access denied.');
 
 $_EXTCONF = unserialize($_EXTCONF);	// unserializing the configuration so we can use it here:
-if ($_EXTCONF['setPageTSconfig'])	{
+if ($_EXTCONF['setPageTSconfig'] || !$_EXTCONF)	{
 	t3lib_extMgm::addPageTSConfig('<INCLUDE_TYPOSCRIPT: source="FILE:EXT:css_styled_content/pageTSconfig.txt">');
 }
 
-if ($_EXTCONF['removePositionTypes'])	{
+if ($_EXTCONF['removePositionTypes'] || !$_EXTCONF)	{
 	t3lib_extMgm::addPageTSConfig('
 		TCEFORM.tt_content.imageorient.types.image.removeItems = 8,9,10,17,18,25,26
 	');
@@ -23,6 +23,11 @@ $TYPO3_CONF_VARS['SC_OPTIONS']['ext/install']['compat_version']['tx_cssstyledcon
 				<li><b>The p-tag</b> has been removed from all table cells.</li>
 				<li><b>CSS based "image" and "text with image"</b><br />As the extension cron_cssstyledimgtext has been merged into the core, rendering of the content elements "image" and "text with image" has been changed to be CSS instead of table based. Read the <a href="http://wiki.typo3.org/index.php/TYPO3_4.0" target="_blank">4.0 release notes</a> for further information.</li></ul>',
 	'description_acknowledge' => 'You will have to update your stylesheets to comply with these changes.'
+);
+$TYPO3_CONF_VARS['SC_OPTIONS']['ext/install']['compat_version']['tx_cssstyledcontent_pagetargets'] = array(
+	'title' => 'CSS Styled Content: Default targets for non-frame pages',
+	'version' => 4002000,
+	'description' => '<p>The default page target is empty (so no target is generated). If you use frames, you have to set target to "page" in Constants.</p>'
 );
 
 

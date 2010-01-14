@@ -27,7 +27,7 @@
 /**
  * Contains class with layout/output function for TYPO3 Backend Scripts
  *
- * $Id: template.php 5357 2009-04-24 18:26:25Z lolli $
+ * $Id: template.php 5729 2009-07-20 16:05:21Z flyguide $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -171,10 +171,12 @@ class template {
 		// Vars you typically might want to/should set from outside after making instance of this class:
 	var $backPath = '';				// 'backPath' pointing back to the PATH_typo3
 	var $form='';					// This can be set to the HTML-code for a formtag. Useful when you need a form to span the whole page; Inserted exactly after the body-tag.
+	var $JScodeLibArray = array();		// Similar to $JScode (see below) but used as an associative array to prevent double inclusion of JS code. This is used to include certain external Javascript libraries before the inline JS code. <script>-Tags are not wrapped around automatically
 	var $JScode='';					// Additional header code (eg. a JavaScript section) could be accommulated in this var. It will be directly outputted in the header.
 	var $JScodeArray = array();		// Similar to $JScode but for use as array with associative keys to prevent double inclusion of JS code. a <script> tag is automatically wrapped around.
 	var $postCode='';				// Additional 'page-end' code could be accommulated in this var. It will be outputted at the end of page before </body> and some other internal page-end code.
 	var $docType = '';				// Doc-type used in the header. Default is HTML 4. You can also set it to 'strict', 'xhtml_trans', or 'xhtml_frames'.
+	var $moduleTemplate = '';		// HTML template with markers for module
 
 		// Other vars you can change, but less frequently used:
 	var $scriptID='';				// Script ID.
@@ -185,6 +187,7 @@ class template {
 	var $form_rowsToStylewidth = 9.58;	// Multiplication factor for formWidth() input size (default is 48* this value).
 	var $form_largeComp = 1.33;		// Compensation for large documents (used in class.t3lib_tceforms.php)
 	var $endJS=1;					// If set, then a JavaScript section will be outputted in the bottom of page which will try and update the top.busy session expiry object.
+	var $additionalHeaderData=array();	// Additional data to include in head section
 
 		// TYPO3 Colorscheme.
 		// If you want to change this, please do so through a skin using the global var $TBE_STYLES
@@ -225,11 +228,7 @@ class template {
 		global $TBE_STYLES;
 
 			// Setting default scriptID:
-		if (($temp_M = (string) t3lib_div::_GET('M')) && $GLOBALS['TBE_MODULES']['_PATHS'][$temp_M]) {
-			$this->scriptID = ereg_replace('^.*\/(sysext|ext)\/', 'ext/', $GLOBALS['TBE_MODULES']['_PATHS'][$temp_M] . 'index.php');
-		} else {
-			$this->scriptID = ereg_replace('^.*\/(sysext|ext)\/', 'ext/', substr(PATH_thisScript, strlen(PATH_site)));
-		}
+		$this->scriptID = ereg_replace('^.*\/(sysext|ext)\/','ext/',substr(PATH_thisScript,strlen(PATH_site)));
 		if (TYPO3_mainDir!='typo3/' && substr($this->scriptID,0,strlen(TYPO3_mainDir)) == TYPO3_mainDir)	{
 			$this->scriptID = 'typo3/'.substr($this->scriptID,strlen(TYPO3_mainDir));	// This fixes if TYPO3_mainDir has been changed so the script ids are STILL "typo3/..."
 		}
@@ -440,26 +439,25 @@ class template {
 		$storeUrl=$this->makeShortcutUrl($gvList,$setList);
 		$pathInfo = parse_url(t3lib_div::getIndpEnv('REQUEST_URI'));
 
- 			// Add the module identifier automatically if typo3/mod.php is used:
- 		if (ereg('typo3/mod\.php$', $pathInfo['path']) && isset($GLOBALS['TBE_MODULES']['_PATHS'][$modName])) {
- 			$storeUrl = '&M='.$modName.$storeUrl;
- 		}
- 
+			// Add the module identifier automatically if typo3/mod.php is used:
+		if (ereg('typo3/mod\.php$', $pathInfo['path']) && isset($GLOBALS['TBE_MODULES']['_PATHS'][$modName])) {
+			$storeUrl = '&M='.$modName.$storeUrl;
+		}
+
 		if (!strcmp($motherModName,'1'))	{
 			$mMN="&motherModName='+top.currentModuleLoaded+'";
 		} elseif ($motherModName)	{
 			$mMN='&motherModName='.rawurlencode($motherModName);
 		} else $mMN='';
 
-		$onClick = 'if (top.shortcutFrame && confirm('.
-					$GLOBALS['LANG']->JScharCode($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.makeShortcut')).
-					')){top.shortcutFrame.location.href=\''.$backPath.'alt_shortcut.php?modName='.rawurlencode($modName).
-					'&URL='.rawurlencode($pathInfo['path']."?".$storeUrl).
-					$mMN.
-					'\';}return false;';
+		$onClick = 'top.ShortcutManager.createShortcut('
+			.$GLOBALS['LANG']->JScharCode($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.makeShortcut')).', '
+			.'\''.$backPath.'\', '
+			.'\''.rawurlencode($modName).'\', '
+			.'\''.rawurlencode($pathInfo['path']."?".$storeUrl).$mMN.'\''
+		.');return false;';
 
-		$sIcon = '<a href="#" onclick="'.htmlspecialchars($onClick).'">
-				<img'.t3lib_iconWorks::skinImg($backPath,'gfx/shortcut.gif','width="14" height="14"').' title="'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.makeShortcut',1).'" alt="" /></a>';
+		$sIcon = '<a href="#" onclick="'.htmlspecialchars($onClick).'"><img'.t3lib_iconWorks::skinImg($backPath,'gfx/shortcut.gif','width="14" height="14"').' title="'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.makeShortcut',1).'" alt="" /></a>';
 		return $sIcon;
 	}
 
@@ -477,7 +475,7 @@ class template {
 		$GET = t3lib_div::_GET();
 		$storeArray = array_merge(
 			t3lib_div::compileSelectedGetVarsFromArray($gvList,$GET),
-			array('SET'=>t3lib_div::compileSelectedGetVarsFromArray($setList,$GLOBALS['SOBE']->MOD_SETTINGS))
+			array('SET'=>t3lib_div::compileSelectedGetVarsFromArray($setList, (array)$GLOBALS['SOBE']->MOD_SETTINGS))
 		);
 		$storeUrl = t3lib_div::implodeArrayForUrl('',$storeArray);
 		return $storeUrl;
@@ -611,6 +609,19 @@ class template {
 	 * @see endPage()
 	 */
 	function startPage($title)	{
+			// hook	pre start page
+		if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/template.php']['preStartPageHook']))	{
+			$preStartPageHook =& $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/template.php']['preStartPageHook'];
+			if (is_array($preStartPageHook)) {
+				$hookParameters = array(
+					'title' => &$title,
+				);
+				foreach ($preStartPageHook as $hookFunction)	{
+					t3lib_div::callUserFunction($hookFunction, $hookParameters, $this);
+				}
+			}
+		}
+				
 			// Get META tag containing the currently selected charset for backend output. The function sets $this->charSet.
 		$charSet = $this->initCharset();
 		$generator = $this->generator();
@@ -665,12 +676,15 @@ class template {
 	'.$generator.'
 	<title>'.htmlspecialchars($title).'</title>
 	'.$this->docStyle().'
+	'.implode("\n", $this->additionalHeaderData).'
+	'.implode("\n", $this->JScodeLibArray).'
 	'.$this->JScode.'
 	'.$tabJScode.'
 	'.$this->wrapScriptTags(implode("\n", $this->JScodeArray)).'
 	<!--###POSTJSMARKER###-->
 </head>
 ';
+		$this->JScodeLibArray=array();
 		$this->JScode='';
 		$this->JScodeArray=array();
 
@@ -696,7 +710,7 @@ $str.=$this->docBodyTagBegin().
 		$str = $this->sectionEnd().
 				$this->postCode.
 				$this->endPageJS().
-				t3lib_BEfunc::getSetUpdateSignal().
+				$this->wrapScriptTags(t3lib_BEfunc::getUpdateSignalCode()).
 				$this->parseTime().
 				($this->form?'
 </form>':'');
@@ -714,7 +728,7 @@ $str.=$this->docBodyTagBegin().
 		$str .= '</html>';
 
 			// Logging: Can't find better place to put it:
-		if (TYPO3_DLOG)	t3lib_div::devLog('END of BACKEND session','',0,array('_FLUSH'=>TRUE));
+		if (TYPO3_DLOG)	t3lib_div::devLog('END of BACKEND session', 'template', 0, array('_FLUSH' => true));
 
 		return $str;
 	}
@@ -1247,325 +1261,63 @@ $str.=$this->docBodyTagBegin().
 		}
 	}
 
-	/**
-	 * Returns an array with parts (JavaScript, init-functions, <div>-layers) for use on pages which displays the clickmenu layers (context sensitive menus)
+
+ 	/**
+	 * Includes a javascript library that exists in the core /typo3/ directory. The
+	 * backpath is automatically applied
 	 *
-	 * @return	array		If values are present: [0] = A <script> section for the HTML page header, [1] = onmousemove/onload handler for HTML tag or alike, [2] = Two empty <div> layers for the context menu
+	 * @param	string		$lib: Library name. Call it with the full path
+	 * 				like "contrib/prototype/prototype.js" to load it
+	 * @return	void
 	 */
-	function getContextMenuCode()	{
-		$content = '
-			<script type="text/javascript">
-			/*<![CDATA[*/
-					// is called from most clickmenu links
-				function showClickmenu(table, uid, listFr, enDisItems, backPath, addParams)	{
-					var url = "'.$this->backPath.'alt_clickmenu.php?table=" + encodeURIComponent(table)
-					          + "&uid=" + uid
-										+ "&listFr=" + listFr
-										+ "&enDisItems=" + enDisItems
-										+ "&backPath=" + backPath
-										+ "&addParams=" + addParams;
-
-					showClickmenu_raw(url);
-				}
-					// switch - either forwards call to ajax or does the request in the top frame
-				function showClickmenu_raw(url)	{';
-		if ($this->isCMlayers())	{ // AJAX
-			$content.= '
-					url += "&ajax=1";
-					ajax_doRequest(url);';
-		} else { // no AJAX
-			$content.= '
-					showClickmenu_noajax(url);';
-		}
-		$content.= '
-				}
-
-				function showClickmenu_noajax(url)	{
-					top.loadTopMenu(url);
-				}';
-		if ($this->isCMlayers())	{
-			$content.= t3lib_ajax::getJScode('showClickmenu_ajax', 'showClickmenu_noajax');
-			$content.='
-					// opens the clickmenu, is called from ajax_doRequest
-				function showClickmenu_ajax(t3ajax)	{
-					if (t3ajax.getElementsByTagName("data")[0])	{
-						var clickmenu = t3ajax.getElementsByTagName("data")[0].getElementsByTagName("clickmenu")[0];
-						var tableData = clickmenu.getElementsByTagName("htmltable")[0].firstChild.data;
-						var cmlevel = clickmenu.getElementsByTagName("cmlevel")[0].firstChild.data;
-						setLayerObj(tableData,cmlevel);
-					}
-				}
-
-				var GLV_gap=10;
-				var GLV_curLayerX=new Array(0,0);
-				var GLV_curLayerY=new Array(0,0);
-				var GLV_curLayerWidth=new Array(0,0);
-				var GLV_curLayerHeight=new Array(0,0);
-				var GLV_isVisible=new Array(0,0);
-				var GLV_x=0;
-				var GLV_y=0;
-				var GLV_xRel=0;
-				var GLV_yRel=0;
-				var layerObj=new Array();
-				var layerObjCss=new Array();
-
-					//browsercheck...
-				function GL_checkBrowser(){	//
-					this.dom= (document.getElementById);
-					this.safari =  (navigator.userAgent.indexOf("Safari")>-1);
-					this.op=  (navigator.userAgent.indexOf("Opera")>-1);
-					this.op7=  this.op && (navigator.appVersion.indexOf("7")>-1);  // check for Opera version 7
-					this.konq=  (navigator.userAgent.indexOf("Konq")>-1);
-					this.ie4= (document.all && !this.dom && !this.op && !this.konq);
-					this.ie5= (document.all && this.dom && !this.op && !this.konq);
-					this.ns4= (document.layers && !this.dom && !this.konq);
-					this.ns5= (!document.all && this.dom && !this.op && !this.konq);
-					this.ns6= (this.ns5);
-					this.bw=  (this.ie4 || this.ie5 || this.ns4 || this.ns6 || this.op || this.konq);
-					return this;
-				}
-				bw= new GL_checkBrowser();
-
-					// GL_getObj(obj)
-				function GL_getObj(obj){	//
-					nest="";
-					this.el= (bw.ie4||bw.op7)?document.all[obj]:bw.ns4?eval(nest+"document."+obj):document.getElementById(obj);
-				   	this.css= bw.ns4?this.el:this.el.style;
-					this.ref= bw.ns4?this.el.document:document;
-					this.x= (bw.ns4||bw.op)?this.css.left:this.el.offsetLeft;
-					this.y= (bw.ns4||bw.op)?this.css.top:this.el.offsetTop;
-					this.height= (bw.ie4||bw.dom)?this.el.offsetHeight:bw.ns4?this.ref.height:0;
-					this.width= (bw.ie4||bw.dom)?this.el.offsetWidth:bw.ns4?this.ref.width:0;
-					return this;
-				}
-					// GL_getObjCss(obj)
-				function GL_getObjCss(obj){	//
-					return bw.dom? document.getElementById(obj).style:bw.ie4?document.all[obj].style:bw.ns4?document.layers[obj]:0;
-				}
-					// GL_getMouse(event)
-				function GL_getMouse(event) {	//
-					if (layerObj)	{
-//						GLV_x= (bw.ns4||bw.ns5)?event.pageX:(bw.ie4||bw.op)?event.clientX:(event.clientX-2)+document.body.scrollLeft;
-//						GLV_y= (bw.ns4||bw.ns5)?event.pageY:(bw.ie4||bw.op)?event.clientY:(event.clientY-2)+document.body.scrollTop;
-							// 17/12 2003: When documents run in XHTML standard compliance mode, the old scrollLeft/Top properties of document.body is gone - and for Opera/MSIE we have to use document.documentElement:
-
-						GLV_xRel = event.clientX-2;
-						GLV_yRel = event.clientY-2;
-						
-						GLV_x = GLV_xRel;
-						GLV_y = GLV_yRel;
-						
-						GLV_x = GLV_xRel + (document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft);
-						GLV_y = GLV_yRel + (document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop);
-						
-					//	status = (GLV_x+GLV_gap-GLV_curLayerX[0]) + " | " + (GLV_y+GLV_gap-GLV_curLayerY[0]);
-						if (GLV_isVisible[1])	{
-							if (outsideLayer(1))	hideSpecific(1);
-						} else if (GLV_isVisible[0])	{
-							if (outsideLayer(0))	hideSpecific(0);
-						}
-					}
-				}
-					// outsideLayer(level)
-				function outsideLayer(level)	{	//
-					return GLV_x+GLV_gap-GLV_curLayerX[level] <0 ||
-							GLV_y+GLV_gap-GLV_curLayerY[level] <0 ||
-							GLV_curLayerX[level]+GLV_curLayerWidth[level]+GLV_gap-GLV_x <0 ||
-							GLV_curLayerY[level]+GLV_curLayerHeight[level]+GLV_gap-GLV_y <0;
-				}
-					// setLayerObj(html,level)
-				function setLayerObj(html,level)	{	//
-					var winHeight = document.documentElement.clientHeight && !bw.op7 ? document.documentElement.clientHeight : document.body.clientHeight;
-					var winWidth = document.documentElement.clientWidth && !bw.op7 ? document.documentElement.clientWidth : document.body.clientWidth;
-					var tempLayerObj = GL_getObj("contentMenu"+level);
-					var tempLayerObjCss = GL_getObjCss("contentMenu"+level);
-
-					if (tempLayerObj && (level==0 || GLV_isVisible[level-1]))	{
-						tempLayerObj.el.innerHTML = html;
-						tempLayerObj.width= (bw.ie4||bw.dom)?this.el.offsetWidth:bw.ns4?this.ref.width:0;
-						tempLayerObj.height= (bw.ie4||bw.dom)?this.el.offsetHeight:bw.ns4?this.ref.height:0;
-
-							// konqueror (3.2.2) workaround
-						winHeight = (bw.konq)?window.innerHeight:winHeight;
-						winWidth = (bw.konq)?window.innerWidth:winWidth;
-
-							// Adjusting the Y-height of the layer to fit it into the window frame if it goes under the window frame in the bottom:
-						if (winHeight-tempLayerObj.height < GLV_yRel)	{
-							if (GLV_yRel < tempLayerObj.height) {
-								GLV_y+= (winHeight-tempLayerObj.height-GLV_yRel); 		// Setting it so bottom is just above window height.
-							} else {
-								GLV_y-= tempLayerObj.height-8; 		// Showing the menu upwards
-							}
-						}
-							// Adjusting the X position like Y above
-						if (winWidth-tempLayerObj.width < GLV_xRel)	{
-							if (GLV_xRel < tempLayerObj.width) {
-								GLV_x+= (winWidth-tempLayerObj.width-GLV_xRel);
-							} else {
-								GLV_x-= tempLayerObj.width-8;
-							}
-						}
-						GLV_x = Math.max(GLV_x,1);
-						GLV_y = Math.max(GLV_y,1);
-
-						GLV_curLayerX[level] = GLV_x;
-						GLV_curLayerY[level] = GLV_y;
-						tempLayerObjCss.left = GLV_x+"px";
-						tempLayerObjCss.top = GLV_y+"px";
-						tempLayerObjCss.visibility = "visible";
-						if (bw.ie5)	showHideSelectorBoxes("hidden");
-
-						GLV_isVisible[level]=1;
-						GLV_curLayerWidth[level] = tempLayerObj.width;
-						GLV_curLayerHeight[level] = tempLayerObj.height;
-					}
-				}
-					// hideEmpty()
-				function hideEmpty()	{	//
-					hideSpecific(0);
-					hideSpecific(1);
-					return false;
-				}
-					// hideSpecific(level)
-				function hideSpecific(level)	{	//
-					GL_getObjCss("contentMenu"+level).visibility = "hidden";
-					GL_getObj("contentMenu"+level).el.innerHTML = "";
-					GLV_isVisible[level]=0;
-
-					if (bw.ie5 && level==0)	showHideSelectorBoxes("visible");
-				}
-					// debugObj(obj,name)
-				function debugObj(obj,name)	{	//
-					var acc;
-					for (i in obj) {if (obj[i])	{acc+=i+":  "+obj[i]+"\n";}}
-					alert("Object: "+name+"\n\n"+acc);
-				}
-					// initLayer()
-				function initLayer(){	//
-					if (document.all)   {
-						window.onmousemove=GL_getMouse;
-					}
-					layerObj = GL_getObj("contentMenu1");
-					layerObjCss = GL_getObjCss("contentMenu1");
-				}
-				function showHideSelectorBoxes(action)	{	// This function by Michiel van Leening
-					for (i=0;i<document.forms.length;i++) {
-						for (j=0;j<document.forms[i].elements.length;j++) {
-							if(document.forms[i].elements[j].type=="select-one") {
-								document.forms[i].elements[j].style.visibility=action;
-							}
-						}
-					}
-				}';
-			$content.='	/*]]>*/
-				</script>';
-			return array(
-				$content,
-				' onmousemove="GL_getMouse(event);" onload="initLayer();"',
-				'<div id="contentMenu0" style="z-index:1; position:absolute;visibility:hidden"></div><div id="contentMenu1" style="z-index:2; position:absolute;visibility:hidden"></div>'
-			);
-		} else {
-			$content.='	/*]]>*/
-				</script>';
-			return array($content,'','');
+	function loadJavascriptLib($lib)	{
+		if (!isset($this->JScodeLibArray[$lib]))	{
+			$this->JScodeLibArray[$lib] = '<script type="text/javascript" src="'.$this->backPath.$lib.'"></script>';
 		}
 	}
 
+
 	/**
-	 * Returns an array with parts (JavaScript, init-functions, <div>-layers) for use on pages which have the drag and drop functionality (usually pages and folder display trees)
+	 * Includes the necessary Javascript function for the clickmenu (context sensitive menus) in the document
+	 *
+	 * @return	array	Deprecated: Includes the code already in the doc, so the return array is always empty.
+	 *			Please just call this function without expecting a return value for future calls
+	 */
+	function getContextMenuCode()   {
+	       $this->loadJavascriptLib('contrib/prototype/prototype.js');
+	       $this->loadJavascriptLib('js/clickmenu.js');
+
+	       $this->JScodeArray['clickmenu'] = '
+			       Clickmenu.clickURL = "'.$this->backPath.'alt_clickmenu.php";
+			       Clickmenu.ajax     = '.($this->isCMLayers() ? 'true' : 'false' ).';';
+
+		       // return array deprecated since 4.2
+	       return array('','','');
+	}
+
+	/**
+	 * Includes the necessary javascript file (tree.js) for use on pages which have the
+	 * drag and drop functionality (usually pages and folder display trees)
 	 *
 	 * @param	string		indicator of which table the drag and drop function should work on (pages or folders)
 	 * @return	array		If values are present: [0] = A <script> section for the HTML page header, [1] = onmousemove/onload handler for HTML tag or alike, [2] = One empty <div> layer for the follow-mouse drag element
 	 */
 	function getDragDropCode($table)	{
-		$content = '
-			<script type="text/javascript">
-			/*<![CDATA[*/
-			';
+		$this->loadJavascriptLib('contrib/prototype/prototype.js');
+		$this->loadJavascriptLib('js/common.js');
+		$this->loadJavascriptLib('js/tree.js');
 
-		if ($this->isCMlayers())	{
-			$content.= '
-				var dragID = null;
-				var dragIconCSS = null;
+			// setting prefs for drag & drop
+		$this->JScodeArray['dragdrop'] = '
+			DragDrop.changeURL = "'.$this->backPath.'alt_clickmenu.php";
+			DragDrop.backPath  = "'.t3lib_div::shortMD5(''.'|'.$GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']).'";
+			DragDrop.table     = "'.$table.'";
+		';
 
-				function cancelDragEvent(event) {
-					dragID = null;
-					dragIconCSS.visibility = "hidden";
-					document.onmouseup = null;
-					document.onmousemove = null;
-				}
-
-	/**
-	 * [Describe function...]
-	 *
-	 * @param	[type]		$event: ...
-	 * @return	[type]		...
-	 */
-				function mouseMoveEvent (event) {
-					dragIconCSS.left = GLV_x+5+"px";
-					dragIconCSS.top = GLV_y-5+"px";
-					dragIconCSS.visibility = "visible";
-					return false;
-				}
-
-	/**
-	 * [Describe function...]
-	 *
-	 * @param	[type]		$id,elementID: ...
-	 * @return	[type]		...
-	 */
-				function dragElement(id,elementID) {
-					dragID = id;
-					if (elementID == null)	{
-						elementID = id;
-					}
-					document.getElementById("dragIcon").innerHTML=document.getElementById("dragIconID_"+elementID).innerHTML + document.getElementById("dragTitleID_"+elementID).getElementsByTagName("a")[0].innerHTML;
-					dragIconCSS = new GL_getObjCss("dragIcon");
-					dragIconCSS.whiteSpace = "nowrap";
-					document.onmouseup = cancelDragEvent;
-					document.onmousemove = mouseMoveEvent;
-					return false;
-				}
-
-	/**
-	 * [Describe function...]
-	 *
-	 * @param	[type]		$id: ...
-	 * @return	[type]		...
-	 */
-				function dropElement(id) {
-					if ((dragID != null) && (dragID != id)) {
-						var url = "'.$this->backPath.'alt_clickmenu.php?dragDrop='.$table.'"
-									+ "&srcId=" + dragID
-									+ "&dstId=" + id
-									+ "&backPath='.t3lib_div::shortMD5(''.'|'.$GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']).'";
-						showClickmenu_raw(url);
-					}
-					cancelDragEvent();
-					return false;
-				}
-				';
-		}
-		else {
-			$content.= '
-				function dragElement(id) { return false; }
-				function dropElement(id) { return false; }
-				';
-		}
-		$content.='
-			/*]]>*/
-			</script>';
-
-		if ($this->isCMlayers())	{
-			return array(
-				$content,
-				'',
-				'<div id="dragIcon" style="z-index:1;position:absolute;visibility:hidden;filter:alpha(opacity=50);-moz-opacity:0.5;opacity:0.5;"><img src="" width="18" height="16"></div>'
-			);
-		} else {
-			return array($content,'','');
-		}
+		       // return array deprecated since 4.2
+	       return array('','','');
 	}
+
 
 	/**
 	 * Creates a tab menu from an array definition
@@ -1679,9 +1431,10 @@ $str.=$this->docBodyTagBegin().
 	 * @param	boolean		If set, tab table cells are not allowed to wrap their content
 	 * @param	boolean		If set, the tabs will span the full width of their position
 	 * @param	integer		Default tab to open (for toggle <=0). Value corresponds to integer-array index + 1 (index zero is "1", index "1" is 2 etc.). A value of zero (or something non-existing) will result in no default tab open.
+	 * @param	integer		If set to '1' empty tabs will be remove, If set to '2' empty tabs will be disabled
 	 * @return	string		JavaScript section for the HTML header.
 	 */
-	function getDynTabMenu($menuItems,$identString,$toggle=0,$foldout=FALSE,$newRowCharLimit=50,$noWrap=1,$fullWidth=FALSE,$defaultTabIndex=1)	{
+	function getDynTabMenu($menuItems,$identString,$toggle=0,$foldout=FALSE,$newRowCharLimit=50,$noWrap=1,$fullWidth=FALSE,$defaultTabIndex=1,$dividers2tabs=2)	{
 		$content = '';
 
 		if (is_array($menuItems))	{
@@ -1701,7 +1454,7 @@ $str.=$this->docBodyTagBegin().
 				$index+=1;	// Need to add one so checking for first index in JavaScript is different than if it is not set at all.
 
 					// Switch to next tab row if needed
-				if (!$foldout && $titleLenCount>$newRowCharLimit)	{	// 50 characters is probably a reasonable count of characters before switching to next row of tabs.
+				if (!$foldout && ($titleLenCount>$newRowCharLimit | ($def['newline'] === true && $titleLenCount > 0))) {
 					$titleLenCount=0;
 					$tabRows++;
 					$options[$tabRows] = array();
@@ -1713,51 +1466,58 @@ $str.=$this->docBodyTagBegin().
 					$onclick = 'this.blur(); DTM_activate("'.$id.'","'.$index.'", '.($toggle<0?1:0).'); return false;';
 				}
 
-				$isActive = strcmp($def['content'],'');
+				$isNotEmpty = strcmp(trim($def['content']),'');
+
+				// "Removes" empty tabs
+				if (!$isNotEmpty && $dividers2tabs == 1) {
+					continue;
+				}
 
 				$mouseOverOut = ' onmouseover="DTM_mouseOver(this);" onmouseout="DTM_mouseOut(this);"';
+				$requiredIcon = '<img name="' . $id . '-' . $index . '-REQ" src="' . $GLOBALS['BACK_PATH'] . 'gfx/clear.gif" width="10" height="10" hspace="4" alt="" />';
 
 				if (!$foldout)	{
 						// Create TAB cell:
 					$options[$tabRows][] = '
-							<td class="'.($isActive ? 'tab' : 'disabled').'" id="'.$id.'-'.$index.'-MENU"'.$noWrap.$mouseOverOut.'>'.
-							($isActive ? '<a href="#" onclick="'.htmlspecialchars($onclick).'"'.($def['linkTitle'] ? ' title="'.htmlspecialchars($def['linkTitle']).'"':'').'>' : '').
+							<td class="'.($isNotEmpty ? 'tab' : 'disabled').'" id="'.$id.'-'.$index.'-MENU"'.$noWrap.$mouseOverOut.'>'.
+							($isNotEmpty ? '<a href="#" onclick="'.htmlspecialchars($onclick).'"'.($def['linkTitle'] ? ' title="'.htmlspecialchars($def['linkTitle']).'"':'').'>' : '').
 							$def['icon'].
 							($def['label'] ? htmlspecialchars($def['label']) : '&nbsp;').
+							$requiredIcon.
 							$this->icons($def['stateIcon'],'margin-left: 10px;').
-							($isActive ? '</a>' :'').
+							($isNotEmpty ? '</a>' :'').
 							'</td>';
 					$titleLenCount+= strlen($def['label']);
 				} else {
 						// Create DIV layer for content:
 					$divs[] = '
-						<div class="'.($isActive ? 'tab' : 'disabled').'" id="'.$id.'-'.$index.'-MENU"'.$mouseOverOut.'>'.
-							($isActive ? '<a href="#" onclick="'.htmlspecialchars($onclick).'"'.($def['linkTitle'] ? ' title="'.htmlspecialchars($def['linkTitle']).'"':'').'>' : '').
+						<div class="'.($isNotEmpty ? 'tab' : 'disabled').'" id="'.$id.'-'.$index.'-MENU"'.$mouseOverOut.'>'.
+							($isNotEmpty ? '<a href="#" onclick="'.htmlspecialchars($onclick).'"'.($def['linkTitle'] ? ' title="'.htmlspecialchars($def['linkTitle']).'"':'').'>' : '').
 							$def['icon'].
 							($def['label'] ? htmlspecialchars($def['label']) : '&nbsp;').
-							($isActive ? '</a>' : '').
+							$requiredIcon.
+							($isNotEmpty ? '</a>' : '').
 							'</div>';
 				}
 
-				if ($isActive)	{
-						// Create DIV layer for content:
-					$divs[] = '
-							<div style="display: none;" id="'.$id.'-'.$index.'-DIV" class="c-tablayer">'.
-								($def['description'] ? '<p class="c-descr">'.nl2br(htmlspecialchars($def['description'])).'</p>' : '').
-								$def['content'].
-								'</div>';
-						// Create initialization string:
+					// Create DIV layer for content:
+				$divs[] = '
+						<div style="display: none;" id="'.$id.'-'.$index.'-DIV" class="c-tablayer">'.
+							($def['description'] ? '<p class="c-descr">'.nl2br(htmlspecialchars($def['description'])).'</p>' : '').
+							$def['content'].
+							'</div>';
+					// Create initialization string:
+				$JSinit[] = '
+						DTM_array["'.$id.'"]['.$c.'] = "'.$id.'-'.$index.'";
+				';
+					// If not empty and we have the toggle option on, check if the tab needs to be expanded
+				if ($toggle == 1 && $isNotEmpty) {
 					$JSinit[] = '
-							DTM_array["'.$id.'"]['.$c.'] = "'.$id.'-'.$index.'";
+						if (top.DTM_currentTabs["'.$id.'-'.$index.'"]) { DTM_toggle("'.$id.'","'.$index.'",1); }
 					';
-					if ($toggle==1)	{
-						$JSinit[] = '
-							if (top.DTM_currentTabs["'.$id.'-'.$index.'"]) { DTM_toggle("'.$id.'","'.$index.'",1); }
-						';
-					}
-
-					$c++;
 				}
+
+				$c++;
 			}
 
 				// Render menu:
@@ -1800,7 +1560,7 @@ $str.=$this->docBodyTagBegin().
 		}
 		return $content;
 	}
-	
+
 	/**
 	 * Creates the id for dynTabMenus.
 	 *
@@ -1835,7 +1595,10 @@ $str.=$this->docBodyTagBegin().
 						for(cnt = 0; cnt < DTM_array[idBase].length ; cnt++)	{
 							if (DTM_array[idBase][cnt] != idBase+"-"+index)	{
 								document.getElementById(DTM_array[idBase][cnt]+"-DIV").style.display = "none";
-								document.getElementById(DTM_array[idBase][cnt]+"-MENU").attributes.getNamedItem("class").nodeValue = "tab";
+								// Only Overriding when Tab not disabled
+								if (document.getElementById(DTM_array[idBase][cnt]+"-MENU").attributes.getNamedItem("class").nodeValue != "disabled") {
+									document.getElementById(DTM_array[idBase][cnt]+"-MENU").attributes.getNamedItem("class").nodeValue = "tab";
+								}
 							}
 						}
 					}
@@ -2060,8 +1823,169 @@ $str.=$this->docBodyTagBegin().
 			}
 		}
 	}
-}
 
+
+	/**
+	 * Function to load a HTML template file with markers.
+	 *
+	 * @param	string		tmpl name, usually in the typo3/template/ directory
+	 * @return	string		HTML of template
+	 */
+	function getHtmlTemplate($filename)	{
+		if ($GLOBALS['TBE_STYLES']['htmlTemplates'][$filename]) {
+			$filename = $GLOBALS['TBE_STYLES']['htmlTemplates'][$filename];
+		}
+		return ($filename ? t3lib_div::getURL(t3lib_div::resolveBackPath($this->backPath . $filename)) : '');
+	}
+
+	/**
+	 * Define the template for the module
+	 *
+	 * @param	string		filename
+	 */
+	function setModuleTemplate($filename) {
+			// Load Prototype lib for IE event
+		$this->loadJavascriptLib('contrib/prototype/prototype.js');
+		$this->loadJavascriptLib('js/iecompatibility.js');
+		$this->moduleTemplate = $this->getHtmlTemplate($filename);
+	}
+
+	/**
+	 * Put together the various elements for the module <body> using a static HTML
+	 * template
+	 *
+	 * @param	array		Record of the current page, used for page path and info
+	 * @param	array		HTML for all buttons
+	 * @param	array		HTML for all other markers
+	 * @return	string		Composite HTML
+	 */
+	public function moduleBody($pageRecord = array(), $buttons = array(), $markerArray = array(), $subpartArray = array()) {
+			// Get the HTML template for the module
+		$moduleBody = t3lib_parsehtml::getSubpart($this->moduleTemplate, '###FULLDOC###');
+			// Add CSS
+		$this->inDocStylesArray[] = 'html { overflow: hidden; }';
+			// Add JS code to the <head> for IE
+		$this->JScode.= $this->wrapScriptTags('
+				// workaround since IE6 cannot deal with relative height for scrolling elements
+			function resizeDocBody()	{
+				$("typo3-docbody").style.height = (document.body.offsetHeight - parseInt($("typo3-docheader").getStyle("height")));
+			}
+			if (Prototype.Browser.IE) {
+				var version = parseFloat(navigator.appVersion.split(\';\')[1].strip().split(\' \')[1]);
+				if (version == 6) {
+					Event.observe(window, "resize", resizeDocBody, false);
+					Event.observe(window, "load", resizeDocBody, false);
+				}
+			}
+		');
+			// Get the page path for the docheader
+		$markerArray['PAGEPATH'] = $this->getPagePath($pageRecord);
+			// Get the page info for the docheader
+		$markerArray['PAGEINFO'] = $this->getPageInfo($pageRecord);
+			// Get all the buttons for the docheader
+		$docHeaderButtons = $this->getDocHeaderButtons($buttons);
+			// Merge docheader buttons with the marker array
+		$markerArray = array_merge($markerArray, $docHeaderButtons);
+			// replacing subparts
+		foreach ($subpartArray as $marker => $content) {
+			$moduleBody = t3lib_parsehtml::substituteSubpart($moduleBody, $marker, $content);
+		}
+			// replacing all markers with the finished markers and return the HTML content
+		return t3lib_parsehtml::substituteMarkerArray($moduleBody, $markerArray, '###|###');
+
+	}
+
+	/**
+	 * Fill the button lists with the defined HTML
+	 *
+	 * @param	array		HTML for all buttons
+	 * @return	array		Containing HTML for both buttonlists
+	 */
+	protected function getDocHeaderButtons($buttons) {
+		$markers = array();
+			// Fill buttons for left and right float
+		$floats = array('left', 'right');
+		foreach($floats as $key) {
+				// Get the template for each float
+			$buttonTemplate = t3lib_parsehtml::getSubpart($this->moduleTemplate, '###BUTTON_GROUPS_' . strtoupper($key) . '###');
+				// Fill the button markers in this float
+			$buttonTemplate = t3lib_parsehtml::substituteMarkerArray($buttonTemplate, $buttons, '###|###', true);
+				// getting the wrap for each group
+			$buttonWrap = t3lib_parsehtml::getSubpart($this->moduleTemplate, '###BUTTON_GROUP_WRAP###');
+				// looping through the groups (max 6) and remove the empty groups
+			for ($groupNumber = 1; $groupNumber < 6; $groupNumber++) {
+				$buttonMarker = '###BUTTON_GROUP' . $groupNumber . '###';
+				$buttonGroup = t3lib_parsehtml::getSubpart($buttonTemplate, $buttonMarker);
+				if (trim($buttonGroup)) {
+					if ($buttonWrap) {
+						$buttonGroup = t3lib_parsehtml::substituteMarker($buttonWrap, '###BUTTONS###', $buttonGroup);
+					}
+					$buttonTemplate = t3lib_parsehtml::substituteSubpart($buttonTemplate, $buttonMarker, trim($buttonGroup));
+				}
+			}
+				// replace the marker with the template and remove all line breaks (for IE compat)
+			$markers['BUTTONLIST_' . strtoupper($key)] = str_replace("\n", '', $buttonTemplate);
+		}
+		return $markers;
+	}
+
+	/**
+	 * Generate the page path for docheader
+	 *
+	 * @param 	array	Current page
+	 * @return	string	Page path
+	 */
+	protected function getPagePath($pageRecord) {
+			// Is this a real page
+		if ($pageRecord['uid'])	{
+			$title = $pageRecord['_thePathFull'];
+		} else {
+			$title = $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'];
+		}
+			// Setting the path of the page
+		$pagePath = $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.path', 1) . ': <span class="typo3-docheader-pagePath">';
+
+			// crop the title to title limit (or 50, if not defined)
+		$cropLength = (empty($GLOBALS['BE_USER']->uc['titleLen'])) ? 50 : $GLOBALS['BE_USER']->uc['titleLen'];
+		$croppedTitle = t3lib_div::fixed_lgd_cs($title, -$cropLength);
+		if ($croppedTitle !== $title) {
+			$pagePath .= '<abbr title="' . htmlspecialchars($title) . '">' . htmlspecialchars($croppedTitle) . '</abbr>';
+		} else {
+			$pagePath .= htmlspecialchars($title);
+		}
+		$pagePath .= '</span>';
+		return $pagePath;
+	}
+
+	/**
+	 * Setting page icon with clickmenu + uid for docheader
+	 *
+	 * @param 	array	Current page
+	 * @return	string	Page info
+	 */
+	protected function getPageInfo($pageRecord) {
+		global $BE_USER;
+				// Add icon with clickmenu, etc:
+		if ($pageRecord['uid'])	{	// If there IS a real page
+			$alttext = t3lib_BEfunc::getRecordIconAltText($pageRecord, 'pages');
+			$iconImg = t3lib_iconWorks::getIconImage('pages', $pageRecord, $this->backPath, 'class="absmiddle" title="'. htmlspecialchars($alttext) . '"');
+				// Make Icon:
+			$theIcon = $GLOBALS['SOBE']->doc->wrapClickMenuOnIcon($iconImg, 'pages', $pageRecord['uid']);
+		} else {	// On root-level of page tree
+				// Make Icon
+			$iconImg = '<img' . t3lib_iconWorks::skinImg($this->backPath, 'gfx/i/_icon_website.gif') . ' alt="' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'] . '" />';
+			if($BE_USER->user['admin']) {
+				$theIcon = $GLOBALS['SOBE']->doc->wrapClickMenuOnIcon($iconImg, 'pages', 0);
+			} else {
+				$theIcon = $iconImg;
+			}
+		}
+
+			// Setting icon with clickmenu + uid
+		$pageInfo = $theIcon . '<em>[pid: ' . $pageRecord['uid'] . ']</em>';
+		return $pageInfo;
+	}
+}
 
 
 // ******************************
@@ -2120,13 +2044,13 @@ if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/templ
 // The backend language engine is started (ext: "lang")
 // ******************************************************
 require_once(PATH_typo3.'sysext/lang/lang.php');
-$LANG = t3lib_div::makeInstance('language');
-$LANG->init($BE_USER->uc['lang']);
+$GLOBALS['LANG'] = t3lib_div::makeInstance('language');
+$GLOBALS['LANG']->init($BE_USER->uc['lang']);
 
 
 
 // ******************************
 // The template is loaded
 // ******************************
-$TBE_TEMPLATE = t3lib_div::makeInstance('template');
+$GLOBALS['TBE_TEMPLATE'] = t3lib_div::makeInstance('template');
 ?>

@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005, 2006 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 2005-2008 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,50 +27,75 @@
 /*
  * Remove Format Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 CVS ID: $Id: remove-format.js 1421 2006-04-10 09:27:15Z stucki $
+ * TYPO3 SVN ID: $Id: remove-format.js 4102 2008-09-13 23:04:59Z stan $
  */
+RemoveFormat = HTMLArea.Plugin.extend({
 
-RemoveFormat = function(editor) {
-	this.editor = editor;
-	var cfg = editor.config;
-	var actionHandlerFunctRef = RemoveFormat.actionHandler(this);
-	cfg.registerButton({
-		id		: "RemoveFormat",
-		tooltip		: RemoveFormat_langArray["RemoveFormatTooltip"],
-		image		: editor.imgURL("ed_clean.gif", "RemoveFormat"),
-		textMode	: false,
-		action		: actionHandlerFunctRef
-	});
-	
-	this.popupWidth = 285;
-	this.popupHeight = 255;
-};
+	constructor : function(editor, pluginName) {
+		this.base(editor, pluginName);
+	},
 
-RemoveFormat.I18N = RemoveFormat_langArray;
+	/*
+	 * This function gets called by the class constructor
+	 */
+	configurePlugin : function(editor) {
 
-RemoveFormat._pluginInfo = {
-	name          : "RemoveFormat",
-	version       : "1.5",
-	developer     : "Stanislas Rolland",
-	developer_url : "http://www.fructifor.ca/",
-	sponsor       : "Fructifor Inc.",
-	sponsor_url   : "http://www.fructifor.ca/",
-	license       : "GPL"
-};
+		/*
+		 * Registering plugin "About" information
+		 */
+		var pluginInformation = {
+			version		: "1.6",
+			developer	: "Stanislas Rolland",
+			developerUrl	: "http://www.fructifor.ca/",
+			copyrightOwner	: "Stanislas Rolland",
+			sponsor		: "Fructifor Inc.",
+			sponsorUrl	: "http://www.fructifor.ca/",
+			license		: "GPL"
+		};
+		this.registerPluginInformation(pluginInformation);
 
-RemoveFormat.actionHandler = function(instance) {
-	return (function(editor) {
-		instance.buttonPress(editor);
-	});
-};
+		/*
+		 * Registering the button
+		 */
+		var buttonId = "RemoveFormat";
+		var buttonConfiguration = {
+			id		: buttonId,
+			tooltip		: this.localize(buttonId+"Tooltip"),
+			action		: "onButtonPress",
+			dialog		: true
+		};
+		this.registerButton(buttonConfiguration);
 
-RemoveFormat.prototype.buttonPress = function(editor){
-	var applyRequestFunctRef = RemoveFormat.applyRequest(this, editor);
-	editor._popupDialog("plugin://RemoveFormat/removeformat", applyRequestFunctRef, editor, this.popupWidth, this.popupHeight);
-};
+		this.popupWidth = 370;
+		this.popupHeight = 260;
 
-RemoveFormat.applyRequest = function(instance,editor){
-	return(function(param) {
+		return true;
+	},
+
+	/*
+	 * This function gets called when the button was pressed.
+	 *
+	 * @param	object		editor: the editor instance
+	 * @param	string		id: the button id or the key
+	 *
+	 * @return	boolean		false if action is completed
+	 */
+	onButtonPress : function (editor, id, target) {
+			// Could be a button or its hotkey
+		var buttonId = this.translateHotKey(id);
+		buttonId = buttonId ? buttonId : id;
+
+		this.dialog = this.openDialog("RemoveFormat", this.makeUrlFromPopupName("removeformat"), "applyRequest", null, {width:this.popupWidth, height:this.popupHeight});
+		return false;
+	},
+
+	/*
+	 * Perform the cleaning request
+	 * .
+	 */
+	applyRequest : function(param) {
+
+		var editor = this.editor;
 		editor.focusEditor();
 
 		if (param) {
@@ -81,15 +106,15 @@ RemoveFormat.applyRequest = function(instance,editor){
 				var html = editor.getSelectedHTML();
  			}
 
-			if(html) {
+			if (html) {
 
 				if (param["html_all"]== true) {
 					html = html.replace(/<[\!]*?[^<>]*?>/g, "");
 				}
- 
+
 				if (param["formatting"] == true) {
 						// remove font, b, strong, i, em, u, strike, span and other tags
-					var regF1 = new RegExp("<\/?(abbr|acronym|b[^a-zA-Z]|big|cite|code|em[^a-zA-Z]|font|i[^a-zA-Z]|q|s[^a-zA-Z]|samp|small|span|strike|strong|sub|sup|u[^a-zA-Z]|var)[^>]*>", "gi"); 
+					var regF1 = new RegExp("<\/?(abbr|acronym|b[^a-zA-Z]|big|cite|code|em[^a-zA-Z]|font|i[^a-zA-Z]|q|s[^a-zA-Z]|samp|small|span|strike|strong|sub|sup|u[^a-zA-Z]|var)[^>]*>", "gi");
 					html = html.replace(regF1, "");
 						// keep tags, strip attributes
 					var regF2 = new RegExp(" style=\"[^>\"]*\"", "gi");
@@ -99,12 +124,12 @@ RemoveFormat.applyRequest = function(instance,editor){
 
 				if (param["images"] == true) {
 						// remove any IMG tag
-					html = html.replace(/<\/?img[^>]*>/gi, ""); //remove img tags								
+					html = html.replace(/<\/?img[^>]*>/gi, ""); //remove img tags
 				}
 
 				if (param["ms_formatting"] == true) {
 						// make one line
-					var regMS1 = new RegExp("(\r\n|\n|\r)", "g"); 
+					var regMS1 = new RegExp("(\r\n|\n|\r)", "g");
 					html = html.replace(regMS1, " ");
 						//clean up tags
 					var regMS2 = new RegExp("<(b[^r]|strong|i|em|p|li|ul) [^>]*>", "gi");
@@ -115,12 +140,17 @@ RemoveFormat.applyRequest = function(instance,editor){
 					html = html.replace(regMS3, "").replace(regMS4, "");
 						// mozilla doesn't like <em> tags
 					html = html.replace(/<em>/gi, "<i>").replace(/<\/em>/gi, "</i>");
-						// kill unwanted tags: span, div, ?xml:, st1:, [a-z]: 
+						// kill unwanted tags: span, div, ?xml:, st1:, [a-z]:, meta, link
 					html = html.replace(/<\/?span[^>]*>/gi, "").
 						replace(/<\/?div[^>]*>/gi, "").
 						replace(/<\?xml:[^>]*>/gi, "").
 						replace(/<\/?st1:[^>]*>/gi, "").
-						replace(/<\/?[a-z]:[^>]*>/g, "");
+						replace(/<\/?[a-z]:[^>]*>/g, "").
+						replace(/<\/?meta[^>]*>/g, "").
+						replace(/<\/?link[^>]*>/g, "");
+						// remove unwanted tags and their contents: style, title
+					html = html.replace(/<style[^>]*>.*<\/style[^>]*>/gi, "").
+						replace(/<title[^>]*>.*<\/title[^>]*>/gi, "");
 						// remove comments
 					html = html.replace(/<!--[^>]*>/gi, "");
 						// remove double tags
@@ -129,7 +159,7 @@ RemoveFormat.applyRequest = function(instance,editor){
 					var reg7 = new RegExp("<([a-z][a-z]*)> *<\/?([a-z][^>]*)> *<\/\1>", "gi");
 					var reg8 = new RegExp("<([a-z][a-z]*)><\1>", "gi");
 					var reg9 = new RegExp("<\/([a-z][a-z]*)><\/\1>", "gi");
-					var reg10 = new RegExp("[\x20]+", "gi"); 
+					var reg10 = new RegExp("[\x20]+", "gi");
 					while(oldlen > html.length) {
 						oldlen = html.length;
 							// join us now and free the tags
@@ -141,14 +171,15 @@ RemoveFormat.applyRequest = function(instance,editor){
 					}
 				}
 
-				if (param["cleaning_area"] == "all") { 				 		
+				if (param["cleaning_area"] == "all") {
 					editor._doc.body.innerHTML = html;
-				} else { 
+				} else {
 					editor.insertHTML(html);
 				}
 			}
 		} else {
 			return false;
 		}
-	});
-};
+	}
+});
+

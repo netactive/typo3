@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Logout script for the backend
  * This script saves the interface positions and calls the closeTypo3Windows in the frameset
  *
- * $Id: logout.php 593 2005-04-01 14:37:15Z kasper $
+ * $Id: logout.php 3439 2008-03-16 19:16:51Z flyguide $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

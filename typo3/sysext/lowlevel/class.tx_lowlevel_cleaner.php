@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -26,6 +26,8 @@
 ***************************************************************/
 /**
  * Web > Functions module plugin for cleaning up.
+ *
+ * $Id: class.tx_lowlevel_cleaner.php 3439 2008-03-16 19:16:51Z flyguide $
  *
  * XHTML compliant
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -182,11 +184,11 @@ debug($contentTreeData);
 */
 		return $output;
 	}
-	
+
 	function quickDBlookUp()	{
 		$output = 'Enter [table]:[uid]:[fieldlist (optional)] <input name="table_uid" value="'.htmlspecialchars(t3lib_div::_POST('table_uid')).'" />';
 		$output.='<input type="submit" name="_" value="REFRESH" /><br/>';
-		
+
 			// Show record:
 		if (t3lib_div::_POST('table_uid'))	{
 			list($table,$uid,$fieldName) = t3lib_div::trimExplode(':',t3lib_div::_POST('table_uid'),1);
@@ -220,7 +222,7 @@ debug($contentTreeData);
 				}
 			}
 		}
-				
+
 		return $output;
 	}
 

@@ -17,7 +17,7 @@
 // |	Richard Tango-Lowy <richtl@arscognita.com>                                  |
 // +----------------------------------------------------------------------+
 //
-// $Id: ADOdb.php 1562 2006-06-29 22:18:11Z k-fish $
+// $Id: ADOdb.php 2663 2007-11-05 09:22:23Z ingmars $
 //
 
 require_once 'Auth/Container.php';
@@ -35,7 +35,7 @@ require_once 'adodb-errorpear.inc.php';
  *
  * @author   Richard Tango-Lowy <richtl@arscognita.com>
  * @package  Auth
- * @version  $Revision: 1562 $
+ * @version  $Revision: 2663 $
  */
 class Auth_Container_ADOdb extends Auth_Container
 {

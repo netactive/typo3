@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2004-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2004-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * PHP SQL engine
  * EXPERIMENTAL!
  *
- * $Id: class.t3lib_sqlengine.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: class.t3lib_sqlengine.php 3508 2008-04-01 20:28:08Z stucki $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -486,6 +486,7 @@ class t3lib_sqlengine extends t3lib_sqlparser {
 	 * (DUMMY) Returns the list of tables from the database
 	 *
 	 * @return	array		Tables in an array (tablename is in both key and value)
+	 * @todo	Should return table details in value! see t3lib_db::admin_get_tables()
 	 */
 	function admin_get_tables()	{
 		$whichTables = array();

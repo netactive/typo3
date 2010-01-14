@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * New content elements wizard
  * (Part of the 'cms' extension)
  *
- * $Id: db_new_content_el.php 2373 2007-07-02 16:03:23Z ohader $
+ * $Id: db_new_content_el.php 3775 2008-06-10 12:05:31Z patrick $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compatible.
  *
@@ -161,7 +161,13 @@ class SC_db_new_content_el {
 
 		// Internal, static:
 	var $modTSconfig=array();	// Module TSconfig.
-	var $doc;					// Internal backend template object
+
+	/**
+	 * Internal backend template object
+	 *
+	 * @var mediumDoc
+	 */
+	var $doc;
 
 		// Internal, dynamic:
 	var $include_once = array();	// Includes a list of files to include between init() and main() - see init()
@@ -192,16 +198,20 @@ class SC_db_new_content_el {
 		$this->modTSconfig = t3lib_BEfunc::getModTSconfig($this->id,'mod.'.$this->MCONF['name']);
 
 			// Starting the document template object:
-		$this->doc = t3lib_div::makeInstance('mediumDoc');
+		$this->doc = t3lib_div::makeInstance('template');
 		$this->doc->docType= 'xhtml_trans';
 		$this->doc->backPath = $BACK_PATH;
+		$this->doc->setModuleTemplate('templates/db_new_content_el.html');
 		$this->doc->JScode='';
 		$this->doc->form='<form action="" name="editForm"><input type="hidden" name="defValues" value="" />';
 
+			// Setting up the context sensitive menu:
+		$this->doc->getContextMenuCode();
+
 			// Getting the current page and receiving access information (used in main())
 		$perms_clause = $BE_USER->getPagePermsClause(1);
-		$pageinfo = t3lib_BEfunc::readPageAccess($this->id,$perms_clause);
-		$this->access = is_array($pageinfo) ? 1 : 0;
+		$this->pageinfo = t3lib_BEfunc::readPageAccess($this->id,$perms_clause);
+		$this->access = is_array($this->pageinfo) ? 1 : 0;
 	}
 
 	/**
@@ -242,16 +252,8 @@ class SC_db_new_content_el {
 			// Creating content
 			// ***************************
 			$this->content='';
-			$this->content.=$this->doc->startPage($LANG->getLL('newContentElement'));
 			$this->content.=$this->doc->header($LANG->getLL('newContentElement'));
 			$this->content.=$this->doc->spacer(5);
-
-			$elRow = t3lib_BEfunc::getRecordWSOL('pages',$this->id);
-			$hline = t3lib_iconWorks::getIconImage('pages',$elRow,$BACK_PATH,' title="'.htmlspecialchars(t3lib_BEfunc::getRecordIconAltText($elRow,'pages')).'" align="top"');
-			$hline.= t3lib_BEfunc::getRecordTitle('pages',$elRow,TRUE);
-			$this->content.=$this->doc->section('',$hline,0,1);
-			$this->content.=$this->doc->spacer(10);
-
 
 				// Wizard
 			$code='';
@@ -330,25 +332,22 @@ class SC_db_new_content_el {
 				$code.= $posMap->printContentElementColumns($this->id,0,$colPosList,1,$this->R_URI);
 				$this->content.= $this->doc->section($LANG->getLL('2_selectPosition'),$code,0,1);
 			}
-
-				// IF there is a return-url set, then print a go-back link:
-			if ($this->R_URI)	{
-				$code='<br /><br /><a href="'.htmlspecialchars($this->R_URI).'" class="typo3-goBack"><img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/goback.gif','width="14" height="14"').' alt="" />'.$LANG->getLL('goBack',1).'</a>';
-				$this->content.= $this->doc->section('',$code,0,1);
-			}
-
-				// Add CSH:
-			$this->content.= $this->doc->section('',t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'new_ce', $GLOBALS['BACK_PATH'],'<br/>'),0,1);
-
-				// Add a very high clear-gif, 700 px (so that the link to the anchor "sel2" shows this part in top for sure...)
-			$this->content.= $this->doc->section('','<img src="clear.gif" width="1" height="700" alt="" />',0,1);
-
 		} else {		// In case of no access:
 			$this->content = '';
-			$this->content.= $this->doc->startPage($LANG->getLL('newContentElement'));
 			$this->content.= $this->doc->header($LANG->getLL('newContentElement'));
 			$this->content.= $this->doc->spacer(5);
 		}
+
+			// Setting up the buttons and markers for docheader
+		$docHeaderButtons = $this->getButtons();
+		$markers['CSH'] = $docHeaderButtons['csh'];
+		$markers['CONTENT'] = $this->content;
+
+			// Build the <body> for the module
+		$this->content = $this->doc->startPage($LANG->getLL('newContentElement'));
+		$this->content.= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
+		$this->content.= $this->doc->endPage();
+		$this->content = $this->doc->insertStylesAndJS($this->content);
 	}
 
 	/**
@@ -357,13 +356,38 @@ class SC_db_new_content_el {
 	 * @return	void
 	 */
 	function printContent()	{
-		global $SOBE;
-
-		$this->content.= $this->doc->endPage();
 		echo $this->content;
 	}
 
+	/**
+	 * Create the panel of buttons for submitting the form or otherwise perform operations.
+	 *
+	 * @return	array	all available buttons as an assoc. array
+	 */
+	protected function getButtons()	{
+		global $LANG, $BACK_PATH;
 
+		$buttons = array(
+			'csh' => '',
+			'back' => ''
+		);
+
+
+		if ($this->id && $this->access)	{
+				// CSH
+			$buttons['csh'] = t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'new_ce', $GLOBALS['BACK_PATH'], '', TRUE);
+
+				// Back
+			if ($this->R_URI)	{
+				$buttons['back'] = '<a href="' . htmlspecialchars($this->R_URI) . '" class="typo3-goBack">' .
+					'<img' . t3lib_iconWorks::skinImg($this->doc->backPath, 'gfx/goback.gif') . ' alt="" title="' . $LANG->getLL('goBack', 1) . '" />' .
+					'</a>';
+			}
+		}
+
+
+		return $buttons;
+	}
 
 
 

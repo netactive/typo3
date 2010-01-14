@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * extending class to class t3lib_basicFileFunctions
  *
- * $Id: class.t3lib_extfilefunc.php 3809 2008-06-11 08:07:37Z stucki $
+ * $Id: class.t3lib_extfilefunc.php 6216 2009-10-21 11:45:48Z rupi $
  * Revised for TYPO3 3.6 May/2004 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -434,12 +434,8 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 					$theFile = $this->is_directory($theFile);
 					if ($theFile)	{
 						if ($this->checkPathAgainstMounts($theFile))	{	// I choose not to append '/' to $theFile here as this will prevent us from deleting mounts!! (which makes sense to me...)
-							if ($this->actionPerms['deleteFolderRecursively'] && !$this->dont_use_exec_commands)	{
-									// No way to do this under windows
-								$cmd = 'rm -Rf "'.$theFile.'"';
-								exec($cmd);		// This is a quite critical command...
-								clearstatcache();
-								if (!@file_exists($theFile))	{
+							if ($this->actionPerms['deleteFolderRecursively'])	{
+								if (t3lib_div::rmdir($theFile,true))	{
 									$this->writelog(4,0,2,'Directory "%s" deleted recursively!',Array($theFile));
 									return TRUE;
 								} else $this->writelog(4,2,119,'Directory "%s" WAS NOT deleted recursively! Write-permission problem?',Array($theFile));
@@ -700,7 +696,7 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 		if (!$this->isInit) return FALSE;
 
 		$theFolder = $this->cleanFileName($cmds['data']);
-		if ($theFolder)	{
+		if (isset($theFolder) && trim($theFolder) != '') {
 			if ($this->checkFileNameLen($theFolder))	{
 				$theTarget = $this->is_directory($cmds['target']);	// Check the target dir
 				if ($theTarget)	{
@@ -823,7 +819,7 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 						} else $this->writelog(1,1,103,'Destination path "%s" was not within your mountpoints!',Array($theTarget.'/'));
 					} else $this->writelog(1,1,104,'The uploaded file exceeds the size-limit of %s bytes',Array($this->maxUploadFileSize*1024));
 				} else $this->writelog(1,1,105,'You are not allowed to upload files!','');
-			} else $this->writelog(1,2,106,'The uploaded file did not exist!','');
+			} else $this->writelog(1,2,106,'The upload has failed, no uploaded file found!','');
 		} else $this->writelog(1,2,108,'No file was uploaded!','');
 	}
 

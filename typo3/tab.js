@@ -9,7 +9,7 @@
  *
  * License: GNU General Public License
  *
- * TYPO3 CVS ID: $Id: tab.js 935 2005-12-26 21:16:59Z stucki $
+ * TYPO3 SVN ID: $Id: tab.js 3437 2008-03-16 16:22:11Z flyguide $
  */
 
 function checkBrowser()	{
@@ -97,7 +97,7 @@ function makeAdvancedTextArea(textArea)	{
 
 			// Newline
 		if(e.keyCode == 13)	{
-			// Get the cursor position
+				// Get the cursor position
 			currPos = this.getCursorPos();
 
 				// Search the last line

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2003-2007 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2003-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -24,7 +24,7 @@
 /**
  * Class for conversion between charsets.
  *
- * $Id: class.t3lib_cs.php 5267 2009-04-03 15:18:57Z flyguide $
+ * $Id: class.t3lib_cs.php 5266 2009-04-03 15:15:29Z flyguide $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Martin Kutschker <martin.t.kutschker@blackbox.net>
@@ -172,8 +172,10 @@ class t3lib_cs {
 		'cp819' => 'iso-8859-1',
 		'ibm819' => 'iso-8859-1',
 		'iso-ir-100' => 'iso-8859-1',
+		'iso-ir-101' => 'iso-8859-2',
 		'iso-ir-109' => 'iso-8859-3',
 		'iso-ir-148' => 'iso-8859-9',
+		'iso-ir-157' => 'iso-8859-10',
 		'iso-ir-199' => 'iso-8859-14',
 		'iso-ir-203' => 'iso-8859-15',
 		'csisolatin1' => 'iso-8859-1',
@@ -264,6 +266,8 @@ class t3lib_cs {
 		'fi' => 'west_european',	// Finish
 		'fo' => 'west_european',	// Faroese
 		'fr' => 'west_european',	// French
+		'ga' => 'west_european',	// Galician
+		'ge' => 'unicode',			// Georgian
 		'gr' => 'greek',
 		'he' => 'hebrew',		// Hebrew (since 1998)
 		'hi' => 'unicode',		// Hindi
@@ -287,6 +291,7 @@ class t3lib_cs {
 		'sl' => 'east_european',	// Slovenian
 		'sr' => 'cyrillic',		// Serbian
 		'sv' => 'west_european',	// Swedish
+		'sq' => 'albanian',		// Albanian
 		'th' => 'thai',
 		'uk' => 'cyrillic',		// Ukranian
 		'vi' => 'vietnamese',
@@ -316,6 +321,8 @@ class t3lib_cs {
 		'frb' => 'west_european',	// French (Belgian)
 		'frc' => 'west_european',	// French (Canadian)
 		'frs' => 'west_european',	// French (Swiss)
+		'geo' => 'unicode',			// Georgian
+		'glg' => 'west_european',	// Galician
 		'ell' => 'greek',
 		'heb' => 'hebrew',
 		'hin' => 'unicode',	// Hindi
@@ -345,10 +352,12 @@ class t3lib_cs {
 		'esm' => 'west_european',	// Spanish (Mexican)
 		'esn' => 'west_european',	// Spanish (internat. sort)
 		'sve' => 'west_european',	// Swedish
+		'sqi' => 'albanian',		// Albanian
 		'tha' => 'thai',
 		'trk' => 'turkish',
 		'ukr' => 'cyrillic',	// Ukrainian
 			// English language names
+		'albanian' => 'albanian',
 		'arabic' => 'arabic',
 		'basque' => 'west_european',
 		'bosnian' => 'east_european',
@@ -366,6 +375,7 @@ class t3lib_cs {
 		'finnish' => 'west_european',
 		'french' => 'west_european',
 		'galician' => 'west_european',
+		'georgian' => 'unicode',
 		'german' => 'west_european',
 		'greek' => 'greek',
 		'greenlandic' => 'west_european',
@@ -414,6 +424,7 @@ class t3lib_cs {
 		'trad_chinese' => 'big5',
 		'vietnamese' => '',
 		'unicode' => 'utf-8',
+		'albanian' => 'utf-8'
 	);
 
 		// mapping of language (family) names to charsets on Windows
@@ -435,6 +446,8 @@ class t3lib_cs {
 		'japanese' => 'shift_jis',
 		'simpl_chinese' => 'gb2312',
 		'trad_chinese' => 'big5',
+		'albanian' => 'windows-1250',
+		'unicode' => 'utf-8'
 	);
 
 		// mapping of locale names to charsets
@@ -495,7 +508,10 @@ class t3lib_cs {
 		'hi' => 'utf-8',
 		'fo' => 'utf-8',
 		'fa' => 'utf-8',
-		'sr' => 'utf-8'
+		'sr' => 'utf-8',
+		'sq' => 'utf-8',
+		'ge' => 'utf-8',
+		'ga' => '',
 	);
 
 		// TYPO3 specific: Array with the iso names used for each system language in TYPO3:

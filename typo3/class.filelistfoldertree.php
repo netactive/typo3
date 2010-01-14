@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -148,7 +148,7 @@ class filelistFolderTree extends t3lib_folderTree {
 		$PM = t3lib_div::_GP('PM');
 		if(($PMpos = strpos($PM, '#')) !== false) { $PM = substr($PM, 0, $PMpos); }
 		$PM = explode('_', $PM);
-		if(($isAjaxCall = t3lib_div::_GP('ajax')) && is_array($PM) && count($PM)==4)	{
+		if((TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_AJAX) && is_array($PM) && count($PM)==4) {
 			if($PM[1])	{
 				$expandedFolderUid = $PM[2];
 				$ajaxOutput = '';
@@ -161,7 +161,7 @@ class filelistFolderTree extends t3lib_folderTree {
 		}
 
 
-		// we need to count the opened <ul>'s every time we dig into another level, 
+		// we need to count the opened <ul>'s every time we dig into another level,
 		// so we know how many we have to close when all children are done rendering
 		$closeDepth = array();
 
@@ -171,7 +171,7 @@ class filelistFolderTree extends t3lib_folderTree {
 			$idAttr	= htmlspecialchars($this->domIdPrefix.$this->getId($v['row']).'_'.$v['bank']);
 			$itemHTML  = '';
 
-			// if this item is the start of a new level, 
+			// if this item is the start of a new level,
 			// then a new level <ul> is needed, but not in ajax mode
 			if($v['isFirst'] && !($doCollapse) && !($doExpand && $expandedFolderUid == $uid))	{
 				$itemHTML = "<ul>\n";
@@ -213,7 +213,7 @@ class filelistFolderTree extends t3lib_folderTree {
 			if($doExpand && $expandedFolderUid == $uid) {
 				$ajaxOutput .= $itemHTML;
 				$invertedDepthOfAjaxRequestedItem = $v['invertedDepth'];
-			} elseif($invertedDepthOfAjaxRequestedItem) { 
+			} elseif($invertedDepthOfAjaxRequestedItem) {
 				if($v['invertedDepth'] < $invertedDepthOfAjaxRequestedItem) {
 					$ajaxOutput .= $itemHTML;
 				} else {
@@ -315,6 +315,7 @@ class filelistFolderTree extends t3lib_folderTree {
 			switch($val['type'])	{
 				case 'user':	$icon = 'gfx/i/_icon_ftp_user.gif';	break;
 				case 'group':	$icon = 'gfx/i/_icon_ftp_group.gif'; break;
+				case 'readonly':	$icon = 'gfx/i/_icon_ftp_readonly.gif'; break;
 				default:		$icon = 'gfx/i/_icon_ftp.gif'; break;
 			}
 
@@ -335,7 +336,7 @@ class filelistFolderTree extends t3lib_folderTree {
 
 				// If the mount is expanded, go down:
 			if ($isOpen)
-				$this->getFolderTree($val['path'], 999);
+				$this->getFolderTree($val['path'], 999, $val['type']);
 
 				// Add tree:
 			$treeArr = array_merge($treeArr, $this->tree);
@@ -353,7 +354,7 @@ class filelistFolderTree extends t3lib_folderTree {
 	 * @return	integer		The count of items on the level
 	 * @see getBrowsableTree()
 	 */
-	function getFolderTree($files_path, $depth=999)	{
+	function getFolderTree($files_path, $depth=999, $type='')	{
 
 			// This generates the directory tree
 		$dirs = t3lib_div::get_dirs($files_path);
@@ -361,7 +362,7 @@ class filelistFolderTree extends t3lib_folderTree {
 
 		sort($dirs);
 		$c = count($dirs);
-		
+
 		$depth = intval($depth);
 		$HTML = '';
 		$a = 0;
@@ -389,7 +390,8 @@ class filelistFolderTree extends t3lib_folderTree {
 				$nextCount = $this->getFolderTree(
 					$path,
 					$depth-1,
-					$this->makeHTML ? '<img'.t3lib_iconWorks::skinImg($this->backPath,'gfx/ol/'.($a == $c ? 'blank' : 'line').'.gif','width="18" height="16"').' alt="" />' : ''
+					$this->makeHTML ? '<img'.t3lib_iconWorks::skinImg($this->backPath,'gfx/ol/'.($a == $c ? 'blank' : 'line').'.gif','width="18" height="16"').' alt="" />' : '',
+					$type
 				);
 				$exp = 1;	// Set "did expand" flag
 			} else {
@@ -401,7 +403,8 @@ class filelistFolderTree extends t3lib_folderTree {
 			if ($this->makeHTML)	{
 				$HTML = $this->PMicon($row,$a,$c,$nextCount,$exp);
 
-				$icon = 'gfx/i/_icon_'.t3lib_BEfunc::getPathType_web_nonweb($path).'folders.gif';
+				$webpath = t3lib_BEfunc::getPathType_web_nonweb($path);
+				$icon = 'gfx/i/_icon_' .$webpath . 'folders' . ($type == 'readonly' ? '_ro' : '') . '.gif';
 				if ($val == '_temp_')	{
 					$icon = 'gfx/i/sysf.gif';
 					$row['title']='TEMP';

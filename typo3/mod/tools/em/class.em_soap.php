@@ -25,7 +25,7 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
-/* $Id: class.em_soap.php 3945 2008-08-06 18:41:46Z flyguide $ */
+/* $Id: class.em_soap.php 3946 2008-08-06 18:42:08Z flyguide $ */
 
 /**
  * Enter description here...
@@ -56,6 +56,12 @@ class em_soap {
 	 *                  'array'     PHP arrays, default
 	 */
 	var $options  = array();
+
+	/**
+	 * SOAP client depending on the available implementations, preferably the PHP SOAP class
+	 *
+	 * @var unknown_type
+	 */
 	var $client   = false;
 	var $error    = false;
 

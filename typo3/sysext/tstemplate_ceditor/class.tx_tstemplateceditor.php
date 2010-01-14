@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -110,7 +110,7 @@ class tx_tstemplateceditor extends t3lib_extobjbase {
 			$saveId = $tplRow['_ORIG_uid'] ? $tplRow['_ORIG_uid'] : $tplRow['uid'];
 
 				// Update template ?
-			if (t3lib_div::_POST("submit"))	{
+			if (t3lib_div::_POST('submit') || (t3lib_div::testInt(t3lib_div::_POST('submit_x')) && t3lib_div::testInt(t3lib_div::_POST('submit_y')))) {
 				require_once (PATH_t3lib."class.t3lib_tcemain.php");
 				$tmpl->changed=0;
 				$tmpl->ext_procesInput(t3lib_div::_POST(),$_FILES,$theConstants,$tplRow);
@@ -147,7 +147,8 @@ class tx_tstemplateceditor extends t3lib_extobjbase {
 				// Resetting the menu (stop)
 
 			$theOutput.=$this->pObj->doc->spacer(5);
-			$theOutput.=$this->pObj->doc->section("Edit constants for template:",'<img src="'.$BACK_PATH.t3lib_iconWorks::getIcon("sys_template",$tplRow).'" width=18 height=16 align=top><b>'.$this->pObj->linkWrapTemplateTitle($tplRow["title"],"constants").'</b>'.htmlspecialchars(trim($tplRow["sitetitle"])?' - ('.$tplRow["sitetitle"].')':''),0,1);
+			$theOutput.=$this->pObj->doc->section("Edit constants for template:",'<img '.t3lib_iconWorks::skinImg($BACK_PATH, t3lib_iconWorks::getIcon('sys_template', $tplRow)).' align="top" /> <b>'.$this->pObj->linkWrapTemplateTitle($tplRow["title"],"constants").'</b>'.htmlspecialchars(trim($tplRow["sitetitle"])?' - ('.$tplRow["sitetitle"].')':''),0,1);
+
 			if ($manyTemplatesMenu)	{
 				$theOutput.=$this->pObj->doc->section("",$manyTemplatesMenu);
 				$theOutput.=$this->pObj->doc->divider(5);
@@ -182,19 +183,12 @@ class tx_tstemplateceditor extends t3lib_extobjbase {
 			$printFields = trim($tmpl->ext_printFields($theConstants,$category));
 			if ($printFields)	{
 				$theOutput.=$this->pObj->doc->spacer(20);
-				$theOutput.=$this->pObj->doc->section("",'<input type="Submit" name="submit" value="Update">');
-				$theOutput.=$this->pObj->doc->spacer(15);
 				$theOutput.=$this->pObj->doc->section("",$printFields);
-				$theOutput.=$this->pObj->doc->spacer(10);
-				$theOutput.=$this->pObj->doc->section("",'<input type="Submit" name="submit" value="Update">');
 			}
 
 			if ($BE_USER_modOptions["properties"]["constantEditor."]["example"]!="top")	{
 				$theOutput=$this->displayExample($theOutput);
 			}
-
-			$theOutput.=$this->pObj->doc->spacer(10);
-			$theOutput.=$this->pObj->doc->section("Cache",'Click here to <a href="index.php?id='.$this->pObj->id.'&clear_all_cache=1"><strong>clear all cache</strong></a>',0,1);
 		} else {
 			$theOutput.=$this->pObj->noTemplate(1);
 		}

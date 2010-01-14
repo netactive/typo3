@@ -27,6 +27,8 @@
 /**
  * Module Dispatch script
  *
+ * $Id: mod.php 2663 2007-11-05 09:22:23Z ingmars $
+ *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
 /**

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains the parent class for 'ScriptClasses' in backend modules.
  *
- * $Id: class.t3lib_scbase.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: class.t3lib_scbase.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -223,6 +223,8 @@ class t3lib_SCbase {
 
 	/**
 	 * Generally used to hold an instance of the 'template' class from typo3/template.php
+	 *
+	 * @var template
 	 */
 	var $doc;
 
@@ -275,7 +277,6 @@ class t3lib_SCbase {
 		#debug($this->MOD_MENU['function'],$this->MCONF['name']);
 		#debug($this->modTSconfig['properties']);
 
-			// CLEANSE 'function' SETTINGS
 		$this->MOD_SETTINGS = t3lib_BEfunc::getModuleData($this->MOD_MENU, t3lib_div::_GP('SET'), $this->MCONF['name'], $this->modMenu_type, $this->modMenu_dontValidateList, $this->modMenu_setDefaultList);
 	}
 
@@ -351,7 +352,7 @@ class t3lib_SCbase {
 			$this->extObj = t3lib_div::makeInstance($this->extClassConf['name']);
 			$this->extObj->init($this,$this->extClassConf);
 				// Re-write:
-			$this->MOD_SETTINGS = t3lib_BEfunc::getModuleData($this->MOD_MENU, t3lib_div::_GP('SET'), $this->MCONF['name']);
+			$this->MOD_SETTINGS = t3lib_BEfunc::getModuleData($this->MOD_MENU, t3lib_div::_GP('SET'), $this->MCONF['name'], $this->modMenu_type, $this->modMenu_dontValidateList, $this->modMenu_setDefaultList);
 		}
 	}
 

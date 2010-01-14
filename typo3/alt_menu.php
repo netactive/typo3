@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,12 +27,12 @@
 /**
  * Displays the vertical menu in the left most frame of TYPO3s backend
  *
- * $Id: alt_menu.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: alt_menu.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
- * @co-author Sebastian Kurfürst <sebastian@garbage-group.de>
+ * @co-author Sebastian Kurfuerst <sebastian@garbage-group.de>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -73,7 +73,7 @@ require_once ('class.alt_menu_functions.inc');
  * Script Class for rendering the vertical menu in the left side of the backend frameset
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
- * @co-author Sebastian Kurfürst <sebastian@garbage-group.de>
+ * @co-author Sebastian Kurfuerst <sebastian@garbage-group.de>
  * @package TYPO3
  * @subpackage core
  */
@@ -83,13 +83,20 @@ class SC_alt_menu {
 	var $_clearCacheFiles;
 
 	/**
+	 * Menu functions object
+	 *
+	 * @var alt_menu_functions
+	 */
+	var $alt_menuObj;
+
+	/**
 	 * Initialize
 	 * Loads the backend modules available for the logged in user.
 	 *
 	 * @return	void
 	 */
 	function init()	{
-		global $TBE_MODULES;
+		global $TBE_MODULES, $TBE_TEMPLATE;
 
 			// Setting GPvars:
 		$this->_clearCacheFiles = t3lib_div::_GP('_clearCacheFiles');
@@ -98,6 +105,11 @@ class SC_alt_menu {
 		$this->loadModules = t3lib_div::makeInstance('t3lib_loadModules');
 		$this->loadModules->observeWorkspaces = TRUE;
 		$this->loadModules->load($TBE_MODULES);
+
+			// Instantiates the menu object which will generate some JavaScript for the goToModule() JS function in this frame.
+		$this->alt_menuObj = t3lib_div::makeInstance('alt_menu_functions');
+
+		$TBE_TEMPLATE->JScodeArray[] = $this->alt_menuObj->generateMenuJScode($this->loadModules->modules);
 	}
 
 	/**
@@ -111,6 +123,7 @@ class SC_alt_menu {
 		$TBE_TEMPLATE->docType='xhtml_trans';
 		$TBE_TEMPLATE->divClass='vertical-menu';
 		$TBE_TEMPLATE->bodyTagAdditions = 'onload="top.restoreHighlightedModuleMenuItem()"';
+
 		$this->content.=$TBE_TEMPLATE->startPage('Vertical Backend Menu');
 		$backPath = $GLOBALS['BACK_PATH'];
 
@@ -118,8 +131,10 @@ class SC_alt_menu {
 		$alt_menuObj = t3lib_div::makeInstance('alt_menu_functions');
 		$this->content.= $alt_menuObj->topMenu($this->loadModules->modules);
 
-			// clear cache commands for Admins
-		if($BE_USER->isAdmin()) {	//  && $BE_USER->workspace===0 NOT used anyway because under a workspace developers might still like to clear cache!
+			// clear cache commands for Admins and allowed users
+		if($GLOBALS['BE_USER']->isAdmin()
+		|| $GLOBALS['BE_USER']->getTSConfigVal('options.clearCache.pages')
+		|| $GLOBALS['BE_USER']->getTSConfigVal('options.clearCache.all')) {	//  && $BE_USER->workspace===0 NOT used anyway because under a workspace developers might still like to clear cache!
 			$functionsArray = $alt_menuObj->adminFunctions($backPath);
 
 			$this->content.='
@@ -141,12 +156,15 @@ class SC_alt_menu {
 					</tr>';
 
 			$rows=array();
-			foreach($functionsArray as $functionsArraySetup)	{
-				$rows[]='
-					<tr class="c-subitem">
-						<td valign="top" align="center" class="icon">'.$functionsArraySetup['icon'].'</td>
-						<td><a href="'.htmlspecialchars($functionsArraySetup['href']).'">'.htmlspecialchars($functionsArraySetup['title']).'</a></td>
-					</tr>';
+			foreach($functionsArray as $functionsArraySetup) {
+				if(($functionsArraySetup['id'] == 'all' && ($GLOBALS['BE_USER']->isAdmin() || $GLOBALS['BE_USER']->getTSConfigVal('options.clearCache.all')))
+				|| ($functionsArraySetup['id'] == 'temp_CACHED' && $GLOBALS['BE_USER']->isAdmin())) {
+					$rows[]='
+						<tr class="c-subitem">
+							<td valign="top" align="center" class="icon">'.$functionsArraySetup['icon'].'</td>
+							<td><a href="'.htmlspecialchars($functionsArraySetup['href']).'">'.htmlspecialchars($functionsArraySetup['title']).'</a></td>
+						</tr>';
+					}
 			}
 
 				// Imploding around the divider table row:

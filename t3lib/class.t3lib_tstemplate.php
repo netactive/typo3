@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2007 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Class with template object that is responsible for generating the template
  *
- * $Id: class.t3lib_tstemplate.php 4742 2009-01-17 18:37:01Z ohader $
+ * $Id: class.t3lib_tstemplate.php 5779 2009-08-12 09:07:32Z stucki $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -123,7 +123,8 @@ class t3lib_TStemplate	{
 	var $ext_constants_BRP=0;
 	var $ext_config_BRP=0;
 	var $ext_editorcfg_BRP=0;
-	var $ext_regLinenumbers=FALSE;
+	var $ext_regLinenumbers=false;
+	var $ext_regComments=false;
 
 		// Constants:
 	var $uplPath = 'uploads/tf/';
@@ -134,7 +135,6 @@ class t3lib_TStemplate	{
 	var $whereClause = '';				// This MUST be initialized by the init() function
 	var $debug = 0;
 	var $allowedPaths = array();		// This is the only paths (relative!!) that are allowed for resources in TypoScript. Should all be appended with '/'. You can extend these by the global array TYPO3_CONF_VARS. See init() function.
-	var $currentPageData = '';			// Contains "currentPageData" when rendered/fetched from cache. See getCurrentPageData()
 	var $simulationHiddenOrTime=0;		// See init(); Set if preview of some kind is enabled.
 
 	var $loaded = 0;					// Set, if the TypoScript template structure is loaded and OK, see ->start()
@@ -153,7 +153,8 @@ class t3lib_TStemplate	{
 		'config.' => Array (
 			'extTarget' => '_top',
 			'stat' => 1,
-			'stat_typeNumList' => '0,1'
+			'stat_typeNumList' => '0,1',
+			'uniqueLinkVars' => 1
 		)
 	);
 	var $flatSetup = Array (
@@ -210,15 +211,15 @@ class t3lib_TStemplate	{
 	 */
 	function init()	{
 			// $this->whereClause is used only to select templates from sys_template.
-			// $GLOBALS['SIM_EXEC_TIME'] is used so that we're able to simulate a later time as a test...
+			// $GLOBALS['SIM_ACCESS_TIME'] is used so that we're able to simulate a later time as a test...
 		$this->whereClause='AND deleted=0 ';
 		if (!$GLOBALS['TSFE']->showHiddenRecords)	{
 			$this->whereClause.='AND hidden=0 ';
 		}
-		if ($GLOBALS['TSFE']->showHiddenRecords || $GLOBALS['SIM_EXEC_TIME']!=$GLOBALS['EXEC_TIME'])	{	// Set the simulation flag, if simulation is detected!
+		if ($GLOBALS['TSFE']->showHiddenRecords || $GLOBALS['SIM_ACCESS_TIME']!=$GLOBALS['ACCESS_TIME'])	{	// Set the simulation flag, if simulation is detected!
 			$this->simulationHiddenOrTime=1;
 		}
-		$this->whereClause.= 'AND (starttime<='.$GLOBALS['SIM_EXEC_TIME'].') AND (endtime=0 OR endtime>'.$GLOBALS['SIM_EXEC_TIME'].')';
+		$this->whereClause.= 'AND (starttime<='.$GLOBALS['SIM_ACCESS_TIME'].') AND (endtime=0 OR endtime>'.$GLOBALS['SIM_ACCESS_TIME'].')';
 		if (!$GLOBALS['TYPO3_CONF_VARS']['GFX']['gdlib'])	{
 			$this->menuclasses='tmenu,jsmenu,gmenu';
 		}
@@ -250,27 +251,27 @@ class t3lib_TStemplate	{
 	 *
 	 * NOTE about currentPageData:
 	 * It holds information about the TypoScript conditions along with the list of template uid's which is used on the page.
-	 * In the getFromCache function in TSFE, currentPageData is used to evaluate if there is a template and if the matching conditions are alright
+	 * In the getFromCache function in TSFE, currentPageData is used to evaluate if there is a template and if the matching conditions are alright.
 	 * Unfortunately this does not take into account if the templates in the rowSum of currentPageData has changed composition, eg. due to hidden fields or start/end time.
-	 * So if a template is hidden or times out, it'll not be discovered unless the page is regenerated - at least the this->start function must be called, because this will make a new portion of data in currentPageData string
+	 * So if a template is hidden or times out, it'll not be discovered unless the page is regenerated - at least the this->start function must be called, because this will make a new portion of data in currentPageData string.
 	 *
-	 * @return	mixed		The array $this->currentPageData if found cached in "cache_pagesection". If the string "none" was returned it means the array must be generated and stored in the cache-table
+	 * @return	array		Returns the unmatched array $currentPageData if found cached in "cache_pagesection". Otherwise false is returned which means that the array must be generated and stored in the cache-table
 	 * @see start(), tslib_fe::getFromCache()
 	 */
 	function getCurrentPageData()	{
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('content', 'cache_pagesection', 'page_id='.intval($GLOBALS['TSFE']->id).' AND mpvar_hash='.t3lib_div::md5int($GLOBALS['TSFE']->MP));
 		if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-			$this->currentPageData = unserialize($row['content']);
+			$currentPageData = unserialize($row['content']);
 		} else {
-			$this->currentPageData = 'none';
+			$currentPageData = false;
 		}
-		return $this->currentPageData;
+		return $currentPageData;	// 2008-02-03 / Stucki: Notice that $this->currentPageData is not used anymore!
 	}
 
 	/**
 	 * Fetches data about which TypoScript-matches there are at this page. Then it performs a matchingtest.
 	 *
-	 * @param	array		An array with three keys, "all", "rowSum" and "rootLine" - all coming from the $this->currentPageData array
+	 * @param	array		An array with three keys, "all", "rowSum" and "rootLine" - all coming from the "currentPageData" array
 	 * @return	array		The input array but with a new key added, "match" which contains the items from the "all" key which when passed to tslib_matchCondition returned true.
 	 * @see t3lib_matchCondition, tslib_fe::getFromCache()
 	 */
@@ -291,54 +292,67 @@ class t3lib_TStemplate	{
 
 	/**
 	 * This is all about fetching the right TypoScript template structure. If it's not cached then it must be generated and cached!
-	 * The method traverse the rootline structure from out to in, fetches the hierarchy of template records and based on this either finds the cached TypoScript template structure or parses the template and caches it for next time.
-	 * Sets $this->setup to the parsed TypoScript Template array
+	 * The method traverses the rootline structure from out to in, fetches the hierarchy of template records and based on this either finds the cached TypoScript template structure or parses the template and caches it for next time.
+	 * Sets $this->setup to the parsed TypoScript template array
 	 *
 	 * @param	array		The rootline of the current page (going ALL the way to tree root)
 	 * @return	void
 	 * @see tslib_fe::getConfigArray()
 	 */
 	function start($theRootLine)	{
-		if (is_array($theRootLine))	{
-			$setupData='';
-			$cc=Array();
-			$hash='';
+		if (is_array($theRootLine)) {
+			$setupData = '';
+			$hash = '';
+			$isCached = false;	// Flag that indicates that the existing data in cache_pagesection could be used (this is the case if $TSFE->all is set, and the rowSum still matches). Based on this we decide if cache_pagesection needs to be updated...
 			$this->runThroughTemplates($theRootLine);
 
-				// Getting the currentPageData if not already found
-			if (!$this->currentPageData && !$GLOBALS['TSFE']->no_cache)	{
-				$this->getCurrentPageData();
+			if ($GLOBALS['TSFE']->all) {
+				$cc = $GLOBALS['TSFE']->all;
+
+					// The two rowSums must NOT be different from each other - which they will be if start/endtime or hidden has changed!
+				if (strcmp(serialize($this->rowSum),serialize($cc['rowSum']))) {
+					unset($cc);	// If the two rowSums differ, we need to re-make the current page data and therefore clear the existing values.
+				} else {
+						// If $TSFE->all contains valid data, we don't need to update cache_pagesection (because this data was fetched from there already)
+					if (!strcmp(serialize($this->rootLine),serialize($cc['rootLine']))) {
+						$isCached = true;
+					}
+						// When the data is serialized below (ROWSUM hash), it must not contain the rootline by concept. So this must be removed (and added again later)...
+					unset($cc['rootLine']);
+				}
 			}
 
 				// This is about getting the hash string which is used to fetch the cached TypoScript template.
-				// If there was some cached currentPageData that's good (it gives us the hash),
-				// However if the actual rowSum and the rowSum of currentPageData is different from each other, thats a problem, and we should re-make the current page data.
-			if (is_array($this->currentPageData) &&
-				!strcmp(serialize($this->rowSum), serialize($this->currentPageData['rowSum']))	// The two ROWsums must NOT be different from each other - which they will be if start/endtime or hidden has changed!
-			)	{
-					// If currentPageData was actually there, we match the result...
-				$cc['all'] = $this->currentPageData['all'];
-				$cc['rowSum'] = $this->currentPageData['rowSum'];
-				$cc = $this->matching($cc);
+				// If there was some cached currentPageData ($cc) then that's good (it gives us the hash).
+			if (is_array($cc)) {
+					// If currentPageData was actually there, we match the result (if this wasn't done already in $TSFE->getFromCache()...)
+				if (!$cc['match']) {
+						// TODO: check if this can ever be the case - otherwise remove
+					$cc = $this->matching($cc);
+					ksort($cc);
+				}
 				$hash = md5(serialize($cc));
 			} else {
-					// If currentPageData was not there, we first find $rowSum (freshly generated). After that we try to see, if rowSum is stored with a list of all matching-parameters. If so we match the result
+					// If currentPageData was not there, we first find $rowSum (freshly generated). After that we try to see, if it is stored with a list of all conditions. If so we match the result.
 				$rowSumHash = md5('ROWSUM:'.serialize($this->rowSum));
 				$result = t3lib_pageSelect::getHash($rowSumHash, 0);
-				if ($result)	{
+
+				if ($result) {
+					$cc = array();
 					$cc['all'] = unserialize($result);
 					$cc['rowSum'] = $this->rowSum;
 					$cc = $this->matching($cc);
+					ksort($cc);
 					$hash = md5(serialize($cc));
 				}
 			}
 
-			if ($hash)	{
+			if ($hash) {
 					// Get TypoScript setup array
 				$setupData = t3lib_pageSelect::getHash($hash, 0);
 			}
 
-			if ($hash && $setupData && !$this->forceTemplateParsing)		{
+			if ($setupData && !$this->forceTemplateParsing) {
 					// If TypoScript setup structure was cached we unserialize it here:
 				$this->setup = unserialize($setupData);
 			} else {
@@ -346,10 +360,11 @@ class t3lib_TStemplate	{
 				$this->generateConfig();
 
 					// This stores the template hash thing
-				$cc=Array();
-				$cc['all']=$this->sections;	// All sections in the template at this point is found
-				$cc['rowSum']=$this->rowSum;	// The line of templates is collected
+				$cc = array();
+				$cc['all'] = $this->sections;	// All sections in the template at this point is found
+				$cc['rowSum'] = $this->rowSum;	// The line of templates is collected
 				$cc = $this->matching($cc);
+				ksort($cc);
 
 				$hash = md5(serialize($cc));
 
@@ -359,14 +374,20 @@ class t3lib_TStemplate	{
 				if ($this->tt_track)	$GLOBALS['TT']->setTSlogMessage('TS template size, serialized: '.strlen(serialize($this->setup)).' bytes');
 
 				$rowSumHash = md5('ROWSUM:'.serialize($this->rowSum));
+					// Note: Do not fix the obvious typo below! The reason for cutting "ALL" is that in older TYPO3 versions, the field "ident" was just 20 bytes long, so by writing "ALL" the string would be too long for that.
 				t3lib_pageSelect::storeHash($rowSumHash, serialize($cc['all']), 'TMPL CONDITIONS - AL');
 			}
 				// Add rootLine
 			$cc['rootLine'] = $this->rootLine;
-				// Make global and save.
-			$GLOBALS['TSFE']->all=$cc;
+			ksort($cc);
 
-			if (!$this->simulationHiddenOrTime && !$GLOBALS['TSFE']->no_cache)	{	// Only save currentPageData, if we're not simulating by hidden/starttime/endtime
+				// Make global and save
+			$GLOBALS['TSFE']->all = $cc;
+
+				// Matching must be executed for every request, so this must never be part of the pagesection cache!
+			unset($cc['match']);
+
+			if (!$isCached && !$this->simulationHiddenOrTime && !$GLOBALS['TSFE']->no_cache) {	// Only save the data if we're not simulating by hidden/starttime/endtime
 				$dbFields = array(
 					'content' => serialize($cc),
 					'tstamp' => $GLOBALS['EXEC_TIME']
@@ -784,6 +805,7 @@ class t3lib_TStemplate	{
 		$config = t3lib_div::makeInstance('t3lib_TSparser');
 		$config->breakPointLN = intval($this->ext_config_BRP);
 		$config->regLinenumbers = $this->ext_regLinenumbers;
+		$config->regComments = $this->ext_regComments;
 		$config->setup = $this->setup;
 
 			// Transfer information about conditions found in "Constants" and which of them returned true.
@@ -810,7 +832,7 @@ class t3lib_TStemplate	{
 				$constLen=t3lib_div::intInRange(strcspn($constVal,'}'),0,50);
 				$theConstList[]='{$'.substr($constVal,0,$constLen+1);
 			}
-			if ($this->tt_track)	$GLOBALS['TT']->setTSlogMessage(implode(',',$theConstList).': Constants may remain un-substituted!!',2);
+			if ($this->tt_track)	$GLOBALS['TT']->setTSlogMessage(implode(', ',$theConstList).': Constants may remain un-substituted!!',2);
 		}
 
 			// Logging the textual size of the TypoScript Setup field text with all constants substituted:
@@ -1303,6 +1325,22 @@ class t3lib_TStemplate	{
 	}
 
 
+	/**
+	 * Returns the level of the given page in the rootline - Multiple pages can be given by separating the UIDs by comma.
+	 *
+	 * @param	string		A list of UIDs for which the rootline-level should get returned
+	 * @return	integer	The level in the rootline. If more than one page was given the lowest level will get returned.
+	 */
+	function getRootlineLevel($list)	{
+		$idx = 0;
+		foreach($this->rootLine as $page)	{
+			if (t3lib_div::inList($list, $page['uid'])) {
+				return $idx;
+			}
+			$idx++;
+		}
+		return false;
+	}
 
 
 

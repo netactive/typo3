@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains class with basic file management functions
  *
- * $Id: class.t3lib_basicfilefunc.php 5072 2009-02-27 11:15:49Z francois $
+ * $Id: class.t3lib_basicfilefunc.php 5071 2009-02-27 11:03:36Z francois $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -447,7 +447,7 @@ class t3lib_basicFileFunctions	{
 
 			// remove trailing dots
 		$fileName = preg_replace('/\.*$/','',$fileName); 
-
+	
 			// handle UTF-8 characters
 		if ($GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] == 'utf-8' && $GLOBALS['TYPO3_CONF_VARS']['SYS']['UTF8filesystem'])	{
 				// allow ".", "-", 0-9, a-z, A-Z and everything beyond U+C0 (latin capital letter a with grave)
@@ -478,7 +478,7 @@ class t3lib_basicFileFunctions	{
 			$fileName = $this->csConvObj->specCharsToASCII($charset,$fileName);
 		}
 
-		return preg_replace('/[^.[:alnum:]_-]/', '_', trim($fileName));
+		return preg_replace('/[^.[:alnum:]_-]/','_',trim($fileName));
 	}
 
 	/**

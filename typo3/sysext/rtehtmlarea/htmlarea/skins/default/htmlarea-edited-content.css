@@ -10,19 +10,12 @@
 /* Selectors for the Table Operations plugin */
 /* Make borders visible */
 /* Make sure we can click in empty cells without too much difficulty */
-.htmlarea-showtableborders, .htmlarea-showtableborders td, .htmlarea-showtableborders th {
+body.htmlarea-showtableborders table, body.htmlarea-showtableborders td, body.htmlarea-showtableborders th {
 	padding: 3px; border:1px dashed #316ac5 ! important;
 }
 
 /* Selectors for the Abbreviation plugin */
-abbr, acronym, span.abbr {
- 	width:18px;
- 	height:18px;
-	background-image:url("images/Acronym/ed_acronym.gif");
-	background-repeat:no-repeat;
-	background-position:left top;
-	white-space:nowrap;
-	cursor:help;
+body.htmlarea-content-body abbr, body.htmlarea-content-body acronym {
 	border-bottom:1px dashed #000;
-	padding-left:19px;
+	cursor:help;
 }

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains class for Matching TypoScript conditions
  *
- * $Id: class.t3lib_matchcondition.php 3895 2008-07-16 09:07:45Z dmitry $
+ * $Id: class.t3lib_matchcondition.php 3894 2008-07-16 09:05:28Z dmitry $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -251,19 +251,23 @@ class t3lib_matchCondition {
 			case 'hostname':
 				if (t3lib_div::cmpFQDN(t3lib_div::getIndpEnv('REMOTE_ADDR'), $value))  {return true;}
 			break;
-				// hour, minute, dayofweek, dayofmonth, month
+				// hour, minute, dayofweek, dayofmonth, month, year, julianday
 			case 'hour':
 			case 'minute':
+			case 'month':
+			case 'year':
 			case 'dayofweek':
 			case 'dayofmonth':
-			case 'month':
+			case 'dayofyear':
 				$theEvalTime = $GLOBALS['SIM_EXEC_TIME'];	// In order to simulate time properly in templates.
 				switch($key) {
 					case 'hour':		$theTestValue = date('H',$theEvalTime);	break;
 					case 'minute':		$theTestValue = date('i',$theEvalTime);	break;
+					case 'month':		$theTestValue = date('m',$theEvalTime);	break;
+					case 'year':		$theTestValue = date('Y',$theEvalTime);	break;
 					case 'dayofweek':	$theTestValue = date('w',$theEvalTime);	break;
 					case 'dayofmonth':	$theTestValue = date('d',$theEvalTime);	break;
-					case 'month':		$theTestValue = date('m',$theEvalTime);	break;
+					case 'dayofyear':	$theTestValue = date('z',$theEvalTime);	break;
 				}
 				$theTestValue = intval($theTestValue);
 					// comp

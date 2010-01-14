@@ -28,7 +28,7 @@
  * Class used in module tools/dbint (advanced search) and which may hold code specific for that module
  * However the class has a general principle in it which may be used in the web/export module.
  *
- * $Id: class.t3lib_fullsearch.php 6248 2009-10-22 08:37:52Z baschny $
+ * $Id: class.t3lib_fullsearch.php 6247 2009-10-22 08:37:11Z baschny $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Jo Hasenau <info@cybercraft.de>
@@ -91,7 +91,7 @@ class t3lib_fullsearch {
 	var $formW=48;
 	var $noDownloadB=0;
 
-	var $formName = '';
+	protected $formName = '';
 
 
 
@@ -220,6 +220,7 @@ class t3lib_fullsearch {
 			$qOK = 0;
 				// Show query
 			if ($saveArr['queryTable'])	{
+				/* @var t3lib_queryGenerator */
 				$qGen = t3lib_div::makeInstance('t3lib_queryGenerator');
 				$qGen->init('queryConfig',$saveArr['queryTable']);
 				$qGen->makeSelectorTable($saveArr);
@@ -1086,9 +1087,9 @@ class t3lib_fullsearch {
 	 * Sets the current name of the input form.
 	 *
 	 * @param	string		$formName: The name of the form.
-	 * @return	void 
+	 * @return	void
 	 */
-	function setFormName($formName) {
+	public function setFormName($formName) {
 		$this->formName = trim($formName);
 	}
 }

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Plugin 'Content rendering' for the 'css_styled_content' extension.
  *
- * $Id: class.tx_cssstyledcontent_pi1.php 2989 2008-01-31 17:06:42Z jsegars $
+ * $Id: class.tx_cssstyledcontent_pi1.php 3439 2008-03-16 19:16:51Z flyguide $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -101,14 +101,14 @@ class tx_cssstyledcontent_pi1 extends tslib_pibase {
 		} else {
 
 				// Get bodytext field content, returning blank if empty:
-			$content = trim($this->cObj->data['bodytext']);
+			$field = (isset($conf['field']) && trim($conf['field']) ? trim($conf['field']) : 'bodytext');
+			$content = trim($this->cObj->data[$field]);
 			if (!strcmp($content,''))	return '';
 
 				// Split into single lines:
 			$lines = t3lib_div::trimExplode(chr(10),$content);
-			while(list($k)=each($lines))	{
-				$lines[$k]='
-					<li>'.$this->cObj->stdWrap($lines[$k],$conf['innerStdWrap.']).'</li>';
+			foreach($lines as &$val)	{
+				$val = '<li>'.$this->cObj->stdWrap($val,$conf['innerStdWrap.']).'</li>';
 			}
 
 				// Set header type:
@@ -148,7 +148,8 @@ class tx_cssstyledcontent_pi1 extends tslib_pibase {
 			$this->pi_initPIflexForm();
 
 				// Get bodytext field content
-			$content = trim($this->cObj->data['bodytext']);
+			$field = (isset($conf['field']) && trim($conf['field']) ? trim($conf['field']) : 'bodytext');
+			$content = trim($this->cObj->data[$field]);
 			if (!strcmp($content,''))	return '';
 
 				// get flexform values
@@ -178,6 +179,7 @@ class tx_cssstyledcontent_pi1 extends tslib_pibase {
 
 				// Split into single lines (will become table-rows):
 			$rows = t3lib_div::trimExplode(chr(10),$content);
+			reset($rows);
 
 				// Find number of columns to render:
 			$cols = t3lib_div::intInRange($this->cObj->data['cols']?$this->cObj->data['cols']:count(explode($delimiter,current($rows))),0,100);
@@ -295,7 +297,8 @@ class tx_cssstyledcontent_pi1 extends tslib_pibase {
 				// Get the list of files (using stdWrap function since that is easiest)
 			$lConf = array();
 			$lConf['override.']['filelist.']['field'] = 'select_key';
-			$fileList = $this->cObj->stdWrap($this->cObj->data['media'],$lConf);
+			$field = (isset($conf['field']) && trim($conf['field']) ? trim($conf['field']) : 'media');
+			$fileList = $this->cObj->stdWrap($this->cObj->data[$field],$lConf);
 
 				// Explode into an array:
 			$fileArray = t3lib_div::trimExplode(',',$fileList,1);
@@ -685,7 +688,7 @@ class tx_cssstyledcontent_pi1 extends tslib_pibase {
 			// Apply optionSplit to the list of classes that we want to add to each image
 		$addClassesImage = $conf['addClassesImage'];
 		if ($conf['addClassesImage.'])	{
-			$addClassesImage = $this->cObj->stdWrap($addClassesImageConf, $conf['addClassesImage.']);
+			$addClassesImage = $this->cObj->stdWrap($addClassesImage, $conf['addClassesImage.']);
 		}
 		$addClassesImageConf = $GLOBALS['TSFE']->tmpl->splitConfArray(array('addClassesImage' => $addClassesImage), $colCount);
 
@@ -714,7 +717,7 @@ class tx_cssstyledcontent_pi1 extends tslib_pibase {
 				} else {
 					$imageSpace = $origImages[$imgKey][0] + $border*($borderSpace+$borderThickness)*2;
 				}
-        				
+
 				$GLOBALS['TSFE']->register['IMAGE_NUM'] = $imgKey;
 				$GLOBALS['TSFE']->register['IMAGE_NUM_CURRENT'] = $imgKey;
 				$GLOBALS['TSFE']->register['ORIG_FILENAME'] = $origImages[$imgKey]['origFile'];
@@ -746,8 +749,13 @@ class tx_cssstyledcontent_pi1 extends tslib_pibase {
 					$allRows .= $thisImage;
 				}
 				$GLOBALS['TSFE']->register['columnwidth'] = $maxImageSpace + $tmpColspacing;
-				if ($separateRows && ($colPos == ($colCount-1) || $i+1==count($imgsTag)))	{
+
+
 					// Close this row at the end (colCount), or the last row at the final end
+				if ($separateRows && ($i+1 == count($imgsTag)))	{
+						// Close the very last row with either normal configuration or lastRow stdWrap
+					$allRows .= $this->cObj->stdWrap($thisRow, (is_array($conf['imageLastRowStdWrap.']) ? $conf['imageLastRowStdWrap.'] : $conf['imageRowStdWrap.']));
+				} elseif ($separateRows && $colPos == $colCount-1)	{
 					$allRows .= $this->cObj->stdWrap($thisRow, $conf['imageRowStdWrap.']);
 				}
 			}

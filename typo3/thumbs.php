@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Generates a thumbnail and returns an image stream, either GIF/PNG or JPG
  *
- * $Id: thumbs.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: thumbs.php 3439 2008-03-16 19:16:51Z flyguide $
  *
  * @author		René Fritz <r.fritz@colorcube.de>
  */

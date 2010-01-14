@@ -27,7 +27,7 @@
 /**
  * Class for generating front end for building queries
  *
- * $Id: class.t3lib_querygenerator.php 3056 2008-02-04 16:20:37Z ohader $
+ * $Id: class.t3lib_querygenerator.php 4881 2009-01-28 13:58:15Z benni $
  *
  * @author	Christian Jul Jensen <christian@typo3.com>
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -233,7 +233,7 @@ class t3lib_queryGenerator	{
 	var $enableQueryParts = 0;
 	var $extJSCODE='';
 
-	var $formName = '';
+	protected $formName = '';
 
 
 
@@ -1482,7 +1482,9 @@ class t3lib_queryGenerator	{
 				$qString .= ' AND pid IN ('.$webMountPageTree.')';
 			}
 		}
-		$fieldlist = $this->extFieldLists['queryFields'].',pid,deleted';
+		$fieldlist = $this->extFieldLists['queryFields'] .
+			',pid' .
+			($GLOBALS['TCA'][$this->table]['ctrl']['delete'] ? ',' . $GLOBALS['TCA'][$this->table]['ctrl']['delete'] : '');
 		if (!$GLOBALS['SOBE']->MOD_SETTINGS['show_deleted'])	{
 			$qString .= t3lib_BEfunc::deleteClause($this->table);
 		}
@@ -1521,9 +1523,9 @@ class t3lib_queryGenerator	{
 	 * Sets the current name of the input form.
 	 *
 	 * @param	string		$formName: The name of the form.
-	 * @return	void 
+	 * @return	void
 	 */
-	function setFormName($formName) {
+	public function setFormName($formName) {
 		$this->formName = trim($formName);
 	}
 }

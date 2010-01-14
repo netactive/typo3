@@ -21,7 +21,7 @@
  * 2005-12-09  Peter Niederlag  <peter@niederlag.de>
  *	- Fixed bug #1976: PHP5 type-conversion of string 'true' and boolean
  *
- * $Id: class.gzip_encode.php 4517 2008-12-01 16:26:10Z dmitry $
+ * $Id: class.gzip_encode.php 4516 2008-12-01 16:25:00Z dmitry $
  *
  * @author	Sandy McArthur, Jr. <leknor@leknor.com>
  */

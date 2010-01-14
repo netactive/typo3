@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Wizard to display the RTE in "full screen" mode
  *
- * $Id: wizard_rte.php 1899 2007-01-09 12:55:52Z sebastian $
+ * $Id: wizard_rte.php 4326 2008-10-19 12:33:25Z stucki $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -81,7 +81,12 @@ t3lib_BEfunc::lockRecords();
 class SC_wizard_rte {
 
 		// Internal, dynamic:
-	var $doc;					// Document template object
+	/**
+	 * document template object
+	 *
+	 * @var mediumDoc
+	 */
+	var $doc;
 	var $content;				// Content accumulation for the module.
 
 		// Internal, static: GPvars
@@ -148,10 +153,6 @@ class SC_wizard_rte {
 					}
 				'.($this->popView ? t3lib_BEfunc::viewOnClick($rawRec['pid'],'',t3lib_BEfunc::BEgetRootLine($rawRec['pid'])) : '').'
 			');
-
-				// Create page HTML header:
-			$this->content.=$this->doc->startPage('');
-
 
 				// Initialize TCeforms - for rendering the field:
 			$tceforms = t3lib_div::makeInstance('t3lib_TCEforms');
@@ -271,10 +272,13 @@ class SC_wizard_rte {
 				$tceforms->printNeededJSFunctions();
 		} else {
 				// ERROR:
-			$this->content.=$this->doc->startPage('');
 			$this->content.=$this->doc->section($LANG->getLL('forms_title'),'<span class="typo3-red">'.$LANG->getLL('table_noData',1).'</span>',0,1);
 		}
 
+		// Assemble the page:
+		$tempContent = $this->content;
+		$this->content = $this->doc->startPage('');
+		$this->content.= $tempContent;
 	}
 
 	/**

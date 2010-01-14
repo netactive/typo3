@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Module: About
  * This document shows some standard-information for TYPO3 CMS: About-text, version number and so on.
  *
- * $Id: index.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: index.php 3772 2008-06-09 15:12:37Z flyguide $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -105,11 +105,22 @@ class SC_mod_help_about_index {
 
 		$content='
 			<div id="typo3-mod-help-about-index-php-outer">
-				<img src="'.$BACK_PATH.'gfx/typo3logo.gif" width="123" height="34" vspace="10" alt="TYPO3 logo" />
-				<div id="typo3-mod-help-about-index-php-inner">
-					<h2>TYPO3 Information</h2>
+				<img src="'.$BACK_PATH.'gfx/typo3logo.gif" width="123" height="34" vspace="10" alt="'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:typo3_logo', true).'" />
+				<div class="typo3-mod-help-about-index-php-inner">
+					<h2>'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:information', true).'</h2>
 					<h3>'.$LANG->getLL('welcome',1).'</h3>
 					<p>'.$minorText.'</p>
+				</div>
+
+				<div class="typo3-mod-help-about-index-php-inner">
+					<h2>'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:community_credits', true).'</h2>
+					<p>'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:information_detail').'</p>
+				</div>
+
+				<div class="typo3-mod-help-about-index-php-inner">
+					<h2>'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:extension_authors', true).'</h2>
+					<p>'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:extension_list_info', true).'</p>
+					<br />'.$this->getExtensionAuthors().'
 				</div>
 			</div>
 		';
@@ -124,6 +135,32 @@ class SC_mod_help_about_index {
 	 */
 	function printContent()	{
 		echo $this->content;
+	}
+
+	/**
+	 * gets the author names from the installed extensions
+	 *
+	 * @return	string	list of extensions authors and their e-mail
+	 */
+	function getExtensionAuthors() {
+		$content = '<table border="0" cellspacing="2" cellpadding="1"><tr><th>'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:extension', true).'</th><th>'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:extension_author', true).'</th></tr>';
+
+		$loadedExtensions = $GLOBALS['TYPO3_LOADED_EXT'];
+		foreach ($loadedExtensions as $extensionKey => $extension) {
+			if (is_array($extension) && $extension['type'] != 'S') {
+				$emconfPath = PATH_site.$extension['siteRelPath'].'ext_emconf.php';
+				include($emconfPath);
+
+				$emconf = $EM_CONF['']; // ext key is not set when loading the ext_emconf.php directly
+
+				$content.= '<tr><td>'.$emconf['title'].' ('.$extensionKey.')</td>'.
+						 		'<td><a href="mailto:'.$emconf['author_email'].'?subject='.rawurlencode('Thanks for your '.$emconf['title'].' extension').'">'.$emconf['author'].'</a></td></tr>';
+			}
+		}
+
+		$content.= '</table>';
+
+		return $content;
 	}
 }
 

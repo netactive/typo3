@@ -27,7 +27,7 @@
 /**
  * Contains an example DBAL handler class
  *
- * $Id: class.tx_dbal_handler_openoffice.php 945 2005-12-27 15:00:34Z k-fish $
+ * $Id: class.tx_dbal_handler_openoffice.php 3508 2008-04-01 20:28:08Z stucki $
  * 
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  */
@@ -168,7 +168,7 @@ class tx_dbal_handler_openoffice extends t3lib_sqlengine {
 	/**
 	 * Returns the list of tables from the database
 	 *
-	 * @return	array		Tables in an array (tablename is in both key and value)
+	 * @return	array		Tables in an array with tablename as key and an array with status information as value
 	 */
 	function admin_get_tables()	{
 

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Contains a class for evaluation of database integrity according to $TCA
  * Most of these functions are considered obsolete!
  *
- * $Id: class.t3lib_admin.php 2061 2007-02-20 21:16:23Z stucki $
+ * $Id: class.t3lib_admin.php 3437 2008-03-16 16:22:11Z flyguide $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

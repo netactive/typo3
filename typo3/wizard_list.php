@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Wizard to list records from a page id.
  *
- * $Id: wizard_list.php 593 2005-04-01 14:37:15Z kasper $
+ * $Id: wizard_list.php 5247 2009-03-31 09:44:28Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -144,5 +144,4 @@ if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/wizar
 $SOBE = t3lib_div::makeInstance('SC_wizard_list');
 $SOBE->init();
 $SOBE->main();
-$SOBE->printContent();
 ?>

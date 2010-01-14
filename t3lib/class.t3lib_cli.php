@@ -27,6 +27,8 @@
 /**
  * Contains base class for TYPO3 cli scripts
  *
+ * $Id: class.t3lib_cli.php 3489 2008-03-31 13:13:04Z ohader $
+ *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
 /**
@@ -74,7 +76,7 @@ class t3lib_cli {
 			'license' => 'GNU GPL - free software!',
 			'author' => '[Author name]',
 		);
-	var $stdin = NULL;	
+	var $stdin = NULL;
 
 
 	/**
@@ -139,7 +141,7 @@ class t3lib_cli {
 		$cli_options = array();
 		$index = '_DEFAULT';
 		foreach($_SERVER['argv'] as $token)	{
-			if ($token{0}==='-')	{
+			if ($token{0}==='-' && !t3lib_div::testInt($token{1}))	{	// Options starting with a number is invalid - they could be negative values... !
 				list($index,$opt) = explode('=',$token,2);
 				if (isset($cli_options[$index]))	{
 					echo 'ERROR: Option '.$index.' was used twice!'.chr(10);
@@ -155,7 +157,7 @@ class t3lib_cli {
 		}
 		return $cli_options;
 	}
-	
+
 	/**
 	 * Validates if the input arguments in this->cli_args are all listed in this->cli_options and if not, will exit with an error.
 	 */
@@ -172,7 +174,7 @@ class t3lib_cli {
 				foreach($argSplit as $i => $v)	{
 					$ii=$i;
 					if ($i>0)	{
-						if (!isset($cli_args_copy[$argSplit[0]][$i-1]))	{
+						if (!isset($cli_args_copy[$argSplit[0]][$i-1]) && $v{0}!='[')	{	// Using "[]" around a paramter makes it optional
 							echo 'ERROR: Option "'.$argSplit[0].'" requires a value ("'.$v.'") on position '.$i.chr(10);
 							exit;
 						}
@@ -184,11 +186,11 @@ class t3lib_cli {
 					echo 'ERROR: Option "'.$argSplit[0].'" does not support a value on position '.$ii.chr(10);
 					exit;
 				}
-				
+
 				unset($cli_args_copy[$argSplit[0]]);
 			}
 		}
-		
+
 		if (count($cli_args_copy))	{
 			echo wordwrap('ERROR: Option '.implode(',',array_keys($cli_args_copy)).' was unknown to this script!'.chr(10).'(Options are: '.implode(', ',$allOptions).')'.chr(10));
 			exit;
@@ -201,12 +203,12 @@ class t3lib_cli {
 	 * @return	string
 	 */
 	function cli_keyboardInput()	{
-		
+
 			// Have to open the stdin stream only ONCE! otherwise I cannot read multiple lines from it... :
 		if (!$this->stdin)	{
 			$this->stdin = fopen('php://stdin', 'r');
 		}
-		
+
 		while (FALSE == ($line = fgets($this->stdin,1000)))	{}
 
 		return trim($line);

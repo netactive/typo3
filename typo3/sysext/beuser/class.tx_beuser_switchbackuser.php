@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -23,6 +23,8 @@
 ***************************************************************/
 /**
  * Backend user switchback
+ *
+ * $Id: class.tx_beuser_switchbackuser.php 3439 2008-03-16 19:16:51Z flyguide $
  *
  * @author	Sebastian Kurfuerst <sebastian@garbage-group.de>
  */

@@ -3,9 +3,21 @@
 	* Fixed bug #10134: XSS vulnerability in sysext indexed_search (thanks to the TYPO3 Security Team and especially Marcus Krause)
 	* Fixed bug #10133: Command execution in sysext indexed_search (thanks to the TYPO3 Security Team and especially Marcus Krause)
 
+2008-04-01  Michael Stucki  <michael@typo3.org>
+
+	* Fixed bug #7980: Fix wrong TypoScript code in plugin template
+
 2007-09-24 Andreas Otto <andreas.otto@dkd.de>
 
 	* Fixed bug #1471: Check if exif functions are available before using them.
+
+2007-08-31  Michael Stucki  <michael@typo3.org>
+
+	* Add new property "search.exactCount" to allow exact counting of matches. See documentation for more information.
+
+2007-08-21  Andreas Otto  <andreas.otto@dkd.de>
+
+	* Feature request #5748: Introduced a new TS option that makes indexing of metatags configurable. Adapted code to make use of the new TS option.
 
 2007-07-06  Michael Stucki  <michael@typo3.org>
 
@@ -26,7 +38,7 @@
 
 2006-11-16  Martin Kutschker  <martin.t.kutschker@blackbox.net>
 
-	* Added freeIndexSetId GROUP BY in tx_indexedsearch->execFinalQuery() to make SELECT work on DBs other than Mysql
+	* Added freeIndexSetId GROUP BY in tx_indexedsearch->execFinalQuery() to make SELECT work on DBs other than MySQL
 
 2006-09-11  Michael Stucki  <michael@typo3.org>
 

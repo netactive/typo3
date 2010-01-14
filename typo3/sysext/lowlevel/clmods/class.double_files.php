@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -110,8 +110,8 @@ This will check the system for double files relations.';
 				'missingFiles' => array('Tracking missing files','(Extra feature, not related to tracking of double references. Further, the list may include more files than found in the missing_files()-test because this list includes missing files from deleted records.)',0),
 				'warnings' => array('Warnings picked up','',2)
 			),
-			'multipleReferencesList_count' => 0,
-			'singleReferencesList_count' => 0,
+			'multipleReferencesList_count' => array('count' => 0),
+			'singleReferencesList_count' => array('count' => 0),
 			'multipleReferencesList' => array(),
 			'dirname_registry' => array(),
 			'missingFiles' => array(),
@@ -142,6 +142,7 @@ This will check the system for double files relations.';
 					// Handle missing file:
 				if (!@is_file(PATH_site.$rec['ref_string']))	{
 					$resultArray['missingFiles'][$rec['ref_string']][$rec['hash']] = $infoString;
+					ksort($resultArray['missingFiles'][$rec['ref_string']]);	// Sort by array key
 				}
 
 					// Add entry if file has multiple references pointing to it:
@@ -151,21 +152,26 @@ This will check the system for double files relations.';
 						$resultArray['multipleReferencesList'][$rec['ref_string']][$tempCount[$rec['ref_string']][1]] = $tempCount[$rec['ref_string']][0];
 					}
 					$resultArray['multipleReferencesList'][$rec['ref_string']][$rec['hash']] = $infoString;
+					ksort($resultArray['multipleReferencesList'][$rec['ref_string']]);
 				} else {
 					$tempCount[$rec['ref_string']] = array($infoString,$rec['hash']);
 				}
 			}
 		}
 
+		ksort($resultArray['missingFiles']);
+		ksort($resultArray['multipleReferencesList']);
+
 			// Add count for multi-references:
-		$resultArray['multipleReferencesList_count'] = count($resultArray['multipleReferencesList']);
-		$resultArray['singleReferencesList_count'] = count($tempCount) - $resultArray['multipleReferencesList_count'];
+		$resultArray['multipleReferencesList_count']['count'] = count($resultArray['multipleReferencesList']);
+		$resultArray['singleReferencesList_count']['count'] = count($tempCount) - $resultArray['multipleReferencesList_count']['count'];
 
 			// Sort dirname registry and add warnings for directories outside uploads/
 		ksort($resultArray['dirname_registry']);
 		foreach($resultArray['dirname_registry'] as $dir => $temp)	{
+			ksort($resultArray['dirname_registry'][$dir]);
 			if (!t3lib_div::isFirstPartOfStr($dir,'uploads/'))	{
-				$resultArray['warnings'][] = 'Directory "'.$dir.'" was outside uploads/ which is unusual practice in TYPO3 although not forbidden. Directory used by the following table:field pairs: '.implode(',',array_keys($temp));
+				$resultArray['warnings'][t3lib_div::shortmd5($dir)] = 'Directory "'.$dir.'" was outside uploads/ which is unusual practice in TYPO3 although not forbidden. Directory used by the following table:field pairs: '.implode(',',array_keys($temp));
 			}
 		}
 

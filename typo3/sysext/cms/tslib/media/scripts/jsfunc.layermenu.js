@@ -2,13 +2,13 @@
 *
 *  JavaScript DHTML layer menu
 *
-* $Id: jsfunc.layermenu.js 785 2005-08-22 13:39:47Z masi $
+* $Id: jsfunc.layermenu.js 3439 2008-03-16 19:16:51Z flyguide $
 *
 *
 *
 *  Copyright notice
 *
-*  (c) 1998-2003 Kasper Skårhøj
+*  (c) 1998-2008 Kasper Skårhøj
 *  All rights reserved
 *
 *  This script is part of the TYPO3 tslib/ library provided by

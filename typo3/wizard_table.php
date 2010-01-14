@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Wizard to help make tables (eg. for tt_content elements) of type "table".
  * Each line is a table row, each cell divided by a |
  *
- * $Id: wizard_table.php 1997 2007-02-05 18:24:44Z ingmars $
+ * $Id: wizard_table.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -84,7 +84,12 @@ $LANG->includeLLFile('EXT:lang/locallang_wizards.xml');
 class SC_wizard_table {
 
 			// Internal, dynamic:
-	var $doc;					// Document template object
+	/**
+	 * document template object
+	 *
+	 * @var mediumDoc
+	 */
+	var $doc;
 	var $content;				// Content accumulation for the module.
 	var $include_once=array();	// List of files to include.
 	var $inputStyle=0;			// True, then <input> fields are shown, not textareas.
@@ -148,7 +153,7 @@ class SC_wizard_table {
 		if ($_POST['savedok_x'] || $_POST['saveandclosedok_x'])	{
 			$this->include_once[]=PATH_t3lib.'class.t3lib_tcemain.php';
 		}
-		
+
 		$this->tableParsing_delimiter = '|';
 		$this->tableParsing_quote = '';
 	}
@@ -227,12 +232,12 @@ class SC_wizard_table {
 
 			// get delimiter settings
 		$flexForm = t3lib_div::xml2array($row['pi_flexform']);
-	
+
 		if (is_array($flexForm)) {
 			$this->tableParsing_quote = $flexForm['data']['s_parsing']['lDEF']['tableparsing_quote']['vDEF']?chr(intval($flexForm['data']['s_parsing']['lDEF']['tableparsing_quote']['vDEF'])):'';
 			$this->tableParsing_delimiter = $flexForm['data']['s_parsing']['lDEF']['tableparsing_delimiter']['vDEF']?chr(intval($flexForm['data']['s_parsing']['lDEF']['tableparsing_delimiter']['vDEF'])):'|';
 		}
-		
+
 			// If some data has been submitted, then construct
 		if (isset($this->TABLECFG['c']))	{
 

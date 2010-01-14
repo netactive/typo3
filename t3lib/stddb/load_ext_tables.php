@@ -4,7 +4,7 @@ if (!defined ('TYPO3_MODE')) 	die ('Access denied.');
 /**
  * Loading the ext_tables.php files of the installed extensions when caching to "temp_CACHED_" files is NOT enabled.
  *
- * $Id: load_ext_tables.php 468 2004-09-13 22:57:39Z kasper $
+ * $Id: load_ext_tables.php 2663 2007-11-05 09:22:23Z ingmars $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  * Provides links to registered shortcuts
  * If the 'cms' extension is loaded you will also have a field for entering page id/alias which will be found/edited
  *
- * $Id: alt_shortcut.php 2019 2007-02-11 09:23:35Z masi $
+ * $Id: alt_shortcut.php 4623 2008-12-29 13:53:48Z steffenk $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant output
  *
@@ -96,12 +96,24 @@ class SC_alt_shortcut {
 	var $whichItem;
 
 		// Internal, static:
-	var $loadModules;		// Modules object
-	var $doc;			// Document template object
+	/**
+	 * Object for backend modules, load modules-object
+	 *
+	 * @var t3lib_loadModules
+	 */
+	var $loadModules;
+	protected $isAjaxCall;
+
+	/**
+	 * Document template object
+	 *
+	 * @var template
+	 */
+	var $doc;
 
 		// Internal, dynamic:
 	var $content;			// Accumulation of output HTML (string)
-	var $lines;			// Accumulation of table cells (array)
+	var $lines;				// Accumulation of table cells (array)
 
 	var $editLoaded;		// Flag for defining whether we are editing
 	var $editError;			// Can contain edit error message
@@ -126,18 +138,19 @@ class SC_alt_shortcut {
 		global $TBE_MODULES;
 
 			// Setting GPvars:
-		$this->modName = t3lib_div::_GP('modName');
-		$this->M_modName = t3lib_div::_GP('motherModName');
-		$this->URL = t3lib_div::_GP('URL');
-		$this->editSC = t3lib_div::_GP('editShortcut');
+		$this->isAjaxCall             = (boolean) t3lib_div::_GP('ajax');
+		$this->modName                = t3lib_div::_GP('modName');
+		$this->M_modName              = t3lib_div::_GP('motherModName');
+		$this->URL                    = t3lib_div::_GP('URL');
+		$this->editSC                 = t3lib_div::_GP('editShortcut');
 
-		$this->deleteCategory = t3lib_div::_GP('deleteCategory');
-		$this->editPage = t3lib_div::_GP('editPage');
-		$this->changeWorkspace = t3lib_div::_GP('changeWorkspace');
+		$this->deleteCategory         = t3lib_div::_GP('deleteCategory');
+		$this->editPage               = t3lib_div::_GP('editPage');
+		$this->changeWorkspace        = t3lib_div::_GP('changeWorkspace');
 		$this->changeWorkspacePreview = t3lib_div::_GP('changeWorkspacePreview');
-		$this->editName = t3lib_div::_GP('editName');
-		$this->editGroup = t3lib_div::_GP('editGroup');
-		$this->whichItem = t3lib_div::_GP('whichItem');
+		$this->editName               = t3lib_div::_GP('editName');
+		$this->editGroup              = t3lib_div::_GP('editGroup');
+		$this->whichItem              = t3lib_div::_GP('whichItem');
 
 			// Creating modules object
 		$this->loadModules = t3lib_div::makeInstance('t3lib_loadModules');
@@ -155,7 +168,7 @@ class SC_alt_shortcut {
 		$url = urldecode($this->URL);
 
 			// Lookup the title of this page and use it as default description
-		$page_id = $this->getLinkedPageId($url);
+		$page_id = $this->getLinkedPageId($url);         
 		if (t3lib_div::testInt($page_id))	{
 			if (preg_match('/\&edit\[(.*)\]\[(.*)\]=edit/',$url,$matches))	{
 					// Edit record
@@ -254,13 +267,16 @@ class SC_alt_shortcut {
 				window.location.href="alt_shortcut.php?editShortcut="+uid;
 			}
 			function submitEditPage(id)	{	//
-				window.location.href="alt_shortcut.php?editPage="+top.rawurlencode(id);
+				window.location.href="alt_shortcut.php?editPage="+top.rawurlencodeAndRemoveSiteUrl(id);
 			}
 			function changeWorkspace(workspaceId)	{	//
-				window.location.href="alt_shortcut.php?changeWorkspace="+top.rawurlencode(workspaceId);
+				window.location.href="alt_shortcut.php?changeWorkspace="+top.rawurlencodeAndRemoveSiteUrl(workspaceId);
 			}
 			function changeWorkspacePreview(newstate)	{	//
 				window.location.href="alt_shortcut.php?changeWorkspacePreview="+newstate;
+			}
+			function refreshShortcuts() {
+				window.location.href = document.URL;
 			}
 
 			');
@@ -432,6 +448,7 @@ class SC_alt_shortcut {
 			// Launch Edit page:
 		if ($this->theEditRec['uid'])	{
 			$this->content.=$this->doc->wrapScriptTags('top.loadEditId('.$this->theEditRec['uid'].');');
+
 		}
 
 			// Load alternative table/uid into editing form.
@@ -587,9 +604,47 @@ class SC_alt_shortcut {
 	 * @return	void
 	 */
 	function printContent()	{
+		$content = '';
+
 		$this->content.= $this->doc->endPage();
 		$this->content = $this->doc->insertStylesAndJS($this->content);
-		echo $this->content;
+
+		if($this->editPage && $this->isAjaxCall) {
+			require_once('contrib/json/json.php');
+			$data = array();
+
+				// edit page
+			if($this->theEditRec['uid']) {
+				$data['type']       = 'page';
+				$data['editRecord'] = $this->theEditRec['uid'];
+			}
+
+				// edit alternative table/uid
+			if(count($this->alternativeTableUid) == 2
+			&& isset($GLOBALS['TCA'][$this->alternativeTableUid[0]])
+			&& t3lib_div::testInt($this->alternativeTableUid[1])) {
+				$data['type']             = 'alternative';
+				$data['alternativeTable'] = $this->alternativeTableUid[0];
+				$data['alternativeUid']   = $this->alternativeTableUid[1];
+			}
+
+				// search for something else
+			if($this->searchFor) {
+				$data['type']            = 'search';
+				$data['firstMountPoint'] = intval($GLOBALS['WEBMOUNTS'][0]);
+				$data['searchFor']       = rawurlencode($this->searchFor);
+			}
+
+			$json = new Services_JSON();
+			$content = $json->encode($data);
+
+			header('Content-type: application/json; charset=utf-8');
+			header('X-JSON: '.$content);
+		} else {
+			$content = $this->content;
+		}
+
+		echo $content;
 	}
 
 
@@ -617,7 +672,7 @@ class SC_alt_shortcut {
 			// Changing workspace and if so, reloading entire backend:
 		if (strlen($this->changeWorkspace))	{
 			$BE_USER->setWorkspace($this->changeWorkspace);
-			return $this->doc->wrapScriptTags('top.location.href="alt_main.php";');
+			return $this->doc->wrapScriptTags('top.location.href="'. t3lib_BEfunc::getBackendScript() . '";');
 		}
 			// Changing workspace and if so, reloading entire backend:
 		if (strlen($this->changeWorkspacePreview))	{
@@ -762,7 +817,7 @@ class SC_alt_shortcut {
 	function hasWorkspaceAccess() {
 		$MCONF = array();
 		include('mod/user/ws/conf.php');
-		return $GLOBALS['BE_USER']->modAccess($MCONF, false);
+		return $GLOBALS['BE_USER']->modAccess(array('name' => 'user', 'access' => 'user,group'), false) && $GLOBALS['BE_USER']->modAccess($MCONF, false);
 	}
 }
 

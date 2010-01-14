@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2007 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Generates a thumbnail and returns an image stream, either GIF/PNG or JPG
  *
- * $Id: thumbs.php 6264 2009-10-22 11:55:55Z ohader $
+ * $Id: thumbs.php 6263 2009-10-22 11:55:43Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author		Kasper Skaarhoj	<kasperYYYY@typo3.com>
@@ -377,10 +377,8 @@ class SC_t3lib_thumbs {
 	 * @param string $inputName filename to safeguard, must not be empty
 	 *
 	 * @return string $inputName escaped as needed
-	 *
-	 * @access protected
 	 */
-	function wrapFileName($inputName) {
+	protected function wrapFileName($inputName) {
 		return escapeshellarg($inputName);
 	}
 }
@@ -397,4 +395,5 @@ if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['t3lib/thumb
 $SOBE = t3lib_div::makeInstance('SC_t3lib_thumbs');
 $SOBE->init();
 $SOBE->main();
+
 ?>

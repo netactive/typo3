@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -63,7 +63,7 @@
 require_once(PATH_t3lib.'class.t3lib_befunc.php');
 require_once(PATH_t3lib.'class.t3lib_tcemain.php');
 require_once(PATH_t3lib.'class.t3lib_flexformtools.php');
-//require_once(PATH_typo3.'sysext/indexed_search/class.lexer.php'); // Disabled until Kasper finishes this feature. Apart from that, t3lib classes should never require stuff from extensions.
+//require_once(PATH_typo3.'sysext/indexed_search/class.lexer.php'); // Disabled until Kasper finishes this feature. Apart from that, t3lib classes should never require stuff from extensions. [Dmitry, 12.05.2008: better move lexer to core!]
 
 
 
@@ -632,11 +632,12 @@ class t3lib_refindex {
 	 * @param	string		32-byte hash string identifying the record from sys_refindex which you wish to change the value for
 	 * @param	mixed		Value you wish to set for reference. If NULL, the reference is removed (unless a soft-reference in which case it can only be set to a blank string). If you wish to set a database reference, use the format "[table]:[uid]". Any other case, the input value is set as-is
 	 * @param	boolean		Return $dataArray only, do not submit it to database.
+	 * @param	boolean		If set, it will bypass check for workspace-zero and admin user
 	 * @return	string		If a return string, that carries an error message, otherwise false (=OK) (except if $returnDataArray is set!)
 	 */
-	function setReferenceValue($hash,$newValue,$returnDataArray=FALSE)	{
+	function setReferenceValue($hash,$newValue,$returnDataArray=FALSE,$bypassWorkspaceAdminCheck=FALSE)	{
 
-		if ($GLOBALS['BE_USER']->workspace===0 && $GLOBALS['BE_USER']->isAdmin())	{
+		if (($GLOBALS['BE_USER']->workspace===0 && $GLOBALS['BE_USER']->isAdmin()) || $bypassWorkspaceAdminCheck)	{
 
 				// Get current index from Database:
 			list($refRec) = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
@@ -701,6 +702,7 @@ class t3lib_refindex {
 							if ($returnDataArray)	{
 								return $dataArray;
 							} else {
+
 									// Execute CMD array:
 								$tce = t3lib_div::makeInstance('t3lib_TCEmain');
 								$tce->stripslashes_values = FALSE;
@@ -852,11 +854,15 @@ class t3lib_refindex {
 	 *******************************/
 
 	/**
-	 *
+	 * Indexing words from table records. Can be useful for quick backend look ups in records across the system.
 	 */
 	function wordIndexing($table,$uid)	{
-		return; // Disabled until Kasper finishes this feature.
+		return; // Disabled until Kasper finishes this feature. If someone else needs it in the meantime you are welcome to complete it. Below my todo list.
 
+		// TODO:
+		// - Flag to disable indexing
+		// - Clean-up to remove words not used anymore  and indexes for records not in the system anymore.
+		// - UTF-8 compliant substr()
 		$lexer = t3lib_div::makeInstance('tx_indexedsearch_lexer');
 		$words = $lexer->split2Words(implode(' ',$this->words_strings));
 		foreach($words as $w) {

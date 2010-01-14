@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  *
  * inspired by t3lib_fullsearch
  *
- * $Id: class.t3lib_modsettings.php 593 2005-04-01 14:37:15Z kasper $
+ * $Id: class.t3lib_modsettings.php 3433 2008-03-16 14:13:33Z masi $
  *
  * @author	René Fritz <r.fritz@colorcube.de>
  */
@@ -361,18 +361,17 @@ class t3lib_modSettings {
 
 		$this->initStorage();
 
-		#debug($this->storedSettings, '$this->storedSettings', __LINE__, __FILE__);
-
 		$storeControl = t3lib_div::_GP('storeControl');
 		$storeIndex = $storeControl['STORE'];
-
-		if ($this->writeDevLog) t3lib_div::devLog('Store command: '.t3lib_div::arrayToLogString($storeControl), 't3lib_modSettings', 0);
 
 		$msg = '';
 		$saveSettings = FALSE;
 		$writeArray = array();
 
 		if (is_array($storeControl)) {
+			if ($this->writeDevLog) {
+				t3lib_div::devLog('Store command: '.t3lib_div::arrayToLogString($storeControl), 't3lib_modSettings', 0);
+			}
 
 			//
 			// processing LOAD

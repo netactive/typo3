@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2001-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -109,7 +109,13 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 	var $allPhashListed = array();		// phash values accumulations for link to clear all
 	var $external_parsers = array();	// External content parsers - objects set here with file extensions as keys.
 	var $iconFileNameCache = array();	// File extensions - icon map/cache.
-	var $indexerObj;					// Indexer object
+
+	/**
+	 * Indexer object
+	 *
+	 * @var tx_indexedsearch_indexer
+	 */
+	var $indexerObj;
 
 
 	/**
@@ -194,21 +200,22 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 				// Show title / function menu:
 			$theOutput.=$this->pObj->doc->spacer(5);
 			$theOutput.=$this->pObj->doc->section('Details for a single result row:',$this->showDetailsForPhash(t3lib_div::_GET('phash')),0,1);
-		} elseif (t3lib_div::_GET('wid'))	{
 
+		} elseif (t3lib_div::_GET('wid'))	{
 				// Show title / function menu:
 			$theOutput.=$this->pObj->doc->spacer(5);
 			$theOutput.=$this->pObj->doc->section('Details for a word:',$this->showDetailsForWord(t3lib_div::_GET('wid')),0,1);
-		} elseif (t3lib_div::_GET('metaphone'))	{
 
+		} elseif (t3lib_div::_GET('metaphone'))	{
 				// Show title / function menu:
 			$theOutput.=$this->pObj->doc->spacer(5);
 			$theOutput.=$this->pObj->doc->section('Details for metaphone value:',$this->showDetailsForMetaphone(t3lib_div::_GET('metaphone')),0,1);
-		} elseif (t3lib_div::_GET('reindex'))	{
 
+		} elseif (t3lib_div::_GET('reindex'))	{
 				// Show title / function menu:
 			$theOutput.=$this->pObj->doc->spacer(5);
 			$theOutput.=$this->pObj->doc->section('Reindexing...',$this->reindexPhash(t3lib_div::_GET('reindex'),t3lib_div::_GET('reindex_id')),0,1);
+
 		} else {	// Detail listings:
 				// Depth function menu:
 			$h_func = t3lib_BEfunc::getFuncMenu($this->pObj->id,'SET[type]',$this->pObj->MOD_SETTINGS['type'],$this->pObj->MOD_MENU['type'],'index.php');

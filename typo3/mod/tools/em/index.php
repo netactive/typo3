@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
- * (c) 2005-2006 Karsten Dambekalns <karsten@typo3.org>
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+ * (c) 2005-2008 Karsten Dambekalns <karsten@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
 /**
  * Module: Extension manager
  *
- * $Id: index.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: index.php 3439 2008-03-16 19:16:51Z flyguide $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Karsten Dambekalns <karsten@typo3.org>

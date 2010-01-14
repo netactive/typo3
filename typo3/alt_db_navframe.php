@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Page navigation tree for the Web module
  *
- * $Id: alt_db_navframe.php 4694 2009-01-12 11:28:51Z steffenk $
+ * $Id: alt_db_navframe.php 4571 2008-12-18 18:38:49Z steffenk $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -53,7 +53,7 @@
 
 
 $BACK_PATH = '';
-require('init.php');
+require_once('init.php');
 require('template.php');
 require_once('class.webpagetree.php');
 
@@ -70,15 +70,23 @@ class SC_alt_db_navframe {
 		// Internal:
 	var $content;
 	var $pagetree;
+
+	/**
+	 * document template object
+	 *
+	 * @var template
+	 */
 	var $doc;
 	var $active_tempMountPoint = 0;		// Temporary mount point (record), if any
 	var $backPath;
 
 		// Internal, static: GPvar:
-	var $ajax;							// Is set, if an AJAX call should be handled.
 	var $currentSubScript;
 	var $cMR;
 	var $setTempDBmount;			// If not '' (blank) then it will clear (0) or set (>0) Temporary DB mount.
+
+	var $template;					// a static HTML template, usually in templates/alt_db_navframe.html
+	var $hasFilterBox;				//depends on userTS-setting
 
 	/**
 	 * Initialiation of the class
@@ -90,18 +98,22 @@ class SC_alt_db_navframe {
 
 			// Setting backPath
 		$this->backPath = $BACK_PATH;
-		$this->doc->backPath = $BACK_PATH;
 
 			// Setting GPvars:
-		$this->ajax = t3lib_div::_GP('ajax');
 		$this->cMR = t3lib_div::_GP('cMR');
 		$this->currentSubScript = t3lib_div::_GP('currentSubScript');
 		$this->setTempDBmount = t3lib_div::_GP('setTempDBmount');
+
+			// look for User setting
+		$this->hasFilterBox = !$BE_USER->getTSConfigVal('options.pageTree.hideFilter');
 
 			// Create page tree object:
 		$this->pagetree = t3lib_div::makeInstance('webPageTree');
 		$this->pagetree->ext_IconMode = $BE_USER->getTSConfigVal('options.pageTree.disableIconLinkToContextmenu');
 		$this->pagetree->ext_showPageId = $BE_USER->getTSConfigVal('options.pageTree.showPageIdWithTitle');
+		$this->pagetree->ext_showNavTitle = $BE_USER->getTSConfigVal('options.pageTree.showNavTitle');
+		$this->pagetree->ext_separateNotinmenuPages = $BE_USER->getTSConfigVal('options.pageTree.separateNotinmenuPages');
+		$this->pagetree->ext_alphasortNotinmenuPages = $BE_USER->getTSConfigVal('options.pageTree.alphasortNotinmenuPages');
 		$this->pagetree->thisScript = 'alt_db_navframe.php';
 		$this->pagetree->addField('alias');
 		$this->pagetree->addField('shortcut');
@@ -109,70 +121,77 @@ class SC_alt_db_navframe {
 		$this->pagetree->addField('mount_pid');
 		$this->pagetree->addField('mount_pid_ol');
 		$this->pagetree->addField('nav_hide');
+		$this->pagetree->addField('nav_title');
 		$this->pagetree->addField('url');
 
 			// Temporary DB mounts:
 		$this->initializeTemporaryDBmount();
+	}
 
-			// Use template rendering only if this is a non-AJAX call:
-		if (!$this->ajax) {
-				// Setting highlight mode:
-			$this->doHighlight = !$BE_USER->getTSConfigVal('options.pageTree.disableTitleHighlight');
 
-				// If highlighting is active, define the CSS class for the active item depending on the workspace
-			if ($this->doHighlight) {
-				if ($BE_USER->workspace === 0) $hlClass = 'active';
-				else $hlClass = 'active active-ws wsver'.$BE_USER->workspace; 
-			}
+	/**
+	 * initialization for the visual parts of the class
+	 * Use template rendering only if this is a non-AJAX call
+	 *
+	 * @return	void
+	 */
+	public function initPage() {
+ 		global $BE_USER;
 
-				// Create template object:
-			$this->doc = t3lib_div::makeInstance('template');
-			$this->doc->docType = 'xhtml_trans';
+			// Setting highlight mode:
+		$this->doHighlight = !$BE_USER->getTSConfigVal('options.pageTree.disableTitleHighlight');
 
-				// Adding javascript code for AJAX (prototype), drag&drop and the pagetree
-			$this->doc->JScode  = '
-			<script type="text/javascript" src="'.$this->backPath.'contrib/prototype/prototype.js"></script>
-			<script type="text/javascript" src="'.$this->backPath.'tree.js"></script>'."\n";
-
-			$this->doc->JScode .= $this->doc->wrapScriptTags(
-			($this->currentSubScript?'top.currentSubScript=unescape("'.rawurlencode($this->currentSubScript).'");':'').'
-			// setting prefs for pagetree and drag & drop
-			Tree.thisScript    = "'.$this->pagetree->thisScript.'";
-			'.($this->doHighlight ? 'Tree.highlightClass = "'.$hlClass.'";' : '').'
-
-			DragDrop.changeURL = "'.$this->backPath.'alt_clickmenu.php";
-			DragDrop.backPath  = "'.t3lib_div::shortMD5(''.'|'.$GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']).'";
-			DragDrop.table     = "pages";
-
-			// Function, loading the list frame from navigation tree:
-			function jumpTo(id, linkObj, highlightID, bank)	{ //
-				var theUrl = top.TS.PATH_typo3 + top.currentSubScript ;
-				if (theUrl.indexOf("?") != -1) {
-					theUrl += "&id=" + id
-				} else {
-					theUrl += "?id=" + id		    	
-				}	
-				top.fsMod.currentBank = bank;
-
-				if (top.condensedMode)	{
-					top.content.location.href=theUrl;
-				} else {
-					parent.list_frame.location.href=theUrl;
-				}
-
-				'.($this->doHighlight ? 'Tree.highlightActiveItem("web", highlightID + "_" + bank);' : '').'
-				'.(!$GLOBALS['CLIENT']['FORMSTYLE'] ? '' : 'if (linkObj) linkObj.blur(); ').'
-				return false;
-			}
-			'.($this->cMR?"jumpTo(top.fsMod.recentIds['web'],'');":'').'
-			');
-
-				// Click menu code is added:
-			$CMparts=$this->doc->getContextMenuCode();
-			$this->doc->bodyTagAdditions = $CMparts[1];
-			$this->doc->JScode.= $CMparts[0];
-			$this->doc->postCode.= $CMparts[2];
+			// If highlighting is active, define the CSS class for the active item depending on the workspace
+		if ($this->doHighlight) {
+			$hlClass = ($BE_USER->workspace === 0 ? 'active' : 'active active-ws wsver'.$BE_USER->workspace);
 		}
+
+			// Create template object:
+		$this->doc = t3lib_div::makeInstance('template');
+		$this->doc->backPath = $BACK_PATH;
+		$this->doc->setModuleTemplate('templates/alt_db_navframe.html');
+		$this->doc->docType  = 'xhtml_trans';
+
+			// get HTML-Template
+
+
+			// Adding javascript code for AJAX (prototype), drag&drop and the pagetree as well as the click menu code
+		$this->doc->getDragDropCode('pages');
+		$this->doc->getContextMenuCode();
+		$this->doc->loadJavascriptLib('contrib/scriptaculous/scriptaculous.js?load=effects');
+
+		$this->doc->JScode .= $this->doc->wrapScriptTags(
+		($this->currentSubScript?'top.currentSubScript=unescape("'.rawurlencode($this->currentSubScript).'");':'').'
+		// setting prefs for pagetree and drag & drop
+		'.($this->doHighlight ? 'Tree.highlightClass = "'.$hlClass.'";' : '').'
+
+		// Function, loading the list frame from navigation tree:
+		function jumpTo(id, linkObj, highlightID, bank)	{ //
+			var theUrl = top.TS.PATH_typo3 + top.currentSubScript ;
+			if (theUrl.indexOf("?") != -1) {
+				theUrl += "&id=" + id
+			} else {
+				theUrl += "?id=" + id		    	
+			}	
+			top.fsMod.currentBank = bank;
+
+			if (top.condensedMode) {
+				top.content.location.href = theUrl;
+			} else {
+				parent.list_frame.location.href=theUrl;
+			}
+
+			'.($this->doHighlight ? 'Tree.highlightActiveItem("web", highlightID + "_" + bank);' : '').'
+			'.(!$GLOBALS['CLIENT']['FORMSTYLE'] ? '' : 'if (linkObj) linkObj.blur(); ').'
+			return false;
+		}
+		'.($this->cMR?"jumpTo(top.fsMod.recentIds['web'],'');":'').
+
+			($this->hasFilterBox ? 'var TYPO3PageTreeFilter = new PageTreeFilter();' : '') . '
+
+		');
+
+		$this->doc->bodyTagId = 'typo3-pagetree';
 	}
 
 
@@ -187,16 +206,93 @@ class SC_alt_db_navframe {
 			// Produce browse-tree:
 		$tree = $this->pagetree->getBrowsableTree();
 
-			// Output only the tree if this is an AJAX call:
-		if ($this->ajax) {
-			$this->content = $LANG->csConvObj->utf8_encode($tree, $LANG->charSet);
-			return;
+
+			// Outputting Temporary DB mount notice:
+		if ($this->active_tempMountPoint)	{
+			$this->content.= '
+	<div class="bgColor4 c-notice">
+		<img'.t3lib_iconWorks::skinImg('','gfx/icon_note.gif','width="18" height="16"').' align="top" alt="" />'.
+		'<a href="'.htmlspecialchars(t3lib_div::linkThisScript(array('setTempDBmount' => 0))).'">'.
+		$LANG->sl('LLL:EXT:lang/locallang_core.xml:labels.temporaryDBmount',1).
+		'</a><br/>
+		'.$LANG->sl('LLL:EXT:lang/locallang_core.xml:labels.path',1).': <span title="'.htmlspecialchars($this->active_tempMountPoint['_thePathFull']).'">'.htmlspecialchars(t3lib_div::fixed_lgd_cs($this->active_tempMountPoint['_thePath'],-50)).'</span>
+	</div>
+			';
 		}
 
-			// Start page:
+			// Outputting page tree:
+		$this->content .= '<div id="PageTreeDiv">'.$tree.'</div>';
+
+			// Adding javascript for drag & drop activation and highlighting
+		$this->content .= $this->doc->wrapScriptTags('
+			'.($this->doHighlight ? 'Tree.highlightActiveItem("",top.fsMod.navFrameHighlightedID["web"]);' : '').'
+			'.(!$this->doc->isCMlayers() ? 'Tree.activateDragDrop = false;' : 'Tree.registerDragDropHandlers();')
+		);
+
+			// Setting up the buttons and markers for docheader
+		$docHeaderButtons = $this->getButtons();
+		$markers = array(
+			'IMG_RESET'     => '<img'.t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], 'gfx/close_gray.gif', ' width="16" height="16"').' id="treeFilterReset" alt="Reset Filter" />',
+			'WORKSPACEINFO' => $this->getWorkspaceInfo(),
+			'CONTENT'       => $this->content
+		);
+		$subparts = array();
+
+		if (!$this->hasFilterBox) {
+			$subparts['###SECOND_ROW###'] = '';
+		}
+			// Build the <body> for the module
 		$this->content = $this->doc->startPage('TYPO3 Page Tree');
-		
-			// Outputting workspace info
+		$this->content.= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers, $subparts);
+		$this->content.= $this->doc->endPage();
+
+		$this->content = $this->doc->insertStylesAndJS($this->content);
+	}
+
+	/**
+	 * Outputting the accumulated content to screen
+	 *
+	 * @return	void
+	 */
+	function printContent()	{
+		echo $this->content;
+	}
+
+	/**
+	 * Create the panel of buttons for submitting the form or otherwise perform operations.
+	 *
+	 * @return	array	all available buttons as an assoc. array
+	 */
+	protected function getButtons()	{
+		global $LANG;
+
+		$buttons = array(
+			'csh' => '',
+			'new_page' => '',
+			'refresh' => '',
+		);
+
+			// New Page
+		$onclickNewPageWizard = 'top.content.list_frame.location.href=top.TS.PATH_typo3+\'db_new.php?pagesOnly=1&id=\'+Tree.pageID;"';
+		$buttons['new_page'] = '<a href="#" onclick="' . $onclickNewPageWizard . '"><img' . t3lib_iconWorks::skinImg('', 'gfx/new_page.gif') . ' title="' . $LANG->sL('LLL:EXT:cms/layout/locallang.xml:newPage', 1) . '" alt="" /></a>';
+
+			// Refresh
+		$buttons['refresh'] = '<a href="' . htmlspecialchars(t3lib_div::getIndpEnv('REQUEST_URI')) . '"><img' . t3lib_iconWorks::skinImg('', 'gfx/refresh_n.gif') . ' title="' . $LANG->sL('LLL:EXT:lang/locallang_core.php:labels.refresh', 1) . '" alt="" /></a>';
+
+			// CSH
+		$buttons['csh'] = str_replace('typo3-csh-inline','typo3-csh-inline show-right',t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'pagetree', $GLOBALS['BACK_PATH'], '', TRUE));
+
+		return $buttons;
+	}
+
+	/**
+	 * Create the workspace information
+	 *
+	 * @return	string	HTML containing workspace info
+	 */
+	protected function getWorkspaceInfo() {
+		global $LANG;
+
 		if ($GLOBALS['BE_USER']->workspace!==0 || $GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.onlineWorkspaceInfo'))	{
 			switch($GLOBALS['BE_USER']->workspace)	{
 				case 0:
@@ -210,70 +306,17 @@ class SC_alt_db_navframe {
 				break;
 			}
 
-			$this->content.= '
-				<div class="bgColor4 workspace-info">'.
-					'<a href="'.htmlspecialchars('mod/user/ws/index.php').'" target="content">'.
+			$workspaceInfo = '
+				<div class="bgColor4 workspace-info">
+					<a href="'.htmlspecialchars('mod/user/ws/index.php').'" target="content">'.
 					'<img'.t3lib_iconWorks::skinImg('','gfx/i/sys_workspace.png','width="18" height="16"').' align="top" alt="" />'.
 					'</a>'.$wsTitle.'
 				</div>
 			';
 		}
 
-			// Outputting Temporary DB mount notice:
-		if ($this->active_tempMountPoint)	{
-			$this->content.= '
-				<div class="bgColor4 c-notice">
-					<img'.t3lib_iconWorks::skinImg('','gfx/icon_note.gif','width="18" height="16"').' align="top" alt="" />'.
-					'<a href="'.htmlspecialchars(t3lib_div::linkThisScript(array('setTempDBmount' => 0))).'">'.
-					$LANG->sl('LLL:EXT:lang/locallang_core.php:labels.temporaryDBmount',1).
-					'</a><br/>
-					'.$LANG->sl('LLL:EXT:lang/locallang_core.php:labels.path',1).': <span title="'.htmlspecialchars($this->active_tempMountPoint['_thePathFull']).'">'.htmlspecialchars(t3lib_div::fixed_lgd_cs($this->active_tempMountPoint['_thePath'],-50)).'</span>
-				</div>
-			';
-		}
-
-			// Outputting page tree:
-		$this->content.= $tree;
-
-			// Outputting refresh-link
-		$this->content.= '
-			<p class="c-refresh">
-				<a href="'.htmlspecialchars(t3lib_div::getIndpEnv('REQUEST_URI')).'">'.
-				'<img'.t3lib_iconWorks::skinImg('','gfx/refresh_n.gif','width="14" height="14"').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.refresh',1).'" alt="" />'.
-				$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.refresh',1).'</a>
-			</p>
-			<br />';
-
-			// CSH icon:
-		$this->content.= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'pagetree', $GLOBALS['BACK_PATH']);
-
-			// Adding javascript for drag & drop activation and highlighting
-		$this->content .=$this->doc->wrapScriptTags('
-			'.($this->doHighlight ? 'Tree.highlightActiveItem("",top.fsMod.navFrameHighlightedID["web"]);' : '').'
-			'.(!$this->doc->isCMlayers() ? 'Tree.activateDragDrop = false;' : 'Tree.registerDragDropHandlers();')
-		);
+		return $workspaceInfo;
 	}
-
-	/**
-	 * Outputting the accumulated content to screen
-	 *
-	 * @return	void
-	 */
-	function printContent()	{
-			// If we handle an AJAX call, send headers:
-		if ($this->ajax) {
-			header('X-JSON: ('.($this->pagetree->ajaxStatus?'true':'false').')');
-			header('Content-type: text/html; charset=utf-8');
-			// If it's the regular call to fully output the tree:
-		} else {
-			$this->content.= $this->doc->endPage();
-			$this->content = $this->doc->insertStylesAndJS($this->content);
-		}
-		echo $this->content;
-	}
-
-
-
 
 
 	/**********************************
@@ -323,10 +366,34 @@ class SC_alt_db_navframe {
 	 * @return	void
 	 */
 	function settingTemporaryMountPoint($pageId)	{
-		global $BE_USER;
+		$GLOBALS['BE_USER']->setAndSaveSessionData('pageTree_temporaryMountPoint',intval($pageId));
+	}
 
-			// Setting temporary mount point ID:
-		$BE_USER->setAndSaveSessionData('pageTree_temporaryMountPoint',intval($pageId));
+
+	/**********************************
+	 *
+	 * AJAX Calls
+	 *
+	 **********************************/
+
+	/**
+	 * Makes the AJAX call to expand or collapse the pagetree.
+	 * Called by typo3/ajax.php
+	 *
+	 * @param	array		$params: additional parameters (not used here)
+	 * @param	TYPO3AJAX	&$ajaxObj: reference of the TYPO3AJAX object of this request
+	 * @return	void
+	 */
+	public function ajaxExpandCollapse($params, &$ajaxObj) {
+		global $LANG;
+
+		$this->init();
+		$tree = $this->pagetree->getBrowsableTree();
+		if (!$this->pagetree->ajaxStatus) {
+			$ajaxObj->setError($tree);
+		} else	{
+			$ajaxObj->addContent('tree', $tree);
+		}
 	}
 }
 
@@ -337,13 +404,13 @@ if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_d
 }
 
 
-
-
-
-// Make instance:
-$SOBE = t3lib_div::makeInstance('SC_alt_db_navframe');
-$SOBE->init();
-$SOBE->main();
-$SOBE->printContent();
+// Make instance if it is not an AJAX call
+if (!(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_AJAX)) {
+	$SOBE = t3lib_div::makeInstance('SC_alt_db_navframe');
+	$SOBE->init();
+	$SOBE->initPage();
+	$SOBE->main();
+	$SOBE->printContent();
+}
 
 ?>

@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2004, 2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
-*  (c) 2004, 2005 Karsten Dambekalns (karsten@typo3.org)
+*  (c) 2004-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2004-2008 Karsten Dambekalns (karsten@typo3.org)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -303,7 +303,8 @@ updateQryForm(\''.$input['QUERY'].'\');
 			$GLOBALS['TYPO3_DB']->cacheFieldInfo();
 		}
 
-		$out = '<table border="1" cellspacing="0"><caption>auto_increment</caption><tbody><tr><th>Table</th><th>Field</th></tr>';
+		$out = '<a name="autoincrement"></a><h2>auto_increment</h2>';
+		$out .= '<table border="1" cellspacing="0"><tbody><tr><th>Table</th><th>Field</th></tr>';
 		ksort($GLOBALS['TYPO3_DB']->cache_autoIncFields);
 		foreach($GLOBALS['TYPO3_DB']->cache_autoIncFields as $table => $field) {
 			$out .= '<tr>';
@@ -312,8 +313,10 @@ updateQryForm(\''.$input['QUERY'].'\');
 			$out .= '</tr>';
 		}
 		$out .= '</tbody></table>';
+
 		$out .= $this->doc->spacer(5);
-		$out .= '<table border="1" cellspacing="0"><caption>Primary keys</caption><tbody><tr><th>Table</th><th>Field(s)</th></tr>';
+		$out .= '<a name="primarykeys"></a><h2>Primary keys</h2>';
+		$out .= '<table border="1" cellspacing="0"><tbody><tr><th>Table</th><th>Field(s)</th></tr>';
 		ksort($GLOBALS['TYPO3_DB']->cache_primaryKeys);
 		foreach($GLOBALS['TYPO3_DB']->cache_primaryKeys as $table => $field) {
 			$out .= '<tr>';
@@ -322,23 +325,50 @@ updateQryForm(\''.$input['QUERY'].'\');
 			$out .= '</tr>';
 		}
 		$out .= '</tbody></table>';
+
 		$out .= $this->doc->spacer(5);
-		$out .= '<table border="1" cellspacing="0"><caption>Field types</caption><tbody><tr><th colspan="4">Table</th></tr><tr><th>Field</th><th>Type</th><th>Metatype</th><th>NOT NULL</th></th></tr>';
+		$out .= '<a name="fieldtypes"></a><h2>Field types</h2>';
+		$out .= '<table border="1" cellspacing="0"><tbody><tr><th colspan="5">Table</th></tr><tr><th>Field</th><th>Type</th><th><a href="#metatypes">Metatype</a></th><th>NOT NULL</th><th>Default</th></th></tr>';
 		ksort($GLOBALS['TYPO3_DB']->cache_fieldType);
 		foreach($GLOBALS['TYPO3_DB']->cache_fieldType as $table => $fields) {
-			$out .= '<th colspan="4">'.$table.'</th>';
+			$out .= '<th colspan="5">'.$table.'</th>';
 			foreach($fields as $field => $data) {
 				$out .= '<tr>';
 				$out .= '<td>'.$field.'</td>';
 				$out .= '<td>'.$data['type'].'</td>';
 				$out .= '<td>'.$data['metaType'].'</td>';
-				$out .= '<td>'.$data['notnull'].'</td>';
+				$out .= '<td>'.($data['notnull']?'NOT NULL':'').'</td>';
+				$out .= '<td>'.$data['default'].'</td>';
 				$out .= '</tr>';
 			}
 		}
 		$out .= '</tbody></table>';
 
+		$out .= $this->doc->spacer(5);
+		$out .= '<a name="metatypes"></a><h2>Metatype explanation</h2>';
+		$out .= '<pre>
+  C:  Varchar, capped to 255 characters.
+  X:  Larger varchar, capped to 4000 characters (to be compatible with Oracle).
+  XL: For Oracle, returns CLOB, otherwise the largest varchar size.
+
+  C2: Multibyte varchar
+  X2: Multibyte varchar (largest size)
+
+  B:  BLOB (binary large object)
+
+  D:  Date (some databases do not support this, and we return a datetime type)
+  T:  Datetime or Timestamp
+  L:  Integer field suitable for storing booleans (0 or 1)
+  I:  Integer (mapped to I4)
+  I1: 1-byte integer
+  I2: 2-byte integer
+  I4: 4-byte integer
+  I8: 8-byte integer
+  F:  Floating point number
+  N:  Numeric or decimal number</pre>';
+
 		$menu = '<a href="index.php?cmd=clear">CLEAR DATA</a><hr />';
+		$menu .= '<a href="#autoincrement">auto_increment</a> | <a href="#primarykeys">Primary keys</a> | <a href="#fieldtypes">Field types</a> | <a href="#metatypes">Metatype explanation</a><hr />';
 
 		return $menu.$out;
 	}
@@ -496,7 +526,7 @@ updateQryForm(\''.$input['QUERY'].'\');
 				$specTime = t3lib_div::_GP('specTime');
 
 				if ($specTime)	{
-					$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*','tx_dbal_debuglog','tstamp='.intval($specTime));
+					$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('exec_time,errorFlag,table_join,serdata,query','tx_dbal_debuglog','tstamp='.(int)$specTime);
 					$tRows = array();
 					$tRows[] = '
 						<tr>
@@ -506,7 +536,7 @@ updateQryForm(\''.$input['QUERY'].'\');
 							<td>Data</td>
 							<td>Query</td>
 						</tr>';
-					while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
+					while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
 						$tRows[] = '
 							<tr>
 								<td>'.htmlspecialchars($row['exec_time']).'</td>

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2001-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -192,9 +192,26 @@ class tx_indexedsearch_indexer {
 	var $freqMax = 0.1;
 
 		// Objects:
-	var $csObj;				// Charset class object , t3lib_cs
-	var $metaphoneObj;		// Metaphone object, if any
-	var $lexerObj;			// Lexer object for word splitting
+	/**
+	 * Charset class object
+	 *
+	 * @var t3lib_cs
+	 */
+	var $csObj;
+
+	/**
+	 * Metaphone object, if any
+	 *
+	 * @var user_DoubleMetaPhone
+	 */
+	var $metaphoneObj;
+
+	/**
+	 * Lexer object for word splitting
+	 *
+	 * @var tx_indexedsearch_lexer
+	 */
+	var $lexerObj;
 
 
 
@@ -263,6 +280,7 @@ class tx_indexedsearch_indexer {
 								// Configuration of behavior:
 							$this->conf['index_externals'] = $pObj->config['config']['index_externals'];	// Whether to index external documents like PDF, DOC etc. (if possible)
 							$this->conf['index_descrLgd'] = $pObj->config['config']['index_descrLgd'];		// Length of description text (max 250, default 200)
+							$this->conf['index_metatags'] = isset($pObj->config['config']['index_metatags']) ? $pObj->config['config']['index_metatags'] : true;
 
 								// Set to zero:
 							$this->conf['recordUid'] = 0;
@@ -332,6 +350,7 @@ class tx_indexedsearch_indexer {
 			// Configuration of behavior:
 		$this->conf['index_externals'] = 1;	// Whether to index external documents like PDF, DOC etc. (if possible)
 		$this->conf['index_descrLgd'] = 200;		// Length of description text (max 250, default 200)
+		$this->conf['index_metatags'] = true;	// Whether to index document keywords and description (if present)
 
 			// Init and start indexing:
 		$this->init();
@@ -606,11 +625,13 @@ class tx_indexedsearch_indexer {
 		$contentArr['title'] = trim(isset($titleParts[1]) ? $titleParts[1] : $titleParts[0]);
 
 			// get keywords and description metatags
-		for($i=0;$this->embracingTags($headPart,'meta',$dummy,$headPart,$meta[$i]);$i++) { /*nothing*/ }
-		for($i=0;isset($meta[$i]);$i++) {
-			$meta[$i] = t3lib_div::get_tag_attributes($meta[$i]);
-			if(stristr($meta[$i]['name'],'keywords')) $contentArr['keywords'].=','.$meta[$i]['content'];
-			if(stristr($meta[$i]['name'],'description')) $contentArr['description'].=','.$meta[$i]['content'];
+		if($this->conf['index_metatags']) {
+			for($i=0;$this->embracingTags($headPart,'meta',$dummy,$headPart,$meta[$i]);$i++) { /*nothing*/ }
+			for($i=0;isset($meta[$i]);$i++) {
+				$meta[$i] = t3lib_div::get_tag_attributes($meta[$i]);
+				if(stristr($meta[$i]['name'],'keywords')) $contentArr['keywords'].=','.$meta[$i]['content'];
+				if(stristr($meta[$i]['name'],'description')) $contentArr['description'].=','.$meta[$i]['content'];
+			}
 		}
 
 			// Process <!--TYPO3SEARCH_begin--> or <!--TYPO3SEARCH_end--> tags:

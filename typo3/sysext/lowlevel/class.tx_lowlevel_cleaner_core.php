@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -26,6 +26,8 @@
 ***************************************************************/
 /**
  * Core functions for cleaning and analysing
+ *
+ * $Id: class.tx_lowlevel_cleaner_core.php 3439 2008-03-16 19:16:51Z flyguide $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
@@ -96,7 +98,7 @@ class tx_lowlevel_cleaner_core extends t3lib_cli {
 		$this->cli_options[] = array('-r', 'Execute this tool, otherwise help is shown');
 		$this->cli_options[] = array('-v level', 'Verbosity level 0-3', "The value of level can be:\n  0 = all output\n  1 = info and greater (default)\n  2 = warnings and greater\n  3 = errors");
 		$this->cli_options[] = array('--refindex mode', 'Mode for reference index handling for operations that require a clean reference index ("update"/"ignore")', 'Options are "check" (default), "update" and "ignore". By default, the reference index is checked before running analysis that require a clean index. If the check fails, the analysis is not run. You can choose to bypass this completely (using value "ignore") or ask to have the index updated right away before the analysis (using value "update")');
-		$this->cli_options[] = array('--AUTOFIX', 'Repairs errors that can be automatically fixed.', 'Only add this option after having run the test without it so you know what will happen when you add this option!');
+		$this->cli_options[] = array('--AUTOFIX [testName]', 'Repairs errors that can be automatically fixed.', 'Only add this option after having run the test without it so you know what will happen when you add this option! The optional parameter "[testName]" works for some tool keys to limit the fixing to a particular test.');
 		$this->cli_options[] = array('--dryrun', 'With --AUTOFIX it will only simulate a repair process','You may like to use this to see what the --AUTOFIX option will be doing. It will output the whole process like if a fix really occurred but nothing is in fact happening');
 		$this->cli_options[] = array('--YES', 'Implicit YES to all questions','Use this with EXTREME care. The option "-i" is not affected by this option.');
 		$this->cli_options[] = array('-i', 'Interactive','Will ask you before running the AUTOFIX on each element.');
@@ -350,6 +352,14 @@ class tx_lowlevel_cleaner_core extends t3lib_cli {
 
 			// Start traversal:
 		$this->genTree_traverse($rootID,$depth,$echoLevel,$callBack);
+
+			// Sort recStats (for diff'able displays)
+		foreach($this->recStats as $kk => $vv)	{
+			foreach($this->recStats[$kk] as $tables => $recArrays)	{
+				ksort($this->recStats[$kk][$tables]);
+			}
+			ksort($this->recStats[$kk]);
+		}
 
 		if ($echoLevel>0)	echo chr(10).chr(10);
 	}

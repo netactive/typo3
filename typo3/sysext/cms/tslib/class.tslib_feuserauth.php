@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Front End session user. Login and session data
  * Included from index_ts.php
  *
- * $Id: class.tslib_feuserauth.php 4847 2009-01-24 14:52:48Z ingmars $
+ * $Id: class.tslib_feuserauth.php 5107 2009-02-28 19:43:17Z benni $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -162,7 +162,7 @@ class tslib_feUserAuth extends t3lib_userAuth {
 	}
 
 	/**
-	 * Determins whether a session cookie needs to be set (lifetime=0)
+	 * Determine whether a session cookie needs to be set (lifetime=0)
 	 *
 	 * @return	boolean
 	 * @internal
@@ -173,7 +173,7 @@ class tslib_feUserAuth extends t3lib_userAuth {
 	}
 
 	/**
-	 * Determins whether a non-session cookie needs to be set (lifetime>0)
+	 * Determine whether a non-session cookie needs to be set (lifetime>0)
 	 *
 	 * @return	boolean
 	 * @internal
@@ -235,7 +235,13 @@ class tslib_feUserAuth extends t3lib_userAuth {
 			// get the info data for auth services
 		$authInfo = $this->getAuthInfoArray();
 
-		if ($this->writeDevLog) 	t3lib_div::devLog('Get usergroups for user: '.t3lib_div::arrayToLogString($this->user, array($this->userid_column,$this->username_column)), 'tslib_feUserAuth');
+		if ($this->writeDevLog) 	{
+			if (is_array($this->user))	{
+				t3lib_div::devLog('Get usergroups for user: '.t3lib_div::arrayToLogString($this->user, array($this->userid_column,$this->username_column)), 'tslib_feUserAuth');
+			} else {
+				t3lib_div::devLog('Get usergroups for "anonymous" user', 'tslib_feUserAuth');
+			}
+		}
 
 		$groupDataArr = array();
 
@@ -355,7 +361,7 @@ class tslib_feUserAuth extends t3lib_userAuth {
 	 * @see storeSessionData()
 	 */
 	function fetchSessionData()	{
-			// Gets SesData (if any) if not already selected by session fixation check in ->isExistingSessionRecord()
+			// Gets SesData if any AND if not already selected by session fixation check in ->isExistingSessionRecord()
 		if ($this->id && !count($this->sesData)) {
 			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'fe_session_data', 'hash='.$GLOBALS['TYPO3_DB']->fullQuoteStr($this->id, 'fe_session_data'));
 			if ($sesDataRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres))	{
@@ -458,7 +464,7 @@ class tslib_feUserAuth extends t3lib_userAuth {
 			// Storing value ONLY if there is a confirmed cookie set (->cookieID), otherwise a shellscript could easily be spamming the fe_sessions table with bogus content and thus bloat the database
 		if (!$maxSizeOfSessionData || $this->cookieId===$this->id)	{
 			if ($recs['clear_all'])	{
-				$this->setKey('ses','recs','');
+				$this->setKey('ses', 'recs', array());
 			}
 			$change=0;
 			$recs_array=$this->getKey('ses','recs');
@@ -479,7 +485,6 @@ class tslib_feUserAuth extends t3lib_userAuth {
 			}
 		}
 	}
-
 
 	/**
 	 * Determine whether there's an according session record to a given session_id
@@ -526,7 +531,6 @@ class tslib_feUserAuth extends t3lib_userAuth {
 
 		return $count;
 	}
-
 }
 
 

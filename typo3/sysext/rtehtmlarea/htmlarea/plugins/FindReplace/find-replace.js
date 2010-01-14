@@ -2,7 +2,7 @@
 *  Copyright notice
 *
 *  (c) 2004 Cau guanabara <caugb@ibest.com.br>
-*  (c) 2005, 2006 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 2005-2008 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,51 +30,93 @@
 /*
  * Find and Replace Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 CVS ID: $Id: find-replace.js 1421 2006-04-10 09:27:15Z stucki $
+ * TYPO3 SVN ID: $Id: find-replace.js 5037 2009-02-19 18:36:11Z stan $
  */
+FindReplace = HTMLArea.Plugin.extend({
 
-FindReplace = function(editor) {
-	this.editor = editor;
-	var cfg = editor.config;
-	var actionHandlerFunctRef = FindReplace.actionHandler(this);
+	constructor : function(editor, pluginName) {
+		this.base(editor, pluginName);
+	},
 
-	cfg.registerButton("FindReplace",
-		FindReplace_langArray["Find and Replace"],
-		editor.imgURL("ed_find.gif", "FindReplace"),
-		false,
-		actionHandlerFunctRef
-	);
-	
-	this.popupWidth = 455;
-	this.popupHeight = 235;
-};
+	/*
+	 * This function gets called by the class constructor
+	 */
+	configurePlugin : function(editor) {
 
-FindReplace.I18N = FindReplace_langArray;
+		/*
+		 * Registering plugin "About" information
+		 */
+		var pluginInformation = {
+			version		: "1.2",
+			developer	: "Cau Guanabara & Stanislas Rolland",
+			developerUrl	: "mailto:caugb@ibest.com.br",
+			copyrightOwner	: "Cau Guanabara & Stanislas Rolland",
+			sponsor		: "Independent production & Fructifor Inc.",
+			sponsorUrl	: "http://www.netflash.com.br/gb/HA3-rc1/examples/find-replace.html",
+			license		: "GPL"
+		};
+		this.registerPluginInformation(pluginInformation);
 
-FindReplace.actionHandler = function(instance) {
-	return (function(editor) {
-		instance.buttonPress(editor);
-	});
-};
+		/*
+		 * Registering the button
+		 */
+		var buttonId = "FindReplace";
+		var buttonConfiguration = {
+			id		: buttonId,
+			tooltip		: this.localize("Find and Replace"),
+			action		: "onButtonPress",
+			dialog		: true
+		};
+		this.registerButton(buttonConfiguration);
 
-FindReplace.prototype.buttonPress = function(editor) { 
-	FindReplace.editor = editor;
-	var sel = editor.getSelectedHTML(), param = null;
-	if (/\w/.test(sel)) {
-		sel = sel.replace(/<[^>]*>/g,"");
-		sel = sel.replace(/&nbsp;/g,"");
+		this.popupWidth = 420;
+		this.popupHeight = 360;
+
+		return true;
+	},
+
+	/*
+	 * This function gets called when the button was pressed.
+	 *
+	 * @param	object		editor: the editor instance
+	 * @param	string		id: the button id or the key
+	 *
+	 * @return	boolean		false if action is completed
+	 */
+	onButtonPress : function (editor, id, target) {
+			// Could be a button or its hotkey
+		var buttonId = this.translateHotKey(id);
+		buttonId = buttonId ? buttonId : id;
+
+		var sel = this.editor.getSelectedHTML(), param = null;
+		if (/\w/.test(sel)) {
+			sel = sel.replace(/<[^>]*>/g,"");
+			sel = sel.replace(/&nbsp;/g,"");
+		}
+		if (/\w/.test(sel)) {
+			param = { fr_pattern: sel };
+		}
+
+		this.dialog = this.openDialog("FindReplace", this.makeUrlFromPopupName("find_replace"), null, param, {width:this.popupWidth, height:this.popupHeight});
+		if (HTMLArea.is_opera) {
+			this.cleanUpFunctionReference = this.makeFunctionReference("cleanUp");
+			this.editor._iframe.contentWindow.setTimeout(this.cleanUpFunctionReference, 200);
+		}
+		return false;
+	},
+
+	/*
+	 * This function cleans up any span tag left by Opera if the window was closed with the close handle in which case the unload event is not fired by Opera
+	 *
+	 * @return	void
+	 */
+	cleanUp : function () {
+		if (this.dialog && (!this.dialog.dialogWindow || (this.dialog.dialogWindow && this.dialog.dialogWindow.closed))) {
+			var er = /(<span\s+[^>]*id=.?frmark[^>]*>)([^<>]*)(<\/span>)/gi;
+			this.editor._doc.body.innerHTML = this.editor._doc.body.innerHTML.replace(er,"$2");
+			this.dialog.close();
+		} else {
+			this.editor._iframe.contentWindow.setTimeout(this.cleanUpFunctionReference, 200);
+		}
 	}
-	if (/\w/.test(sel)) param = { fr_pattern: sel };
-	editor._popupDialog("plugin://FindReplace/find_replace", null, param, this.popupWidth, this.popupHeight);
-};
-
-FindReplace._pluginInfo = {
-  name          : "FindReplace",
-  version       : "1.1",
-  developer     : "Cau Guanabara & Stanislas Rolland",
-  developer_url : "mailto:caugb@ibest.com.br",
-  c_owner       : "Cau Guanabara & Stanislas Rolland",
-  sponsor       : "Independent production & Fructifor Inc.",
-  sponsor_url   : "http://www.netflash.com.br/gb/HA3-rc1/examples/find-replace.html",
-  license       : "GPL"
-};
+});

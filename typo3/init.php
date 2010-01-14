@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2007 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -49,13 +49,18 @@
  * For a detailed description of this script, the scope of constants and variables in it,
  * please refer to the document "Inside TYPO3"
  *
- * $Id: init.php 4600 2008-12-23 17:21:07Z dmitry $
+ * $Id: init.php 5517 2009-05-30 22:04:47Z lolli $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  */
+
+// *******************************
+// Checking PHP version
+// *******************************
+if (version_compare(phpversion(), '5.1', '<'))	die ('TYPO3 requires PHP 5.1.0 or higher.');
 
 
 // *******************************
@@ -238,16 +243,24 @@ if (trim($TYPO3_CONF_VARS['BE']['IPmaskList']) && !(defined('TYPO3_cliMode') && 
 // Check SSL (https)
 // **********************
 if (intval($TYPO3_CONF_VARS['BE']['lockSSL']) && !(defined('TYPO3_cliMode') && TYPO3_cliMode))	{
+	if(intval($TYPO3_CONF_VARS['BE']['lockSSLPort'])) {
+		$sslPortSuffix = ':'.intval($TYPO3_CONF_VARS['BE']['lockSSLPort']);
+	} else {
+		$sslPortSuffix = '';
+	}
 	if ($TYPO3_CONF_VARS['BE']['lockSSL'] == 3)	{
 		$requestStr = substr(t3lib_div::getIndpEnv('TYPO3_REQUEST_SCRIPT'), strlen(t3lib_div::getIndpEnv('TYPO3_SITE_URL').TYPO3_mainDir));
 		if($requestStr == 'index.php' && !t3lib_div::getIndpEnv('TYPO3_SSL'))	{
 			list(,$url) = explode('://',t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'),2);
-			header('Location: https://'.$url);
+			list($server,$address) = explode('/',$url,2);
+			header('Location: https://'.$server.$sslPortSuffix.'/'.$address);
+			exit;
 		}
 	} elseif (!t3lib_div::getIndpEnv('TYPO3_SSL') )	{
 		if ($TYPO3_CONF_VARS['BE']['lockSSL'] == 2)	{
 			list(,$url) = explode('://',t3lib_div::getIndpEnv('TYPO3_SITE_URL').TYPO3_mainDir,2);
-			header('Location: https://'.$url);	// Just point us away from here...
+			list($server,$address) = explode('/',$url,2);
+			header('Location: https://'.$server.$sslPortSuffix.'/'.$address);
 		} else {
 			header('Status: 404 Not Found');	// Send Not Found header - if the webserver can make use of it...
 			header('Location: http://');	// Just point us away from here...
@@ -260,7 +273,6 @@ if (intval($TYPO3_CONF_VARS['BE']['lockSSL']) && !(defined('TYPO3_cliMode') && T
 // *******************************
 // Checking environment
 // *******************************
-if (t3lib_div::int_from_ver(phpversion())<4003000)	die ('TYPO3 requires PHP 4.3.0 or higher.');
 if (isset($_POST['GLOBALS']) || isset($_GET['GLOBALS']))	die('You cannot set the GLOBALS-array from outside the script.');
 if (!get_magic_quotes_gpc())	{
 	t3lib_div::addSlashesOnArray($_GET);
@@ -274,7 +286,9 @@ if (!get_magic_quotes_gpc())	{
 // Check if the install script should be run:
 // ********************************************
 if (defined('TYPO3_enterInstallScript') && TYPO3_enterInstallScript)	{
-	if (!t3lib_extMgm::isLoaded('install'))	die('Install Tool is not loaded as an extension.<br/>You must add the key "install" to the list of installed extensions in typo3conf/localconf.php, $TYPO3_CONF_VARS["EXT"]["extList"].');
+	if(!t3lib_extMgm::isLoaded('install')) {
+		die('Install Tool is not loaded as an extension.<br/>You must add the key "install" to the list of installed extensions in typo3conf/localconf.php, $TYPO3_CONF_VARS[\'EXT\'][\'extList\'].');
+	}
 
 	require_once(t3lib_extMgm::extPath('install').'mod/class.tx_install.php');
 	$install_check = t3lib_div::makeInstance('tx_install');

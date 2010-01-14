@@ -10,6 +10,8 @@
 @import "typo3-index-php.css";
 @import "typo3-tree.css";
 @import "ext-cms-layout-db-layout-php.css";
+@import "typo3-file-list.css";
+@import "typo3-csh.css";
 @import "typo3-workspaces.css";
 
 /***************************************************************
@@ -46,47 +48,70 @@ a {
 	color: #212424;
 	background-color: transparent;
 	text-decoration: none;
-	}
+}
 
 a:hover {
 	color: #000000;
 	background-color: transparent;
-	}
+}
+
+a.typo3-goBack {
+	background: none;
+	background-color: transparent;
+}
 
 select, textarea, input, td, body, .defstyle, p, div {
 	color: #212424;
-	}
+}
 
-select, textarea, input {
+textarea, input {
 	border-top: 1px solid #838EA0;
 	border-left: 1px solid #838EA0;
 	border-right: 1px solid #545861;
 	border-bottom: 1px solid #545861;
 	background-color: #FEFEFE;
-	}
+}
 
-select:hover, textarea:hover, input:hover {
+textarea:hover, input:hover {
 	border-top: 1px solid #AAAAAA;
 	border-left: 1px solid #AAAAAA;
 	border-right: 1px solid #888888;
 	border-bottom: 1px solid #888888;
-	background-color: #FFFFFF;
-	}
+}
 
 textarea:focus, input:focus {
 	border-top: 1px solid #999999;
 	border-left: 1px solid #999999;
 	border-right: 1px solid #777777;
 	border-bottom: 1px solid #777777;
-	background-color: #FFFFFF;
-	}
-
-.checkbox,
-.checkbox:hover {
-	border: 0;
 }
 
+.checkbox,
+.checkbox:hover,
+input[type="checkbox"] {
+	border: none;
+	background: none;
+}
 
+.checkbox,
+.radio,
+.checkbox:hover {
+	width: 13px;
+	height: 13px;
+	overflow: hidden;
+	vertical-align: middle;
+	margin-right: 5px;
+}
+
+.alignToInputText, .alignToInputText:hover {
+	vertical-align: top;
+	margin-top: 5px;
+	margin-right: 2px;
+}
+
+label {
+	vertical-align: middle;
+}
 
 /* PAGE HEADERS: */
 
@@ -97,24 +122,24 @@ h1, h2, h3, h4 {
 /* Occasionally used, eg. in About Modules: */
 h1 {
 	background-color: #EFEFF4;
-	}
+}
 
 /* MAIN page header: */
 h2 {
 	background-color: #EFEFF4;
 	text-align: left;
 	font-size: 12px;
-	}
+}
 
 /* Normal section headers */
 h3 {
 	background-color: #EFEFF4;
-	}
+}
 
 /* Discrete section headers (no background) */
 h4 {
 	background-color: #EFEFF4;
-	}
+}
 
 /* END PAGE HEADERS: */
 

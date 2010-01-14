@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  * Used from TCEFORMS an other elements
  * In other words: This is the ELEMENT BROWSER!
  *
- * $Id: browse_links.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: browse_links.php 4152 2008-09-19 05:17:01Z stan $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -89,17 +89,22 @@ class SC_browse_links {
 	 * @see main()
 	 */
 	var $mode;
-	
+
 	/**
 	 * holds Instance of main browse_links class
-	 * needed fo intercommunication between various classes that need access to variables via $GLOBALS['SOBE'] 
+	 * needed fo intercommunication between various classes that need access to variables via $GLOBALS['SOBE']
 	 * Not the most nice solution but introduced since we don't have another general way to return class-instances or registry for now
 	 *
 	 * @var browse_links
 	 */
-	
 	var $browser;
 
+	/**
+	 * document template object
+	 *
+	 * @var template
+	 */
+	var $doc;
 
 	/**
 	 * not really needed but for backwards compatibility ...
@@ -128,18 +133,44 @@ class SC_browse_links {
 	 * @return	void
 	 */
 	function main()	{
-		global $BE_USER, $BACK_PATH;
 
 		$this->content = '';
 
+			// look for alternativ mountpoints
+		switch((string)$this->mode)	{
+			case 'rte':
+			case 'db':
+			case 'wizard':
+					// Setting alternative browsing mounts (ONLY local to browse_links.php this script so they stay "read-only")
+				$altMountPoints = trim($GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.altElementBrowserMountPoints'));
+				if ($altMountPoints) {
+					$GLOBALS['BE_USER']->groupData['webmounts'] = implode(',', array_unique(t3lib_div::intExplode(',', $altMountPoints)));
+					$GLOBALS['WEBMOUNTS'] = $GLOBALS['BE_USER']->returnWebmounts();
+				}
+			case 'file':
+			case 'filedrag':
+			case 'folder':
+					// Setting additional read-only browsing file mounts
+				$altMountPoints = trim($GLOBALS['BE_USER']->getTSConfigVal('options.folderTree.altElementBrowserMountPoints'));
+				if ($altMountPoints) {
+					$altMountPoints = t3lib_div::trimExplode(',', $altMountPoints);
+					foreach($altMountPoints as $filePathRelativeToFileadmindir)	{
+						$GLOBALS['BE_USER']->addFileMount('', $filePathRelativeToFileadmindir, $filePathRelativeToFileadmindir, 1, 'readonly');
+					}
+					$GLOBALS['FILEMOUNTS'] = $GLOBALS['BE_USER']->returnFilemounts();
+				}
+				break;
+		}
+			
+			
 			// render type by user func
 		$browserRendered = false;
 		if (is_array ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/browse_links.php']['browserRendering'])) {
 			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/browse_links.php']['browserRendering'] as $classRef) {
 				$browserRenderObj = t3lib_div::getUserObj($classRef);
-				if(is_object($browserRenderObj) && method_exists($browserRenderObj, 'isValid') && method_exists($browserRenderObj, 'render'))	{
+				if (is_object($browserRenderObj) && method_exists($browserRenderObj, 'isValid') && method_exists($browserRenderObj, 'render')) {
 					if ($browserRenderObj->isValid($this->mode, $this)) {
-						$this->content .=  $browserRenderObj->render($this->mode, $this);
+						$this->content.= $browserRenderObj->render($this->mode, $this);
 						$browserRendered = true;
 						break;
 					}
@@ -149,13 +180,11 @@ class SC_browse_links {
 
 			// if type was not rendered use default rendering functions
 		if(!$browserRendered) {
-
 			$this->browser = t3lib_div::makeInstance('browse_links');
 			$this->browser->init();
-
-			$modData = $BE_USER->getModuleData('browse_links.php','ses');
+			$modData = $GLOBALS['BE_USER']->getModuleData('browse_links.php', 'ses');
 			list($modData, $store) = $this->browser->processSessionData($modData);
-			$BE_USER->pushModuleData('browse_links.php',$modData);
+			$GLOBALS['BE_USER']->pushModuleData('browse_links.php', $modData);
 
 				// Output the correct content according to $this->mode
 			switch((string)$this->mode)	{
@@ -168,6 +197,9 @@ class SC_browse_links {
 				case 'file':
 				case 'filedrag':
 					$this->content = $this->browser->main_file();
+				break;
+				case 'folder':
+					$this->content = $this->browser->main_folder();
 				break;
 				case 'wizard':
 					$this->content = $this->browser->main_rte(1);

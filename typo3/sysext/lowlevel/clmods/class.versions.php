@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -67,7 +67,7 @@ class tx_lowlevel_versions extends tx_lowlevel_cleaner_core {
 		$this->cli_options[] = array('--echotree level', 'When "level" is set to 1 or higher you will see the page of the page tree outputted as it is traversed. A value of 2 for "level" will show even more information.');
 		$this->cli_options[] = array('--pid id', 'Setting start page in page tree. Default is the page tree root, 0 (zero)');
 		$this->cli_options[] = array('--depth int', 'Setting traversal depth. 0 (zero) will only analyse start page (see --pid), 1 will traverse one level of subpages etc.');
-		
+
 		$this->cli_options[] = array('--flush-live', 'If set, not only published versions from Live workspace are flushed, but ALL versions from Live workspace (which are offline of course)');
 
 		$this->cli_help['name'] = 'versions -- To find information about versions and workspaces in the system';
@@ -102,7 +102,10 @@ Automatic Repair:
 				'versions_liveWS' => array('All versions in Live workspace','This is all records that are offline versions in the Live workspace. You may wish to flush these if you only use workspaces for versioning since then you might find lots of versions piling up in the live workspace which have simply been disconnected from the workspace before they were published.',1),
 				'versions_lost_workspace' => array('Versions outside a workspace','Versions that has lost their connection to a workspace in TYPO3.',3),
 				'versions_inside_versioned_page' => array('Versions in versions','Versions inside an already versioned page. Something that is confusing to users and therefore should not happen but is technically possible.',2),
-				'versions_unused_placeholders' => array('Unused placeholder records','Placeholder records which are not used anymore by offline versions.',2)
+				'versions_unused_placeholders' => array('Unused placeholder records','Placeholder records which are not used anymore by offline versions.',2),
+				'versions_move_placeholders_ok' => array('Move placeholders','Move-to placeholder records which has good integrity',0),
+				'versions_move_placeholders_bad' => array('Move placeholders with bad integrity','Move-to placeholder records which has bad integrity',2),
+				'versions_move_id_check' => array('Checking if t3ver_move_id is correct','t3ver_move_id must only be set with online records having t3ver_state=3.',2),
 			),
 			'versions' => array(),
 		);
@@ -118,13 +121,71 @@ Automatic Repair:
 		$resultArray['versions_inside_versioned_page'] = $this->recStats['versions_inside_versioned_page'];
 
 			// Finding all placeholders with no records attached!
-		$resultArray['versions_unused_placeholders'] = array(); 
+		$resultArray['versions_unused_placeholders'] = array();
 		foreach($GLOBALS['TCA'] as $table => $cfg)	{
 			if ($cfg['ctrl']['versioningWS'])	{
 				$placeHolders = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid,pid',$table,'t3ver_state=1 AND pid>=0'.t3lib_BEfunc::deleteClause($table));
 				foreach($placeHolders as $phrec)	{
 					if (count(t3lib_BEfunc::selectVersionsOfRecord($table, $phrec['uid'], 'uid'))<=1)	{
-						$resultArray['versions_unused_placeholders'][] = $table.':'.$phrec['uid']; 
+						$resultArray['versions_unused_placeholders'][t3lib_div::shortmd5($table.':'.$phrec['uid'])] = $table.':'.$phrec['uid'];
+					}
+				}
+			}
+		}
+		asort($resultArray['versions_unused_placeholders']);
+
+			// Finding all move placeholders with inconsistencies:
+		$resultArray['versions_move_placeholders_ok'] = array();
+		$resultArray['versions_move_placeholders_bad'] = array();
+		foreach($GLOBALS['TCA'] as $table => $cfg)	{
+			if ((int)$cfg['ctrl']['versioningWS']>=2)	{
+				$placeHolders = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid,pid,t3ver_move_id,t3ver_wsid,t3ver_state',$table,'t3ver_state=3 AND pid>=0'.t3lib_BEfunc::deleteClause($table));
+				foreach($placeHolders as $phrec)	{
+					$shortID = t3lib_div::shortmd5($table.':'.$phrec['uid']);
+					if ((int)$phrec['t3ver_wsid']!=0)	{
+						$phrecCopy = $phrec;
+						if (t3lib_BEfunc::movePlhOL($table,$phrec))	{
+							if ($wsAlt = t3lib_BEfunc::getWorkspaceVersionOfRecord($phrecCopy['t3ver_wsid'], $table, $phrec['uid'], 'uid,pid,t3ver_state'))	{
+								if ($wsAlt['t3ver_state']!=4)	{
+									$resultArray['versions_move_placeholders_bad'][$shortID] = array($table.':'.$phrec['uid'],'State for version was not "4" as it should be!',$phrecCopy);
+								} else {
+									$resultArray['versions_move_placeholders_ok'][$shortID] = array(
+										$table.':'.$phrec['uid'],
+										'PLH' => $phrecCopy,
+										'online' => $phrec,
+										'PNT' => $wsAlt
+									);
+								}
+							} else {
+								$resultArray['versions_move_placeholders_bad'][$shortID] = array($table.':'.$phrec['uid'],'No version was found for online record to be moved. A version must exist.',$phrecCopy);
+							}
+						} else {
+							$resultArray['versions_move_placeholders_bad'][$shortID] = array($table.':'.$phrec['uid'],'Did not find online record for "t3ver_move_id" value '.$phrec['t3ver_move_id'],$phrec);
+						}
+					} else {
+						$resultArray['versions_move_placeholders_bad'][$shortID] = array($table.':'.$phrec['uid'],'Placeholder was not assigned a workspace value in t3ver_wsid.',$phrec);
+					}
+				}
+			}
+		}
+
+		ksort($resultArray['versions_move_placeholders_ok']);
+		ksort($resultArray['versions_move_placeholders_bad']);
+
+			// Finding move_id_check inconsistencies:
+		$resultArray['versions_move_id_check'] = array();
+		foreach($GLOBALS['TCA'] as $table => $cfg)	{
+			if ((int)$cfg['ctrl']['versioningWS']>=2)	{
+				$placeHolders = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid,pid,t3ver_move_id,t3ver_wsid,t3ver_state',$table,'t3ver_move_id!=0'.t3lib_BEfunc::deleteClause($table));
+				foreach($placeHolders as $phrec)	{
+					if ((int)$phrec['t3ver_state']==3)	{
+						if ($phrec['pid']!=-1)	{
+								// OK
+						} else {
+							$resultArray['versions_move_id_check'][] = array($table.':'.$phrec['uid'],'Record was offline, must not be!',$phrec);
+						}
+					} else {
+						$resultArray['versions_move_id_check'][] = array($table.':'.$phrec['uid'],'Record had t3ver_move_id set to "'.$phrec['t3ver_move_id'].'" while having t3ver_state='.$phrec['t3ver_state'],$phrec);
 					}
 				}
 			}
@@ -193,7 +254,7 @@ Automatic Repair:
 				echo chr(10);
 			}
 		}
-		
+
 			// Delete unused placeholders
 		foreach($resultArray['versions_unused_placeholders'] as $recID)	{
 			list($table,$uid)	= explode(':',$recID);
@@ -211,10 +272,10 @@ Automatic Repair:
 					// Return errors if any:
 				if (count($tce->errorLog))	{
 					echo '	ERROR from "TCEmain":'.chr(10).'TCEmain:'.implode(chr(10).'TCEmain:',$tce->errorLog);
-				} else echo 'DONE';			
+				} else echo 'DONE';
 			}
 			echo chr(10);
-		}		
+		}
 	}
 }
 

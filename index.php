@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * This is the MAIN DOCUMENT of the TypoScript driven standard front-end (from the "cms" extension)
  * Basically this is the "index.php" script which all requests for TYPO3 delivered pages goes to in the frontend (the website)
  *
- * $Id: index.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: index.php 3439 2008-03-16 19:16:51Z flyguide $
  *
  * @author	René Fritz <r.fritz@colorcube.de>
  * @package TYPO3

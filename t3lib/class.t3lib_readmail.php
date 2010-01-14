@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains a class with functions used to read email content
  *
- * $Id: class.t3lib_readmail.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: class.t3lib_readmail.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 May 2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

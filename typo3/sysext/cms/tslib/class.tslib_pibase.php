@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * This script contains the parent class, 'pibase', providing an API with the most basic methods for frontend plugins
  *
- * $Id: class.tslib_pibase.php 5651 2009-06-28 11:21:07Z benni $
+ * $Id: class.tslib_pibase.php 5650 2009-06-28 11:19:39Z benni $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -121,7 +121,12 @@
 class tslib_pibase {
 
 		// Reserved variables:
-	var $cObj;		// The backReference to the mother cObj object set at call time
+	/**
+	 * The backReference to the mother cObj object set at call time
+	 *
+	 * @var tslib_cObj
+	 */
+	var $cObj;
 	var $prefixId;		// Should be same as classname of the plugin, used for CSS classes, variables
 	var $scriptRelPath;	// Path to the plugin class script relative to extension directory, eg. 'pi1/class.tx_newfaq_pi1.php'
 	var $extKey;		// Extension key.
@@ -940,10 +945,11 @@ class tslib_pibase {
 	 * @return	string		The value from LOCAL_LANG.
 	 */
 	function pi_getLL($key,$alt='',$hsc=FALSE)	{
+			// The "from" charset of csConv() is only set for strings from TypoScript via _LOCAL_LANG
 		if (isset($this->LOCAL_LANG[$this->LLkey][$key]))	{
-			$word = $GLOBALS['TSFE']->csConv($this->LOCAL_LANG[$this->LLkey][$key], $this->LOCAL_LANG_charset[$this->LLkey][$key]);	// The "from" charset is normally empty and thus it will convert from the charset of the system language, but if it is set (see ->pi_loadLL()) it will be used.
+			$word = $GLOBALS['TSFE']->csConv($this->LOCAL_LANG[$this->LLkey][$key], $this->LOCAL_LANG_charset[$this->LLkey][$key]);
 		} elseif ($this->altLLkey && isset($this->LOCAL_LANG[$this->altLLkey][$key]))	{
-			$word = $GLOBALS['TSFE']->csConv($this->LOCAL_LANG[$this->altLLkey][$key], $this->LOCAL_LANG_charset[$this->altLLkey][$key]);	// The "from" charset is normally empty and thus it will convert from the charset of the system language, but if it is set (see ->pi_loadLL()) it will be used.
+			$word = $GLOBALS['TSFE']->csConv($this->LOCAL_LANG[$this->altLLkey][$key], $this->LOCAL_LANG_charset[$this->altLLkey][$key]);
 		} elseif (isset($this->LOCAL_LANG['default'][$key]))	{
 			$word = $this->LOCAL_LANG['default'][$key];	// No charset conversion because default is english and thereby ASCII
 		} else {
@@ -966,9 +972,8 @@ class tslib_pibase {
 		if (!$this->LOCAL_LANG_loaded && $this->scriptRelPath)	{
 			$basePath = t3lib_extMgm::extPath($this->extKey).dirname($this->scriptRelPath).'/locallang.php';
 
-				// php or xml as source: In any case the charset will be that of the system language.
-				// However, this function guarantees only return output for default language plus the specified language (which is different from how 3.7.0 dealt with it)
-			$this->LOCAL_LANG = t3lib_div::readLLfile($basePath,$this->LLkey);
+				// Read the strings in the required charset (since TYPO3 4.2)
+			$this->LOCAL_LANG = t3lib_div::readLLfile($basePath,$this->LLkey,$GLOBALS['TSFE']->renderCharset);
 			if ($this->altLLkey)	{
 				$tempLOCAL_LANG = t3lib_div::readLLfile($basePath,$this->altLLkey);
 				$this->LOCAL_LANG = array_merge(is_array($this->LOCAL_LANG) ? $this->LOCAL_LANG : array(),$tempLOCAL_LANG);
@@ -983,9 +988,8 @@ class tslib_pibase {
 						foreach($lA as $llK => $llV)	{
 							if (!is_array($llV))	{
 								$this->LOCAL_LANG[$k][$llK] = $llV;
-								if ($k != 'default')	{
-									$this->LOCAL_LANG_charset[$k][$llK] = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'];	// For labels coming from the TypoScript (database) the charset is assumed to be "forceCharset" and if that is not set, assumed to be that of the individual system languages (thus no conversion)
-								}
+									// For labels coming from the TypoScript (database) the charset is assumed to be "forceCharset" and if that is not set, assumed to be that of the individual system languages
+								$this->LOCAL_LANG_charset[$k][$llK] = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] ? $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] : $GLOBALS['TSFE']->csConvObj->charSetArray[$k];
 							}
 						}
 					}
@@ -1158,18 +1162,23 @@ class tslib_pibase {
 	 * @param	integer		$recursive is an integer >=0 telling how deep to dig for pids under each entry in $pid_list
 	 * @return	string		List of PID values (comma separated)
 	 */
-	function pi_getPidList($pid_list,$recursive=0)	{
-		if (!strcmp($pid_list,''))	$pid_list = $GLOBALS['TSFE']->id;
-		$recursive = t3lib_div::intInRange($recursive,0);
+	function pi_getPidList($pid_list, $recursive = 0) {
+		if (!strcmp($pid_list, '')) {
+			$pid_list = $GLOBALS['TSFE']->id;
+		}
 
-		$pid_list_arr = array_unique(t3lib_div::trimExplode(',',$pid_list,1));
-		$pid_list = array();
+		$recursive = t3lib_div::intInRange($recursive, 0);
 
-		foreach($pid_list_arr as $val)	{
-			$val = t3lib_div::intInRange($val,0);
-			if ($val)	{
-				$_list = $this->cObj->getTreeList(-1*$val, $recursive);
-				if ($_list)		$pid_list[] = $_list;
+		$pid_list_arr = array_unique(t3lib_div::trimExplode(',', $pid_list, 1));
+		$pid_list     = array();
+
+		foreach($pid_list_arr as $val) {
+			$val = t3lib_div::intInRange($val, 0);
+			if ($val) {
+				$_list = $this->cObj->getTreeList(-1 * $val, $recursive);
+				if ($_list) {
+					$pid_list[] = $_list;
+				}
 			}
 		}
 

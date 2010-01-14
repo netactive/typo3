@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -145,8 +145,10 @@ class tx_wizardcrpages_webfunc_2 extends t3lib_extobjbase {
 				$lines=array();
 				while(list(,$rec)=each($menuItems))	{
 					t3lib_BEfunc::workspaceOL('pages',$rec);
-					$lines[]= '<nobr>'.t3lib_iconWorks::getIconImage('pages',$rec,$GLOBALS['BACK_PATH'],'align="top" '.t3lib_BEfunc::titleAttribForPages($rec)).
-						htmlspecialchars(t3lib_div::fixed_lgd_cs($rec['title'],$GLOBALS['BE_USER']->uc['titleLen'])).'</nobr>';
+					if (is_array($rec))	{
+						$lines[]= '<nobr>'.t3lib_iconWorks::getIconImage('pages',$rec,$GLOBALS['BACK_PATH'],'align="top" '.t3lib_BEfunc::titleAttribForPages($rec)).
+							htmlspecialchars(t3lib_div::fixed_lgd_cs($rec['title'],$GLOBALS['BE_USER']->uc['titleLen'])).'</nobr>';
+					}
 				}
 				$theCode.= '<b>'.$LANG->getLL('wiz_newPages_currentMenu').':</b><br /><br />'.implode('<br />',$lines);
 			} else {

@@ -3,7 +3,7 @@
 *  Copyright notice
 *
 *  (c) Vincent Blavet <vincent@phpconcept.net>
-*  (c) 2005-2006 Karsten Dambekalns <karsten@typo3.org>
+*  (c) 2005-2008 Karsten Dambekalns <karsten@typo3.org>
 *  All rights reserved
 *
 *  This library is free software; you can redistribute it and/or
@@ -26,7 +26,7 @@
 /**
  * Module: Extension manager
  *
- * $Id: class.em_unzip.php 1869 2006-12-12 11:57:52Z k-fish $
+ * $Id: class.em_unzip.php 3439 2008-03-16 19:16:51Z flyguide $
  *
  * @author	Vincent Blavet <vincent@phpconcept.net>
  * @author	Karsten Dambekalns <karsten@typo3.org>

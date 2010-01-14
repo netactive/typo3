@@ -3,13 +3,13 @@
 /***************************************************************
 *  Inline-Relational-Record Editing
 *
-* $Id: jsfunc.inline.js 3833 2008-06-22 14:03:21Z ohader $
+* $Id: jsfunc.inline.js 5302 2009-04-09 07:55:25Z ohader $
 *
 *
 *
 *  Copyright notice
 *
-*  (c) 2006-2007 Oliver Hader <oh@inpublica.de>
+*  (c) 2006-2008 Oliver Hader <oh@inpublica.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -36,7 +36,11 @@ var inline = {
 	sourcesLoaded: {},
 	data: {},
 
-	addToDataArray: function(object) { for (var i in object) { this.data[i] = $H(this.data[i]).merge(object[i]); } },
+	addToDataArray: function(object) {
+		$H(object).each(function(pair) {
+			inline.data[pair.key] = $H(inline.data[pair.key]).merge(pair.value).toObject();
+		});
+	},
 	setPrependFormFieldNames: function(value) {	this.prependFormFieldNames = value; },
 	setNoTitleString: function(value) { this.noTitleString = value; },
 
@@ -100,16 +104,21 @@ var inline = {
 		}
 	},
 
-	createNewRecord: function(objectId,prevRecordUid) {
+	createNewRecord: function(objectId, recordUid) {
 		if (this.isBelowMax(objectId)) {
-			if (prevRecordUid) {
-				objectId += '['+prevRecordUid+']';
+			if (recordUid) {
+				objectId += '['+recordUid+']';
 			}
 			this.makeAjaxCall('createNewRecord', [this.getNumberOfRTE(), objectId], true);
 		} else {
 			alert('There are no more relations possible at this moment!');
 		}
 		return false;
+	},
+
+	synchronizeLocalizeRecords: function(objectId, type) {
+		var parameters = [this.getNumberOfRTE(), objectId, type];
+		this.makeAjaxCall('synchronizeLocalizeRecords', parameters, true);
 	},
 
 	setExpandedCollapsedState: function(objectId, expand, collapse) {
@@ -119,10 +128,10 @@ var inline = {
 	makeAjaxCall: function(method, params, lock) {
 		var max, url='', urlParams='', options={};
 		if (method && params && params.length && this.lockAjaxMethod(method, lock)) {
-			url = 'alt_doc_ajax.php';
-			urlParams += '&ajax[0]='+method;
+			url = 'ajax.php';
+			urlParams = '&ajaxID=t3lib_TCEforms_inline::'+method;
 			for (var i=0, max=params.length; i<max; i++) {
-				urlParams += '&ajax['+(i+1)+']='+params[i];
+				urlParams += '&ajax['+i+']='+params[i];
 			}
 			options = {
 				method:		'post',
@@ -461,6 +470,7 @@ var inline = {
 	},
 
 	createDragAndDropSorting: function(objectId) {
+		Position.includeScrollOffsets = true;
 		Sortable.create(
 			objectId,
 			{
@@ -495,8 +505,8 @@ var inline = {
 			if (!records[i].length) continue;
 
 			headerObj = $(objectPrefix+'['+records[i]+']_header');
-			sortingObj[0] = Element.getElementsBySelector(headerObj, '.sortingUp');
-			sortingObj[1] = Element.getElementsBySelector(headerObj, '.sortingDown');
+			sortingObj[0] = Element.select(headerObj, '.sortingUp');
+			sortingObj[1] = Element.select(headerObj, '.sortingDown');
 
 			if (sortingObj[0].length) {
 				sortingObj[0][0].style.visibility = (i == 0 ? 'hidden' : 'visible');
@@ -592,37 +602,39 @@ var inline = {
 	},
 
 	revertUnique: function(objectPrefix, elName, recordUid) {
-		var unique = this.data.unique[objectPrefix];
-		var fieldObj = elName ? document.getElementsByName(elName+'['+unique.field+']') : null;
+		if (this.data.unique && this.data.unique[objectPrefix]) {
+			var unique = this.data.unique[objectPrefix];
+			var fieldObj = elName ? document.getElementsByName(elName+'['+unique.field+']') : null;
 
-		if (unique.type == 'select') {
-			if (fieldObj && fieldObj.length) {
-				delete(this.data.unique[objectPrefix].used[recordUid])
+			if (unique.type == 'select') {
+				if (fieldObj && fieldObj.length) {
+					delete(this.data.unique[objectPrefix].used[recordUid])
 
-				if (unique.selector == 'select') {
-					if (!isNaN(fieldObj[0].value)) {
-						var selector = $(objectPrefix+'_selector');
-						this.readdSelectOption(selector, fieldObj[0].value, unique);
+					if (unique.selector == 'select') {
+						if (!isNaN(fieldObj[0].value)) {
+							var selector = $(objectPrefix+'_selector');
+							this.readdSelectOption(selector, fieldObj[0].value, unique);
+						}
 					}
-				}
 
-				if (!(unique.selector && unique.max == -1)) {
-					var formName = this.prependFormFieldNames+this.parseFormElementName('parts', objectPrefix, 3, 1);
-					var formObj = document.getElementsByName(formName);
-					if (formObj.length) {
-						var records = formObj[0].value.split(',');
-						var recordObj;
-							// walk through all inline records on that level and get the select field
-						for (var i=0; i<records.length; i++) {
-							recordObj = document.getElementsByName(this.prependFormFieldNames+'['+unique.table+']['+records[i]+']['+unique.field+']');
-							if (recordObj.length) this.readdSelectOption(recordObj[0], fieldObj[0].value, unique);
+					if (!(unique.selector && unique.max == -1)) {
+						var formName = this.prependFormFieldNames+this.parseFormElementName('parts', objectPrefix, 3, 1);
+						var formObj = document.getElementsByName(formName);
+						if (formObj.length) {
+							var records = formObj[0].value.split(',');
+							var recordObj;
+								// walk through all inline records on that level and get the select field
+							for (var i=0; i<records.length; i++) {
+								recordObj = document.getElementsByName(this.prependFormFieldNames+'['+unique.table+']['+records[i]+']['+unique.field+']');
+								if (recordObj.length) this.readdSelectOption(recordObj[0], fieldObj[0].value, unique);
+							}
 						}
 					}
 				}
+			} else if (unique.type == 'groupdb') {
+				// alert(objectPrefix+'/'+recordUid);
+				delete(this.data.unique[objectPrefix].used[recordUid])
 			}
-		} else if (unique.type == 'groupdb') {
-			// alert(objectPrefix+'/'+recordUid);
-			delete(this.data.unique[objectPrefix].used[recordUid])
 		}
 	},
 
@@ -642,7 +654,7 @@ var inline = {
 		return false;
 	},
 
-	deleteRecord: function(objectId) {
+	deleteRecord: function(objectId, options) {
 		var i, j, inlineRecords, records, childObjectId, childTable;
 		var objectPrefix = this.parseFormElementName('full', objectId, 0 , 1);
 		var elName = this.parseFormElementName('full', objectId, 2);
@@ -651,11 +663,12 @@ var inline = {
 		var beforeDeleteIsBelowMax = this.isBelowMax(objectPrefix);
 
 			// revert the unique settings if available
-		if (this.data.unique && this.data.unique[objectPrefix]) this.revertUnique(objectPrefix, elName, recordUid);
+		this.revertUnique(objectPrefix, elName, recordUid);
 
 			// Remove from TBE_EDITOR (required fields, required range, etc.):
 		if (TBE_EDITOR && TBE_EDITOR.removeElement) {
-			inlineRecords = Element.getElementsBySelector(objectId+'_div', '.inlineRecord');
+			var removeStack = [];
+			inlineRecords = Element.select(objectId+'_div', '.inlineRecord');
 				// Remove nested child records from TBE_EDITOR required/range checks:
 			for (i=inlineRecords.length-1; i>=0; i--) {
 				if (inlineRecords[i].value.length) {
@@ -663,16 +676,17 @@ var inline = {
 					childObjectId = this.data.map[inlineRecords[i].name];
 					childTable = this.data.config[childObjectId].table;
 					for (j=records.length-1; j>=0; j--) {
-						TBE_EDITOR.removeElement(this.prependFormFieldNames+'['+childTable+']['+records[j]+']');
+						removeStack.push(this.prependFormFieldNames+'['+childTable+']['+records[j]+']');
 					}
 				}
 			}
-			TBE_EDITOR.removeElement(this.prependFormFieldNames+shortName);
+			removeStack.push(this.prependFormFieldNames+shortName);
+			TBE_EDITOR.removeElementArray(removeStack);
 		}
 
 			// If the record is new and was never saved before, just remove it from DOM:
-		if (this.isNewRecord(objectId)) {
-			new Effect.Fade(objectId+'_div', { afterFinish: function() { Element.remove(objectId+'_div'); }	});
+		if (this.isNewRecord(objectId) || options && options.forceDirectRemoval) {
+			this.fadeAndRemove(objectId+'_div');
 			// If the record already exists in storage, mark it to be deleted on clicking the save button:
 		} else {
 			document.getElementsByName('cmd'+shortName+'[delete]')[0].disabled = false;
@@ -873,6 +887,12 @@ var inline = {
   			md5 = this.data.config[objectPrefix].md5;
   		}
   		return md5
+  	},
+
+  	fadeAndRemove: function(element) {
+  		if ($(element)) {
+			new Effect.Fade(element, { afterFinish: function() { Element.remove(element); }	});
+		}
   	}
 }
 

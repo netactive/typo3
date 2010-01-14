@@ -29,66 +29,14 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /*
- * TYPO3 CVS ID: $Id: htmlarea-ie.js 5304 2009-04-09 16:03:25Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea-ie.js 5305 2009-04-09 16:44:23Z stan $
  */
 
 /***************************************************
  *  IE-SPECIFIC FUNCTIONS
  ***************************************************/
-
-/***************************************************
- *  FINAL IE CLEANUP
- ***************************************************/
- HTMLArea._cleanup = function (editor) {
-		// nullify envent handlers
-	for (var handler in editor.eventHandlers) editor.eventHandlers[handler] = null;
-	for (var button in editor.btnList) editor.btnList[button][3] = null;
-	for (var dropdown in editor.config.customSelects) {
-		dropdown.action = null;
-		dropdown.refresh = null;
-	}
-	editor.onGenerate = null;
-	HTMLArea._editorEvent = null;
-	if(editor._textArea.form) {
-		editor._textArea.form.__msh_prevOnReset = null;
-		editor._textArea.form._editorNumber = null;
-	}
-	HTMLArea.onload = null;
-	if(HTMLArea._eventCache) {
-		HTMLArea._eventCache.listEvents = null;
-		HTMLArea._eventCache.add = null;
-		HTMLArea._eventCache.flush = null;
-		HTMLArea._eventCache = null;
-	}
-
-		// cleaning plugin handlers
-	for (var i in editor.plugins) {
-		var plugin = editor.plugins[i].instance;
-		plugin.onGenerate = null;
-		plugin.onMode = null;
-		plugin.onKeyPress = null;
-		plugin.onSelect = null;
-		plugin.onUpdateTolbar = null;
-	}
-
-		// cleaning the toolbar elements
-	var obj;
-	for (var txt in editor._toolbarObjects) {
-		obj = editor._toolbarObjects[txt];
-		obj["state"] = null;
-		document.getElementById(obj["elementId"])._obj = null;
-	}
-
-		// cleaning the statusbar elements
-	if(editor._statusBarTree.hasChildNodes()) {
-		for (var i = editor._statusBarTree.firstChild; i; i = i.nextSibling) {
-			if (i.nodeName.toLowerCase() == "a") {
-				HTMLArea._removeEvents(i, ["click", "contextmenu"], HTMLArea.statusBarHandler);
-				i.el = null;
-				i.editor = null;
-			}
-		}
-	}
+HTMLArea.prototype.isEditable = function() {
+	return this._doc.body.contentEditable;
 };
 
 /***************************************************
@@ -107,7 +55,7 @@ HTMLArea.prototype._getSelection = function() {
 HTMLArea.prototype._createRange = function(sel) {
 	if (typeof(sel) == "undefined") {
 		var sel = this._getSelection();
- 	}
+	}
 	if (sel.type.toLowerCase() == "none") {
 		this.focusEditor();
 	}
@@ -128,13 +76,14 @@ HTMLArea.prototype.selectNode = function(node) {
 /*
  * Select ONLY the contents inside the given node
  */
-HTMLArea.prototype.selectNodeContents = function(node,pos) {
+HTMLArea.prototype.selectNodeContents = function(node, endPoint) {
 	this.focusEditor();
 	this.forceRedraw();
-	var collapsed = (typeof(pos) != "undefined");
 	var range = this._doc.body.createTextRange();
 	range.moveToElementText(node);
-	(collapsed) && range.collapse(pos);
+	if (typeof(endPoint) !== "undefined") {
+		range.collapse(endPoint);
+	}
 	range.select();
 };
 
@@ -207,7 +156,7 @@ HTMLArea.prototype._activeElement = function(sel) {
 			// (this happens when a node is clicked in the tree)
 		var range = sel.createRange();
 		var p_elm = this.getParentElement(sel);
-		if(p_elm.innerHTML == range.htmlText) return p_elm;
+		if(p_elm.outerHTML == range.htmlText) return p_elm;
 		return null;
     	}
 };
@@ -215,11 +164,36 @@ HTMLArea.prototype._activeElement = function(sel) {
 /*
  * Determine if the current selection is empty or not.
  */
-HTMLArea.prototype._selectionEmpty = function(sel) {
-	if (!sel) return true;
-	return this._createRange(sel).htmlText == '';
+HTMLArea.prototype._selectionEmpty = function(selection) {
+	if (!selection || selection.type.toLowerCase() === "none") return true;
+	if (selection.type.toLowerCase() === "text") {
+		return !this._createRange(selection).text;
+	}
+	return !this._createRange(selection).htmlText;
 };
 
+/*
+ * Get a bookmark
+ */
+HTMLArea.prototype.getBookmark = function (range) {
+	return range.getBookmark();
+};
+
+/*
+ * Move the range to the bookmark
+ */
+HTMLArea.prototype.moveToBookmark = function (bookmark) {
+	var range = this._createRange();
+	range.moveToBookmark(bookmark);
+	return range;
+};
+
+/*
+ * Select range
+ */
+HTMLArea.prototype.selectRange = function (range) {
+	range.select();
+};
 /***************************************************
  *  DOM TREE MANIPULATION
  ***************************************************/
@@ -233,7 +207,7 @@ HTMLArea.prototype.insertNodeAtSelection = function(toBeInserted) {
 	this.insertHTML(toBeInserted.outerHTML);
 };
 
-/* 
+/*
  * Insert HTML source code at the current position.
  * Delete the current selection, if any.
  */
@@ -267,6 +241,7 @@ HTMLArea.statusBarHandler = function (ev) {
 	} else {
 		editor.selectNode(target.el);
 	}
+	editor._statusBarTree.selected = target.el;
 	editor.updateToolbar(true);
 	switch (ev.type) {
 		case "click" :
@@ -281,18 +256,34 @@ HTMLArea.statusBarHandler = function (ev) {
  * Handle the backspace event in IE browsers
  */
 HTMLArea.prototype._checkBackspace = function() {
-	var sel = this._getSelection();
-	var range = this._createRange(sel);
-	if(sel.type == "Control"){   
-		var el = this.getParentElement();   
-		var p = el.parentNode;   
-		p.removeChild(el);   
-		return true;  
-	} else {
+	var selection = this._getSelection();
+	var range = this._createRange(selection);
+	if (selection.type == "Control"){ // Deleting or backspacing on a control selection : delete the element
+		var el = this.getParentElement();
+		var p = el.parentNode;
+		p.removeChild(el);
+		return true;
+	} else if (this._selectionEmpty(selection)) { // Check if deleting an empty block with a table as next sibling
+		var el = this.getParentElement();
+		if (!el.innerHTML && HTMLArea.isBlockElement(el) && el.nextSibling && /^table$/i.test(el.nextSibling.nodeName)) {
+			var previous = el.previousSibling;
+			if (!previous) {
+				this.selectNodeContents(el.nextSibling.rows[0].cells[0], true);
+			} else if (/^table$/i.test(previous.nodeName)) {
+				this.selectNodeContents(previous.rows[previous.rows.length-1].cells[previous.rows[previous.rows.length-1].cells.length-1], false);
+			} else {
+				range.moveStart("character", -1);
+				range.collapse(true);
+				range.select();
+			}
+			el.parentNode.removeChild(el);
+			return true;
+		}
+	} else { // Backspacing into a link
 		var r2 = range.duplicate();
 		r2.moveStart("character", -1);
 		var a = r2.parentElement();
-		if(a != range.parentElement() && /^a$/i.test(a.tagName)) {
+		if (a != range.parentElement() && /^a$/i.test(a.nodeName)) {
 			r2.collapse(true);
 			r2.moveEnd("character", 1);
 			r2.pasteHTML('');

@@ -2,8 +2,8 @@
 /* **************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
-*  (c) 2006 Karsten Dambekalns <karsten@typo3.org>
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2006-2008 Karsten Dambekalns <karsten@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -45,6 +45,12 @@ require_once('class.em_soap.php');
  */
 class SC_mod_tools_em_terconnection {
 	var $wsdlURL;
+
+	/**
+	 * Extension manager module
+	 *
+	 * @var SC_mod_tools_em_index
+	 */
 	var $emObj;
 
 	/**
@@ -57,9 +63,9 @@ class SC_mod_tools_em_terconnection {
 	 * @return	mixed		T3X data (array) or error message (string)
 	 */
 	function fetchExtension($extKey, $version, $expectedMD5, $mirrorURL) {
-		$extPath = strtolower($extKey);
+		$extPath = t3lib_div::strtolower($extKey);
 		$mirrorURL .= $extPath{0} . '/' . $extPath{1} . '/' . $extPath . '_' . $version . '.t3x';
-		$t3x = t3lib_div::getURL($mirrorURL);
+		$t3x = t3lib_div::getURL($mirrorURL, 0, array(TYPO3_user_agent));
 		$MD5 = md5($t3x);
 
 		if($t3x===false) return 'The T3X file could not be fetched. Possible reasons: network problems, allow_url_fopen is off, curl is not enabled in Install tool.';
@@ -81,9 +87,9 @@ class SC_mod_tools_em_terconnection {
 	 * @return mixed	Array containing l10n data or error message (string)
 	 */
 	function fetchTranslation($extKey, $lang, $mirrorURL) {
-		$extPath = strtolower($extKey);
+		$extPath = t3lib_div::strtolower($extKey);
 		$mirrorURL .= $extPath{0} . '/' . $extPath{1} . '/' . $extPath . '-l10n/' . $extPath . '-l10n-' . $lang . '.zip';
-		$l10n = t3lib_div::getURL($mirrorURL);
+		$l10n = t3lib_div::getURL($mirrorURL, 0, array(TYPO3_user_agent));
 
 		if($l10n !== false) {
 			return array($l10n);
@@ -100,7 +106,7 @@ class SC_mod_tools_em_terconnection {
 	 * @return mixed	Array containing l10n status data or FALSE if no status could be fetched
 	 */
 	function fetchTranslationStatus($extKey, $mirrorURL) {
-		$extPath = strtolower($extKey);
+		$extPath = t3lib_div::strtolower($extKey);
 		$mirrorURL .= $extPath{0} . '/' . $extPath{1} . '/' . $extPath . '-l10n/' . $extPath . '-l10n.xml';
 		$remote = t3lib_div::getURL($mirrorURL, 0, array(TYPO3_user_agent));
 
@@ -220,7 +226,7 @@ class SC_mod_tools_em_terconnection {
 		if (is_array($extKeysArr)) {
 			foreach ($extKeysArr as $extKey => $version) {
 				if (strlen($extKey)) {
-					$dependenciesArr [] = array (
+					$dependenciesArr[] = array (
 						'kind' => 'depends',
 						'extensionKey' => utf8_encode($extKey),
 						'versionRange' => utf8_encode($version),
@@ -233,7 +239,7 @@ class SC_mod_tools_em_terconnection {
 		if (is_array($extKeysArr)) {
 			foreach ($extKeysArr as $extKey => $version) {
 				if (strlen($extKey)) {
-					$dependenciesArr [] = array (
+					$dependenciesArr[] = array (
 						'kind' => 'conflicts',
 						'extensionKey' => utf8_encode($extKey),
 						'versionRange' => utf8_encode($version),
@@ -241,6 +247,15 @@ class SC_mod_tools_em_terconnection {
 				}
 			}
 		}
+		// FIXME: This part must be removed, when the problem is solved on the TER-Server #5919
+		if (count($dependenciesArr) == 1) {
+			$dependenciesArr[] = array (
+				'kind' => 'depends',
+				'extensionKey' => '',
+				'versionRange' => '',
+			);
+		}
+		// END for Bug #5919
 
 			// Compile data for SOAP call:
 		$accountData = array(

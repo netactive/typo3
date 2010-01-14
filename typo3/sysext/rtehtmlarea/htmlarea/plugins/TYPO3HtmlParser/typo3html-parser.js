@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005, 2006 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 2005-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -26,33 +26,116 @@
 /**
  * TYPO3HtmlParser Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 CVS ID: $Id: typo3html-parser.js 2415 2007-07-14 14:13:45Z ohader $
+ * TYPO3 SVN ID: $Id: typo3html-parser.js 5930 2009-09-15 16:16:38Z stan $
  */
- 
-TYPO3HtmlParser = function(editor) {
-	this.editor = editor;
-	var cfg = editor.config;
+TYPO3HtmlParser = HTMLArea.Plugin.extend({
+	
+	constructor : function(editor, pluginName) {
+		this.base(editor, pluginName);
+	},
+	
+	/*
+	 * This function gets called by the class constructor
+	 */
+	configurePlugin : function(editor) {
+		
+		this.pageTSConfiguration = this.editorConfiguration.buttons.cleanword;
+		this.parseHtmlModulePath = this.pageTSConfiguration.pathParseHtmlModule;
+		
+		/*
+		 * Registering plugin "About" information
+		 */
+		var pluginInformation = {
+			version		: "1.8",
+			developer	: "Stanislas Rolland",
+			developerUrl	: "http://www.sjbr.ca/",
+			copyrightOwner	: "Stanislas Rolland",
+			sponsor		: "SJBR",
+			sponsorUrl	: "http://www.sjbr.ca/",
+			license		: "GPL"
+		};
+		this.registerPluginInformation(pluginInformation);
+		
+		/*
+		 * Registering the (hidden) button
+		 */
+		var buttonId = "CleanWord";
+		var buttonConfiguration = {
+			id		: buttonId,
+			tooltip		: this.localize(buttonId + "-Tooltip"),
+			action		: "onButtonPress",
+			hide		: true
+		};
+		this.registerButton(buttonConfiguration);
+	},
+	
+	/*
+	 * This function gets called when the button was pressed.
+	 *
+	 * @param	object		editor: the editor instance
+	 * @param	string		id: the button id or the key
+	 *
+	 * @return	boolean		false if action is completed
+	 */
+	onButtonPress : function (editor, id, target) {
+			// Could be a button or its hotkey
+		var buttonId = this.translateHotKey(id);
+		buttonId = buttonId ? buttonId : id;
+		this.clean();
+		return false;
+	},
+	
+	onGenerate : function () {
+		var doc = this.editor._doc;
+			// Function reference used on paste with older versions of Mozilla/Firefox in which onPaste is not fired
+		this.cleanLaterFunctRef = this.makeFunctionReference("clean");
+		HTMLArea._addEvents((HTMLArea.is_ie ? doc.body : doc), ["paste","dragdrop","drop"], TYPO3HtmlParser.wordCleanHandler, true);
+	},
+	
+	clean : function() {
+		var editor = this.editor;
+		var bookmark = editor.getBookmark(editor._createRange(editor._getSelection()));
+		var content = {
+			editorNo : this.editorNumber,
+			content	 : editor._doc.body.innerHTML
+		};
+			// Invoke server-based synchronous pasted content cleaning
+		this.postData(	this.parseHtmlModulePath,
+				content,
+				function(response) {
+					editor.setHTML(response);
+					editor.selectRange(editor.moveToBookmark(bookmark));
+				},
+				false
+		);
+	}
+});
+
+/*
+ * Closure avoidance for IE
+ */
+TYPO3HtmlParser.cleanLater = function (editorNumber) {
+	var editor = RTEarea[editorNumber].editor;
+	editor.plugins.TYPO3HtmlParser.instance.clean();
 };
 
-TYPO3HtmlParser.I18N = TYPO3HtmlParser_langArray;
-
-TYPO3HtmlParser._pluginInfo = {
-	name		: "TYPO3HtmlParser",
-	version		: "1.6",
-	developer	: "Stanislas Rolland",
-	developer_url	: "http://www.fructifor.ca/",
-	c_owner		: "Stanislas Rolland",
-	sponsor		: "Fructifor Inc.",
-	sponsor_url	: "http://www.fructifor.ca/",
-	license		: "GPL"
-};
-
-HTMLArea._wordClean = function(editor, body) {
-	var editorNo = editor._editorNumber;
-	var url = RTEarea[0]["pathParseHtmlModule"];
-	var addParams = RTEarea[editorNo]["RTEtsConfigParams"];
-	HTMLArea._postback(url, {'editorNo' : editorNo, 'content' : body.innerHTML },
-		function(javascriptResponse) { editor.setHTML(javascriptResponse) }, addParams, RTEarea[editor._editorNumber]["typo3ContentCharset"]);
-	return true;
+/*
+ * Handler for paste, dragdrop and drop events
+ */
+TYPO3HtmlParser.wordCleanHandler = function (ev) {
+	if (!ev) var ev = window.event;
+	var target = ev.target ? ev.target : ev.srcElement;
+	var owner = target.ownerDocument ? target.ownerDocument : target;
+	if (HTMLArea.is_ie) { // IE5.5 does not report any ownerDocument
+		while (owner.parentElement) { owner = owner.parentElement; }
+	}
+	var editor = RTEarea[owner._editorNo].editor;
+	
+		// If we dropped an image dragged from the TYPO3 Image plugin, let's close the dialog window
+	if (typeof(HTMLArea.Dialog) != "undefined" && HTMLArea.Dialog.TYPO3Image) {
+		HTMLArea.Dialog.TYPO3Image.close();
+	} else {
+		window.setTimeout("TYPO3HtmlParser.cleanLater(\'" + editor._editorNumber + "\');", 250);
+	}
 };
 

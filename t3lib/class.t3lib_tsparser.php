@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains the TypoScript parser class
  *
- * $Id: class.t3lib_tsparser.php 2037 2007-02-16 11:02:56Z stucki $
+ * $Id: class.t3lib_tsparser.php 3530 2008-04-03 23:41:54Z sebastian $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -256,6 +256,12 @@ class t3lib_TSparser {
 									$tsFuncArg = $match[2];
 									list ($currentValue) = $this->getVal($objStrName,$setup);
 
+									$tsFuncArg = str_replace(
+										array('\\\\', '\n','\t'),
+										array('\\', chr(10),chr(9)),
+										$tsFuncArg
+									);
+
 									switch ($tsFunc)	{
 										case 'prependString':
 											$newValue = $tsFuncArg . $currentValue;
@@ -345,7 +351,7 @@ class t3lib_TSparser {
 										$this->setVal($objStrName,$setup,'UNSET');
 									break;
 									default:
-										$this->error('Line '.($this->lineNumberOffset+$this->rawP-1).': Object Name String, "'.htmlspecialchars($objStrName).'" was not preceeded by any operator, =<>({');
+										$this->error('Line '.($this->lineNumberOffset+$this->rawP-1).': Object Name String, "'.htmlspecialchars($objStrName).'" was not preceded by any operator, =<>({');
 									break;
 								}
 							}
@@ -492,9 +498,15 @@ class t3lib_TSparser {
 	 * Use: t3lib_TSparser::checkIncludeLines()
 	 *
 	 * @param	string		Unparsed TypoScript
+	 * @param	integer		Counter for detecting endless loops
 	 * @return	string		Complete TypoScript with includes added.
+	 * @static
 	 */
-	function checkIncludeLines($string)	{
+	function checkIncludeLines($string, $cycle_counter=1)	{
+		if ($cycle_counter>100) {
+			t3lib_div::sysLog('It appears like TypoScript code is looping over itself. Check your templates for "&lt;INCLUDE_TYPOSCRIPT: ..." tags','Core',2);
+			return '';
+		}
 		$splitStr='<INCLUDE_TYPOSCRIPT:';
 		if (strstr($string,$splitStr))	{
 			$newString='';
@@ -516,7 +528,9 @@ class t3lib_TSparser {
 									$filename = t3lib_div::getFileAbsFileName(trim($sourceParts[1]));
 									if (strcmp($filename,''))	{	// Must exist and must not contain '..' and must be relative
 										if (@is_file($filename) && filesize($filename)<100000)	{	// Max. 100 KB include files!
-											$newString.=t3lib_div::getUrl($filename).chr(10);
+												// check for includes in included text
+											$included_text = self::checkIncludeLines(t3lib_div::getUrl($filename),$cycle_counter+1);
+											$newString.= $included_text.chr(10);
 										}
 									}
 								break;

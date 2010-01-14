@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2006 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 2005-2008 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  *
  * @author Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * $Id: class.tx_rtehtmlarea_pi3.php 1676 2006-08-15 04:51:33Z stan $  *
+ * $Id: class.tx_rtehtmlarea_pi3.php 3439 2008-03-16 19:16:51Z flyguide $  *
  */
 
 require_once(PATH_tslib.'class.tslib_pibase.php');
@@ -41,6 +41,12 @@ class tx_rtehtmlarea_pi3 extends tslib_pibase {
 	var $scriptRelPath = 'pi3/class.tx_rtehtmlarea_pi3.php';	// Path to this script relative to the extension dir.
 	var $extKey = 'rtehtmlarea';		// The extension key.
 	var $conf = array();
+
+	/**
+	 * cObj object
+	 *
+	 * @var tslib_cObj
+	 */
 	var $cObj;
 
 	/**
@@ -53,15 +59,23 @@ class tx_rtehtmlarea_pi3 extends tslib_pibase {
 	 */
 	function render_clickenlarge($content,$conf)	{
 		global $TYPO3_CONF_VARS;
-		
+
 		$clickenlarge = isset($this->cObj->parameters['clickenlarge']) ? $this->cObj->parameters['clickenlarge'] : 0;
-		$file = isset($this->cObj->parameters['clickenlargesrc']) ? $this->cObj->parameters['clickenlargesrc'] : '';
-		
+		$path = $this->cObj->parameters['src'];
+		$pathPre = $TYPO3_CONF_VARS['BE']['RTE_imageStorageDir'].'RTEmagicC_';
+		if (t3lib_div::isFirstPartOfStr($path,$pathPre)) {
+				// Find original file:
+			$pI=pathinfo(substr($path,strlen($pathPre)));
+			$filename = substr($pI['basename'],0,-strlen('.'.$pI['extension']));
+			$file = $TYPO3_CONF_VARS['BE']['RTE_imageStorageDir'].'RTEmagicP_'.$filename;
+		} else {
+			$file = $this->cObj->parameters['src'];
+		}
+
 		unset($this->cObj->parameters['clickenlarge']);
-		unset($this->cObj->parameters['clickenlargesrc']);
 		unset($this->cObj->parameters['allParams']);
 		$content = '<img '. t3lib_div::implodeAttributes($this->cObj->parameters, TRUE, TRUE) . ' />';
-		
+
 		if ($TYPO3_CONF_VARS['EXTCONF'][$this->extKey]['enableClickEnlarge'] && $clickenlarge && is_array($conf['imageLinkWrap.'])) {
 			$theImage = $file ? $GLOBALS['TSFE']->tmpl->getFileName($file) : '';
 			if ($theImage) {

@@ -6,7 +6,9 @@
 	</meta>
 	<data type="array">
 		<languageKey index="default" type="array">
+			<label index="shortcutDescription">This is the shortcuts menu. You do not have any shortcuts added yet, you can do so by clicking the shortcut icon %icon%, which you can find on each page in the backend.</label>
 			<label index="shortcut_edit">Edit</label>
+			<label index="shortcut_create">Create</label>
 			<label index="shortcut_editID">Edit/Search</label>
 			<label index="shortcut_save">Update shortcut title</label>
 			<label index="shortcut_saveClose">Update and close editor</label>
@@ -38,6 +40,8 @@
 			<label index="insertNewRecordHere">Insert new record here</label>
 			<label index="movePageToHere">Move page to this position</label>
 			<label index="moveElement">Move element</label>
+			<label index="moveElements">Move elements</label>
+			<label index="copyElements">Copy elements</label>
 			<label index="selectPositionOfElement">Select position of the element</label>
 			<label index="movingElement">Move element</label>
 			<label index="makeCopy">Make copy instead of moving element</label>
@@ -53,6 +57,13 @@
 			<label index="CM_editPageProperties">Edit page properties</label>
 			<label index="CM_db_list">Web&gt;List module</label>
 			<label index="noEditPage">You asked to edit page &quot;%s&quot; but you cannot edit this page. Now loading backend as usual.</label>
+			<label index="localize">Localize</label>
+			<label index="localize.isLocalizable">Record can be localized</label>
+			<label index="localize.wasRemovedInOriginal">Record was removed in original language</label>
+			<label index="localizeAllRecords">Localize all records</label>
+			<label index="synchronizeWithOriginalLanguage">Synchronize with original language</label>
+			<label index="pageTree_filter">Filter</label>
+			<label index="switchtouser">Switch to User</label>
 		</languageKey>
 	</data>
 </T3locallang>

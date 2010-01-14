@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2007 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Libraries for pagegen.php
  * The script "pagegen.php" is included by "index_ts.php" when a page is not cached but needs to be rendered.
  *
- * $Id: class.tslib_pagegen.php 5357 2009-04-24 18:26:25Z lolli $
+ * $Id: class.tslib_pagegen.php 5358 2009-04-24 18:26:31Z lolli $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -317,14 +317,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 			}
 		}
 
-		return Array(count($functions)?'
-<script type="text/javascript">
-	/*<![CDATA[*/
-'.implode(chr(10),$functions).'
-'.implode(chr(10),$setEvents).'
-	/*]]>*/
-</script>
-			':'',$setBody);
+		return array(count($functions)? implode(chr(10), $functions) . chr(10) . implode(chr(10), $setEvents) : '', $setBody);
 	}
 
 	/**
@@ -333,7 +326,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 	 * @return	void
 	 */
 	function renderContent()	{
-		// PAGE CONTENT
+			// PAGE CONTENT
 		$GLOBALS['TT']->incStackPointer();
 		$GLOBALS['TT']->push($GLOBALS['TSFE']->sPre, 'PAGE');
 			$pageContent = $GLOBALS['TSFE']->cObj->cObjGet($GLOBALS['TSFE']->pSetup);
@@ -473,7 +466,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		$GLOBALS['TSFE']->content.='
 	<meta http-equiv="Content-Type" content="text/html; charset='.$theCharset.'" />';
 
-$GLOBALS['TSFE']->content.='
+		$GLOBALS['TSFE']->content.='
 
 <!-- '.($customContent?$customContent.chr(10):'').'
 	This website is powered by TYPO3 - inspiring people to share!
@@ -490,9 +483,18 @@ $GLOBALS['TSFE']->content.='
 		}
 
 		if ($GLOBALS['TSFE']->pSetup['shortcutIcon']) {
-			$ss=$path.$GLOBALS['TSFE']->tmpl->getFileName($GLOBALS['TSFE']->pSetup['shortcutIcon']);
-			$GLOBALS['TSFE']->content.='
-	<link rel="SHORTCUT ICON" href="'.htmlspecialchars($ss).'" />';
+			$favIcon = t3lib_div::getIndpEnv('TYPO3_SITE_URL') . $GLOBALS['TSFE']->tmpl->getFileName($GLOBALS['TSFE']->pSetup['shortcutIcon']);
+			$iconMimeType = '';
+			if (function_exists('finfo_open')) {
+				if (($finfo = @finfo_open(FILEINFO_MIME))) {
+					$iconMimeType = ' type="' . finfo_file($finfo, $favIcon) . '"';
+					finfo_close($finfo);
+				}
+			}
+
+			$GLOBALS['TSFE']->content.= '
+	<link rel="shortcut icon" href="'.htmlspecialchars($favIcon).'"'.$iconMimeType.' />
+	<link rel="icon" href="'.htmlspecialchars($favIcon).'"'.$iconMimeType.' />';
 		}
 
 			// Including CSS files
@@ -520,7 +522,7 @@ $GLOBALS['TSFE']->content.='
 		}
 
 		if ($GLOBALS['TSFE']->pSetup['stylesheet'])	{
-			$ss=$GLOBALS['TSFE']->tmpl->getFileName($GLOBALS['TSFE']->pSetup['stylesheet']);
+			$ss = $GLOBALS['TSFE']->tmpl->getFileName($GLOBALS['TSFE']->pSetup['stylesheet']);
 			if ($ss)	{
 				$GLOBALS['TSFE']->content.='
 	<link rel="stylesheet" type="text/css" href="'.htmlspecialchars($ss).'" />';
@@ -729,7 +731,7 @@ $GLOBALS['TSFE']->content.='
 		function blurLink(theObject)	{	//
 			if (msie4)	{theObject.blur();}
 		}
-		';
+		' . $JSef[0];
 
 		if ($GLOBALS['TSFE']->spamProtectEmailAddresses && $GLOBALS['TSFE']->spamProtectEmailAddresses !== 'ascii') {
 			$_scriptCode.= '
@@ -768,21 +770,60 @@ $GLOBALS['TSFE']->content.='
 		';
 		}
 
+			//add inline JS
+		$_inlineJS = '';
+			// defined in TS with page.inlineJS
+		if (is_array($GLOBALS['TSFE']->pSetup['inlineJS.']))	{
+			$GLOBALS['TSFE']->inlineJS[]= $GLOBALS['TSFE']->cObj->cObjGet($GLOBALS['TSFE']->pSetup['inlineJS.'],'inlineJS.');
+		}
+			// defined in php
+		if(is_array($GLOBALS['TSFE']->inlineJS)) {
+			foreach($GLOBALS['TSFE']->inlineJS as $key=>$val) {
+				if(!is_array($val)) {
+					$_inlineJS .= chr(10).$val.chr(10);
+				}
+			}
+		}
+
+			// Should minify?
+		if ($GLOBALS['TSFE']->config['config']['minifyJS']) {
+			$minifyErrorScript = $minifyErrorInline = '';
+			$_scriptCode = t3lib_div::minifyJavaScript($_scriptCode,$minifyErrorScript);
+			if ($minifyErrorScript) {
+				$GLOBALS['TT']->setTSlogMessage($minifyErrorScript, 3);
+			}
+			if ($_inlineJS) {
+				$_inlineJS = t3lib_div::minifyJavaScript($_inlineJS,$minifyErrorInline);
+				if ($minifyErrorInline) {
+					$GLOBALS['TT']->setTSlogMessage($minifyErrorInline, 3);
+				}
+			}
+		}
+
 		if (!$GLOBALS['TSFE']->config['config']['removeDefaultJS']) {
-				// NOTICE: The following code must be kept synchronized with "tslib/default.js"!!!
+				// inlude default and inlineJS
 			$GLOBALS['TSFE']->content.='
 	<script type="text/javascript">
 		/*<![CDATA[*/
-	<!--'.$_scriptCode.'
+	<!--'.$_scriptCode.$_inlineJS.'
 	// -->
 		/*]]>*/
 	</script>';
 		} elseif ($GLOBALS['TSFE']->config['config']['removeDefaultJS']==='external')	{
-			$GLOBALS['TSFE']->content.= TSpagegen::inline2TempFile($_scriptCode, 'js');
+				// put default and inlineJS in external file
+			$GLOBALS['TSFE']->content.= TSpagegen::inline2TempFile($_scriptCode.$_inlineJS, 'js');
+		} elseif ($_inlineJS) {
+				// include only inlineJS
+			$GLOBALS['TSFE']->content.='
+	<script type="text/javascript">
+		/*<![CDATA[*/
+	<!--'.$_inlineJS.'
+	// -->
+		/*]]>*/
+	</script>';
 		}
 
 		$GLOBALS['TSFE']->content.= chr(10).implode($GLOBALS['TSFE']->additionalHeaderData,chr(10)).'
-'.$JSef[0].'
 </head>';
 		if ($GLOBALS['TSFE']->pSetup['frameSet.'])	{
 			$fs = t3lib_div::makeInstance('tslib_frameset');
@@ -817,15 +858,15 @@ $GLOBALS['TSFE']->content.='
 		$GLOBALS['TSFE']->content.= chr(10).$bodyTag;
 
 
-		// Div-sections
+			// Div-sections
 		if ($GLOBALS['TSFE']->divSection)	{
 			$GLOBALS['TSFE']->content.= chr(10).$GLOBALS['TSFE']->divSection;
 		}
 
-		// Page content
+			// Page content
 		$GLOBALS['TSFE']->content.= chr(10).$pageContent;
 
-		// Ending page
+			// Ending page
 		$GLOBALS['TSFE']->content.= chr(10).'</body>';
 		if ($GLOBALS['TSFE']->pSetup['frameSet.'])	{
 			$GLOBALS['TSFE']->content.= chr(10).'</noframes>';
@@ -958,8 +999,8 @@ require_once (PATH_t3lib.'class.t3lib_loaddbgroup.php');
  * @subpackage tslib
  * @see tslib_cObj::RECORDS()
  */
-class FE_loadDBGroup extends t3lib_loadDBGroup	{
-	var $fromTC = 0;		// Means the not only uid and label-field is returned, but everything
+class FE_loadDBGroup extends t3lib_loadDBGroup {
+	var $fromTC = 0;	// Means that everything is returned instead of only uid and label-field
 }
 
 // **********************************

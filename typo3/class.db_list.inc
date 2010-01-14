@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Include file extending t3lib_recordList
  * Shared between Web>List (db_list.php) and Web>Page (sysext/cms/layout/db_layout.php)
  *
- * $Id: class.db_list.inc 3767 2008-06-06 07:13:23Z baschny $
+ * $Id: class.db_list.inc 4723 2009-01-15 20:40:54Z steffenk $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -118,6 +118,7 @@ class recordList extends t3lib_recordList {
 	var $modSharedTSconfig = array();		// Shared module configuration, used by localization features
 	var $pageRecord = array();		// Loaded with page record with version overlay if any.
 	var $hideTables = '';			// Tables which should not get listed
+	var $tableTSconfigOverTCA = array(); //TSconfig which overwrites TCA-Settings
 
 		// Internal, dynamic:
 	var $JScode = '';				// JavaScript code accumulation
@@ -225,7 +226,10 @@ class recordList extends t3lib_recordList {
 				t3lib_div::loadTCA($tableName);
 
 					// Hide tables which are configured via TSConfig not to be shown (also works for admins):
-				if (t3lib_div::inList($this->hideTables, $tableName))	continue;
+				if (isset($this->tableTSconfigOverTCA[$tableName.'.']['hideTable']) ? $this->tableTSconfigOverTCA[$tableName.'.']['hideTable'] :
+						(t3lib_div::inList($this->hideTables, $tableName) ? true : $GLOBALS['TCA'][$tableName]['ctrl']['hideTable'])) {
+					continue;
+				}
 
 					// iLimit is set depending on whether we're in single- or multi-table mode
 				if ($this->table)	{
@@ -559,7 +563,10 @@ class recordList extends t3lib_recordList {
 		if (!strcmp($code,'')) {
 			$code = '<i>['.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.no_title',1).']</i> - '.htmlspecialchars(t3lib_div::fixed_lgd_cs(t3lib_BEfunc::getRecordTitle($table,$row),$GLOBALS['BE_USER']->uc['titleLen']));
 		} else {
-			$code = htmlspecialchars(t3lib_div::fixed_lgd_cs($code,$this->fixedL));
+			$code = htmlspecialchars(t3lib_div::fixed_lgd_cs($code, t3lib_div::intval_positive($GLOBALS['BE_USER']->uc['titleLen']) ? $GLOBALS['BE_USER']->uc['titleLen'] : $this->fixedL));
+			if ($code != htmlspecialchars($origCode)) {
+				$code = '<span title="'.htmlspecialchars($origCode).'">'.$code.'</span>';
+			}
 		}
 
 		switch((string)$this->clickTitleMode)	{
@@ -650,6 +657,7 @@ class recordList extends t3lib_recordList {
 			($this->searchString?'&search_field='.rawurlencode($this->searchString):'').
 			($this->searchLevels?'&search_levels='.rawurlencode($this->searchLevels):'').
 			($this->showLimit?'&showLimit='.rawurlencode($this->showLimit):'').
+			($this->firstElementNumber?'&pointer='.rawurlencode($this->firstElementNumber):'').
 			((!$exclList || !t3lib_div::inList($exclList,'sortField')) && $this->sortField?'&sortField='.rawurlencode($this->sortField):'').
 			((!$exclList || !t3lib_div::inList($exclList,'sortRev')) && $this->sortRev?'&sortRev='.rawurlencode($this->sortRev):'')
 			;
@@ -777,4 +785,5 @@ class recordList extends t3lib_recordList {
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/class.db_list.inc'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/class.db_list.inc']);
 }
+
 ?>

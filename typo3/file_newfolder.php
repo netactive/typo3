@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Web>File: Create new folders in the filemounts
  *
- * $Id: file_newfolder.php 4406 2008-11-01 17:20:42Z ohader $
+ * $Id: file_newfolder.php 4407 2008-11-01 17:21:28Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -53,7 +53,7 @@ $BACK_PATH = '';
 require('init.php');
 require('template.php');
 require_once(PATH_t3lib.'class.t3lib_basicfilefunc.php');
-
+require_once(PATH_t3lib.'class.t3lib_parsehtml.php');
 
 
 
@@ -77,8 +77,19 @@ class SC_file_newfolder {
 	var $folderNumber=10;
 
 		// Internal, static:
-	var $doc;			// Template object.
-	var $basicff;		// Instance of "t3lib_basicFileFunctions"
+	/**
+	 * document template object
+	 *
+	 * @var smallDoc
+	 */
+	var $doc;
+
+	/**
+	 * File processing object
+	 *
+	 * @var t3lib_basicFileFunctions
+	 */
+	var $basicff;
 	var $icon;			// Will be set to the proper icon for the $target value.
 	var $shortPath;		// Relative path to current found filemount
 	var $title;			// Name of the filemount
@@ -111,7 +122,7 @@ class SC_file_newfolder {
 		$this->basicff->init($GLOBALS['FILEMOUNTS'],$TYPO3_CONF_VARS['BE']['fileExtensions']);
 
 			// Cleaning and checking target
-		$this->target = $GLOBALS['LANG']->csConvObj->conv($this->target,'utf-8',$GLOBALS['LANG']->charSet);
+		$this->target = $GLOBALS['LANG']->csConvObj->conv($this->target, 'utf-8', $GLOBALS['LANG']->charSet);
 		$this->target = $this->basicff->is_directory($this->target);
 		$key=$this->basicff->checkPathAgainstMounts($this->target.'/');
 		if (!$this->target || !$key)	{
@@ -126,24 +137,26 @@ class SC_file_newfolder {
 			default:		$this->icon = 'gfx/i/_icon_ftp.gif';	break;
 		}
 
+		$this->icon = '<img'.t3lib_iconWorks::skinImg($this->backPath,$this->icon,'width="18" height="16"').' title="" alt="" />';
+
 			// Relative path to filemount, $key:
 		$this->shortPath = substr($this->target,strlen($GLOBALS['FILEMOUNTS'][$key]['path']));
 
 			// Setting title:
-		$this->title = $GLOBALS['FILEMOUNTS'][$key]['name'].': '.$this->shortPath;
+		$this->title = $this->icon.$GLOBALS['FILEMOUNTS'][$key]['name'].': '.$this->shortPath;
 
 			// Setting template object
-		$this->doc = t3lib_div::makeInstance('smallDoc');
+		$this->doc = t3lib_div::makeInstance('template');
 		$this->doc->docType = 'xhtml_trans';
+		$this->doc->setModuleTemplate('templates/file_newfolder.html');
 		$this->doc->backPath = $BACK_PATH;
-		$this->doc->form='<form action="tce_file.php" method="post" name="editform">';
 		$this->doc->JScode=$this->doc->wrapScriptTags('
 			var path = "'.$this->target.'";
 
 			function reload(a)	{	//
 				if (!changed || (changed && confirm('.$LANG->JScharCode($LANG->sL('LLL:EXT:lang/locallang_core.php:mess.redraw')).')))	{
-					var params = "&target="+encodeURIComponent(path)+"&number="+a+"&returnUrl='
-							. urlencode($GLOBALS['LANG']->csConvObj->conv($this->returnUrl,$GLOBALS['LANG']->charSet,'utf-8'))
+					var params = "&target="+encodeURIComponent(path)+"&number="+a+"&returnUrl=' 
+							. urlencode($GLOBALS['LANG']->csConvObj->conv($this->returnUrl, $GLOBALS['LANG']->charSet, 'utf-8')) 
 							. '";
 					window.location.href = "file_newfolder.php?"+params;
 				}
@@ -164,18 +177,21 @@ class SC_file_newfolder {
 	function main()	{
 		global $LANG;
 
-			// Make page header:
-		$this->content='';
+			// start content compilation
 		$this->content.=$this->doc->startPage($LANG->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.pagetitle'));
-		$this->content.=$this->doc->header($LANG->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.pagetitle'));
-		$this->content.=$this->doc->spacer(5);
-		$this->content.=$this->doc->section('',$this->doc->getFileheader($this->title,$this->shortPath,$this->icon));
-		$this->content.=$this->doc->divider(5);
 
 
+			// Make page header:
+		$pageContent='';
+		$pageContent.=$this->doc->header($LANG->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.pagetitle'));
+		$pageContent.=$this->doc->spacer(5);
+		$pageContent.=$this->doc->divider(5);
+
+
+		$code = '<form action="tce_file.php" method="post" name="editform">';
 			// Making the selector box for the number of concurrent folder-creations
 		$this->number = t3lib_div::intInRange($this->number,1,10);
-		$code='
+		$code .= '
 			<div id="c-select">
 				<select name="number" onchange="reload(this.options[this.selectedIndex].value);">';
 		for ($a=1;$a<=$this->folderNumber;$a++)	{
@@ -213,16 +229,16 @@ class SC_file_newfolder {
 			// CSH:
 		$code.= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'file_newfolder', $GLOBALS['BACK_PATH'],'<br/>');
 
-		$this->content.= $this->doc->section('',$code);
+		$pageContent.= $code;
 
 
 
 			// Add spacer:
-		$this->content.= $this->doc->spacer(10);
+		$pageContent.= $this->doc->spacer(10);
 
 			// Switching form tags:
-		$this->content.= $this->doc->sectionEnd();
-		$this->content.= '</form><form action="tce_file.php" method="post" name="editform2">';
+		$pageContent.= $this->doc->sectionEnd();
+		$pageContent.= '</form><form action="tce_file.php" method="post" name="editform2">';
 
 			// Add form fields for creation of a new, blank text file:
 		$code='
@@ -244,10 +260,22 @@ class SC_file_newfolder {
 
 			// CSH:
 		$code.= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'file_newfile', $GLOBALS['BACK_PATH'],'<br/>');
+		$pageContent.= $this->doc->section($LANG->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.newfile'),$code);
+
+		$docHeaderButtons = array();
 
 			// Add the HTML as a section:
-		$this->content.= $this->doc->section($LANG->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.newfile'),$code);
+		$markerArray = array(
+			'CSH' => $docHeaderButtons['csh'],
+			'FUNC_MENU' => t3lib_BEfunc::getFuncMenu($this->id, 'SET[function]', $this->MOD_SETTINGS['function'], $this->MOD_MENU['function']),
+			'CONTENT' => $pageContent,
+			'PATH' => $this->title,
+		);
 
+		$this->content.= $this->doc->moduleBody(array(), $docHeaderButtons, $markerArray);
+		$this->content.= $this->doc->endPage();
+
+		$this->content = $this->doc->insertStylesAndJS($this->content);
 	}
 
 	/**
@@ -256,8 +284,6 @@ class SC_file_newfolder {
 	 * @return	void
 	 */
 	function printContent()	{
-		$this->content.= $this->doc->endPage();
-		$this->content = $this->doc->insertStylesAndJS($this->content);
 		echo $this->content;
 	}
 }

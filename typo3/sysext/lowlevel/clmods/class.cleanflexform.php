@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -106,6 +106,7 @@ Cleaning XML for FlexForm fields.
 
 		$this->genTree($startingPoint,$depth,(int)$this->cli_argValue('--echotree'),'main_parseTreeCallBack');
 
+		asort($resultArray);
 		return $resultArray;
 	}
 
@@ -135,7 +136,7 @@ Cleaning XML for FlexForm fields.
 
 					if (md5($recRow[$colName])!=md5($newXML))	{
 						if ($echoLevel>2)	echo ' was DIRTY, needs cleanup!';
-						$this->cleanFlexForm_dirtyFields[] = $tableName.':'.$uid.':'.$colName;
+						$this->cleanFlexForm_dirtyFields[t3lib_div::shortMd5($tableName.':'.$uid.':'.$colName)] = $tableName.':'.$uid.':'.$colName;
 					} else {
 						if ($echoLevel>2)	echo ' was CLEAN';
 					}

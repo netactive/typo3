@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -31,7 +31,7 @@
  * Will appear as the default document in the top frame if configured to appear.
  * This is the default menu used during "condensed mode"
  *
- * $Id: alt_topmenu_dummy.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: alt_topmenu_dummy.php 3439 2008-03-16 19:16:51Z flyguide $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant content
  *
@@ -95,7 +95,7 @@ class SC_alt_topmenu_dummy {
 					$tempContent = $hookObj->fetchContentTopmenu_processContent($this);
 
 						// Placement priority handling.
-					if (is_int($hookObj->priority) and ($hookObj->priority>=1 and $hookObj->priority<=9))	{
+					if (is_int($hookObj->priority) && ($hookObj->priority>=1 && $hookObj->priority<=9)) {
 						$priority = $hookObj->priority;
 					} else $priority = 5;
 
@@ -120,6 +120,8 @@ class SC_alt_topmenu_dummy {
 				// Start page
 			$TBE_TEMPLATE->docType = 'xhtml_trans';
 			$TBE_TEMPLATE->bodyTagId.= '-iconmenu';
+			$TBE_TEMPLATE->JScodeArray[] = $alt_menuObj->generateMenuJScode($loadModules->modules);
+
 			$this->content.=$TBE_TEMPLATE->startPage('Top frame icon menu');
 
 			if ($iconMenuMode)	{

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2001-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -76,7 +76,12 @@ class tx_indexedsearch_lexer {
 	var $debug = FALSE;		// If set, the debugString is filled with HTML output highlighting search / non-search words (for backend display)
 	var $debugString = '';
 
-	var $csObj;		// Charset class object , t3lib_cs
+	/**
+	 * Charset class object
+	 *
+	 * @var t3lib_cs
+	 */
+	var $csObj;
 
 
 		// Configuration of the lexer:

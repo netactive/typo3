@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2006 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains class with functions for parsing HTML code.
  *
- * $Id: class.t3lib_parsehtml.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: class.t3lib_parsehtml.php 3770 2008-06-09 14:24:15Z baschny $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -214,6 +214,57 @@ class t3lib_parsehtml	{
 		}
 
 		return $before.$between.$after;
+	}
+
+
+	/**
+	 * Substitutes a marker string in the input content (by a simple str_replace())
+	 *
+	 * @param	string		The content stream, typically HTML template content.
+	 * @param	string		The marker string, typically on the form "###[the marker string]###"
+	 * @param	mixed		The content to insert instead of the marker string found.
+	 * @return	string		The processed HTML content string.
+	 * @see substituteSubpart()
+	 */
+	public function substituteMarker($content, $marker, $markContent)	{
+		return str_replace($marker, $markContent, $content);
+	}
+
+
+	/**
+	 * Traverses the input $markContentArray array and for each key the marker by the same name (possibly wrapped and in upper case) will be substituted with the keys value in the array.
+	 * This is very useful if you have a data-record to substitute in some content. In particular when you use the $wrap and $uppercase values to pre-process the markers. Eg. a key name like "myfield" could effectively be represented by the marker "###MYFIELD###" if the wrap value was "###|###" and the $uppercase boolean true.
+	 *
+	 * @param	string		The content stream, typically HTML template content.
+	 * @param	array		The array of key/value pairs being marker/content values used in the substitution. For each element in this array the function will substitute a marker in the content stream with the content.
+	 * @param	string		A wrap value - [part 1] | [part 2] - for the markers before substitution
+	 * @param	boolean		If set, all marker string substitution is done with upper-case markers.
+	 * @param	boolean		If set, all unused marker are deleted.
+	 * @return	string		The processed output stream
+	 * @see substituteMarker(), substituteMarkerInObject(), TEMPLATE()
+	 */
+	public function substituteMarkerArray($content, $markContentArray, $wrap='', $uppercase=0, $deleteUnused=0) {
+		if (is_array($markContentArray)) {
+			$wrapArr = t3lib_div::trimExplode('|', $wrap);
+			foreach ($markContentArray as $marker => $markContent) {
+				if ($uppercase) {
+						// use strtr instead of strtoupper to avoid locale problems with Turkish
+					$marker = strtr($marker,'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+				}
+				if (count($wrapArr) > 0) {
+					$marker = $wrapArr[0].$marker.$wrapArr[1];
+				}
+				$content = str_replace($marker, $markContent, $content);
+			}
+
+			if ($deleteUnused) {
+				if (empty($wrap)) {
+					$wrapArr = array('###', '###');
+				}
+				$content = preg_replace('/'.preg_quote($wrapArr[0]).'([A-Z0-9_-|]*)'.preg_quote($wrapArr[1]).'/is', '', $content);
+			}
+		}
+		return $content;
 	}
 
 
@@ -623,10 +674,33 @@ class t3lib_parsehtml	{
 		$c = 1;
 		$tagRegister = array();
 		$tagStack = array();
+		$inComment = false; $skipTag = false;
 		while(list(,$tok)=each($tokArr))	{
+			if ($inComment) {
+				if (($eocPos = strpos($tok, '-->')) === false) {
+					// End of comment is not found in the token. Go futher until end of comment is found in other tokens.
+					$newContent[$c++] = '<' . $tok;
+					continue;
+				}
+				// Comment ends in the middle of the token: add comment and proceed with rest of the token
+				$newContent[$c++] = '<' . substr($tok, 0, $eocPos + 3);
+				$tok = substr($tok, $eocPos + 3);
+				$inComment = false; $skipTag = true;
+			}
+			elseif (substr($tok, 0, 3) == '!--') {
+				if (($eocPos = strpos($tok, '-->')) === false) {
+					// Comment started in this token but it does end in the same token. Set a flag to skip till the end of comment
+					$newContent[$c++] = '<' . $tok;
+					$inComment = true;
+					continue;
+				}
+				// Start and end of comment are both in the current token. Add comment and proceed with rest of the token
+				$newContent[$c++] = '<' . substr($tok, 0, $eocPos + 3);
+				$tok = substr($tok, $eocPos + 3);
+				$skipTag = true;
+			}
 			$firstChar = substr($tok,0,1);
-#			if (strcmp(trim($firstChar),''))	{		// It is a tag...
-			if (preg_match('/[[:alnum:]\/]/',$firstChar)==1)	{		// It is a tag... (first char is a-z0-9 or /) (fixed 19/01 2004). This also avoids triggering on <?xml..> and <!DOCTYPE..>
+			if (!$skipTag && preg_match('/[[:alnum:]\/]/',$firstChar)==1)	{		// It is a tag... (first char is a-z0-9 or /) (fixed 19/01 2004). This also avoids triggering on <?xml..> and <!DOCTYPE..>
 				$tagEnd = strpos($tok,'>');
 				if ($tagEnd)	{	// If there is and end-bracket...	tagEnd can't be 0 as the first character can't be a >
 					$endTag = $firstChar=='/' ? 1 : 0;
@@ -790,7 +864,8 @@ class t3lib_parsehtml	{
 					$newContent[$c++]=$this->processContent('<'.$tok,$hSC,$addConfig);	// There were not end-bracket, so no tag...
 				}
 			} else {
-				$newContent[$c++]=$this->processContent('<'.$tok,$hSC,$addConfig);	// It was not a tag anyways
+				$newContent[$c++]=$this->processContent(($skipTag ? '' : '<') . $tok, $hSC, $addConfig);	// It was not a tag anyways
+				$skipTag = false;
 			}
 		}
 

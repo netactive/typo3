@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2005 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2008 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -25,23 +25,29 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /**
- * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
+ * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
 
 require_once(PATH_t3lib."class.t3lib_extobjbase.php");
 
 class tx_tstemplateanalyzer extends t3lib_extobjbase {
+	function init(&$pObj,$conf)	{
+		parent::init($pObj,$conf);
+
+		$this->pObj->modMenu_setDefaultList.= ',ts_analyzer_checkLinenum,ts_analyzer_checkSyntax,ts_analyzer_checkSyntaxBlockmode';
+	}
+
 	function modMenu()	{
 		global $LANG;
 
-		return Array (
-			"ts_analyzer_checkSetup" => "",
-			"ts_analyzer_checkConst" => "",
-			"ts_analyzer_checkLinenum" => "",
-			"ts_analyzer_checkComments" => "",
-			"ts_analyzer_checkCrop" => "",
-			"ts_analyzer_checkSyntax" => "",
-			"ts_analyzer_checkSyntaxBlockmode" => "",
+		return array (
+			'ts_analyzer_checkSetup' => '1',
+			'ts_analyzer_checkConst' => '1',
+			'ts_analyzer_checkLinenum' => '1',
+			'ts_analyzer_checkComments' => '1',
+			'ts_analyzer_checkCrop' => '1',
+			'ts_analyzer_checkSyntax' => '1',
+			'ts_analyzer_checkSyntaxBlockmode' => '1',
 		);
 	}
 
@@ -85,7 +91,7 @@ class tx_tstemplateanalyzer extends t3lib_extobjbase {
 		$existTemplate = $this->initialize_editor($this->pObj->id,$template_uid);		// initialize
 		if ($existTemplate)	{
 			$theOutput.=$this->pObj->doc->divider(5);
-			$theOutput.=$this->pObj->doc->section("Current template:",'<img src="'.$BACK_PATH.t3lib_iconWorks::getIcon("sys_template",$tplRow).'" width=18 height=16 align=top><b>'.$this->pObj->linkWrapTemplateTitle($tplRow["title"]).'</b>'.htmlspecialchars(trim($tplRow["sitetitle"])?' - ('.$tplRow["sitetitle"].')':''));
+			$theOutput.=$this->pObj->doc->section("Current template:",'<img '.t3lib_iconWorks::skinImg($BACK_PATH, t3lib_iconWorks::getIcon('sys_template', $tplRow)).' align="top" /> <b>'.$this->pObj->linkWrapTemplateTitle($tplRow["title"]).'</b>'.htmlspecialchars(trim($tplRow["sitetitle"])?' - ('.$tplRow["sitetitle"].')':''));
 		}
 		if ($manyTemplatesMenu)	{
 			$theOutput.=$this->pObj->doc->section("",$manyTemplatesMenu);
