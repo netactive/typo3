@@ -27,7 +27,7 @@
 /**
  * Generates a thumbnail and returns an image stream, either GIF/PNG or JPG
  *
- * $Id: thumbs.php 6263 2009-10-22 11:55:43Z ohader $
+ * $Id: thumbs.php 6724 2010-01-05 12:26:31Z benni $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author		Kasper Skaarhoj	<kasperYYYY@typo3.com>
@@ -55,7 +55,11 @@
 // *******************************
 // Set error reporting
 // *******************************
-error_reporting (E_ALL ^ E_NOTICE);
+if (defined('E_DEPRECATED')) {
+	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
+} else {
+	error_reporting(E_ALL ^ E_NOTICE);
+}
 
 
 
@@ -232,7 +236,7 @@ class SC_t3lib_thumbs {
 					} else {
 						$colors = ($sizeMax>56)?'-colors 64':'-colors 16';
 					}
-					$parameters = '-sample '.$this->size.' '.$colors.' '.$this->wrapFileName($this->input.'[0]').' '.$this->wrapFileName($this->output);
+					$parameters = '-sample '.$this->size.' '.$colors.' '.$this->wrapFileName($this->input).'[0] '.$this->wrapFileName($this->output);
 					$cmd = t3lib_div::imageMagickCommand('convert', $parameters);
 					exec($cmd);
 					if (!@file_exists($this->output))	{

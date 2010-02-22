@@ -27,7 +27,7 @@
 /**
  * Contains the reknown class "t3lib_div" with general purpose functions
  *
- * $Id: class.t3lib_div.php 6259 2009-10-22 10:23:37Z baschny $
+ * $Id: class.t3lib_div.php 6529 2009-11-25 12:08:31Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  * Usage counts are based on search 22/2 2003 through whole source including tslib/
@@ -900,6 +900,17 @@ final class t3lib_div {
 	}
 
 	/**
+	 * Checks if a given URL matches the host that currently handles this HTTP request.
+	 * Scheme, hostname and (optional) port of the given URL are compared.
+	 *
+	 * @param	string		$url: URL to compare with the TYPO3 request host
+	 * @return	boolean		Whether the URL matches the TYPO3 request host
+	 */
+	public static function isOnCurrentHost($url) {
+		return (stripos($url . '/', self::getIndpEnv('TYPO3_REQUEST_HOST') . '/') === 0);
+	}
+
+	/**
 	 * Check for item in list
 	 * Check if an item exists in a comma-separated list of items.
 	 * Usage: 163
@@ -1534,6 +1545,16 @@ final class t3lib_div {
 		return $output;
 	}
 
+	/**
+	 * Checks if a given string is a Uniform Resource Locator (URL).
+	 *
+	 * @param	string		$url: The URL to be validated
+	 * @return	boolean		Whether the given URL is valid
+	 */
+	public static function isValidUrl($url) {
+		return (filter_var($url, FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED) !== false);
+	}
+
 
 
 
@@ -1780,6 +1801,7 @@ final class t3lib_div {
 			} else {
 				$value = addslashes($value);
 			}
+			unset($value);
 		}
 		reset($theArray);
 	}
@@ -1801,6 +1823,7 @@ final class t3lib_div {
 			} else {
 				$value = stripslashes($value);
 			}
+			unset($value);
 		}
 		reset($theArray);
 	}
@@ -3874,13 +3897,38 @@ final class t3lib_div {
 	 * @return string either $url if $url is considered to be harmless, or an
 	 *                empty string otherwise
 	 */
-	public static function sanitizeBackEndUrl($url = '') {
-		$whitelistPattern = '/^[a-zA-Z0-9_\/\.&=\?]+$/';
-		if (!preg_match($whitelistPattern, $url)) {
-			$url = '';
+	public static function sanitizeLocalUrl($url = '') {
+		$sanitizedUrl = '';
+		$decodedUrl = rawurldecode($url);
+
+		if (!empty($url) && self::removeXSS($decodedUrl) === $decodedUrl) {
+			$testAbsoluteUrl = self::resolveBackPath($decodedUrl);
+			$testRelativeUrl = self::resolveBackPath(
+				t3lib_div::dirname(t3lib_div::getIndpEnv('SCRIPT_NAME')) . '/' . $decodedUrl
+			);
+
+				// Pass if URL is on the current host:
+			if (self::isValidUrl($decodedUrl)) {
+				if (self::isOnCurrentHost($decodedUrl) && strpos($decodedUrl, self::getIndpEnv('TYPO3_SITE_URL')) === 0) {
+					$sanitizedUrl = $url;
+				}
+				// Pass if URL is an absolute file path:
+			} elseif (self::isAbsPath($decodedUrl) && self::isAllowedAbsPath($decodedUrl)) {
+				$sanitizedUrl = $url;
+				// Pass if URL is absolute and below TYPO3 base directory:
+			} elseif (strpos($testAbsoluteUrl, self::getIndpEnv('TYPO3_SITE_PATH')) === 0 && substr($decodedUrl, 0, 1) === '/') {
+				$sanitizedUrl = $url;
+				// Pass if URL is relative and below TYPO3 base directory:
+			} elseif (strpos($testRelativeUrl, self::getIndpEnv('TYPO3_SITE_PATH')) === 0 && substr($decodedUrl, 0, 1) !== '/') {
+				$sanitizedUrl = $url;
+			}
 		}
 
-		return $url;
+		if (!empty($url) && empty($sanitizedUrl)) {
+			self::sysLog('The URL "' . $url . '" is not considered to be local and was denied.', 'Core', self::SYSLOG_SEVERITY_NOTICE);
+		}
+
+		return $sanitizedUrl;
 	}
 
 	/**

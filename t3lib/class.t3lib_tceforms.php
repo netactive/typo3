@@ -27,7 +27,7 @@
 /**
  * Contains TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: class.t3lib_tceforms.php 5480 2009-05-22 18:59:18Z ohader $
+ * $Id: class.t3lib_tceforms.php 6495 2009-11-23 09:59:59Z ohader $
  * Revised for TYPO3 3.6 August/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1908,6 +1908,15 @@ class t3lib_TCEforms	{
 				$tvP[1] = rawurlencode(@sprintf($nMV_label, $evalValue));
 			} elseif (isset($PA['fieldTSConfig']['altLabels.'][$evalValue])) {
 				$tvP[1] = rawurlencode($this->sL($PA['fieldTSConfig']['altLabels.'][$evalValue]));
+			}
+			if ($tvP[1] == '') {
+					// Case: flexform, default values supplied, no label provided (bug #9795)
+				foreach ($selItems as $selItem) {
+					if ($selItem[1] == $tvP[0]) {
+						$tvP[1] = $selItem[0];
+						break;
+					}
+				}
 			}
 			$itemArray[$tk] = implode('|',$tvP);
 		}
@@ -4712,10 +4721,10 @@ class t3lib_TCEforms	{
 	 * Returns divider.
 	 * Currently not implemented and returns only blank value.
 	 *
-	 * @return	string
+	 * @return	string		Empty string
 	 */
-	function getDivider()	{
-		//return "<hr />";
+	function getDivider() {
+		return '';
 	}
 
 	/**

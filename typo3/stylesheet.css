@@ -6,7 +6,7 @@ Description :	Stylesheet for the TYPO3 backend.
 				You can configure another/additional stylesheet for
 				use by the $TBE_STYLES global var
 
-	$Id: stylesheet.css 5729 2009-07-20 16:05:21Z flyguide $
+	$Id: stylesheet.css 6739 2010-01-09 12:46:24Z lolli $
 
 - - - - - - - - - - - - - - - - - - - - - */
 
@@ -2158,6 +2158,9 @@ body#typo3-mod-tools-em-index-php tr td.extstate {
 	text-align: center;
 }
 
+body#typo3-mod-tools-em-index-php a {
+	display: inline-block;
+}
 
 /* - - - - - - - - - - - - - - - - - - - - -
 

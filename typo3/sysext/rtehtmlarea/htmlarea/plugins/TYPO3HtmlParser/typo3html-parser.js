@@ -26,7 +26,7 @@
 /**
  * TYPO3HtmlParser Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: typo3html-parser.js 5930 2009-09-15 16:16:38Z stan $
+ * TYPO3 SVN ID: $Id: typo3html-parser.js 6405 2009-11-11 22:17:58Z stan $
  */
 TYPO3HtmlParser = HTMLArea.Plugin.extend({
 	
@@ -94,6 +94,9 @@ TYPO3HtmlParser = HTMLArea.Plugin.extend({
 	
 	clean : function() {
 		var editor = this.editor;
+		if (HTMLArea.is_safari) {
+			editor.cleanAppleStyleSpans(editor._doc.body);
+		}
 		var bookmark = editor.getBookmark(editor._createRange(editor._getSelection()));
 		var content = {
 			editorNo : this.editorNumber,

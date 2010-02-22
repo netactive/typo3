@@ -29,7 +29,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_pi2.php 4670 2009-01-08 21:10:33Z stan $  *
+ * $Id: class.tx_rtehtmlarea_pi2.php 6314 2009-11-02 23:25:47Z stan $  *
  */
 
 require_once(t3lib_extMgm::extPath('rtehtmlarea').'class.tx_rtehtmlarea_base.php');
@@ -240,9 +240,9 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 		$GLOBALS['TSFE']->additionalHeaderData['rtehtmlarea-skin'] = $this->getSkin();
 			// Loading JavaScript files and code
 		if ($this->TCEform->RTEcounter == 1) {
-			$this->TCEform->additionalJS_initial = $this->loadJSfiles($this->TCEform->RTEcounter);
 			$this->TCEform->additionalJS_pre['rtehtmlarea-loadJScode'] = $this->loadJScode($this->TCEform->RTEcounter);
 		}
+		$this->TCEform->additionalJS_initial = $this->loadJSfiles($this->TCEform->RTEcounter);
 
 		/* =======================================
 		 * DRAW THE EDITOR

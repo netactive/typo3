@@ -27,7 +27,7 @@
 /**
  * Include file extending t3lib_recordList
  *
- * $Id: class.file_list.inc 4047 2008-09-01 16:59:07Z dmitry $
+ * $Id: class.file_list.inc 6696 2009-12-25 13:26:11Z benni $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -395,8 +395,8 @@ class fileList extends t3lib_recordList {
 	 */
 	function linkWrapFile($code,$path)	{
 
-		if (t3lib_div::isFirstPartOfStr($path,t3lib_div::getIndpEnv('TYPO3_DOCUMENT_ROOT')))	{
-			$href = substr($path,strlen(t3lib_div::getIndpEnv('TYPO3_DOCUMENT_ROOT')));
+		if (t3lib_div::isFirstPartOfStr($path, PATH_site)) {
+			$href = t3lib_div::getIndpEnv('TYPO3_SITE_URL') . substr($path, strlen(PATH_site));
 			$aOnClick = "return top.openUrlInWindow('".$href."','WebFile');";
 			$code = '<a href="#" title="'.htmlspecialchars($code).'" onclick="'.htmlspecialchars($aOnClick).'">'.t3lib_div::fixed_lgd($code,$this->fixedL).'</a>';
 		}

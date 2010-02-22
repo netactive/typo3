@@ -27,7 +27,7 @@
 /**
  * Contains class with layout/output function for TYPO3 Backend Scripts
  *
- * $Id: template.php 5729 2009-07-20 16:05:21Z flyguide $
+ * $Id: template.php 6761 2010-01-13 23:35:36Z steffenk $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -625,6 +625,7 @@ class template {
 			// Get META tag containing the currently selected charset for backend output. The function sets $this->charSet.
 		$charSet = $this->initCharset();
 		$generator = $this->generator();
+		$xUaCompatible = $this->xUaCompatible();
 
 			// For debugging: If this outputs "QuirksMode"/"BackCompat" (IE) the browser runs in quirks-mode. Otherwise the value is "CSS1Compat"
 #		$this->JScodeArray[]='alert(document.compatMode);';
@@ -674,6 +675,7 @@ class template {
 	<!-- TYPO3 Script ID: '.htmlspecialchars($this->scriptID).' -->
 	'.$charSet.'
 	'.$generator.'
+	' . $xUaCompatible . '
 	<title>'.htmlspecialchars($title).'</title>
 	'.$this->docStyle().'
 	'.implode("\n", $this->additionalHeaderData).'
@@ -994,6 +996,16 @@ $str.=$this->docBodyTagBegin().
 	}
 
 
+	/**
+	 * Returns X-UA-Compatible meta tag
+	 *
+	 * @return	string		<meta http-equiv="X-UA-Compatible" content="???" />
+	 */
+	function xUaCompatible() {
+			// the most recent version if Internet Explorer, in which the Backend works
+		$str = "IE=8";
+		return '<meta http-equiv="X-UA-Compatible" content="' . $str . '" />';
+	}
 
 
 

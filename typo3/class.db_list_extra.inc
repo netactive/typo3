@@ -28,7 +28,7 @@
  * Include file extending recordList which extended t3lib_recordList
  * Used specifically for the Web>List module (db_list.php)
  *
- * $Id: class.db_list_extra.inc 6142 2009-10-11 22:07:59Z rupi $
+ * $Id: class.db_list_extra.inc 6662 2009-12-13 18:34:15Z xperseguers $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1520,7 +1520,7 @@ class localRecordList extends recordList {
 		$csvRow = array();
 		foreach ($this->fieldArray as $fN) {
 			switch ($fN) {
-				case '_PATH':
+				case '_PATH_':
 					$csvRow[] = $this->recPath($row['pid']);
 					break;
 

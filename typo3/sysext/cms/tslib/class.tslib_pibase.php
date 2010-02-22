@@ -27,7 +27,7 @@
 /**
  * This script contains the parent class, 'pibase', providing an API with the most basic methods for frontend plugins
  *
- * $Id: class.tslib_pibase.php 5650 2009-06-28 11:19:39Z benni $
+ * $Id: class.tslib_pibase.php 6686 2009-12-19 15:35:28Z xperseguers $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1065,7 +1065,7 @@ class tslib_pibase {
 		}
 
 			// Split the "FROM ... WHERE" string so we get the WHERE part and TABLE names separated...:
-		list($TABLENAMES,$WHERE) = spliti('WHERE', trim($query), 2);
+		list($TABLENAMES, $WHERE) = preg_split('/WHERE/i', trim($query), 2);
 		$TABLENAMES = trim(substr(trim($TABLENAMES),5));
 		$WHERE = trim($WHERE);
 

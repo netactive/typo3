@@ -31,7 +31,7 @@
  * The main class, tslib_menu, is also extended by other external PHP scripts such as the GMENU_LAYERS and GMENU_FOLDOUT scripts which creates pop-up menus.
  * Notice that extension classes (like "tslib_tmenu") must have their suffix (here "tmenu") listed in $this->tmpl->menuclasses - otherwise they cannot be instantiated.
  *
- * $Id: class.tslib_menu.php 6016 2009-09-20 16:22:26Z francois $
+ * $Id: class.tslib_menu.php 6715 2010-01-04 16:06:45Z benni $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2857,10 +2857,6 @@ class tslib_jsmenu extends tslib_menu {
 			$pid = $mount_info['mount_pid'];
 		}
 
-			// Set "&MP=" var:
-		$MP_var = implode(',',$MP_array);
-		$MP_params = $MP_var ? '&MP='.rawurlencode($MP_var) : '';
-
 			// UIDs to ban:
 		$banUidArray = $this->getBannedUids();
 
@@ -2873,11 +2869,22 @@ class tslib_jsmenu extends tslib_menu {
 
 		$menuItems = is_array($menuItemArray) ? $menuItemArray : $this->sys_page->getMenu($pid);
 		foreach($menuItems as $uid => $data)	{
+
+				// $data['_MP_PARAM'] contains MP param for overlay mount points (MPs with "substitute this page" set)
+				// if present: add param to copy of MP array (copy used for that submenu branch only)
+			$MP_array_sub = $MP_array;
+			if (array_key_exists('_MP_PARAM', $data) && $data['_MP_PARAM']) {
+				$MP_array_sub[] = $data['_MP_PARAM'];
+			}
+				// Set "&MP=" var:
+			$MP_var = implode(',', $MP_array_sub);
+			$MP_params = ($MP_var ? '&MP='.rawurlencode($MP_var) : '');
+
 			$spacer = (t3lib_div::inList($this->spacerIDList,$data['doktype'])?1:0);		// if item is a spacer, $spacer is set
 			if ($this->mconf['SPC'] || !$spacer)	{	// If the spacer-function is not enabled, spacers will not enter the $menuArr
 				if (!t3lib_div::inList($this->doktypeExcludeList,$data['doktype']) && (!$data['nav_hide'] || $this->conf['includeNotInMenu']) && !t3lib_div::inArray($banUidArray,$uid))	{		// Page may not be 'not_in_menu' or 'Backend User Section' + not in banned uid's
 					if ($count<$levels)	{
-						$addLines = $this->generate_level($levels,$count+1,$data['uid'],'',$MP_array);
+						$addLines = $this->generate_level($levels, $count+1, $data['uid'], '', $MP_array_sub);
 					} else {
 						$addLines = '';
 					}
@@ -2895,7 +2902,7 @@ class tslib_jsmenu extends tslib_menu {
 					}
 					$codeLines.="\n".$var.$count."=".$menuName.".add(".$parent.",".$prev.",0,".t3lib_div::quoteJSvalue($title, true).",".t3lib_div::quoteJSvalue($url, true).",".t3lib_div::quoteJSvalue($target, true).");";
 						// If the active one should be chosen...
-					$active = ($levelConf['showActive'] && $data['uid'] == $this->tmpl->rootLine[$count]['uid']);
+					$active = ($levelConf['showActive'] && $this->isActive($data['uid'], $MP_var));
 						// If the first item should be shown
 					$first = (!$c && $levelConf['showFirst']);
 						// do it...

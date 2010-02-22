@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 5930 2009-09-15 16:16:38Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 6484 2009-11-20 17:08:23Z stan $
  */
 
 /***************************************************
@@ -65,6 +65,8 @@ HTMLArea = function(textarea, config) {
  */
 HTMLArea.agt = navigator.userAgent.toLowerCase();
 HTMLArea.is_opera  = (HTMLArea.agt.indexOf("opera") != -1);
+// Some operations require bug fixes provided by Opera 10 (Presto 2.2)
+HTMLArea.is_opera9 = HTMLArea.is_opera && HTMLArea.agt.indexOf("Presto/2.1") != -1;
 HTMLArea.is_ie = (HTMLArea.agt.indexOf("msie") != -1) && !HTMLArea.is_opera;
 HTMLArea.is_safari = (HTMLArea.agt.indexOf("webkit") != -1);
 HTMLArea.is_gecko  = (navigator.product == "Gecko") || HTMLArea.is_opera;
@@ -190,6 +192,8 @@ HTMLArea.init = function() {
 		HTMLArea.editorCSS = _editor_CSS;
 			// Initialize event cache
 		HTMLArea._eventCache = HTMLArea._eventCacheConstructor();
+			// Initialize pending request flag
+		HTMLArea.pendingSynchronousXMLHttpRequest = false;
 			// Set troubleshooting mode
 		HTMLArea._debugMode = false;
 		if (typeof(_editor_debug_mode) != "undefined") HTMLArea._debugMode = _editor_debug_mode;
@@ -850,8 +854,8 @@ HTMLArea.prototype.generate = function () {
 
 	HTMLArea._appendToLog("[HTMLArea::generate]: Editor iframe successfully created.");
 	if (HTMLArea.is_opera) {
-			// Opera 10 needs lots of time here...
-		window.setTimeout("HTMLArea.initIframe(\'" + this._editorNumber + "\');", 200);
+		var self = this;
+		this._iframe.onload = function() { self.initIframe(); };
 	} else {
 		this.initIframe();
 	}
@@ -1075,10 +1079,17 @@ HTMLArea.prototype.stylesLoaded = function() {
 	var stylesAreLoaded = true;
 	var errorText = '';
 	var rules;
-	for (var rule = 0; rule < doc.styleSheets.length; rule++) {
-		if (HTMLArea.is_gecko) try { rules = doc.styleSheets[rule].cssRules; } catch(e) { stylesAreLoaded = false; errorText = e; }
-		if (HTMLArea.is_ie) try { rules = doc.styleSheets[rule].rules; } catch(e) { stylesAreLoaded = false; errorText = e; }
-		if (HTMLArea.is_ie) try { rules = doc.styleSheets[rule].imports; } catch(e) { stylesAreLoaded = false; errorText = e; }
+	if (HTMLArea.is_opera) {
+		if (doc.readyState != "complete") {
+			stylesAreLoaded = false;
+			errorText = "Stylesheets not yet loaded";
+		}
+	} else {
+		for (var rule = 0; rule < doc.styleSheets.length; rule++) {
+			if (HTMLArea.is_gecko) try { rules = doc.styleSheets[rule].cssRules; } catch(e) { stylesAreLoaded = false; errorText = e; }
+			if (HTMLArea.is_ie) try { rules = doc.styleSheets[rule].rules; } catch(e) { stylesAreLoaded = false; errorText = e; }
+			if (HTMLArea.is_ie) try { rules = doc.styleSheets[rule].imports; } catch(e) { stylesAreLoaded = false; errorText = e; }
+		}
 	}
 	if (!stylesAreLoaded && !HTMLArea.is_wamcom) {
 		HTMLArea._appendToLog("[HTMLArea::initIframe]: Failed attempt at loading stylesheets: " + errorText + " Retrying...");
@@ -1287,7 +1298,7 @@ HTMLArea.cleanup = function (editor) {
 	if (editor._statusBarTree.hasChildNodes()) {
 		for (var i = editor._statusBarTree.firstChild; i; i = i.nextSibling) {
 			if (i.nodeName.toLowerCase() == "a") {
-				HTMLArea._removeEvents(i, ["click", "contextmenu"], HTMLArea.statusBarHandler);
+				HTMLArea._removeEvents(i, ["click", "mousedown", "contextmenu"], HTMLArea.statusBarHandler);
 				i.el = null;
 				i.editor = null;
 			}
@@ -1596,7 +1607,7 @@ HTMLArea.prototype.buildUndoSnapshot = function () {
 		// Insert a bookmark
 	if (this.getMode() == "wysiwyg" && this.isEditable()) {
 		var selection = this._getSelection();
-		if ((HTMLArea.is_gecko && !HTMLArea.is_opera) || (HTMLArea.is_ie && selection.type.toLowerCase() != "control")) {
+		if ((HTMLArea.is_gecko && !HTMLArea.is_opera9) || (HTMLArea.is_ie && selection.type.toLowerCase() != "control")) {
 				// catch error in FF when the selection contains no usable range
 			try {
 					// Work around IE8 bug: can't create a range correctly if the selection is empty and the focus is not on the editor window
@@ -1700,7 +1711,7 @@ HTMLArea.prototype.updateToolbar = function(noStatus) {
 			if(this._statusBarTree.hasChildNodes()) {
 				for (i = this._statusBarTree.firstChild; i; i = i.nextSibling) {
 					if(i.nodeName.toLowerCase() == "a") {
-						HTMLArea._removeEvents(i,["click", "contextmenu, mousedown"], HTMLArea.statusBarHandler);
+						HTMLArea._removeEvents(i,["click", "contextmenu", "mousedown"], HTMLArea.statusBarHandler);
 						i.el = null;
 						i.editor = null;
 					}
@@ -1716,10 +1727,9 @@ HTMLArea.prototype.updateToolbar = function(noStatus) {
 				a.href = "#";
 				a.el = el;
 				a.editor = this;
+				HTMLArea._addEvent(a, (HTMLArea.is_ie ? "click" : "mousedown"), HTMLArea.statusBarHandler);
 				if (!HTMLArea.is_opera) {
-					HTMLArea._addEvents(a, ["click", "contextmenu"], HTMLArea.statusBarHandler);
-				} else {
-					HTMLArea._addEvents(a, ["mousedown", "click"], HTMLArea.statusBarHandler);
+					HTMLArea._addEvent(a, "contextmenu", HTMLArea.statusBarHandler);
 				}
 				txt = el.tagName.toLowerCase();
 				a.title = el.style.cssText;
@@ -1875,6 +1885,23 @@ HTMLArea.getElementObject = function(el,tagName) {
 	return oEl;
 };
 
+/*
+ * This function removes the given markup element
+ *
+ * @param	object	element: the inline element to be removed, content being preserved
+ *
+ * @return	void
+ */
+HTMLArea.prototype.removeMarkup = function(element) {
+	var bookmark = this.getBookmark(this._createRange(this._getSelection()));
+	var parent = element.parentNode;
+	while (element.firstChild) {
+		parent.insertBefore(element.firstChild, element);
+	}
+	parent.removeChild(element);
+	this.selectRange(this.moveToBookmark(bookmark));
+};
+
 /***************************************************
  *  SELECTIONS AND RANGES
  ***************************************************/
@@ -2016,9 +2043,15 @@ HTMLArea._editorEvent = function(ev) {
 	}
 	var editor = RTEarea[owner._editorNo]["editor"];
 	var keyEvent = ((HTMLArea.is_ie || HTMLArea.is_safari) && ev.type == "keydown") || (HTMLArea.is_gecko && ev.type == "keypress");
+	var mouseEvent = (ev.type == "mousedown" || ev.type == "mouseup");
 	editor.focusEditor();
 
 	if(keyEvent) {
+			// In Opera, inhibit key events while synchronous XMLHttpRequest is being processed
+		if (HTMLArea.is_opera && HTMLArea.pendingSynchronousXMLHttpRequest) {
+			HTMLArea._stopEvent(ev);
+			return false;
+		}
 		if(editor._hasPluginWithOnKeyPressHandler) {
 			for (var pluginId in editor.plugins) {
 				if (editor.plugins.hasOwnProperty(pluginId)) {
@@ -2055,7 +2088,7 @@ HTMLArea._editorEvent = function(ev) {
 						return false;
 						break;
 					case "Paste"	:
-						if (HTMLArea.is_opera || (HTMLArea.is_gecko && navigator.productSub < 20080514)) {
+						if (HTMLArea.is_opera || (HTMLArea.is_gecko && navigator.productSub < 20080514) || HTMLArea.is_safari) {
 							if (editor._toolbarObjects.CleanWord) {
 								var cleanLaterFunctRef = editor.plugins.DefaultClean ? editor.plugins.DefaultClean.instance.cleanLaterFunctRef : (editor.plugins.TYPO3HtmlParser ? editor.plugins.TYPO3HtmlParser.instance.cleanLaterFunctRef : null);
 								if (cleanLaterFunctRef) {
@@ -2111,7 +2144,7 @@ HTMLArea._editorEvent = function(ev) {
 						}
 							// update the toolbar state after some time
 						if (editor._timerToolbar) window.clearTimeout(editor._timerToolbar);
-						editor._timerToolbar = window.setTimeout("HTMLArea.updateToolbar(\'" + editor._editorNumber + "\');", 100);
+						editor._timerToolbar = window.setTimeout("HTMLArea.updateToolbar(\'" + editor._editorNumber + "\');", 200);
 						return false;
 					}
 					break;
@@ -2122,7 +2155,7 @@ HTMLArea._editorEvent = function(ev) {
 					}
 						// update the toolbar state after some time
 					if (editor._timerToolbar) window.clearTimeout(editor._timerToolbar);
-					editor._timerToolbar = window.setTimeout("HTMLArea.updateToolbar(\'" + editor._editorNumber + "\');", 50);
+					editor._timerToolbar = window.setTimeout("HTMLArea.updateToolbar(\'" + editor._editorNumber + "\');", 200);
 					break;
 				case 9: // KEY horizontal tab
 					var newkey = (ev.shiftKey ? "SHIFT-" : "") + "TAB";
@@ -2137,9 +2170,9 @@ HTMLArea._editorEvent = function(ev) {
 				case 38: // UP arrow key
 				case 39: // RIGHT arrow key
 				case 40: // DOWN arrow key
-					if (HTMLArea.is_ie) {
+					if (HTMLArea.is_ie || HTMLArea.is_safari) {
 						if (editor._timerToolbar) window.clearTimeout(editor._timerToolbar);
-						editor._timerToolbar = window.setTimeout("HTMLArea.updateToolbar(\'" + editor._editorNumber + "\');", 10);
+						editor._timerToolbar = window.setTimeout("HTMLArea.updateToolbar(\'" + editor._editorNumber + "\');", 200);
 						return true;
 					}
 					break;
@@ -2161,7 +2194,7 @@ HTMLArea._editorEvent = function(ev) {
 			}
 			return true;
 		}
-	} else {
+	} else if (mouseEvent) {
 			// mouse event
 		if (editor._timerToolbar) window.clearTimeout(editor._timerToolbar);
 		if (ev.type == "mouseup") editor.updateToolbar();
@@ -2684,6 +2717,7 @@ HTMLArea._postback = function(url, data, handler, addParams, charset, asynchrono
 		req.open('POST', postUrl, asynchronous);
 		req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 		if (!asynchronous) {
+			HTMLArea.pendingSynchronousXMLHttpRequest = true;
 			sendRequest();
 			if (req.status == 200) {
 				if (typeof(handler) == "function") {
@@ -2693,6 +2727,7 @@ HTMLArea._postback = function(url, data, handler, addParams, charset, asynchrono
 			} else {
 				HTMLArea._appendToLog("ERROR [HTMLArea::_postback]: Unable to post " + postUrl + " . Server reported " + req.statusText);
 			}
+			HTMLArea.pendingSynchronousXMLHttpRequest = false;
 		} else {
 			window.setTimeout(sendRequest, 500);
 		}

@@ -28,7 +28,7 @@
  * This is the MAIN DOCUMENT of the TypoScript driven standard front-end (from the "cms" extension)
  * Basically this is the "index.php" script which all requests for TYPO3 delivered pages goes to in the frontend (the website)
  *
- * $Id: index.php 3439 2008-03-16 19:16:51Z flyguide $
+ * $Id: index.php 6461 2009-11-17 19:13:35Z rupi $
  *
  * @author	René Fritz <r.fritz@colorcube.de>
  * @package TYPO3
@@ -39,7 +39,11 @@
 // Set error reporting
 // *******************************
 
-error_reporting (E_ALL ^ E_NOTICE);
+if (defined('E_DEPRECATED')) {
+	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
+} else {
+	error_reporting(E_ALL ^ E_NOTICE);
+}
 
 
 // ******************

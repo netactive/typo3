@@ -27,7 +27,7 @@
 /**
  * Functions for parsing HTML, specially for TYPO3 processing in relation to TCEmain and Rich Text Editor (RTE)
  *
- * $Id: class.t3lib_parsehtml_proc.php 4794 2009-01-20 12:21:29Z steffenk $
+ * $Id: class.t3lib_parsehtml_proc.php 6686 2009-12-19 15:35:28Z xperseguers $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compatible.
  *
@@ -1249,7 +1249,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 				} else {	//... but if NO subsection was found, we process it as a TRUE line without erronous content:
 					$subLines = array($subLines);
 					if (!$this->procOptions['dontConvBRtoParagraph'])	{	// process break-tags, if configured for. Simply, the breaktags will here be treated like if each was a line of content...
-						$subLines = spliti('<br[[:space:]]*[\/]?>',$v);
+						$subLines = preg_split('/<br[[:space:]]*[\/]?>/i', $v);
 					}
 
 						// Traverse sublines (there is typically one, except if <br/> has been converted to lines as well!)

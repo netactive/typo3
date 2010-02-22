@@ -32,7 +32,7 @@
  * @author	Philipp Borgmann <philipp.borgmann@gmx.de>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_base.php 5308 2009-04-10 04:45:37Z stan $  *
+ * $Id: class.tx_rtehtmlarea_base.php 6314 2009-11-02 23:25:47Z stan $  *
  */
 
 require_once(PATH_t3lib.'class.t3lib_rteapi.php');
@@ -396,9 +396,9 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			}
 				// Loading JavaScript files and code
 			if ($this->TCEform->RTEcounter == 1) {
-				$this->TCEform->additionalCode_pre['rtehtmlarea-loadJSfiles'] = $this->loadJSfiles($this->TCEform->RTEcounter);
 				$this->TCEform->additionalJS_pre['rtehtmlarea-loadJScode'] = $this->loadJScode($this->TCEform->RTEcounter);
 			}
+			$this->TCEform->additionalCode_pre['rtehtmlarea-loadJSfiles'] = $this->loadJSfiles($this->TCEform->RTEcounter);
 
 			/* =======================================
 			 * DRAW THE EDITOR

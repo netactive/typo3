@@ -28,7 +28,7 @@
  * Super Admin class has functions for the administration of multiple TYPO3 sites in folders
  * See 'misc/superadmin.php' for details on how to use!
  *
- * $Id: class.t3lib_superadmin.php 3439 2008-03-16 19:16:51Z flyguide $
+ * $Id: class.t3lib_superadmin.php 6461 2009-11-17 19:13:35Z rupi $
  * Revised for TYPO3 3.6 February/2004 by Kasper Skaarhoj
  * XHTML Compliant
  *
@@ -99,7 +99,12 @@
 // *******************************
 // Set error reporting
 // *******************************
-error_reporting (E_ALL ^ E_NOTICE);
+if (defined('E_DEPRECATED')) {
+	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
+} else {
+	error_reporting(E_ALL ^ E_NOTICE);
+}
+
 define('TYPO3_mainDir', 'typo3/');		// This is the directory of the backend administration for the sites of this TYPO3 installation.
 
 
