@@ -28,7 +28,7 @@
  * Front End session user. Login and session data
  * Included from index_ts.php
  *
- * $Id: class.tslib_feuserauth.php 5761 2009-08-05 10:05:29Z rupi $
+ * $Id: class.tslib_feuserauth.php 6804 2010-01-18 16:06:31Z benni $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -491,8 +491,10 @@ class tslib_feUserAuth extends t3lib_userAuth {
 	 */
 	function record_registration($recs,$maxSizeOfSessionData=0)	{
 
-			// Storing value ONLY if there is a confirmed cookie set (->cookieID), otherwise a shellscript could easily be spamming the fe_sessions table with bogus content and thus bloat the database
-		if (!$maxSizeOfSessionData || $this->cookieId===$this->id)	{
+			// Storing value ONLY if there is a confirmed cookie set (->cookieID), 
+			// otherwise a shellscript could easily be spamming the fe_sessions table
+			// with bogus content and thus bloat the database
+		if (!$maxSizeOfSessionData || $this->cookieId) {
 			if ($recs['clear_all'])	{
 				$this->setKey('ses', 'recs', array());
 			}

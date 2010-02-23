@@ -29,7 +29,7 @@
  * This script is a gateway for POST forms to class.t3lib_TCEmain that manipulates all information in the database!!
  * For syntax and API information, see the document 'TYPO3 Core APIs'
  *
- * $Id: tce_db.php 6469 2009-11-17 23:56:35Z benni $
+ * $Id: tce_db.php 6954 2010-02-21 20:46:24Z steffenk $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -209,7 +209,7 @@ class SC_tce_db {
 
 				// Update page tree?
 			if ($this->uPT && (isset($this->data['pages'])||isset($this->cmd['pages'])))	{
-				t3lib_BEfunc::getSetUpdateSignal('updatePageTree');
+				t3lib_BEfunc::setUpdateSignal('updatePageTree');
 			}
 		}
 	}

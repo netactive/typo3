@@ -28,7 +28,7 @@
  * Class used in module tools/dbint (advanced search) and which may hold code specific for that module
  * However the class has a general principle in it which may be used in the web/export module.
  *
- * $Id: class.t3lib_fullsearch.php 5647 2009-06-27 20:08:24Z steffenk $
+ * $Id: class.t3lib_fullsearch.php 7006 2010-02-23 10:25:57Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Jo Hasenau <info@cybercraft.de>
@@ -324,7 +324,7 @@ class t3lib_fullsearch {
 				}
 			} elseif ($storeControl['REMOVE'])	{
 				if ($storeIndex>0)	{
-					$msg="'".$storeArray[$storeControl['STORE']]."' query entry removed!";
+					$msg="'" . htmlspecialchars($storeArray[$storeControl['STORE']]) . "' query entry removed!";
 					unset($storeArray[$storeControl['STORE']]);	// Removing
 					$saveStoreArray=1;
 				}
@@ -1023,34 +1023,43 @@ class t3lib_fullsearch {
 		return $out;
 	}
 
-	 /**
- * [Describe function...]
- *
- * @param	[type]		$row: ...
- * @param	[type]		$conf: ...
- * @param	[type]		$table: ...
- * @return	[type]		...
- */
-	function resultRowTitles($row,$conf,$table)	{
+	/**
+	 * Render table header
+	 *
+	 * @param	array		row: Table columns
+	 * @param	array		conf: Table TCA
+	 * @param	string		table: Table name
+	 * @return	string		HTML of table header
+	 */
+	function resultRowTitles($row, $conf, $table) {
 		$SET = $GLOBALS['SOBE']->MOD_SETTINGS;
-		$out='<tr class="bgColor5">';
-		reset($row);
-		while(list($fN,$fV)=each($row))	{
-			if (t3lib_div::inList($SET['queryFields'], $fN) || (!$SET['queryFields'] && $fN!='pid' && $fN!='deleted'))	{
-				if (strlen($fV) < 50)	$TDparams = ' nowrap';
-				else $TDparams = '';
 
-				if ($GLOBALS['SOBE']->MOD_SETTINGS['search_result_labels'])	{
- 					$out.='<td'.$TDparams.'><strong>'.$GLOBALS['LANG']->sL($conf['columns'][$fN]['label']?$conf['columns'][$fN]['label']:$fN,1).'</strong></td>';
+		$tableHeader = array();
+
+			// Start header row
+		$tableHeader[] = '<thead><tr class="bgColor5">';
+
+			// Iterate over given columns
+		foreach ($row as $fieldName => $fieldValue) {
+			if (t3lib_div::inList($SET['queryFields'], $fieldName) || (!$SET['queryFields'] && $fieldName != 'pid' && $fieldName != 'deleted')) {
+				$THparams = (strlen($fieldValue) < 50) ? ' style="white-space:nowrap;"' : '';
+
+				if ($GLOBALS['SOBE']->MOD_SETTINGS['search_result_labels']) {
+					$title = $GLOBALS['LANG']->sL($conf['columns'][$fieldName]['label'] ? $conf['columns'][$fieldName]['label'] : $fieldName, 1);
 				} else {
-					$out.='<td'.$TDparams.'><strong>'.$GLOBALS['LANG']->sL($fN, 1).'</strong></td>';
+					$title = $GLOBALS['LANG']->sL($fieldName, 1);
 				}
+
+				$tableHeader[] = '<th' . $THparams . '>' . $title . '</th>';
 			}
 		}
-		$out.='<td nowrap></td>
-		</tr>
-		';
-		return $out;
+
+			// Add empty icon column
+		$tableHeader[] = '<th style="white-space:nowrap;"></th>';
+			// Close header row
+		$tableHeader[] = '</tr></thead>';
+
+		return implode($tableHeader, chr(10));
 	}
 
 	/**

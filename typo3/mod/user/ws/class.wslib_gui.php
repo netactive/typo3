@@ -29,7 +29,7 @@
  * module but also can be used from extensions. Originally 99.9%% of the code
  * was written by Kasper and only transfered here by Dmitry.
  *
- * $Id: class.wslib_gui.php 6135 2009-10-11 14:02:27Z steffenk $
+ * $Id: class.wslib_gui.php 6994 2010-02-23 10:06:01Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Dmitry Dulepov <dmitry@typo3.org>
@@ -846,7 +846,7 @@ class wslib_gui {
 					$text = $LANG->getLL('stage_undefined');
 					break;
 			}
-			$text = t3lib_BEfunc::datetime($dat['tstamp']).': ' . sprintf($text, $username);
+			$text = t3lib_BEfunc::datetime($dat['tstamp']).': ' . sprintf($text, htmlspecialchars($username));
 			$text.= ($data['comment'] ? '<br />' . $LANG->getLL('stage_label_user_comment') . ' <em>' . htmlspecialchars($data['comment']) . '</em>' : '');
 
 			$entry[] = $text;

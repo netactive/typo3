@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 6637 2009-12-06 21:10:40Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 6916 2010-02-19 18:53:47Z stan $
  */
 
 /***************************************************
@@ -265,7 +265,7 @@ HTMLArea.RE_body    = /<body>((.|\n)*?)<\/body>/i;
 HTMLArea.Reg_body = new RegExp("<\/?(body)[^>]*>", "gi");
 HTMLArea.reservedClassNames = /htmlarea/;
 HTMLArea.RE_email    = /([0-9a-z]+([a-z0-9_-]*[0-9a-z])*){1}(\.[0-9a-z]+([a-z0-9_-]*[0-9a-z])*)*@([0-9a-z]+([a-z0-9_-]*[0-9a-z])*\.)+[a-z]{2,9}/i;
-HTMLArea.RE_url      = /(https?:\/\/)?(([a-z0-9_]+:[a-z0-9_]+@)?[a-z0-9_-]{2,}(\.[a-z0-9_-]{2,})+\.[a-z]{2,5}(:[0-9]+)?(\/\S+)*)/i;
+HTMLArea.RE_url      = /(([^:/?#]+):\/\/)?(([a-z0-9_]+:[a-z0-9_]+@)?[a-z0-9_-]{2,}(\.[a-z0-9_-]{2,})+\.[a-z]{2,5}(:[0-9]+)?(\/\S+)*)/i;
 
 /*
  * Editor configuration object constructor
@@ -1122,7 +1122,7 @@ HTMLArea.prototype.stylesLoaded = function() {
 	if (HTMLArea.is_ie) doc.documentElement._editorNo = this._editorNumber;
 
 		// intercept events for updating the toolbar & for keyboard handlers
-	HTMLArea._addEvents((HTMLArea.is_ie ? doc.body : doc), ["keydown","keypress","mousedown","mouseup","drag"], HTMLArea._editorEvent, true);
+	HTMLArea._addEvents(doc, ["keydown","keypress","mouseup","click","drag"], HTMLArea._editorEvent, true);
 
 	HTMLArea._addEvent(window, "resize", HTMLArea.resizeIframes);
 
@@ -1805,7 +1805,7 @@ HTMLArea._editorEvent = function(ev) {
 	}
 	var editor = RTEarea[owner._editorNo]["editor"];
 	var keyEvent = ((HTMLArea.is_ie || HTMLArea.is_safari) && ev.type == "keydown") || (HTMLArea.is_gecko && ev.type == "keypress");
-	var mouseEvent = (ev.type == "mousedown" || ev.type == "mouseup");
+	var mouseEvent = (ev.type == "mousedown" || ev.type == "mouseup" || ev.type == "click");
 	editor.focusEditor();
 
 	if(keyEvent) {
@@ -1920,11 +1920,9 @@ HTMLArea._editorEvent = function(ev) {
 				case 38: // UP arrow key
 				case 39: // RIGHT arrow key
 				case 40: // DOWN arrow key
-					if (HTMLArea.is_ie || HTMLArea.is_safari) {
-						if (editor._timerToolbar) window.clearTimeout(editor._timerToolbar);
-						editor._timerToolbar = window.setTimeout("HTMLArea.updateToolbar(\'" + editor._editorNumber + "\');", 200);
-						return true;
-					}
+					if (editor._timerToolbar) window.clearTimeout(editor._timerToolbar);
+					editor._timerToolbar = window.setTimeout("HTMLArea.updateToolbar(\'" + editor._editorNumber + "\');", 200);
+					return true;
 					break;
 				default:
 					break;
@@ -1947,8 +1945,7 @@ HTMLArea._editorEvent = function(ev) {
 	} else if (mouseEvent) {
 			// mouse event
 		if (editor._timerToolbar) window.clearTimeout(editor._timerToolbar);
-		if (ev.type == "mouseup") editor.updateToolbar();
-			else editor._timerToolbar = window.setTimeout("HTMLArea.updateToolbar(\'" + editor._editorNumber + "\');", 50);
+		editor._timerToolbar = window.setTimeout("HTMLArea.updateToolbar(\'" + editor._editorNumber + "\');", 50);
 	}
 };
 

@@ -31,7 +31,7 @@
  * Call ALL methods without making an object!
  * Eg. to get a page-record 51 do this: 't3lib_BEfunc::getRecord('pages',51)'
  *
- * $Id: class.t3lib_befunc.php 6741 2010-01-09 14:58:24Z lolli $
+ * $Id: class.t3lib_befunc.php 6939 2010-02-21 15:38:21Z benni $
  * Usage counts are based on search 22/2 2003 through whole backend source of typo3/
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
@@ -2939,11 +2939,23 @@ final class t3lib_BEfunc {
 			}
 			if (is_array($MOD_MENU)) {
 				foreach ($MOD_MENU as $key=>$var) {
+
 						// If a global var is set before entering here. eg if submitted, then it's substituting the current value the array.
-					if (is_array($CHANGED_SETTINGS) && isset($CHANGED_SETTINGS[$key]) && strcmp($settings[$key], $CHANGED_SETTINGS[$key])) {
-						$settings[$key] = (string)$CHANGED_SETTINGS[$key];
-						$changed = 1;
-					}
+					if (is_array($CHANGED_SETTINGS) && isset($CHANGED_SETTINGS[$key])) {
+						if (is_array($CHANGED_SETTINGS[$key])) {
+							$serializedSettings = serialize($CHANGED_SETTINGS[$key]);
+							if (strcmp($settings[$key], $serializedSettings)) {
+								$settings[$key] = $serializedSettings;
+								$changed = 1;
+							}
+						} else {
+							if (strcmp($settings[$key], $CHANGED_SETTINGS[$key]) ) {
+								$settings[$key] = $CHANGED_SETTINGS[$key];
+								$changed = 1;
+							}
+						}
+ 					}
+
 						// If the $var is an array, which denotes the existence of a menu, we check if the value is permitted
 					if (is_array($var) && (!$dontValidateList || !t3lib_div::inList($dontValidateList, $key))) {
 							// If the setting is an array or not present in the menu-array, MOD_MENU, then the default value is inserted.
@@ -4150,7 +4162,7 @@ final class t3lib_BEfunc {
 				$url = "alt_doc.php?returnUrl=index.php&edit[be_users][".$row['uid']."]=edit";
 				$warnings["backend_admin"] = sprintf(
 					$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:warning.backend_admin'),
-					'<a href="'.$url.'">',
+					'<a href="' . htmlspecialchars($url) . '">',
 					'</a>');
 
 			}

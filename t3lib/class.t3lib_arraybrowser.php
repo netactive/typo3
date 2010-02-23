@@ -27,7 +27,7 @@
 /**
  * Class for displaying an array as a tree
  *
- * $Id: class.t3lib_arraybrowser.php 6497 2009-11-23 15:03:28Z lolli $
+ * $Id: class.t3lib_arraybrowser.php 6876 2010-02-07 23:14:14Z lolli $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -209,7 +209,9 @@ class t3lib_arrayBrowser	{
 			if ($this->regexMode)	{
 				if (preg_match('/'.$searchString.'/',$keyArr[$key]) || ($this->searchKeysToo && preg_match('/'.$searchString.'/',$key)))	{	$this->searchKeys[$depth]=1;	}
 			} else {
-				if (stristr($keyArr[$key],$searchString) || ($this->searchKeysToo && stristr($key,$searchString)))	{	$this->searchKeys[$depth]=1;	}
+				if ((!$deeper && stristr($keyArr[$key], $searchString)) || ($this->searchKeysToo && stristr($key, $searchString))) {
+					$this->searchKeys[$depth] = 1;
+				}
 			}
 
 			if ($deeper)	{

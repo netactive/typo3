@@ -29,7 +29,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /*
- * TYPO3 SVN ID: $Id: htmlarea-gecko.js 6654 2009-12-11 03:24:33Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea-gecko.js 6962 2010-02-22 00:46:26Z stan $
  */
 
 /***************************************************
@@ -381,7 +381,7 @@ HTMLArea.prototype.moveToBookmark = function (bookmark) {
 	var endSpan    = this.getBookmarkNode(bookmark, false);
 
 	var range = this._createRange();
-		// If the previous sibling is a text node, let the anchor have it as parent
+		// If the previous sibling is a text node, let the anchorNode have it as parent
 	if (startSpan.previousSibling && startSpan.previousSibling.nodeType == 3) {
 		range.setStart(startSpan.previousSibling, startSpan.previousSibling.data.length);
 	} else {
@@ -390,7 +390,7 @@ HTMLArea.prototype.moveToBookmark = function (bookmark) {
 	HTMLArea.removeFromParent(startSpan);
 		// If the bookmarked range was collapsed, the end span will not be available
 	if (endSpan) {
-			// If the next sibling is a text node, let the anchor have it as parent
+			// If the next sibling is a text node, let the focusNode have it as parent
 		if (endSpan.nextSibling && endSpan.nextSibling.nodeType == 3) {
 			range.setEnd(endSpan.nextSibling, 0);
 		} else {
@@ -455,18 +455,9 @@ HTMLArea.prototype.insertHTML = function(html) {
  * @return	void
  */
 HTMLArea.prototype.wrapWithInlineElement = function(element, selection, range) {
-		// Sometimes Opera raises a bad boundary points error
-	if (HTMLArea.is_opera) {
-		try {
-			range.surroundContents(element);
-		} catch(e) {
-			element.appendChild(range.extractContents());
-			range.insertNode(element);
-		}
-	} else {
-		range.surroundContents(element);
-		element.normalize();
-	}
+	element.appendChild(range.extractContents());
+	range.insertNode(element);
+	element.normalize();
 		// Sometimes Firefox inserts empty elements just outside the boundaries of the range
 	var neighbour = element.previousSibling;
 	if (neighbour && (neighbour.nodeType != 3) && !/\S/.test(neighbour.textContent)) {
@@ -800,7 +791,7 @@ HTMLArea.prototype._detectURL = function(ev) {
 						var midText   = leftText.splitText(midStart);
 						var midEnd = midText.data.search(/[^a-zA-Z0-9\._\-\/\&\?=:@]/);
 						if (midEnd != -1) var endText = midText.splitText(midEnd);
-						autoWrap(midText, 'a').href = (m[1] ? m[1] : 'http://') + m[2];
+						autoWrap(midText, 'a').href = (m[1] ? m[1] : 'http://') + m[3];
 						break;
 					}
 				}
@@ -833,7 +824,7 @@ HTMLArea.prototype._detectURL = function(ev) {
 								var textNode = s.anchorNode;
 								var fn = function() {
 									var m = textNode.data.match(HTMLArea.RE_url);
-									a.href = (m[1] ? m[1] : 'http://') + m[2];
+									a.href = (m[1] ? m[1] : 'http://') + m[3];
 									a._updateAnchTimeout = setTimeout(fn, 250);
 								}
 								a._updateAnchTimeout = setTimeout(fn, 250);

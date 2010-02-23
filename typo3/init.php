@@ -49,7 +49,7 @@
  * For a detailed description of this script, the scope of constants and variables in it,
  * please refer to the document "Inside TYPO3"
  *
- * $Id: init.php 6547 2009-11-25 19:32:03Z rupi $
+ * $Id: init.php 6907 2010-02-14 19:24:41Z lolli $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -215,7 +215,6 @@ if (TYPO3_UseCachingFramework) {
 	t3lib_cache::initPageCache();
 	t3lib_cache::initPageSectionCache();
 	t3lib_cache::initContentHashCache();
-	unset($cacheFactoryClass);
 }
 // *************************
 // CLI dispatch processing

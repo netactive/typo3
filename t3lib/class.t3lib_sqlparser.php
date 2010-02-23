@@ -27,7 +27,7 @@
 /**
  * TYPO3 SQL parser
  *
- * $Id: class.t3lib_sqlparser.php 6705 2009-12-28 00:50:03Z xperseguers $
+ * $Id: class.t3lib_sqlparser.php 6903 2010-02-14 17:44:28Z xperseguers $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -330,7 +330,7 @@ class t3lib_sqlparser {
 
 		if ($result['TABLE'])	{
 
-			if ($this->nextPart($parseString,'^(VALUES)[[:space:]]+'))	{	// In this case there are no field names mentioned in the SQL!
+			if ($this->nextPart($parseString,'^(VALUES)([[:space:]]+|\()')) {	// In this case there are no field names mentioned in the SQL!
 					// Get values/fieldnames (depending...)
 				$result['VALUES_ONLY'] = $this->getValue($parseString,'IN');
 				if ($this->parse_error)	{ return $this->parse_error; }
@@ -338,7 +338,7 @@ class t3lib_sqlparser {
 				$fieldNames = $this->getValue($parseString,'_LIST');
 				if ($this->parse_error)	{ return $this->parse_error; }
 
-				if ($this->nextPart($parseString,'^(VALUES)[[:space:]]+'))	{	// "VALUES" keyword binds the fieldnames to values:
+				if ($this->nextPart($parseString,'^(VALUES)([[:space:]]+|\()')) {	// "VALUES" keyword binds the fieldnames to values:
 
 					$values = $this->getValue($parseString,'IN');	// Using the "getValue" function to get the field list...
 					if ($this->parse_error)	{ return $this->parse_error; }
@@ -555,7 +555,7 @@ class t3lib_sqlparser {
 						case 'ADDKEY':
 						case 'ADDPRIMARYKEY':
 							$result['KEY'] = $fieldKey;
-							$result['fields'] = $this->getValue($parseString,'_LIST');
+							$result['fields'] = $this->getValue($parseString, '_LIST', 'INDEX');
 							if ($this->parse_error)	{ return $this->parse_error; }
 						break;
 						case 'DROPKEY':
@@ -727,7 +727,7 @@ class t3lib_sqlparser {
 				} else {
 					$stack[$pnt]['distinct'] = $this->nextPart($parseString,'^(distinct[[:space:]]+)');
 						// Otherwise, look for regular fieldname:
-					if ($fieldName = $this->nextPart($parseString,'^([[:alnum:]\*._]+)(,|[[:space:]]+)'))	{
+					if (($fieldName = $this->nextPart($parseString, '^([[:alnum:]\*._]+)(,|[[:space:]]+)')) !== '') {
 						$stack[$pnt]['type'] = 'field';
 
 							// Explode fieldname into field and table:
@@ -930,7 +930,7 @@ class t3lib_sqlparser {
 				$calcOperators = '&|\+|-|\*|\/|%';
 
 					// Fieldname:
-				if ($fieldName = $this->nextPart($parseString, '^([[:alnum:]._]+)([[:space:]]+|' . $calcOperators . '|<=|>=|<|>|=|!=|IS)')) {
+				if (($fieldName = $this->nextPart($parseString, '^([[:alnum:]._]+)([[:space:]]+|' . $calcOperators . '|<=|>=|<|>|=|!=|IS)')) !== '') {
 
 						// Parse field name into field and table:
 					$tableField = explode('.', $fieldName, 2);

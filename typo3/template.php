@@ -27,7 +27,7 @@
 /**
  * Contains class with layout/output function for TYPO3 Backend Scripts
  *
- * $Id: template.php 6759 2010-01-13 23:33:24Z steffenk $
+ * $Id: template.php 6959 2010-02-21 21:04:31Z steffenk $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -1026,7 +1026,7 @@ $str.=$this->docBodyTagBegin().
 		} else {
 			$file = $this->backPath . $href;
 		}
-		$this->pageRenderer->addCssFile($file, $relation, $title);
+		$this->pageRenderer->addCssFile($file, $relation, 'screen', $title);
 	}
 
 	/**

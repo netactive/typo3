@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	reports
  *
- * $Id: class.tx_reports_reports_status_securitystatus.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.tx_reports_reports_status_securitystatus.php 6942 2010-02-21 16:23:21Z benni $
  */
 class tx_reports_reports_status_SecurityStatus implements tx_reports_StatusProvider {
 
@@ -248,7 +248,7 @@ class tx_reports_reports_status_SecurityStatus implements tx_reports_StatusProvi
 
 		$enableInstallToolFileExists = is_file($enableInstallToolFile);
 
-		if ($enableInstallToolFileExists || ($enableInstallToolFileExists && trim(file_get_contents($enableInstallToolFile)) === 'KEEP_FILE')) {
+		if ($enableInstallToolFileExists && trim(file_get_contents($enableInstallToolFile)) === 'KEEP_FILE') {
 			$value    = $GLOBALS['LANG']->getLL('status_enabled');
 			$severity = tx_reports_reports_status_Status::WARNING;
 

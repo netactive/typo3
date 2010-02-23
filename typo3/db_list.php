@@ -33,7 +33,7 @@
  * are NOT located in their actual module directories (fx. mod/web/list/) but in the
  * backend root directory. This has some historical and practical causes.
  *
- * $Id: db_list.php 6423 2009-11-15 23:04:14Z steffenk $
+ * $Id: db_list.php 6954 2010-02-21 20:46:24Z steffenk $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -271,7 +271,7 @@ class SC_db_list {
 					$tce->process_cmdmap();
 
 					if (isset($cmd['pages']))	{
-						t3lib_BEfunc::getSetUpdateSignal('updatePageTree');
+						t3lib_BEfunc::setUpdateSignal('updatePageTree');
 					}
 
 					$tce->printLogErrorMessages(t3lib_div::getIndpEnv('REQUEST_URI'));

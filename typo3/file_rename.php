@@ -27,7 +27,7 @@
 /**
  * Web>File: Renaming files and folders
  *
- * $Id: file_rename.php 5526 2009-06-02 13:52:04Z benni $
+ * $Id: file_rename.php 7009 2010-02-23 10:26:34Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -139,7 +139,7 @@ class SC_file_rename {
 		$this->shortPath = substr($this->target,strlen($GLOBALS['FILEMOUNTS'][$key]['path']));
 
 			// Setting title:
-		$this->title = $this->icon.$GLOBALS['FILEMOUNTS'][$key]['name'].': '.$this->shortPath;
+		$this->title = $this->icon . htmlspecialchars($GLOBALS['FILEMOUNTS'][$key]['name']) . ': ' . $this->shortPath;
 
 			// Setting template object
 		$this->doc = t3lib_div::makeInstance('template');

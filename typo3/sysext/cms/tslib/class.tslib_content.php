@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 6645 2009-12-09 15:06:58Z stan $
+ * $Id: class.tslib_content.php 6840 2010-02-02 14:01:13Z xperseguers $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -4570,14 +4570,14 @@ class tslib_cObj {
 			if ($conf['jumpurl.']['secure']) {
 				$typoLinkConf = array(
 					'parameter'  => $GLOBALS['TSFE']->id . ',' . $GLOBALS['TSFE']->type,
-					'target'     => $conf['target'],
+					'fileTarget' => $conf['target'],
 					'ATagParams' => $this->getATagParams($conf),
 					'additionalParams' => '&jumpurl=' . rawurlencode($theFileEnc) . $this->locDataJU($theFileEnc, $conf['jumpurl.']['secure.']) . $GLOBALS['TSFE']->getMethodUrlIdToken
 				);
 			} else {
 				$typoLinkConf = array(
 					'parameter'  => $theFileEnc,
-					'target'     => $conf['target'],
+					'fileTarget' => $conf['target'],
 					'ATagParams' => $this->getATagParams($conf)
 				);
 			}

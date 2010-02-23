@@ -29,7 +29,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /*
- * TYPO3 SVN ID: $Id: htmlarea-ie.js 5306 2009-04-09 16:57:19Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea-ie.js 6912 2010-02-19 16:04:33Z stan $
  */
 
 /***************************************************
@@ -136,6 +136,9 @@ HTMLArea.prototype.getParentElement = function(selection, range) {
 		case "text":
 		case "none":
 			var el = range.parentElement();
+			if (el.nodeName.toLowerCase() == 'form') {
+				return this._doc.body;
+			}
 			if(el.nodeName.toLowerCase() == "li" && range.htmlText.replace(/\s/g,"") == el.parentNode.outerHTML.replace(/\s/g,"")) return el.parentNode;
 			return el;
 		case "control": return range.item(0);

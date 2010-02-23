@@ -32,7 +32,7 @@
  * @author	Steffen Kamper <info@sk-typo3.de>
  * @package TYPO3
  * @subpackage t3lib
- * $Id: class.t3lib_pagerenderer.php 6597 2009-11-29 23:15:40Z steffenk $
+ * $Id: class.t3lib_pagerenderer.php 6959 2010-02-21 21:04:31Z steffenk $
  */
 class t3lib_PageRenderer implements t3lib_Singleton {
 
@@ -709,7 +709,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 	 * @param boolean $forceOnTop
 	 * @return void
 	 */
-	public function addCssFile($file, $rel = 'stylesheet', $media = 'screen', $title = '', $compress = TRUE, $forceOnTop = FALSE, $allWrap = '') {
+	public function addCssFile($file, $rel = 'stylesheet', $media = 'all', $title = '', $compress = TRUE, $forceOnTop = FALSE, $allWrap = '') {
 		if (!isset($this->cssFiles[$file])) {
 			$this->cssFiles[$file] = array (
 				'rel'        => $rel,
@@ -994,7 +994,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 
 		if (count($this->cssFiles)) {
 			foreach ($this->cssFiles as $file => $properties) {
-				$file = t3lib_div::resolveBackPath($file);
+				$file = htmlspecialchars(t3lib_div::resolveBackPath($file));
 				$tag = '<link rel="' . $properties['rel'] . '" type="text/css" href="' . $file . '" media="' . $properties['media'] . '"' . ($properties['title'] ? ' title="' . $properties['title'] . '"' : '') . ' />';
 				if ($properties['allWrap'] && strpos($properties['allWrap'], '|') !== FALSE) {
 					$tag = str_replace('|', $tag, $properties['allWrap']);
@@ -1022,7 +1022,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 
 		if (count($this->jsLibs)) {
 			foreach ($this->jsLibs as $name => $properties) {
-				$properties['file'] = t3lib_div::resolveBackPath($properties['file']);
+				$properties['file'] = htmlspecialchars(t3lib_div::resolveBackPath($properties['file']));
 				$tag = '<script src="' . $properties['file'] . '" type="' . $properties['type'] . '"></script>';
 				if ($properties['allWrap'] && strpos($properties['allWrap'], '|') !== FALSE) {
 					$tag = str_replace('|', $tag, $properties['allWrap']);
@@ -1046,7 +1046,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 
 		if (count($this->jsFiles)) {
 			foreach ($this->jsFiles as $file => $properties) {
-					$file = t3lib_div::resolveBackPath($file);
+					$file = htmlspecialchars(t3lib_div::resolveBackPath($file));
 					$tag = '<script src="' . $file . '" type="' . $properties['type'] . '"></script>';
 					if ($properties['allWrap'] && strpos($properties['allWrap'], '|') !== FALSE) {
 						$tag = str_replace('|', $tag, $properties['allWrap']);

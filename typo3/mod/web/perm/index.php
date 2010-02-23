@@ -27,7 +27,7 @@
 /**
  * Module: Permission setting
  *
- * $Id: index.php 6133 2009-10-11 12:32:22Z rupi $
+ * $Id: index.php 7003 2010-02-23 10:07:25Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -88,7 +88,7 @@ $BE_USER->modAccess($MCONF,1);
  * @author	Andreas Kundoch <typo3@mehrwert.de>
  * @package	TYPO3
  * @subpackage	core
- * @version	$Id: index.php 6133 2009-10-11 12:32:22Z rupi $
+ * @version	$Id: index.php 7003 2010-02-23 10:07:25Z ohader $
  */
 class SC_mod_web_perm_index {
 
@@ -609,7 +609,7 @@ class SC_mod_web_perm_index {
 				<tr>
 					<td class="bgColor2" colspan="2">&nbsp;</td>
 					<td class="bgColor2"><img'.t3lib_iconWorks::skinImg($BACK_PATH,'gfx/line.gif','width="5" height="16"').' alt="" /></td>
-					<td class="bgColor2" align="center" nowrap="nowrap"><b>'.$LANG->getLL('User',1).':</b> '.$BE_USER->user['username'].'</td>
+					<td class="bgColor2" align="center" nowrap="nowrap"><b>'.$LANG->getLL('User',1).':</b> ' . htmlspecialchars($BE_USER->user['username']) . '</td>
 					'.(!$BE_USER->isAdmin()?'<td class="bgColor2"><img'.t3lib_iconWorks::skinImg($BACK_PATH,'gfx/line.gif','width="5" height="16"').' alt="" /></td>
 					<td class="bgColor2" align="center"><b>'.$LANG->getLL('EditLock',1).'</b></td>':'').'
 				</tr>';

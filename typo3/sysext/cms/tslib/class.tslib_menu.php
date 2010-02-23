@@ -31,7 +31,7 @@
  * The main class, tslib_menu, is also extended by other external PHP scripts such as the GMENU_LAYERS and GMENU_FOLDOUT scripts which creates pop-up menus.
  * Notice that extension classes (like "tslib_tmenu") must have their suffix (here "tmenu") listed in $this->tmpl->menuclasses - otherwise they cannot be instantiated.
  *
- * $Id: class.tslib_menu.php 6714 2010-01-04 16:05:43Z benni $
+ * $Id: class.tslib_menu.php 6935 2010-02-21 14:48:04Z benni $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2822,8 +2822,9 @@ class tslib_jsmenu extends tslib_menu {
 				// Making levels:
 			$levels = t3lib_div::intInRange($this->mconf['levels'],1,5);
 			$this->levels = $levels;
-			$this->JSVarName='eid';
-			$this->JSMenuName= $this->mconf['menuName'] ? $this->mconf['menuName'] : 'JSmenu';
+			$uniqueParam = t3lib_div::shortMD5(microtime(), 5);
+			$this->JSVarName = 'eid' . $uniqueParam;
+			$this->JSMenuName = ($this->mconf['menuName'] ? $this->mconf['menuName'] : 'JSmenu' . $uniqueParam);
 
 			$JScode="\n var ".$this->JSMenuName." = new JSmenu(".$levels.",'".$this->JSMenuName."Form');";
 
