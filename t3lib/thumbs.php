@@ -27,7 +27,7 @@
 /**
  * Generates a thumbnail and returns an image stream, either GIF/PNG or JPG
  *
- * $Id: thumbs.php 6724 2010-01-05 12:26:31Z benni $
+ * $Id: thumbs.php 6952 2010-02-21 19:51:35Z benni $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author		Kasper Skaarhoj	<kasperYYYY@typo3.com>
@@ -227,16 +227,7 @@ class SC_t3lib_thumbs {
 			if ($TYPO3_CONF_VARS['GFX']['im'])	{
 					// If thumbnail does not exist, we generate it
 				if (!@file_exists($this->output))	{
-/*					if (strstr($this->input,' ') || strstr($this->output,' '))	{
-						$this->errorGif('Spaces in','filepath',basename($this->input));
-					}
-*/						// 16 colors for small (56) thumbs, 64 for bigger and all for jpegs
-					if ($outext=='jpg')	{
-						$colors = '';
-					} else {
-						$colors = ($sizeMax>56)?'-colors 64':'-colors 16';
-					}
-					$parameters = '-sample '.$this->size.' '.$colors.' '.$this->wrapFileName($this->input).'[0] '.$this->wrapFileName($this->output);
+					$parameters = '-sample ' . $this->size . ' ' . $this->wrapFileName($this->input) . '[0] ' . $this->wrapFileName($this->output);
 					$cmd = t3lib_div::imageMagickCommand('convert', $parameters);
 					exec($cmd);
 					if (!@file_exists($this->output))	{

@@ -28,7 +28,7 @@
  * Class used in module tools/dbint (advanced search) and which may hold code specific for that module
  * However the class has a general principle in it which may be used in the web/export module.
  *
- * $Id: class.t3lib_fullsearch.php 6247 2009-10-22 08:37:11Z baschny $
+ * $Id: class.t3lib_fullsearch.php 7007 2010-02-23 10:26:04Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Jo Hasenau <info@cybercraft.de>
@@ -324,7 +324,7 @@ class t3lib_fullsearch {
 				}
 			} elseif ($storeControl['REMOVE'])	{
 				if ($storeIndex>0)	{
-					$msg="'".$storeArray[$storeControl['STORE']]."' query entry removed!";
+					$msg="'" . htmlspecialchars($storeArray[$storeControl['STORE']]) . "' query entry removed!";
 					unset($storeArray[$storeControl['STORE']]);	// Removing
 					$saveStoreArray=1;
 				}

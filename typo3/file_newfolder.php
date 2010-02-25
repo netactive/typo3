@@ -27,7 +27,7 @@
 /**
  * Web>File: Create new folders in the filemounts
  *
- * $Id: file_newfolder.php 4407 2008-11-01 17:21:28Z ohader $
+ * $Id: file_newfolder.php 7010 2010-02-23 10:26:39Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -143,7 +143,7 @@ class SC_file_newfolder {
 		$this->shortPath = substr($this->target,strlen($GLOBALS['FILEMOUNTS'][$key]['path']));
 
 			// Setting title:
-		$this->title = $this->icon.$GLOBALS['FILEMOUNTS'][$key]['name'].': '.$this->shortPath;
+		$this->title = $this->icon . htmlspecialchars($GLOBALS['FILEMOUNTS'][$key]['name']) . ': ' . $this->shortPath;
 
 			// Setting template object
 		$this->doc = t3lib_div::makeInstance('template');

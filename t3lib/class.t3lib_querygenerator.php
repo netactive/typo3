@@ -27,7 +27,7 @@
 /**
  * Class for generating front end for building queries
  *
- * $Id: class.t3lib_querygenerator.php 4881 2009-01-28 13:58:15Z benni $
+ * $Id: class.t3lib_querygenerator.php 7007 2010-02-23 10:26:04Z ohader $
  *
  * @author	Christian Jul Jensen <christian@typo3.com>
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -976,7 +976,7 @@ class t3lib_queryGenerator	{
 	 * @return	[type]		...
 	 */
 	function formatQ($str)	{
-		return '<font size="1" face="verdana" color="maroon"><i>'.$str.'</i></font>';
+		return '<font size="1" face="verdana" color="maroon"><i>' . htmlspecialchars($str) . '</i></font>';
 	}
 
 	/**
