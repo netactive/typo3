@@ -8,7 +8,7 @@
  * 'IM' is short for 'ImageMagick', which is an external image manipulation package available from www.imagemagick.org. Version is ABSOLUTELY preferred to be 4.2.9, but may be 5+. See the install notes for TYPO3!!
  * 'GD' is short for 'GDLib/FreeType', which are libraries that should be compiled into PHP4. GDLib <=1.3 supports GIF, while the latest version 1.8.x and 2.x supports only PNG. GDLib is available from www.boutell.com/gd/. Freetype has a link from there.
  *
- * $Id: config_default.php 7014 2010-02-23 10:59:22Z ohader $
+ * $Id: config_default.php 7264 2010-04-09 08:50:53Z stucki $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -377,7 +377,7 @@ $TYPO3_CONF_VARS = array(
 $T3_VAR = array();	// Initialize.
 
 	// TYPO3 version
-$TYPO_VERSION = '4.3.2';	// deprecated: use the constants defined below
+$TYPO_VERSION = '4.3.3';	// deprecated: use the constants defined below
 define('TYPO3_version', $TYPO_VERSION);
 define('TYPO3_branch', '4.3');
 define('TYPO3_copyright_year', '1998-2009');
@@ -470,7 +470,7 @@ function debug($variable='', $name='*variable*', $line='*line*', $file='*file*',
 		// If you wish to use the debug()-function, and it does not output something, please edit the IP mask in TYPO3_CONF_VARS
 	if (!t3lib_div::cmpIP(t3lib_div::getIndpEnv('REMOTE_ADDR'), $GLOBALS['TYPO3_CONF_VARS']['SYS']['devIPmask']))	return;
 
-	if(@is_callable(array($GLOBALS['error'],'debug'))) {
+	if(is_object($GLOBALS['error']) && @is_callable(array($GLOBALS['error'],'debug'))) {
 		$GLOBALS['error']->debug($variable, $name, $line, $file, $recursiveDepth, $debugLevel);
 	} else {
 		$br = ($name == '*variable*') ? 0 : $name;
@@ -478,12 +478,12 @@ function debug($variable='', $name='*variable*', $line='*line*', $file='*file*',
 	}
 }
 function debugBegin() {
-	if(@is_callable(array($GLOBALS['error'],'debugBegin'))) {
+	if(is_object($GLOBALS['error']) && @is_callable(array($GLOBALS['error'],'debugBegin'))) {
 		$GLOBALS['error']->debugBegin();
 	}
 }
 function debugEnd() {
-	if(@is_callable(array($GLOBALS['error'],'debugEnd'))) {
+	if(is_object($GLOBALS['error']) && @is_callable(array($GLOBALS['error'],'debugEnd'))) {
 		$GLOBALS['error']->debugEnd();
 	}
 }

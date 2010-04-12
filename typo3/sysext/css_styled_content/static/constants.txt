@@ -55,7 +55,7 @@ styles.content.imgtext {
 
     # cat=content/cImage/g1; type=int[0-100]; label= Advanced, Column space: Horizontal distance between images in a block in content elements of type "Image" or "Text w/Image". If you change this manually in your CSS, you need to adjust this setting accordingly.
   colSpace = 10
-    # cat=content/cImage/g2; type=int[0-100]; label= Advanced, Row space: Vertical distance between images in a block in content elements of type "Image" or "Text w/Image". If you change this manually in your CSS, you need to adjust this setting accordingly.
+    # cat=content/cImage/g2; type=int[0-100]; label= Advanced, Row space: Vertical distance after each image row in content elements of type "Image" or "Text w/Image". If you change this manually in your CSS, you need to adjust this setting accordingly.
   rowSpace = 5
     # cat=content/cImage/g3; type=int[0-100]; label= Advanced, Margin to text: Horizontal distance between an imageblock and text in content elements of type "Text w/Image".
   textMargin = 10
@@ -67,7 +67,7 @@ styles.content.imgtext {
     # cat=content/cImage/i3; type=int+; label= Image border, padding: Padding left and right to the image, around the border.
   borderSpace = 0
     # cat=content/cImage/i4; type=string; label= Image border CSS-selector: If you want your border to apply elsewhere, change this setting. E.g. to apply to the whole image+caption, use 'DIV.csc-textpic-border DIV.csc-textpic-imagewrap .csc-textpic-image'.
-  borderSelector = DIV.csc-textpic-border DIV.csc-textpic-imagewrap .csc-textpic-image IMG
+  borderSelector = DIV.csc-textpic-border DIV.csc-textpic-imagewrap .csc-textpic-image IMG, DIV.csc-textpic-border DIV.csc-textpic-single-image IMG
     # cat=content/cImage/i5; type=boolean; label= Image row separation: Whether images should be rendered/wrapped in separated rows, e.g. inside a DIV.csc-textpic-imagerow element
   separateRows = 1
 }
@@ -125,5 +125,5 @@ styles.content.media {
 PAGE_TARGET =
 
 
-# TYPO3 SVN ID: $Id: constants.txt 6536 2009-11-25 14:07:18Z stucki $
+# TYPO3 SVN ID: $Id: constants.txt 7228 2010-03-30 21:38:10Z steffenk $
 

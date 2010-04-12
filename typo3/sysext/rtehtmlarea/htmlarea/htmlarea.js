@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 6916 2010-02-19 18:53:47Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 7080 2010-03-05 01:32:07Z stan $
  */
 
 /***************************************************
@@ -56,6 +56,7 @@ HTMLArea = function(textarea, config) {
 		this._timerToolbar = null;
 		this.doctype = '';
 		this.eventHandlers = {};
+		this.ready = false;
 	}
 };
 
@@ -1174,6 +1175,7 @@ HTMLArea.generatePlugins = function(editorNumber) {
 		}
 	}
 	editor.updateToolbar();
+	editor.ready = true;
 };
 
 /*
@@ -1207,7 +1209,9 @@ HTMLArea.removeEditorEvents = function(ev) {
 			if (editor) {
 				RTEarea[editorNumber].editor = null;
 					// save the HTML content into the original textarea for submit, back/forward, etc.
-				editor._textArea.value = editor.getPluginInstance("EditorMode").getHTML();
+				if (editor.ready) {
+					editor._textArea.value = editor.getPluginInstance("EditorMode").getHTML();
+				}
 					// do final cleanup
 				HTMLArea.cleanup(editor);
 			}

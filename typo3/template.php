@@ -27,7 +27,7 @@
 /**
  * Contains class with layout/output function for TYPO3 Backend Scripts
  *
- * $Id: template.php 6959 2010-02-21 21:04:31Z steffenk $
+ * $Id: template.php 7107 2010-03-14 20:22:57Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -2105,6 +2105,18 @@ class mediumDoc extends template {
 class frontendDoc extends template {
 
 	/**
+	 * Gets instance of PageRenderer
+	 *
+	 * @return	t3lib_PageRenderer
+	 */
+	public function getPageRenderer() {
+		if (!isset($this->pageRenderer)) {
+			$this->pageRenderer = $GLOBALS['TSFE']->getPageRenderer();
+		}
+		return $this->pageRenderer;
+	}
+
+	/**
 	 * Used in the frontend context to insert header data via TSFE->additionalHeaderData.
 	 * Mimics header inclusion from template->startPage().
 	 *
@@ -2112,37 +2124,18 @@ class frontendDoc extends template {
 	 */
 	public function insertHeaderData() {
 
-		/** @var $pageRenderer t3lib_PageRenderer */
-		$pageRenderer = $GLOBALS['TSFE']->getPageRenderer();
-
 		$this->backPath = $GLOBALS['TSFE']->backPath = TYPO3_mainDir;
 		$this->pageRenderer->setBackPath($this->backPath);
 		$this->docStyle();
 
 			// add applied JS/CSS to $GLOBALS['TSFE']
 		if ($this->JScode) {
-			$pageRenderer->addHeaderData($this->JScode);
+			$this->pageRenderer->addHeaderData($this->JScode);
 		}
 		if (count($this->JScodeArray)) {
 			foreach ($this->JScodeArray as $name => $code) {
-				$pageRenderer->addJsInlineCode($name, $code);
-	}
-}
-
-		if ($this->addPrototype) {
-			$pageRenderer->loadPrototype();
-		}
-		if ($this->addScriptaculous) {
-			$pageRenderer->loadScriptaculous();
-		}
-		if ($this->addExtJS) {
-			$pageRenderer->loadExtJs();
-		}
-		if ($this->inlineLanguageLabels) {
-			$pageRenderer->addInlineLanguageLabelArray($this->inlineLanguageLabels);
-		}
-		if ($this->inlineSettings) {
-			$pageRenderer->addInlineSettingArray($this->inlineSettings);
+				$this->pageRenderer->addJsInlineCode($name, $code);
+			}
 		}
 	}
 }

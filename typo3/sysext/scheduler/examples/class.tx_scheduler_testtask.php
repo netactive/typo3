@@ -31,7 +31,7 @@ require_once(PATH_t3lib . 'class.t3lib_htmlmail.php');
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_testtask.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.tx_scheduler_testtask.php 7237 2010-04-03 14:30:24Z francois $
  */
 class tx_scheduler_TestTask extends tx_scheduler_Task {
 
@@ -92,6 +92,7 @@ class tx_scheduler_TestTask extends tx_scheduler_Task {
 
 				// Prepare mailer and send the mail
 			$mailer = t3lib_div::makeInstance('t3lib_htmlmail');
+			$mailer->start();
 			$mailer->from_email = $this->email;
 			$mailer->from_name = 'SCHEDULER TEST-TASK';
 			$mailer->replyto_email = $this->email;

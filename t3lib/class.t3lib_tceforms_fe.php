@@ -44,7 +44,7 @@
 /**
  * Contains a frontend version of the TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: class.t3lib_tceforms_fe.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.t3lib_tceforms_fe.php 7109 2010-03-14 20:27:32Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -166,6 +166,9 @@ class t3lib_TCEforms_FE extends t3lib_TCEforms {
 	public function initializeTemplateContainer() {
 		t3lib_div::requireOnce(PATH_typo3 . 'template.php');
 		$GLOBALS['TBE_TEMPLATE'] = t3lib_div::makeInstance('frontendDoc');
+		$GLOBALS['TBE_TEMPLATE']->getPageRenderer()->addInlineSetting(
+			'', 'PATH_typo3', t3lib_div::dirname(t3lib_div::getIndpEnv('SCRIPT_NAME')) . '/' . TYPO3_mainDir
+		);
 
 		$GLOBALS['SOBE'] = new stdClass();
 		$GLOBALS['SOBE']->doc = $GLOBALS['TBE_TEMPLATE'];

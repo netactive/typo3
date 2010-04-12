@@ -28,7 +28,7 @@
  * Libraries for pagegen.php
  * The script "pagegen.php" is included by "index_ts.php" when a page is not cached but needs to be rendered.
  *
- * $Id: class.tslib_pagegen.php 6766 2010-01-13 23:53:50Z steffenk $
+ * $Id: class.tslib_pagegen.php 7168 2010-03-26 10:05:56Z francois $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -342,7 +342,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		/** @var $pageRenderer t3lib_PageRenderer */
 		$pageRenderer = $GLOBALS['TSFE']->getPageRenderer();
 
-		$pageRenderer->backPath = 'typo3/';
+		$pageRenderer->backPath = TYPO3_mainDir;
 
 		if ($GLOBALS['TSFE']->config['config']['moveJsFromHeaderToFooter']) {
 			$pageRenderer->enableMoveJsFromHeaderToFooter();
@@ -545,7 +545,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							$pageRenderer->addCssFile(
 								htmlspecialchars($ss),
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['alternate'] ? 'alternate stylesheet' : 'stylesheet',
-								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['media'] ? $GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['media'] : 'screen',
+								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['media'] ? $GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['media'] : 'all',
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['title'] ? $GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['title'] : '',
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['compress'] ? TRUE : FALSE,
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,

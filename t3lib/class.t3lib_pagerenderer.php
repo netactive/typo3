@@ -32,7 +32,7 @@
  * @author	Steffen Kamper <info@sk-typo3.de>
  * @package TYPO3
  * @subpackage t3lib
- * $Id: class.t3lib_pagerenderer.php 6959 2010-02-21 21:04:31Z steffenk $
+ * $Id: class.t3lib_pagerenderer.php 7231 2010-04-01 13:56:42Z steffenk $
  */
 class t3lib_PageRenderer implements t3lib_Singleton {
 
@@ -961,12 +961,10 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 		$jsFooterFiles = '';
 		$noJS = FALSE;
 
-		$jsLibs = $this->renderJsLibraries();
-
+		
 		// preRenderHook for possible manuipulation
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_pagerenderer.php']['render-preProcess'])) {
 			$params = array (
-				'jsLibsCore'     => &$jsLibs,
 				'jsLibs'         => &$this->jsLibs,
 				'jsFiles'        => &$this->jsFiles,
 				'jsFooterFiles'  => &$this->jsFiles,
@@ -981,6 +979,8 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 			}
 		}
 
+		$jsLibs = $this->renderJsLibraries();
+		
 		if ($this->compressCss || $this->compressJavascript) {
 				// do the file compression
 			$this->doCompress();
@@ -1187,7 +1187,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 			// include extJS
 		if ($this->addExtJS) {
 				// use the base adapter all the time
-			$out .= '<script src="' . $this->backPath . 'contrib/extjs/adapter/' . $this->extJSadapter . '" type="text/javascript"></script>' . chr(10);
+			$out .= '<script src="' . $this->backPath . 'contrib/extjs/adapter/' . ($this->enableExtJsDebug ? str_replace('.js', '-debug.js', $this->extJSadapter) : $this->extJSadapter) . '" type="text/javascript"></script>' . chr(10);
 			$out .= '<script src="' . $this->backPath . 'contrib/extjs/ext-all' . ($this->enableExtJsDebug ? '-debug' : '') . '.js" type="text/javascript"></script>' . chr(10);
 
 				// add extJS localization

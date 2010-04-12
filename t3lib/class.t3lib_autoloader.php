@@ -27,7 +27,7 @@
 /**
  * Contains TYPO3 autoloader
  *
- * $Id: class.t3lib_autoloader.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.t3lib_autoloader.php 7263 2010-04-09 08:46:26Z stucki $
  *
  * @author	Dmitry Dulepov	<dmitry@typo3.org>
  * @author	Martin Kutschker <masi@typo3.org>
@@ -107,7 +107,11 @@ class t3lib_autoloader {
 			t3lib_div::requireFile($classPath);
 		} else {
 			try {
-				spl_autoload($className);
+				// Regular expression for a valid classname taken from
+				// http://www.php.net/manual/en/language.oop5.basic.php
+				if (preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $className)) {
+					spl_autoload($className);
+				}
 			} catch (LogicException $exception) {
 			}
 		}

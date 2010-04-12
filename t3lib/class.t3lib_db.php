@@ -30,7 +30,7 @@
  * interaction.
  * This class is instantiated globally as $TYPO3_DB in TYPO3 scripts.
  *
- * $Id: class.t3lib_db.php 6589 2009-11-29 17:18:19Z ohader $
+ * $Id: class.t3lib_db.php 7074 2010-03-03 09:44:16Z xperseguers $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -1374,13 +1374,18 @@ class t3lib_DB {
 			$debug = true;
 
 			foreach ($explain_tables as $table) {
-				$res = $this->sql_query('SHOW INDEX FROM ' . $table, $this->link);
-				if (is_resource($res)) {
-					while ($tempRow = $this->sql_fetch_assoc($res)) {
-						$indices_output[] = $tempRow;
+				$tableRes = $this->sql_query('SHOW TABLE STATUS LIKE \'' . $table . '\'');
+				$isTable = $this->sql_num_rows($tableRes);
+				if ($isTable) {
+					$res = $this->sql_query('SHOW INDEX FROM ' . $table, $this->link);
+					if (is_resource($res)) {
+						while ($tempRow = $this->sql_fetch_assoc($res)) {
+							$indices_output[] = $tempRow;
+						}
+						$this->sql_free_result($res);
 					}
-					$this->sql_free_result($res);
 				}
+				$this->sql_free_result($tableRes);
 			}
 		} else {
 			$debug = false;

@@ -27,7 +27,7 @@
 /**
  * Contains a base class for authentication of users in TYPO3, both frontend and backend.
  *
- * $Id: class.t3lib_userauth.php 6373 2009-11-07 18:17:12Z rupi $
+ * $Id: class.t3lib_userauth.php 7035 2010-02-25 15:53:14Z baschny $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -218,7 +218,7 @@ class t3lib_userAuth {
 		$mode = '';
 		$this->newSessionID = FALSE;
 			// $id is set to ses_id if cookie is present. Else set to false, which will start a new session
-		$id = isset($_COOKIE[$this->name]) ? stripslashes($_COOKIE[$this->name]) : '';
+		$id = $this->getCookie($this->name);
 		$this->svConfig = $TYPO3_CONF_VARS['SVCONF']['auth'];
 
 			// if we have a flash client, take the ID from the GP
@@ -383,6 +383,36 @@ class t3lib_userAuth {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Get the value of a specified cookie.
+	 *
+	 * Uses HTTP_COOKIE, if available, to avoid a IE8 bug where multiple
+	 * cookies with the same name might be returned if the user accessed
+	 * the site without "www." first and switched to "www." later:
+	 *   Cookie: fe_typo_user=AAA; fe_typo_user=BBB
+	 * In this case PHP will set _COOKIE as the first cookie, when we
+	 * would need the last one (which is what this function then returns).
+	 *
+	 * @param	string		The cookie ID
+	 * @return	string		The value stored in the cookie
+	 */
+	protected function getCookie($cookieName) {
+		if (isset($_SERVER['HTTP_COOKIE'])) {
+			$cookies = t3lib_div::trimExplode(';', $_SERVER['HTTP_COOKIE']);
+			foreach ($cookies as $cookie) {
+				list ($name, $value) = t3lib_div::trimExplode('=', $cookie);
+				if ($name == $cookieName) {
+					// Use the last one
+					$cookieValue = stripslashes($value);
+				}
+			}
+		} else {
+			// Fallback if there is no HTTP_COOKIE, use original method:
+			$cookieValue = isset($_COOKIE[$cookieName]) ? stripslashes($_COOKIE[$cookieName]) : '';
+		}
+		return $cookieValue;
 	}
 
 	/**

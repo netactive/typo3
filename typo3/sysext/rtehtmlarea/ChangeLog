@@ -1,3 +1,23 @@
+2010-04-08  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Updated htmlArea RTE version to 1.8.9
+
+2010-04-05  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #14004: htmlArea RTE: Applying color or font repeatedly produces nested span elements
+
+2010-03-11  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #9218: htmlArea RTE: "Remove format" messes up some inline formats
+
+2010-03-04  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #13057: htmlArea RTE sometimes deletes contents
+
+2010-02-23  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #13479: Jump to end of text when inserting paragraph
+
 2010-02-21  Stanislas Rolland  <typo3@sjbr.ca>
 
 	* Fixed bug #13310: htmlArea RTE: Additional Inline Elements issue with overlapping ranges

@@ -30,7 +30,7 @@
  * This script lets users choose a new database element to create.
  * Includes a wizard mode for visually pointing out the position of new pages
  *
- * $Id: db_new.php 6164 2009-10-19 10:58:22Z steffenk $
+ * $Id: db_new.php 7046 2010-02-26 13:25:07Z benni $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -427,13 +427,16 @@ class SC_db_new {
 			// Half-line:
 		$rowContent.= '<br />' . $halfLine;
 
-			// Compile table row:
-		$startRows[]='
-			<tr>
-				<td nowrap="nowrap">' . $rowContent . '</td>
-				<td>' . t3lib_BEfunc::cshItem($table, '', $this->doc->backPath, '', $doNotShowFullDescr) . '</td>
-			</tr>
-		';
+			// Compile table row to show the icon for "new page (select position)"
+		$startRows = array();
+		if ($this->showNewRecLink('pages')) {
+			$startRows[] = '
+				<tr>
+					<td nowrap="nowrap">' . $rowContent . '</td>
+					<td>' . t3lib_BEfunc::cshItem($table, '', $this->doc->backPath, '', $doNotShowFullDescr) . '</td>
+				</tr>
+			';
+		}
 
 
 			// New tables (but not pages) INSIDE this pages

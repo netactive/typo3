@@ -49,7 +49,7 @@
  * For a detailed description of this script, the scope of constants and variables in it,
  * please refer to the document "Inside TYPO3"
  *
- * $Id: init.php 6907 2010-02-14 19:24:41Z lolli $
+ * $Id: init.php 7263 2010-04-09 08:46:26Z stucki $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -86,6 +86,16 @@ define('TYPO3_MODE','BE');
 define('PATH_thisScript',str_replace('//','/', str_replace('\\','/', (PHP_SAPI=='cgi'||PHP_SAPI=='isapi' ||PHP_SAPI=='cgi-fcgi')&&($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED'])? ($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED']):($_SERVER['ORIG_SCRIPT_FILENAME']?$_SERVER['ORIG_SCRIPT_FILENAME']:$_SERVER['SCRIPT_FILENAME']))));
 define('TYPO3_mainDir', 'typo3/');		// This is the directory of the backend administration for the sites of this TYPO3 installation.
 
+
+// *******************************
+// Fix BACK_PATH, if the TYPO3_mainDir is set to something else than 
+// typo3/, this is a workaround because the conf.php of the old modules
+// still have "typo3/" hardcoded. Can be removed once we don't have to worry about
+// legacy modules (with conf.php and $BACK_PATH) anymore. See RFC / Bug #13262 for more details.
+// *******************************
+if (isset($BACK_PATH) && strlen($BACK_PATH) > 0 && TYPO3_mainDir != 'typo3/' && substr($BACK_PATH, -7) == '/typo3/') {
+	$BACK_PATH = substr($BACK_PATH, 0, -6) . TYPO3_mainDir;
+}
 
 // *******************************
 // Checking path
@@ -167,6 +177,10 @@ die();
 	}
 }
 
+// *********************
+// Unset variable(s) in global scope (fixes #13959)
+// *********************
+unset($error);
 
 // *************************************************
 // t3lib_div + extention management class included

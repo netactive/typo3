@@ -27,7 +27,7 @@
 /**
  * Contains class for icon generation in the backend
  *
- * $Id: class.t3lib_iconworks.php 5786 2009-08-14 17:18:28Z stucki $
+ * $Id: class.t3lib_iconworks.php 7242 2010-04-05 16:01:06Z xperseguers $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -190,6 +190,10 @@ final class t3lib_iconWorks	{
 			if ($enCols['starttime']) {
 				if ($GLOBALS['EXEC_TIME'] < intval($row[$enCols['starttime']])) {
 					$timing = TRUE;
+						// ...And if "endtime" is NOT set:
+					if (intval($row[$enCols['endtime']]) == 0) {
+						$futuretiming = TRUE;
+					}
 				}
 			}
 				// If an "endtime" is set:
@@ -248,7 +252,7 @@ final class t3lib_iconWorks	{
 			$iconFileName_stateTagged = preg_replace('/.([[:alnum:]]+)$/', '__'.$flags.'.\1', basename($iconfile));
 
 				// Check if tagged icon file name exists (a tagget icon means the icon base name with the flags added between body and extension of the filename, prefixed with underscore)
-			if (@is_file(dirname($absfile).'/'.$iconFileName_stateTagged))	{	// Look for [iconname]_xxxx.[ext]
+			if (@is_file(dirname($absfile) . '/' . $iconFileName_stateTagged) || @is_file($GLOBALS['TBE_STYLES']['skinImgAutoCfg']['absDir'] . '/' . dirname($iconfile) . '/' . $iconFileName_stateTagged)) {	// Look for [iconname]_xxxx.[ext]
 				return dirname($iconfile).'/'.$iconFileName_stateTagged;
 			} elseif ($doNotGenerateIcon)	{		// If no icon generation can be done, try to look for the _X icon:
 				$iconFileName_X = preg_replace('/.([[:alnum:]]+)$/', '__x.\1', basename($iconfile));

@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 6840 2010-02-02 14:01:13Z xperseguers $
+ * $Id: class.tslib_content.php 7159 2010-03-24 23:16:09Z lolli $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2822,10 +2822,10 @@ class tslib_cObj {
 		$typeConf = $conf[$conf['type'] . '.'];
 
 			//add SWFobject js-file
-		$GLOBALS['TSFE']->getPageRenderer()->addJsFile('typo3/contrib/flashmedia/swfobject/swfobject.js');
+		$GLOBALS['TSFE']->getPageRenderer()->addJsFile(TYPO3_mainDir . 'contrib/flashmedia/swfobject/swfobject.js');
 
 		$player = $this->stdWrap($conf[$conf['type'] . '.']['player'], $conf[$conf['type'] . '.']['player.']);
-		$installUrl = $conf['installUrl'] ? $conf['installUrl'] : $prefix . 'typo3/contrib/flashmedia/swfobject/expressInstall.swf';
+		$installUrl = $conf['installUrl'] ? $conf['installUrl'] : $prefix . TYPO3_mainDir . 'contrib/flashmedia/swfobject/expressInstall.swf';
 		$filename = $this->stdWrap($conf['file'], $conf['file.']);
 		if ($filename && $conf['forcePlayer']) {
 			if (strpos($filename, '://') !== FALSE) {
@@ -2931,7 +2931,7 @@ class tslib_cObj {
 		$typeConf = $conf[$conf['type'] . '.'];
 
 			//add QTobject js-file
-		$GLOBALS['TSFE']->getPageRenderer()->addJsFile('typo3/contrib/flashmedia/qtobject/qtobject.js');
+		$GLOBALS['TSFE']->getPageRenderer()->addJsFile(TYPO3_mainDir . 'contrib/flashmedia/qtobject/qtobject.js');
 		$replaceElementIdString = uniqid('mmqt');
 		$GLOBALS['TSFE']->register['MMQTID'] = $replaceElementIdString;
 		$qtObject = 'QTObject' . $replaceElementIdString;
@@ -4247,7 +4247,7 @@ class tslib_cObj {
 		$chars = intval($options[0]);
 		$absChars = abs($chars);
 		$replacementForEllipsis = trim($options[1]);
-		$crop2space = $options[2] === '1' ? TRUE : FALSE;
+		$crop2space = trim($options[2]) === '1' ? TRUE : FALSE;
 
 		// Split $content into an array (even items in the array are outside the tags, odd numbers are tag-blocks).
 		$tags= 'a|b|blockquote|body|div|em|font|form|h1|h2|h3|h4|h5|h6|i|li|map|ol|option|p|pre|sub|sup|select|span|strong|table|thead|tbody|tfoot|td|textarea|tr|u|ul|br|hr|img|input|area|link';
@@ -6434,77 +6434,45 @@ class tslib_cObj {
 	 * Arguments may be removed or set, depending on configuration.
 	 *
 	 * @param	string		Configuration
-	 * @param	array		Key/value pairs that overrule incoming query arguments
-	 * @param	boolean		If set key/value pairs not in the query but the overrule array will be set
+	 * @param	array		Multidimensional key/value pairs that overrule incoming query arguments
+	 * @param	boolean		If set, key/value pairs not in the query but the overrule array will be set
 	 * @return	string		The URL query part (starting with a &)
 	 */
-	function getQueryArguments($conf,$overruleQueryArgs=array(),$forceArgs=FALSE) {
-		$rawValues = FALSE;
-		switch((string)$conf['method'])	{
+	public function getQueryArguments($conf, $overruleQueryArguments=array(), $forceOverruleArguments = FALSE) {
+		switch ((string)$conf['method']) {
 			case 'GET':
-				$q_in = t3lib_div::_GET();
+				$currentQueryArray = t3lib_div::_GET();
 			break;
 			case 'POST':
-				$q_in = t3lib_div::_POST();
+				$currentQueryArray = t3lib_div::_POST();
 			break;
 			case 'GET,POST':
-				$q_in = array_merge(t3lib_div::_GET(), t3lib_div::_POST());
+				$currentQueryArray = array_merge(t3lib_div::_GET(), t3lib_div::_POST());
 			break;
 			case 'POST,GET':
-				$q_in = array_merge(t3lib_div::_POST(), t3lib_div::_GET());
+				$currentQueryArray = array_merge(t3lib_div::_POST(), t3lib_div::_GET());
 			break;
 			default:
-				$queryString = t3lib_div::getIndpEnv('QUERY_STRING');
-
-					// shortcut (no further processing necessary)
-				if (!$conf['exclude']) {
-					return $queryString ? '&'.$queryString : '';
-				}
-
-				$q_in = array();
-					// explode never returns an empty array, so check in advance
-				if ($queryString) {
-					foreach (explode('&', $queryString) as $arg) {
-						list($k,$v) = explode('=', $arg);
-						$q_in[$k] = $v;
-					}
-				}
-				$rawValues = TRUE;
+				$currentQueryArray = t3lib_div::explodeUrl2Array(t3lib_div::getIndpEnv('QUERY_STRING'), TRUE);
 		}
 
-		if ($conf['exclude'])	{
-			$q_out = array();
-			$exclude = t3lib_div::trimExplode(',', $conf['exclude']);
-			$exclude[] = 'id';	// never repeat id
-			foreach ($q_in as $k => $v)   {
-				if (!in_array($k, $exclude)) {
-					if (isset($overruleQueryArgs[$k]))	{
-						$v = $overruleQueryArgs[$k];
-						unset($overruleQueryArgs[$k]);
-					}
-					$q_out[$k] = $v;
-				}
-			}
-				// any remaining overrule arguments?
-			if ($forceArgs)	{
-				foreach ($overruleQueryArgs as $k => $v)	{
-					$q_out[$k] = $v;
-				}
-			}
+		if ($conf['exclude']) {
+			$exclude = str_replace(',', '&', $conf['exclude']);
+			$exclude = t3lib_div::explodeUrl2Array($exclude, TRUE);
+				// never repeat id
+			$exclude['id'] = 0;
+			$newQueryArray = t3lib_div::arrayDiffAssocRecursive($currentQueryArray, $exclude);
 		} else {
-			$q_out = &$q_in;
+			$newQueryArray = $currentQueryArray;
 		}
 
-		$content = '';
-		if ($rawValues)	{
-			foreach ($q_out as $k => $v)	{
-				$content .= '&'.$k.'='.$v;
-			}
+		if ($forceOverruleArguments) {
+			$newQueryArray = t3lib_div::array_merge_recursive_overrule($newQueryArray, $overruleQueryArguments);
 		} else {
-			$content = t3lib_div::implodeArrayForUrl('',$q_out);
+			$newQueryArray = t3lib_div::array_merge_recursive_overrule($newQueryArray, $overruleQueryArguments, TRUE);
 		}
 
-		return $content;
+		return t3lib_div::implodeArrayForUrl('', $newQueryArray);
 	}
 
 

@@ -29,7 +29,7 @@
  * Used from TCEFORMS an other elements
  * In other words: This is the ELEMENT BROWSER!
  *
- * $Id: class.browse_links.php 5955 2009-09-17 17:59:16Z ohader $
+ * $Id: class.browse_links.php 7140 2010-03-20 22:42:02Z stan $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2575,7 +2575,8 @@ class browse_links {
 				} else {	// URL is a page (id parameter)
 					$uP=parse_url($rel);
 					if (!trim($uP['path']))	{
-						$pp = explode('id=',$uP['query']);
+						$pp = preg_split('/^id=/', $uP['query']);
+						$pp[1] = preg_replace( '/&id=[^&]*/', '', $pp[1]);
 						$parameters = explode('&', $pp[1]);
 						$id = array_shift($parameters);
 						if ($id)	{

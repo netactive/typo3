@@ -28,7 +28,7 @@
 /**
  * Module: Extension manager
  *
- * $Id: class.em_index.php 6814 2010-01-23 16:09:07Z steffenk $
+ * $Id: class.em_index.php 7244 2010-04-05 22:10:27Z jsegars $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Karsten Dambekalns <karsten@typo3.org>
@@ -4090,11 +4090,11 @@ EXTENSION KEYS:
 		// ext_tables.php:
 		if (@is_file($absPath.'ext_tables.php'))	{
 			$content = t3lib_div::getUrl($absPath.'ext_tables.php');
-			if (stristr($content, 't3lib_extMgm::addModule'))	$infoArray['flags'][] = $GLOBALS['LANG']->getLL('detailedExtAnalysis_module');
-			if (stristr($content, 't3lib_extMgm::insertModuleFunction'))	$infoArray['flags'][] = $GLOBALS['LANG']->getLL('detailedExtAnalysis_module_and_more');
-			if (stristr($content, 't3lib_div::loadTCA'))	$infoArray['flags'][] = $GLOBALS['LANG']->getLL('detailedExtAnalysis_loadTCA');
-			if (stristr($content, '$TCA['))	$infoArray['flags'][] = $GLOBALS['LANG']->getLL('detailedExtAnalysis_TCA');
-			if (stristr($content, 't3lib_extMgm::addPlugin'))	$infoArray['flags'][] = $GLOBALS['LANG']->getLL('detailedExtAnalysis_plugin');
+			if (stristr($content, 't3lib_extMgm::addModule'))	$infoArray['flags'][] = 'Module';
+			if (stristr($content, 't3lib_extMgm::insertModuleFunction'))	$infoArray['flags'][] = 'Module+';
+			if (stristr($content, 't3lib_div::loadTCA'))	$infoArray['flags'][] = 'loadTCA';
+			if (stristr($content, '$TCA['))	$infoArray['flags'][] = 'TCA';
+			if (stristr($content, 't3lib_extMgm::addPlugin'))	$infoArray['flags'][] = 'Plugin';
 		}
 
 		// ext_localconf.php:
@@ -6149,6 +6149,7 @@ $EM_CONF[$_EXTKEY] = '.$this->arrayToCode($EM_CONF, 0).';
 
 			$v = $this->xmlhandler->extensionsXML[$name]['versions'];
 			$versions = array_keys($v);
+			natsort($versions);
 			$lastversion = end($versions);
 
 			if ((t3lib_extMgm::isLoaded($name) || $this->MOD_SETTINGS['display_installed']) &&

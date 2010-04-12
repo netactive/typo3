@@ -31,7 +31,7 @@
  * Call ALL methods without making an object!
  * Eg. to get a page-record 51 do this: 't3lib_BEfunc::getRecord('pages',51)'
  *
- * $Id: class.t3lib_befunc.php 6939 2010-02-21 15:38:21Z benni $
+ * $Id: class.t3lib_befunc.php 7166 2010-03-25 15:43:44Z baschny $
  * Usage counts are based on search 22/2 2003 through whole backend source of typo3/
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
@@ -2662,6 +2662,15 @@ final class t3lib_BEfunc {
 
 				// Add it:
 			$addGetVars .= $suffix;
+		}
+	
+			// check if we need to preview a mount point
+		$sys_page = t3lib_div::makeInstance('t3lib_pageSelect');
+		$sys_page->init(FALSE);
+		$mountPointInfo = $sys_page->getMountPointInfo($id);
+		if ($mountPointInfo && $mountPointInfo['overlay']) {
+			$id = $mountPointInfo['mount_pid'];
+			$addGetVars .= '&MP=' . $mountPointInfo['MPvar'];
 		}
 
 		$urlPreviewEnabled  = $preUrl . $viewScriptPreviewEnabled . $id . $addGetVars . $anchor;

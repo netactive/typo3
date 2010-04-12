@@ -27,7 +27,7 @@
 /**
  * Index search frontend
  *
- * $Id: class.tx_indexedsearch.php 5947 2009-09-16 17:57:09Z ohader $
+ * $Id: class.tx_indexedsearch.php 7134 2010-03-18 13:29:16Z dmitry $
  *
  * Creates a searchform for indexed search. Indexing must be enabled
  * for this to make sense.
@@ -1731,7 +1731,13 @@ class tx_indexedsearch extends tslib_pibase {
 			// If external media, link to the media-file instead.
 		if ($row['item_type'])	{		// External media
 			if ($row['show_resume'])	{	// Can link directly.
-				$title = '<a href="'.htmlspecialchars($row['data_filename']).'">'.htmlspecialchars($this->makeTitle($row)).'</a>';
+				$targetAttribute = '';
+				if ($GLOBALS['TSFE']->config['config']['fileTarget']) {
+					$targetAttribute = ' target="' . htmlspecialchars($GLOBALS['TSFE']->config['config']['fileTarget']) . '"';
+				}
+				$title = '<a href="' . htmlspecialchars($row['data_filename']) . '"' . $targetAttribute . '>' .
+					htmlspecialchars($this->makeTitle($row)) .
+					'</a>';
 			} else {	// Suspicious, so linking to page instead...
 				$copy_row = $row;
 				unset($copy_row['cHashParams']);
@@ -1861,19 +1867,26 @@ class tx_indexedsearch extends tslib_pibase {
 	 * @param	array		TypoScript configuration specifically for search result.
 	 * @return	string		<img> tag for icon
 	 */
-	function makeItemTypeIcon($it,$alt='',$specRowConf)	{
+	function makeItemTypeIcon($it, $alt='', $specRowConf) {
+
+			// Build compound key if item type is 0, iconRendering is not used
+			// and specConfs.[pid].pageIcon was set in TS
+		if ($it === '0' && $specRowConf['_pid'] && is_array($specRowConf['pageIcon.']) && !is_array($this->conf['iconRendering.'])) {
+			$it .= ':' . $specRowConf['_pid'];
+		}
 		if (!isset($this->iconFileNameCache[$it]))	{
 			$this->iconFileNameCache[$it] = '';
 
 				// If TypoScript is used to render the icon:
 			if (is_array($this->conf['iconRendering.']))	{
 				$this->cObj->setCurrentVal($it);
-				$this->iconFileNameCache[$it] = $this->cObj->cObjGetSingle($this->conf['iconRendering'],$this->conf['iconRendering.']);
-			} else { // ... otherwise, get flag from sys_language record:
+				$this->iconFileNameCache[$it] = $this->cObj->cObjGetSingle($this->conf['iconRendering'], $this->conf['iconRendering.']);
+				// ... otherwise, get flag from sys_language record:
+			} else {
 
 					// Default creation / finding of icon:
 				$icon = '';
-				if ($it==='0')	{
+				if ($it === '0' || substr($it, 0, 2) == '0:')	{
 					if (is_array($specRowConf['pageIcon.']))	{
 						$this->iconFileNameCache[$it] = $this->cObj->IMAGE($specRowConf['pageIcon.']);
 					} else {
@@ -1888,8 +1901,8 @@ class tx_indexedsearch extends tslib_pibase {
 
 					if ($fullPath)	{
 						$info = @getimagesize($fullPath);
-						$iconPath = substr($fullPath,strlen(PATH_site));
-						$this->iconFileNameCache[$it] = is_array($info) ? '<img src="'.$iconPath.'" '.$info[3].' title="'.htmlspecialchars($alt).'" alt="" />' : '';
+						$iconPath = substr($fullPath, strlen(PATH_site));
+						$this->iconFileNameCache[$it] = (is_array($info)) ? '<img src="' . $iconPath . '" ' . $info[3] . ' title="' . htmlspecialchars($alt) . '" alt="" />' : '';
 					}
 				}
 			}
@@ -2095,7 +2108,13 @@ class tx_indexedsearch extends tslib_pibase {
 
 		$pI = parse_url($row['data_filename']);
 		if ($pI['scheme'])	{
-			$tmplArray['path'] = '<a href="'.htmlspecialchars($row['data_filename']).'">'.htmlspecialchars($row['data_filename']).'</a>';
+			$targetAttribute = '';
+			if ($GLOBALS['TSFE']->config['config']['fileTarget']) {
+				$targetAttribute = ' target="' . htmlspecialchars($GLOBALS['TSFE']->config['config']['fileTarget']) . '"';
+			}
+			$tmplArray['path'] = '<a href="' . htmlspecialchars($row['data_filename']) . '"' . $targetAttribute . '>' .
+				htmlspecialchars($row['data_filename']) .
+				'</a>';
 		} else {
 			$pathStr = htmlspecialchars($this->getPathFromPageId($pathId,$pathMP));
 			$tmplArray['path'] = $this->linkPage($pathId,$pathStr,array(
@@ -2124,6 +2143,7 @@ class tx_indexedsearch extends tslib_pibase {
 			foreach ($rl as $dat)	{
 				if (is_array($this->conf['specConfs.'][$dat['uid'].'.']))	{
 					$specConf = $this->conf['specConfs.'][$dat['uid'].'.'];
+					$specConf['_pid'] = $dat['uid'];
 					break;
 				}
 			}

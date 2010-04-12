@@ -27,7 +27,7 @@
 /**
  * Functions for parsing HTML, specially for TYPO3 processing in relation to TCEmain and Rich Text Editor (RTE)
  *
- * $Id: class.t3lib_parsehtml_proc.php 6684 2009-12-19 15:26:00Z xperseguers $
+ * $Id: class.t3lib_parsehtml_proc.php 7140 2010-03-20 22:42:02Z stan $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compatible.
  *
@@ -1543,7 +1543,9 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 					$info['url']=$info['relUrl'];
 					$info['type']='anchor';
 				} elseif (!trim($uP['path']) || !strcmp($uP['path'],'index.php'))	{
-					$pp = explode('id=',$uP['query']);
+						// URL is a page (id parameter)
+					$pp = preg_split('/^id=/', $uP['query']);
+					$pp[1] = preg_replace( '/&id=[^&]*/', '', $pp[1]);
 					$parameters = explode('&', $pp[1]);
 					$id = array_shift($parameters);
 					if ($id)	{

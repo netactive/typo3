@@ -27,7 +27,7 @@
 /**
  * Login-screen of TYPO3.
  *
- * $Id: index.php 6514 2009-11-24 16:12:06Z steffenk $
+ * $Id: index.php 7255 2010-04-08 10:54:29Z steffenk $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -653,8 +653,13 @@ class SC_index {
 		$JSCode .= $GLOBALS['TBE_TEMPLATE']->wrapScriptTags('
 			function startUp() {
 					// If the login screen is shown in the login_frameset window for re-login, then try to get the username of the current/former login from opening windows main frame:
-				if (parent.opener && parent.opener.TS && parent.opener.TS.username && document.loginform && document.loginform.username)	{
-					document.loginform.username.value = parent.opener.TS.username;
+				try {
+					if (parent.opener && parent.opener.TS && parent.opener.TS.username && document.loginform && document.loginform.username)	{
+						document.loginform.username.value = parent.opener.TS.username;
+					}
+				}
+				catch(error) {
+					//continue
 				}
 
 					// Wait a few millisecons before calling checkFocus(). This might be necessary because some browsers need some time to auto-fill in the form fields

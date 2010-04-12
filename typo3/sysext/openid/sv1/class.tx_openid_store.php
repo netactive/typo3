@@ -22,7 +22,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /**
- * $Id: class.tx_openid_store.php 6580 2009-11-29 15:17:50Z dmitry $
+ * $Id: class.tx_openid_store.php 7249 2010-04-06 12:39:16Z dmitry $
  */
 
 require_once(t3lib_extMgm::extPath('openid', 'lib/php-openid/Auth/OpenID/Interface.php'));
@@ -102,8 +102,13 @@ class tx_openid_store extends Auth_OpenID_OpenIDStore {
 
 		$result = null;
 		if (is_array($row)) {
-			$result = @unserialize($row['content']);
-			$this->updateAssociationTimeStamp($row['tstamp']);
+			$result = @unserialize(base64_decode($row['content']));
+			if ($result === false) {
+				$result = null;
+			}
+			else {
+				$this->updateAssociationTimeStamp($row['tstamp']);
+			}
 		}
 		return $result;
 	}
@@ -201,7 +206,7 @@ class tx_openid_store extends Auth_OpenID_OpenIDStore {
 			time());
 		$serializedAssociation = serialize($association);
 		$values = array(
-			'content' => $serializedAssociation,
+			'content' => base64_encode($serializedAssociation),
 			'tstamp' => time(),
 		);
 		$GLOBALS['TYPO3_DB']->exec_UPDATEquery(self::ASSOCIATION_TABLE_NAME, $where, $values);
@@ -218,7 +223,7 @@ class tx_openid_store extends Auth_OpenID_OpenIDStore {
 		$serializedAssociation = serialize($association);
 		$values = array(
 			'assoc_handle' => $association->handle,
-			'content' => $serializedAssociation,
+			'content' => base64_encode($serializedAssociation),
 			'crdate' => $association->issued,
 			'tstamp' => time(),
 			'expires' => $association->issued + $association->lifetime - self::ASSOCIATION_EXPIRATION_SAFETY_INTERVAL,

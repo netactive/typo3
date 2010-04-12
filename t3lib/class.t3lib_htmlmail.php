@@ -27,7 +27,7 @@
 /**
  * HTML mail class
  *
- * $Id: class.t3lib_htmlmail.php 6108 2009-10-07 09:51:30Z ohader $
+ * $Id: class.t3lib_htmlmail.php 7177 2010-03-26 14:05:42Z francois $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -730,7 +730,6 @@ class t3lib_htmlmail {
 			@ini_set('sendmail_from', t3lib_div::normalizeMailAddress($this->returnPath));
 		}
 		$recipient = t3lib_div::normalizeMailAddress($this->recipient);
-		$recipient_copy = t3lib_div::normalizeMailAddress($this->recipient_copy);
 
 		// If safe mode is on, the fifth parameter to mail is not allowed, so the fix wont work on unix with safe_mode=On
 		$returnPathPossible = (!ini_get('safe_mode') && $this->forceReturnPath);
@@ -747,21 +746,6 @@ class t3lib_htmlmail {
 				  $this->headers);
 		}
 
-			// Sending a copy
-		if ($recipient_copy) {
-			if ($returnPathPossible) {
-				$mailWasSent = mail($recipient_copy,
-					$this->subject,
-					$this->message,
-					$this->headers,
-					$returnPath);
-			} else {
-				$mailWasSent = mail($recipient_copy,
-					$this->subject,
-					$this->message,
-					$this->headers);
-			}
-		}
 			// Auto response
 		if ($this->auto_respond_msg) {
 			$theParts = explode('/',$this->auto_respond_msg,2);

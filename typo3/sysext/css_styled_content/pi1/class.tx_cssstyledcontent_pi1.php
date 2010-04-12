@@ -27,7 +27,7 @@
 /**
  * Plugin 'Content rendering' for the 'css_styled_content' extension.
  *
- * $Id: class.tx_cssstyledcontent_pi1.php 5947 2009-09-16 17:57:09Z ohader $
+ * $Id: class.tx_cssstyledcontent_pi1.php 7184 2010-03-26 16:02:00Z lolli $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -378,7 +378,7 @@ class tx_cssstyledcontent_pi1 extends tslib_pibase {
 				}
 
 					// Compile it all into table tags:
-				$out = $this->cObj->wrap(implode('',$outputEntries), $outerWrap);;
+				$out = $this->cObj->wrap(implode('', $outputEntries), $outerWrap);
 			}
 
 				// Calling stdWrap:

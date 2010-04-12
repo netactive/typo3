@@ -651,7 +651,8 @@ tt_content.image.20 {
 			imgTagStdWrap.wrap = |
 			editIconsStdWrap.wrap = |
 			caption.wrap = <div class="csc-textpic-caption"> | </div>
-			#imageStdWrap.dataWrap = |
+			imageStdWrap.dataWrap = <div class="csc-textpic-imagewrap csc-textpic-single-image" style="width:{register:totalwidth}px;"> | </div>
+			imageStdWrapNoWidth.wrap = <div class="csc-textpic-imagewrap csc-textpic-single-image"> | </div>
 		}
 	}
 	renderMethod = dl
@@ -1245,7 +1246,7 @@ tt_content.login.20 {
 		override.listNum = 1
 	}
 
-	stdWrap.wrap = <table border="0" cellspacing="1" cellpadding="1" class="csc-loginform">  | </table>
+	stdWrap.wrap = <div class="csc-loginform"> | </div>
 	stdWrap {
 		editIcons.iconTitle.data = LLL:EXT:css_styled_content/pi1/locallang.xml:eIcon.login
 
@@ -1701,6 +1702,7 @@ plugin.tx_cssstyledcontent._CSS_DEFAULT_STYLE (
 	DIV.csc-textpic DIV.csc-textpic-imagewrap .csc-textpic-image { margin-bottom: {$styles.content.imgtext.rowSpace}px; }
 	DIV.csc-textpic-equalheight DIV.csc-textpic-imagerow { margin-bottom: {$styles.content.imgtext.rowSpace}px; display: block; }
 	DIV.csc-textpic DIV.csc-textpic-imagerow { clear: both; }
+	DIV.csc-textpic DIV.csc-textpic-single-image IMG { margin-bottom: {$styles.content.imgtext.rowSpace}px; }
 
 	/* No margins around the whole image-block */
 	DIV.csc-textpic DIV.csc-textpic-imagewrap .csc-textpic-firstcol { margin-left: 0px !important; }
@@ -1761,4 +1763,4 @@ plugin.tx_cssstyledcontent._CSS_DEFAULT_STYLE (
 	.csc-textpic-intext-left ol, .csc-textpic-intext-left ul {padding-left: 40px; overflow: auto; height: 1%; }
 )
 
-# TYPO3 SVN ID: $Id: setup.txt 6536 2009-11-25 14:07:18Z stucki $
+# TYPO3 SVN ID: $Id: setup.txt 7209 2010-03-29 07:54:23Z baschny $
