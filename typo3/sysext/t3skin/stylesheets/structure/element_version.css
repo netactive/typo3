@@ -1,0 +1,39 @@
+/* - - - - - - - - - - - - - - - - - - - - -
+Workspace
+
+$Id: element_version.css 7937 2010-06-16 17:32:00Z psychomieze $
+- - - - - - - - - - - - - - - - - - - - - */
+
+div.workspace-info {
+	padding: 7px;
+}
+
+table.workspace-overview td {
+	vertical-align: top;
+}
+
+table.ver-subtree tr td img {
+	vertical-align: middle;
+}
+
+table.ver-verElement {
+	width: 100%;
+}
+
+.ver-wl-details {
+	vertical-align: top;
+}
+
+.ver-wl-details-label {
+	width: 150px;
+	vertical-align: top;
+}
+
+.ver-wl-details-user-list-label {
+	width: 100px;
+}
+
+#ver-wl-new-workspace-icon {
+	margin-right: 5px;
+	float: left;
+}

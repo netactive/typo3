@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Julian Kleinhans <typo3@kj187.de>
+*  (c) 2009-2010 Julian Kleinhans <typo3@kj187.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  * @author  Erik Frister <erik_frister@otq-solutions.com>
  * @package	TYPO3
  * @subpackage	tx_recycler
- * @version $Id: t3_recycler.js 6539 2009-11-25 14:49:14Z stucki $
+ * @version $Id: t3_recycler.js 7905 2010-06-13 14:42:33Z ohader $
  */
 Event.observe(window, 'load', function() {
 	//Quicktips initialisieren
@@ -59,11 +59,11 @@ Recycler.grid = {
 		var expander = new Ext.grid.RowExpander({
 			tpl : new Ext.Template(
 				'<br/>' +
-				'<p style="margin-left:45px;"><b>' + Recycler.lang.table + ':</b> {table}</p>' +
-				'<p style="margin-left:45px;"><b>' + Recycler.lang.crdate + ':</b> {crdate}</p>' +
-				'<p style="margin-left:45px;"><b>' + Recycler.lang.tstamp + ':</b> {tstamp}</p>' +
-				'<p style="margin-left:45px;"><b>' + Recycler.lang.owner + ':</b> {owner} (UID: {owner_uid})</p>' +
-				'<p style="margin-left:45px;"><b>' + Recycler.lang.path + ':</b> {path}</p>' +
+				'<p style="margin-left:45px;"><strong>' + Recycler.lang.table + ':</strong> {table}</p>' +
+				'<p style="margin-left:45px;"><strong>' + Recycler.lang.crdate + ':</strong> {crdate}</p>' +
+				'<p style="margin-left:45px;"><strong>' + Recycler.lang.tstamp + ':</strong> {tstamp}</p>' +
+				'<p style="margin-left:45px;"><strong>' + Recycler.lang.owner + ':</strong> {owner} (UID: {owner_uid})</p>' +
+				'<p style="margin-left:45px;"><strong>' + Recycler.lang.path + ':</strong> {path}</p>' +
 				'<br/>'
 			)
 		});
@@ -346,7 +346,6 @@ Recycler.grid = {
 					mode: 'local',
 					emptyText: Recycler.lang.depth,
 					selectOnFocus: true,
-					readOnly: true,
 					triggerAction: 'all',
 					editable: false,
 					forceSelection: true,
@@ -400,11 +399,10 @@ Recycler.grid = {
 					mode: 'local',
 					emptyText: Recycler.lang.tableMenu_emptyText,
 					selectOnFocus: true,
-					readOnly: true,
 					triggerAction: 'all',
 					editable: false,
 					forceSelection: true,
-
+					
 					store: new Ext.data.Store({
 						autoLoad: true,
 						url: Recycler.statics.ajaxController + '&startUid=' + Recycler.statics.startUid + '&cmd=getTables' + '&depth=' + Recycler.statics.depthSelection,
@@ -470,7 +468,7 @@ Ext.ux.plugins.FitToParent = Ext.extend(Object, {
 	init : function(c) {
 		c.on('render', function(c) {
 			c.fitToElement = Ext.get(this.parent
-					|| c.getDomPositionEl().dom.parentNode);
+					|| c.getPositionEl().dom.parentNode);
 			if (!c.doLayout) {
 				this.fitSizeToParent();
 				Ext.EventManager.onWindowResize(this.fitSizeToParent, this);
@@ -486,9 +484,10 @@ Ext.ux.plugins.FitToParent = Ext.extend(Object, {
 	fitSizeToParent : function() {
 		// Uses the dimension of the current viewport, but removes the document header
 		// and an addtional margin of 40 pixels (e.g. Safari needs this addition)
+		
 		this.fitToElement.setHeight(document.viewport.getHeight() - this.fitToElement.getTop() - 40);
-		var pos = this.getPosition(true), size = this.fitToElement
-				.getViewSize();
+		var pos = this.getPosition(true), size = this.fitToElement.getViewSize();
 		this.setSize(size.width - pos[0], size.height - pos[1]);
+		
 	}
 });

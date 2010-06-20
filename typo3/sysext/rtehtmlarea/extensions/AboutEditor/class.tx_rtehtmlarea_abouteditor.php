@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 2008-2010 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_abouteditor.php 5489 2009-05-23 15:26:20Z ohader $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_abouteditor.php 7905 2010-06-13 14:42:33Z ohader $
  *
  */
 

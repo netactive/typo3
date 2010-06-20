@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasper@typo3.com)
-*  (c) 2005-2009 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 1999-2010 Kasper Skaarhoj (kasper@typo3.com)
+*  (c) 2005-2010 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -31,7 +31,7 @@
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * $Id: user.php 5165 2009-03-09 18:28:59Z ohader $  *
+ * $Id: user.php 7905 2010-06-13 14:42:33Z ohader $  *
  */
 
 error_reporting (E_ALL ^ E_NOTICE);

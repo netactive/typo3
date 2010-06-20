@@ -1,0 +1,17 @@
+/* - - - - - - - - - - - - - - - - - - - - -
+Web > Info
+
+$Id: module_web_info.css 7906 2010-06-13 14:56:44Z ohader $
+- - - - - - - - - - - - - - - - - - - - - */
+
+table.typo3-page-pages tr td.c-headLine {
+	background-color: #abbbb4;
+}
+
+table.typo3-page-sysnote tr td {
+	background-color: #d9d5c9;
+}
+
+table.typo3-page-sysnote tr td.c-headLine {
+	background-color: #c5c1b5;
+}

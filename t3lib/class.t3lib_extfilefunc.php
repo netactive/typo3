@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * extending class to class t3lib_basicFileFunctions
  *
- * $Id: class.t3lib_extfilefunc.php 6455 2009-11-17 17:10:23Z rupi $
+ * $Id: class.t3lib_extfilefunc.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 May/2004 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

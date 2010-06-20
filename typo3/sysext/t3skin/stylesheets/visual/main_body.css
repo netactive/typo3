@@ -1,0 +1,10 @@
+/* - - - - - - - - - - - - - - - - - - - - -
+body tags
+
+$Id: main_body.css 7906 2010-06-13 14:56:44Z ohader $
+- - - - - - - - - - - - - - - - - - - - - */
+
+/* Set default values for bodytags: */
+body {
+	background-color: #f1f1f1;
+}

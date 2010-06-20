@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Benjamin Mack <benni@typo3.org>
-*  (c) 2008-2009 Steffen Kamper <info@sk-typo3.de>
+*  (c) 2008-2010 Benjamin Mack <benni@typo3.org>
+*  (c) 2008-2010 Steffen Kamper <info@sk-typo3.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
 /**
  * Contains the update class for adding the system extension "simulate static".
  *
- * $Id: class.tx_coreupdates_installversioning.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.tx_coreupdates_installversioning.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author  Rupert Germann
  */

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Ingo Renner <ingo@typo3.org>
+*  (c) 2009-2010 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -33,7 +33,7 @@
  * @package		TYPO3
  * @subpackage	tx_reports
  *
- * $Id: interface.tx_reports_statusprovider.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: interface.tx_reports_statusprovider.php 7905 2010-06-13 14:42:33Z ohader $
  */
 interface tx_reports_StatusProvider {
 

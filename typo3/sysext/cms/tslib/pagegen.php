@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Generating the TypoScript based page.
  * Must be included from index_ts.php
  *
- * $Id: pagegen.php 5174 2009-03-10 20:23:43Z ohader $
+ * $Id: pagegen.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -58,8 +58,7 @@ $GLOBALS['TSFE']->newCObj();
 // LIBRARY INCLUSION, TypoScript
 // ******************************
 $temp_incFiles=TSpagegen::getIncFiles();
-reset($temp_incFiles);
-while(list(,$temp_file)=each($temp_incFiles))	{
+foreach ($temp_incFiles as $temp_file) {
 	include_once('./'.$temp_file);
 }
 

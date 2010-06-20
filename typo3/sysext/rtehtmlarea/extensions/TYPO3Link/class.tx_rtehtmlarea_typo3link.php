@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2008-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_typo3link.php 5489 2009-05-23 15:26:20Z ohader $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_typo3link.php 7307 2010-04-12 16:17:20Z benni $
  *
  */
 
@@ -76,7 +76,7 @@ class tx_rtehtmlarea_typo3link extends tx_rtehtmlareaapi {
 			RTEarea['.$RTEcounter.'].buttons.'. $button .' = new Object();';
 			}
 			$registerRTEinJavascriptString .= '
-			RTEarea['.$RTEcounter.'].buttons.'. $button .'.pathLinkModule = "../../mod3/browse_links.php";';
+			RTEarea['.$RTEcounter.'].buttons.'. $button .'.pathLinkModule = "' . $this->htmlAreaRTE->extHttpPath . 'mod3/browse_links.php";';
 
 			if ($this->htmlAreaRTE->is_FE()) {
 				$RTEProperties = $this->htmlAreaRTE->RTEsetup;
@@ -87,10 +87,8 @@ class tx_rtehtmlarea_typo3link extends tx_rtehtmlareaapi {
 				$registerRTEinJavascriptString .= '
 			RTEarea['.$RTEcounter.'].buttons.'. $button .'.classesAnchorUrl = "' . $this->htmlAreaRTE->writeTemporaryFile('', 'classesAnchor_'.$this->htmlAreaRTE->contentLanguageUid, 'js', $this->buildJSClassesAnchorArray()) . '";';
 			}
-			if ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extensionKey]['plugins'][$this->pluginName]['additionalAttributes']) {
-				$registerRTEinJavascriptString .= '
-			RTEarea['.$RTEcounter.'].buttons.'. $button .'.additionalAttributes = "' . $GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extensionKey]['plugins'][$this->pluginName]['additionalAttributes'] .'";';
-			}
+			$registerRTEinJavascriptString .= '
+			RTEarea['.$RTEcounter.'].buttons.'. $button .'.additionalAttributes = "external' . ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extensionKey]['plugins'][$this->pluginName]['additionalAttributes'] ? (',' . $GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extensionKey]['plugins'][$this->pluginName]['additionalAttributes']) : '') . '";';
 		}
 		return $registerRTEinJavascriptString;
 	}
@@ -103,7 +101,7 @@ class tx_rtehtmlarea_typo3link extends tx_rtehtmlareaapi {
 	public function buildJSClassesAnchorArray() {
 		global $LANG, $TYPO3_CONF_VARS;
 
-		$linebreak = $TYPO3_CONF_VARS['EXTCONF'][$this->htmlAreaRTE->ID]['enableCompressedScripts'] ? '' : chr(10);
+		$linebreak = $TYPO3_CONF_VARS['EXTCONF'][$this->htmlAreaRTE->ID]['enableCompressedScripts'] ? '' : LF;
 		$JSClassesAnchorArray .= 'HTMLArea.classesAnchorSetup = [ ' . $linebreak;
 		$classesAnchorIndex = 0;
 		foreach ($this->htmlAreaRTE->RTEsetup['properties']['classesAnchor.'] as $label => $conf) {
@@ -151,11 +149,8 @@ class tx_rtehtmlarea_typo3link extends tx_rtehtmlareaapi {
 			return $show;
 		}
 	}
-
-} // end of class
-
+}
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/TYPO3Link/class.tx_rtehtmlarea_typo3link.php']) {
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/TYPO3Link/class.tx_rtehtmlarea_typo3link.php']);
 }
-
 ?>

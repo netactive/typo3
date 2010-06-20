@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Module: Workspace publisher
  *
- * $Id: publish.php 5526 2009-06-02 13:52:04Z benni $
+ * $Id: publish.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Dmitry Dulepov <typo3@accio.lv>
  */

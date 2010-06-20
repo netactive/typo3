@@ -1,5 +1,5 @@
 #
-# TYPO3 SVN ID: $Id: tables.sql 6525 2009-11-25 11:27:34Z steffenk $
+# TYPO3 SVN ID: $Id: tables.sql 7401 2010-04-20 11:30:28Z lolli $
 #
 
 #
@@ -266,6 +266,7 @@ CREATE TABLE sys_filemounts (
   base tinyint(4) unsigned DEFAULT '0' NOT NULL,
   hidden tinyint(3) unsigned DEFAULT '0' NOT NULL,
   deleted tinyint(1) unsigned DEFAULT '0' NOT NULL,
+  sorting int(11) unsigned DEFAULT '0' NOT NULL,
   PRIMARY KEY (uid),
   KEY parent (pid)
 );
@@ -397,7 +398,7 @@ CREATE TABLE sys_log (
   tablename varchar(255) DEFAULT '' NOT NULL,
   recpid int(11) DEFAULT '0' NOT NULL,
   error tinyint(4) unsigned DEFAULT '0' NOT NULL,
-  details varchar(255) DEFAULT '' NOT NULL,
+  details text NOT NULL,
   tstamp int(11) unsigned DEFAULT '0' NOT NULL,
   type tinyint(3) unsigned DEFAULT '0' NOT NULL,
   details_nr tinyint(3) unsigned DEFAULT '0' NOT NULL,

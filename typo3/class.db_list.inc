@@ -28,7 +28,7 @@
  * Include file extending t3lib_recordList
  * Shared between Web>List (db_list.php) and Web>Page (sysext/cms/layout/db_layout.php)
  *
- * $Id: class.db_list.inc 6469 2009-11-17 23:56:35Z benni $
+ * $Id: class.db_list.inc 7937 2010-06-16 17:32:00Z psychomieze $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -243,8 +243,7 @@ class recordList extends t3lib_recordList {
 		$this->pageRecord = t3lib_BEfunc::getRecordWSOL('pages',$this->id);
 
 			// Traverse the TCA table array:
-		reset($TCA);
-		while (list($tableName)=each($TCA))	{
+		foreach ($TCA as $tableName => $value) {
 
 				// Checking if the table should be rendered:
 			if ((!$this->table || $tableName==$this->table) && (!$this->tableList || t3lib_div::inList($this->tableList,$tableName)) && $GLOBALS['BE_USER']->check('tables_select',$tableName))	{		// Checks that we see only permitted/requested tables:
@@ -252,9 +251,17 @@ class recordList extends t3lib_recordList {
 					// Load full table definitions:
 				t3lib_div::loadTCA($tableName);
 
-					// Hide tables which are configured via TSConfig not to be shown (also works for admins):
-				if (isset($this->tableTSconfigOverTCA[$tableName.'.']['hideTable']) ? $this->tableTSconfigOverTCA[$tableName.'.']['hideTable'] :
-						(t3lib_div::inList($this->hideTables, $tableName) ? true : $GLOBALS['TCA'][$tableName]['ctrl']['hideTable'])) {
+					// Don't show table if hidden by TCA ctrl section
+				$hideTable = $GLOBALS['TCA'][$tableName]['ctrl']['hideTable'] ? TRUE : FALSE;
+					// Don't show table if hidden by pageTSconfig mod.web_list.hideTables
+				if (in_array($tableName, t3lib_div::trimExplode(',', $this->hideTables))) {
+					$hideTable = TRUE;
+				}
+					// Override previous selection if table is enabled or hidden by TSconfig TCA override mod.web_list.table
+				if (isset($this->tableTSconfigOverTCA[$tableName.'.']['hideTable'])) {
+					$hideTable = $this->tableTSconfigOverTCA[$tableName.'.']['hideTable'] ? TRUE : FALSE;
+				}
+				if ($hideTable) {
 					continue;
 				}
 
@@ -314,7 +321,7 @@ class recordList extends t3lib_recordList {
 			// Make level selector:
 		$opt=array();
 		$parts = explode('|',$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.enterSearchLevels'));
-		while(list($kv,$label)=each($parts))	{
+		foreach ($parts as $kv => $label) {
 			$opt[] = '<option value="'.$kv.'"'.($kv==intval($this->searchLevels)?' selected="selected"':'').'>'.htmlspecialchars($label).'</option>';
 		}
 		$lMenu = '<select name="search_levels">'.implode('',$opt).'</select>';
@@ -337,7 +344,7 @@ class recordList extends t3lib_recordList {
 					</tr>
 				</table>
 			'.$formElements[1];
-		$content.=t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'list_searchbox', $GLOBALS['BACK_PATH'],'|<br/>');
+		$content .= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'list_searchbox', $GLOBALS['BACK_PATH'], '|<br />');
 		return $content;
 	}
 

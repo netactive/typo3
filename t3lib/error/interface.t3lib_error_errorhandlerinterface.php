@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Ingo Renner <ingo@typo3.org>
+*  (c) 2009-2010 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -31,7 +31,7 @@
  *
  * @package TYPO3
  * @subpackage t3lib_error
- * @version $Id: interface.t3lib_error_errorhandlerinterface.php 6536 2009-11-25 14:07:18Z stucki $
+ * @version $Id: interface.t3lib_error_errorhandlerinterface.php 7905 2010-06-13 14:42:33Z ohader $
  */
 interface t3lib_error_ErrorHandlerInterface {
 

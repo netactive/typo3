@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2005-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_pi3.php 5526 2009-06-02 13:52:04Z benni $  *
+ * $Id: class.tx_rtehtmlarea_pi3.php 7905 2010-06-13 14:42:33Z ohader $  *
  */
 class tx_rtehtmlarea_pi3 extends tslib_pibase {
 

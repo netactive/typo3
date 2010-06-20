@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Login-screen of TYPO3.
  *
- * $Id: index.php 7255 2010-04-08 10:54:29Z steffenk $
+ * $Id: index.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -183,6 +183,10 @@ class SC_index {
 			// Initialize template object:
 		$TBE_TEMPLATE->bodyTagAdditions = ' onload="startUp();"';
 		$TBE_TEMPLATE->moduleTemplate = $TBE_TEMPLATE->getHtmlTemplate('templates/login.html');
+
+		$TBE_TEMPLATE->getPageRenderer()->loadExtJS();
+		$TBE_TEMPLATE->getPageRenderer()->loadPrototype();
+		$TBE_TEMPLATE->getPageRenderer()->loadScriptaculous();
 
 			// Set JavaScript for creating a MD5 hash of the password:
 		$TBE_TEMPLATE->JScode.= $this->getJScode();
@@ -382,10 +386,8 @@ class SC_index {
 				// Based on specific setting of interface we set the redirect script:
 			switch ($this->GPinterface)	{
 				case 'backend':
-					$this->redirectToURL = 'backend.php';
-				break;
 				case 'backend_old':
-					$this->redirectToURL = 'alt_main.php';
+					$this->redirectToURL = 'backend.php';
 				break;
 				case 'frontend':
 					$this->redirectToURL = '../';
@@ -439,7 +441,7 @@ class SC_index {
 
 				$jumpScript=array();
 				$jumpScript['backend']     = 'backend.php';
-				$jumpScript['backend_old'] = 'alt_main.php';
+				$jumpScript['backend_old'] = 'backend.php';
 				$jumpScript['frontend']    = '../';
 
 					// Traverse the interface keys:
@@ -559,19 +561,29 @@ class SC_index {
 		$newsContent = '';
 
 			// Traverse news array IF there are records in it:
-		if (is_array($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews']) && count($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews'])) {
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews']) && count($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews']) && !t3lib_div::_GP('loginRefresh')) {
 
 				// get the main news template, and replace the subpart after looped through
 			$newsContent      = t3lib_parsehtml::getSubpart($GLOBALS['TBE_TEMPLATE']->moduleTemplate, '###LOGIN_NEWS###');
 			$newsItemTemplate = t3lib_parsehtml::getSubpart($newsContent, '###NEWS_ITEM###');
 
 			$newsItemContent = '';
+			$count = 1;
 			foreach ($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews'] as $newsItem) {
+				$additionalClass = '';
+				if ($count == 1) {
+					$additionalClass = ' first-item';
+				} elseif($count == count($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews'])) {
+					$additionalClass = ' last-item';
+				}
 				$newsItemMarker = array(
 					'###HEADER###'  => htmlspecialchars($newsItem['header']),
 					'###DATE###'    => htmlspecialchars($newsItem['date']),
-					'###CONTENT###' => trim($newsItem['content'])
+					'###CONTENT###' => trim($newsItem['content']),
+					'###CLASS###'	=> $additionalClass
 				);
+
+				$count++;
 				$newsItemContent .= t3lib_parsehtml::substituteMarkerArray($newsItemTemplate, $newsItemMarker);
 			}
 

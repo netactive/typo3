@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Ingo Renner <ingo@typo3.org>
+*  (c) 2009-2010 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,8 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
- * @version $Id: class.t3lib_cache_manager.php 5595 2009-06-15 21:40:01Z flyguide $
+ * @api
+ * @version $Id: class.t3lib_cache_manager.php 7905 2010-06-13 14:42:33Z ohader $
  */
 class t3lib_cache_Manager implements t3lib_Singleton {
 
@@ -114,7 +115,7 @@ class t3lib_cache_Manager implements t3lib_Singleton {
 				$backend        = isset($configuration['backend'])        ? $configuration['backend']        : $this->cacheConfigurations['default']['backend'];
 				$backendOptions = isset($configuration['backendOptions']) ? $configuration['backendOptions'] : $this->cacheConfigurations['default']['backendOptions'];
 
-				$cache = $this->cacheFactory->create($identifier, $frontend, $backend, $backendOptions);
+				$this->cacheFactory->create($identifier, $frontend, $backend, $backendOptions);
 			}
 		}
 	}

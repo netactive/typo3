@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2009-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Core functions for admin
  *
- * $Id: class.tx_lowlevel_admin_core.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.tx_lowlevel_admin_core.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
@@ -131,7 +131,7 @@ class tx_lowlevel_admin_core extends t3lib_cli {
 				$this->cli_echo("Unknown toolkey, '".$analysisType."'");
 			break;
 		}
-		$this->cli_echo("\n");
+		$this->cli_echo(LF);
 	}
 
 

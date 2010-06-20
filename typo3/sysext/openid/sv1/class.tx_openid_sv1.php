@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Dmitry Dulepov <dmitry@typo3.org>
+*  (c) 2008-2010 Dmitry Dulepov <dmitry@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -49,7 +49,7 @@ require_once(t3lib_extMgm::extPath('openid', 'sv1/class.tx_openid_store.php'));
 /**
  * Service "OpenID Authentication" for the "openid" extension.
  *
- * $Id: class.tx_openid_sv1.php 6773 2010-01-14 09:51:17Z dmitry $
+ * $Id: class.tx_openid_sv1.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Dmitry Dulepov <dmitry@typo3.org>
  * @package	TYPO3
@@ -194,7 +194,7 @@ class tx_openid_sv1 extends t3lib_svbase {
 			// we must change the password in the record to a long random string so
 			// that this user cannot be authenticated with other service.
 			if (is_array($userRecord)) {
-				$userRecord[$this->authenticationInformation['db_user']['userident_column']] = uniqid($this->prefixId . chr(10), true);
+				$userRecord[$this->authenticationInformation['db_user']['userident_column']] = uniqid($this->prefixId . LF, true);
 			}
 		}
 		return $userRecord;

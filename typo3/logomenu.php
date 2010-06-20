@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2006-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2006-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Logo menu
  *
- * $Id: logomenu.php 5761 2009-08-05 10:05:29Z rupi $
+ * $Id: logomenu.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

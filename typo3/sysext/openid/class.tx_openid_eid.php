@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Dmitry Dulepov <dmitry@typo3.org>
+*  (c) 2008-2010 Dmitry Dulepov <dmitry@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -37,7 +37,7 @@
 /**
  * This class is the OpenID return script for the TYPO3 Frontend.
  *
- * $Id: class.tx_openid_eid.php 6469 2009-11-17 23:56:35Z benni $
+ * $Id: class.tx_openid_eid.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Dmitry Dulepov <dmitry@typo3.org>
  */

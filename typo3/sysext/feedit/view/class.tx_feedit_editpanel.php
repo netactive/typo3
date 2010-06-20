@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Jeff Segars <jeff@webempoweredchurch.org>
-*  (c) 2008-2009 David Slayback <dave@webempoweredchurch.org>
+*  (c) 2008-2010 Jeff Segars <jeff@webempoweredchurch.org>
+*  (c) 2008-2010 David Slayback <dave@webempoweredchurch.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
 /**
  * View class for the edit panels in frontend editing.
  *
- * $Id: class.tx_feedit_editpanel.php 5761 2009-08-05 10:05:29Z rupi $
+ * $Id: class.tx_feedit_editpanel.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Jeff Segars <jeff@webempoweredchurch.org>
  * @author	David Slayback <dave@webempoweredchurch.org>
@@ -123,7 +123,7 @@ class tx_feedit_editpanel {
 				$labelTxt = $this->cObj->stdWrap($conf['label'],$conf['label.']);
 
 				foreach((array) $hiddenFields as $name => $value) {
-					$hiddenFieldString .= '<input type="hidden" name="TSFE_EDIT[' . $name . ']" value="' . $value . '"/>' . chr(10);
+					$hiddenFieldString .= '<input type="hidden" name="TSFE_EDIT[' . $name . ']" value="' . $value . '"/>' . LF;
 				}
 
 				$panel='

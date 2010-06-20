@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  * This is an example of how to use your own functions and classes directly from TYPO3.
  * Used in the "testsite" package
  *
- * $Id: example_callfunction.php 5165 2009-03-09 18:28:59Z ohader $
+ * $Id: example_callfunction.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

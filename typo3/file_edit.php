@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Web>File: Editing documents
  *
- * $Id: file_edit.php 5526 2009-06-02 13:52:04Z benni $
+ * $Id: file_edit.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant (except textarea field)
  *
@@ -230,16 +230,16 @@ class SC_file_edit {
 		$buttons['csh'] = t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'file_edit', $GLOBALS['BACK_PATH'], '', TRUE);
 
 			// Save button
-		$theIcon = '<img'.t3lib_iconWorks::skinImg($this->backPath,'gfx/savedok.gif','width="18" height="16"').' title="'.$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_edit.php.submit',1)).'" alt="" />';
-		$buttons['SAVE'] = '<a href="#" onclick="document.editform.submit();">'.$theIcon.'</a>';
+		$theIcon = t3lib_iconWorks::getSpriteIcon('actions-document-save');
+		$buttons['SAVE'] = '<a href="#" onclick="document.editform.submit();" title="'.$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_edit.php.submit', TRUE)).'">' . $theIcon . '</a>';
 
 			// Save and Close button
-		$theIcon = '<img'.t3lib_iconWorks::skinImg($this->backPath,'gfx/saveandclosedok.gif','width="18" height="16"').' title="'.$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_edit.php.saveAndClose',1)).'" alt="" />';
-		$buttons['SAVE_CLOSE'] = '<a href="#" onclick="document.editform.redirect.value=\''.htmlspecialchars($this->returnUrl).'\'; document.editform.submit();">'.$theIcon.'</a>';
+		$theIcon = t3lib_iconWorks::getSpriteIcon('actions-document-save-close');
+		$buttons['SAVE_CLOSE'] = '<a href="#" onclick="document.editform.redirect.value=\''.htmlspecialchars($this->returnUrl).'\'; document.editform.submit();" title="'.$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_edit.php.saveAndClose', TRUE)).'">' . $theIcon . '</a>';
 
 			// Cancel button
-		$theIcon = '<img'.t3lib_iconWorks::skinImg($this->backPath,'gfx/closedok.gif','width="18" height="16"').' title="'.$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.cancel',1)).'" alt="" />';
-		$buttons['CANCEL'] = '<a href="#" onclick="backToList(); return false;">'.$theIcon.'</a>';
+		$theIcon = t3lib_iconWorks::getSpriteIcon('actions-document-close');
+		$buttons['CANCEL'] = '<a href="#" onclick="backToList(); return false;" title="' . $GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.cancel', TRUE)) . '">' . $theIcon . '</a>';
 
 		return $buttons;
 	}

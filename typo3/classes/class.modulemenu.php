@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2009 Ingo Renner <ingo@typo3.org>
+*  (c) 2007-2010 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -139,28 +139,30 @@ class ModuleMenu {
 		$rawModuleData = $this->getRawModuleData();
 
 		foreach($rawModuleData as $moduleKey => $moduleData) {
-			$menuState   = $GLOBALS['BE_USER']->uc['moduleData']['menuState'][$moduleKey];
-			$moduleLabel = $moduleData['title'];
+			if($moduleData['link'] != 'dummy.php' || ($moduleData['link'] == 'dummy.php' && is_array($moduleData['subitems'])) ) {
+				$menuState   = $GLOBALS['BE_USER']->uc['moduleData']['menuState'][$moduleKey];
+				$moduleLabel = $moduleData['title'];
 
-			if($moduleData['link'] && $this->linkModules) {
-				$moduleLabel = '<a href="#" onclick="top.goToModule(\''.$moduleData['name'].'\');'.$onBlur.'return false;">'.$moduleLabel.'</a>';
+				if($moduleData['link'] && $this->linkModules) {
+					$moduleLabel = '<a href="#" onclick="top.goToModule(\'' . $moduleData['name'] . '\');'.$onBlur . 'return false;">' . $moduleLabel . '</a>';
+				}
+
+				$menu .= '<li id="modmenu_' . $moduleData['name'] . '" '.
+					($collapsable ? 'class="menuSection"' : '') .
+					' title="' . $moduleData['description'] . '">
+					<div class="' . ($menuState ? 'collapsed' : 'expanded') . '">' .
+					$moduleData['icon']['html'] . ' ' . $moduleLabel . '</div>';
+
+					// traverse submodules
+				if (is_array($moduleData['subitems'])) {
+					$menu .= $this->renderSubModules($moduleData['subitems'], $menuState);
+				}
+
+				$menu .= '</li>' . LF;
 			}
-
-			$menu .= '<li id="modmenu_' . $moduleData['name'] . '" '.
-				($collapsable ? 'class="menuSection"' : '') .
-				' title="' . $moduleData['description'] . '">
-				<div class="' . ($menuState ? 'collapsed' : 'expanded') . '">' .
-				$moduleData['icon']['html'] . ' ' . $moduleLabel . '</div>';
-
-				// traverse submodules
-			if(is_array($moduleData['subitems'])) {
-				$menu .= $this->renderSubModules($moduleData['subitems'], $menuState);
-			}
-
-			$menu .= '</li>'."\n";
 		}
 
-		return ($wrapInUl ? '<ul id="typo3-menu">'."\n".$menu.'</ul>'."\n" : $menu);
+		return ($wrapInUl ? '<ul id="typo3-menu">' . LF.$menu.'</ul>' . LF : $menu);
 	}
 
 	/**
@@ -214,10 +216,10 @@ class ModuleMenu {
 					.'</a>';
 			}
 
-			$moduleMenu .= '<li id="modmenu_' . $moduleData['name'] . '">' . $submoduleLink . '</li>' . "\n";
+			$moduleMenu .= '<li id="modmenu_' . $moduleData['name'] . '">' . $submoduleLink . '</li>' . LF;
 		}
 
-		return '<ul'.($menuState ? ' style="display:none;"' : '').'>'."\n".$moduleMenu.'</ul>'."\n";
+		return '<ul'.($menuState ? ' style="display:none;"' : '').'>'.LF.$moduleMenu.'</ul>'.LF;
 	}
 
 	/**
@@ -288,6 +290,7 @@ class ModuleMenu {
 						'prefix'       => $submoduleNavigationFramePrefix,
 						'description'  => $submoduleDescription,
 						'navigationFrameScript' => $submoduleData['navFrameScript'],
+						'navigationFrameScriptParam' => $submoduleData['navFrameScriptParam']
 					);
 
 					if($moduleData['navFrameScript']) {
@@ -443,9 +446,13 @@ class ModuleMenu {
 							$submoduleNavigationFrameScript = $subModuleData['navigationFrameScript'] ? $subModuleData['navigationFrameScript'] : $subModuleData['parentNavigationFrameScript'];
 							$submoduleNavigationFrameScript = t3lib_div::resolveBackPath($submoduleNavigationFrameScript);
 
-								// add GET parameters for sub module to the navigation script
-							$submoduleNavigationFrameScript = $this->appendQuestionmarkToLink($submoduleNavigationFrameScript).$subModuleData['navigationFrameScript'];
+								// Add navigation script parameters if module requires them
+							if ($subModuleData['navigationFrameScriptParam']) {
+								$submoduleNavigationFrameScript = $this->appendQuestionmarkToLink($submoduleNavigationFrameScript) . $subModuleData['navigationFrameScriptParam'];
+							}
+
 							$navFrameScripts[$parentModuleName] = $submoduleNavigationFrameScript;
+
 							$javascriptCommand = '
 				top.currentSubScript = "'.$subModuleData['originalLink'].'";
 				if (top.content.list_frame && top.fsMod.currentMainLoaded == mainModName) {
@@ -499,7 +506,7 @@ class ModuleMenu {
 		var modScriptURL = "";
 
 		switch(modName)	{'
-			."\n".implode("\n", $moduleJavascriptCommands)."\n".'
+			.LF.implode(LF, $moduleJavascriptCommands).LF.'
 		}
 		';
 
@@ -513,10 +520,10 @@ class ModuleMenu {
 					top.content.nav_frame.location = top.getModuleUrl(top.TS.PATH_typo3 + navFrames[mainModName]);
 				}
 			} else {
-				$("content").src = top.TS.PATH_typo3 + modScriptURL;
+				TYPO3.Backend.loadModule(mainModName, modName, modScriptURL + additionalGetVariables);
 			}
 		} else if (modScriptURL) {
-			$("content").src = top.getModuleUrl(top.TS.PATH_typo3 + modScriptURL + additionalGetVariables);
+			TYPO3.Backend.loadModule(mainModName, modName, top.getModuleUrl(modScriptURL + additionalGetVariables));
 		}
 		currentModuleLoaded = modName;
 		top.fsMod.currentMainLoaded = mainModName;

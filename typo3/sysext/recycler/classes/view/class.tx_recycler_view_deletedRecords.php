@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2009 Julian Kleinhans <typo3@kj187.de>
+ *  (c) 2009-2010 Julian Kleinhans <typo3@kj187.de>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -31,7 +31,7 @@ require_once(t3lib_extMgm::extPath('recycler', 'classes/helper/class.tx_recycler
  * @author	Julian Kleinhans <typo3@kj187.de>
  * @package	TYPO3
  * @subpackage	tx_recycler
- * @version $Id: class.tx_recycler_view_deletedRecords.php 6536 2009-11-25 14:07:18Z stucki $
+ * @version $Id: class.tx_recycler_view_deletedRecords.php 7905 2010-06-13 14:42:33Z ohader $
  **/
 class tx_recycler_view_deletedRecords {
 

@@ -5,8 +5,8 @@
 *
 *  Copyright notice
 *
-*  (c) 2007-2009 Andreas Beutel <typo3@mehrwert.de>
-*  (c) 2007-2009 Benjamin Mack <benni@typo3.org>
+*  (c) 2007-2010 Andreas Beutel <typo3@mehrwert.de>
+*  (c) 2007-2010 Benjamin Mack <benni@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -33,7 +33,7 @@
  * @author		Benjamin Mack <www.xnos.org>
  * @package		TYPO3
  * @subpackage	core
- * @version 	$Id: perm.js 6539 2009-11-25 14:49:14Z stucki $
+ * @version 	$Id: perm.js 7905 2010-06-13 14:42:33Z ohader $
  */
 
 // TYPO3 code extracted from index.php

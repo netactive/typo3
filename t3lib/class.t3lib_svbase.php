@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -27,7 +27,7 @@
 /**
  * Parent class for "Services" classes
  *
- * $Id: class.t3lib_svbase.php 5482 2009-05-22 19:08:30Z ohader $
+ * $Id: class.t3lib_svbase.php 7905 2010-06-13 14:42:33Z ohader $
  * TODO: temp files are not removed
  *
  * @author	Rene Fritz <r.fritz@colorcube.de>

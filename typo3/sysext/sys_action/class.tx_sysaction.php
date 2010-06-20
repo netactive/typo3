@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -71,16 +71,16 @@ class tx_sysaction extends mod_user_task {
 			if($actionRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
 
 					// Action header:
-				$header = t3lib_iconworks::getIconImage("sys_action",$actionRow,$this->backPath,'hspace="2" class="absmiddle"').'<b>'.htmlspecialchars($actionRow["title"]).'</b>';
+				$header = t3lib_iconworks::getIconImage("sys_action",$actionRow,$this->backPath,'hspace="2" class="absmiddle"').'<strong>'.htmlspecialchars($actionRow["title"]).'</strong>';
 				$out.='<table border=0 cellpadding=0 cellspacing=1 width=100%>
-					<tr><td colspan=2 class="bgColor5">'.fw($header).'</td></tr>
+					<tr><td colspan=2 class="bgColor5">' . $header . '</td></tr>
 					<tr>
-						<td width=1% valign=top class="bgColor4">'.fw($LANG->sL(t3lib_BEfunc::getItemLabel("sys_action","type"))."&nbsp;").'</td>
-						<td valign=top class="bgColor4">'.fw(htmlspecialchars(t3lib_BEfunc::getProcessedValue("sys_action","type",$actionRow["type"]))).'</td>
+						<td width=1% valign=top class="bgColor4">' . $LANG->sL(t3lib_BEfunc::getItemLabel('sys_action', 'type')). '&nbsp;' . '</td>
+						<td valign=top class="bgColor4">' . htmlspecialchars(t3lib_BEfunc::getProcessedValue('sys_action', 'type', $actionRow['type'])) . '</td>
 					</tr>
 					<tr>
-						<td width=1% valign=top class="bgColor4">'.fw($LANG->sL(t3lib_BEfunc::getItemLabel("sys_action","description"))."&nbsp;").'</td>
-						<td valign=top class="bgColor4">'.fw(nl2br(htmlspecialchars($actionRow["description"]))).'</td>
+						<td width=1% valign=top class="bgColor4">' . $LANG->sL(t3lib_BEfunc::getItemLabel('sys_action', 'description')) . '&nbsp;' . '</td>
+						<td valign=top class="bgColor4">' . nl2br(htmlspecialchars($actionRow['description'])) . '</td>
 					</tr>';
 				$out.='</table>';
 				$theCode = $this->pObj->doc->section("",$out,0,1);
@@ -116,7 +116,7 @@ class tx_sysaction extends mod_user_task {
 							$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'be_users', 'pid=0 AND cruser_id='.intval($this->BE_USER->user['uid']).' AND createdByAction='.intval($actionRow['uid']).t3lib_BEfunc::deleteClause('be_users'), '', 'username');
 							$lines = array();
 							while($uRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-								$lines[] = "<nobr>".($uRow["uid"]==$userRecord["uid"]?"<b>":"").$this->action_linkUserName(t3lib_iconworks::getIconImage("be_users",$uRow,$this->backPath,'title="uid='.$uRow["uid"].'" hspace="2" align="top"').$uRow["username"]." (".$uRow["realName"].")".($uRow["uid"]==$userRecord["uid"]?"</b>":"")."</nobr>",$actionRow["uid"],$uRow["uid"])."<br>";
+								$lines[] = "<nobr>".($uRow["uid"]==$userRecord["uid"]?"<strong>":"").$this->action_linkUserName(t3lib_iconworks::getIconImage("be_users",$uRow,$this->backPath,'title="uid='.$uRow["uid"].'" hspace="2" align="top"').$uRow["username"]." (".$uRow["realName"].")".($uRow["uid"]==$userRecord["uid"]?"</strong>":"")."</nobr>",$actionRow["uid"],$uRow["uid"])."<br>";
 							}
 							if (count($lines))	{
 								$theCode.= $this->pObj->doc->section($LANG->getLL("action_t1_listOfUsers"),implode("",$lines),0,1);
@@ -126,9 +126,8 @@ class tx_sysaction extends mod_user_task {
 							$opt=array();
 
 							$grList = t3lib_div::trimExplode(",",$actionRow["t1_allowed_groups"],1);
-							reset($grList);
 							$opt[]='<option value=""></option>';
-							while(list(,$gu)=each($grList))	{
+							foreach ($grlist as $gu) {
 								$checkGr = t3lib_BEfunc::getRecord("be_groups",$gu);
 								if (is_array($checkGr))	$opt[]='<option value="'.$checkGr["uid"].'"'.(t3lib_div::inList($userRecord["usergroup"],$checkGr["uid"])?" selected":"").'>'.htmlspecialchars($checkGr["title"]).'</option>';
 							}
@@ -220,8 +219,7 @@ class tx_sysaction extends mod_user_task {
 						$dbAnalysis->getFromDB();
 
 						$lines=array();
-						reset($dbAnalysis->itemArray);
-						while(list(,$el)=each($dbAnalysis->itemArray))	{
+						foreach ($dbAnalysis->itemArray as $el) {
 							$path = t3lib_BEfunc::getRecordPath ($el["id"],$this->perms_clause,$this->BE_USER->uc["titleLen"]);
 							$lines[]='<tr>
 								<td nowrap class="bgColor4">'.
@@ -373,15 +371,13 @@ class tx_sysaction extends mod_user_task {
 			// All current groups:
 		$cGroups = array_flip(t3lib_div::trimExplode(",",$curUserGroup,1));
 		$grList = t3lib_div::intExplode(",",$allowedGroups);
-		reset($grList);
-		while(list(,$gu)=each($grList))	{
+		foreach ($grList as $gu) {
 			unset($cGroups[$gu]);	// Remove the group if it's in the array for some reason...
 		}
 			// reverse array again and set incoming groups:
 		$cGroups=array_keys($cGroups);
 		if (is_array($inGroups))	{
-			reset($inGroups);
-			while(list(,$gu)=each($inGroups))	{
+			foreach ($inGroups as $gu) {
 				$checkGr = t3lib_BEfunc::getRecord("be_groups",$gu);
 				if (is_array($checkGr) && in_array($gu,$grList))	{
 					$cGroups[]=$gu;

@@ -1,5 +1,5 @@
 #
-# TYPO3 SVN ID: $Id: ext_tables.sql 6525 2009-11-25 11:27:34Z steffenk $
+# TYPO3 SVN ID: $Id: ext_tables.sql 7308 2010-04-12 17:10:48Z lolli $
 #
 
 
@@ -169,7 +169,8 @@ CREATE TABLE fe_session_data (
   hash varchar(32) DEFAULT '' NOT NULL,
   content mediumblob,
   tstamp int(11) unsigned DEFAULT '0' NOT NULL,
-  PRIMARY KEY (hash)
+  PRIMARY KEY (hash),
+  KEY tstamp (tstamp)
 ) ENGINE=InnoDB;
 
 
@@ -203,6 +204,9 @@ CREATE TABLE fe_users (
   starttime int(11) unsigned DEFAULT '0' NOT NULL,
   endtime int(11) unsigned DEFAULT '0' NOT NULL,
   name varchar(80) DEFAULT '' NOT NULL,
+  first_name varchar(50) DEFAULT '' NOT NULL,
+  middle_name varchar(50) DEFAULT '' NOT NULL,
+  last_name varchar(50) DEFAULT '' NOT NULL,
   address varchar(255) DEFAULT '' NOT NULL,
   telephone varchar(20) DEFAULT '' NOT NULL,
   fax varchar(20) DEFAULT '' NOT NULL,
@@ -277,25 +281,6 @@ CREATE TABLE pages_language_overlay (
 
 
 #
-# Table structure for table 'static_template'
-#
-CREATE TABLE static_template (
-  uid int(11) unsigned NOT NULL auto_increment,
-  pid int(11) unsigned DEFAULT '0' NOT NULL,
-  tstamp int(11) unsigned DEFAULT '0' NOT NULL,
-  crdate int(11) unsigned DEFAULT '0' NOT NULL,
-  title varchar(255) DEFAULT '' NOT NULL,
-  include_static tinytext,
-  constants text,
-  config text,
-  editorcfg text,
-  description text,
-  PRIMARY KEY (uid),
-  KEY parent (pid)
-);
-
-
-#
 # Table structure for table 'sys_domain'
 #
 CREATE TABLE sys_domain (
@@ -344,7 +329,6 @@ CREATE TABLE sys_template (
   endtime int(11) unsigned DEFAULT '0' NOT NULL,
   root tinyint(4) unsigned DEFAULT '0' NOT NULL,
   clear tinyint(4) unsigned DEFAULT '0' NOT NULL,
-  include_static tinytext,
   include_static_file text,
   constants text,
   config text,
@@ -449,7 +433,8 @@ CREATE TABLE tt_content (
 
   PRIMARY KEY (uid),
   KEY t3ver_oid (t3ver_oid,t3ver_wsid),
-  KEY parent (pid,sorting)
+  KEY parent (pid,sorting),
+  KEY language (l18n_parent,sys_language_uid)
 );
 
 

@@ -1,11 +1,11 @@
 /***************************************************************
 *  AJAX selectors for TCEforms
 *
-* $Id: jsfunc.tceforms_suggest.js 6539 2009-11-25 14:49:14Z stucki $
+* $Id: jsfunc.tceforms_suggest.js 7905 2010-06-13 14:42:33Z ohader $
 *
 *  Copyright notice
 *
-*  (c) 2007-2009 Andreas Wolf <andreas.wolf@ikt-werk.de>
+*  (c) 2007-2010 Andreas Wolf <andreas.wolf@ikt-werk.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is

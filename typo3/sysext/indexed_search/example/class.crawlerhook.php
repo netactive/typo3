@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2001-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Index search crawler hook example
  *
- * $Id: class.crawlerhook.php 5947 2009-09-16 17:57:09Z ohader $
+ * $Id: class.crawlerhook.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */

@@ -27,7 +27,7 @@
 /**
  * Contains class for creating WAP pages for TYPO3
  *
- * $Id: wapversionLib.inc 5634 2009-06-26 13:25:08Z ohader $
+ * $Id: wapversionLib.inc 7601 2010-05-13 17:12:58Z baschny $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -342,11 +342,10 @@ class user_wapversion {
 	 */
 	function menuCurrentLevel($indent)	{
 		$rL = $GLOBALS['TSFE']->config['rootLine'];
-		reset($rL);
 		$preSpace='';
 		$out=array();
 			// Hierarchy menu
-		while(list($level,$data)=each($rL))	{
+		foreach ($rL as $level => $data) {
 			$preSign = count($rL)-1 > $level ? '-' : '>';
 			$menuItem = htmlspecialchars($preSign.' '.$data['title']);
 			$menuItem = $this->link($preSpace.$menuItem,$data['uid']);
@@ -355,8 +354,7 @@ class user_wapversion {
 		}
 			// Current page menu:
 		$menu = $this->cleanMenuArray($GLOBALS['TSFE']->sys_page->getMenu($GLOBALS['TSFE']->id));
-		reset($menu);
-		while(list(,$data)=each($menu))	{
+		foreach ($menu as $data) {
 			$preSign = count($this->cleanMenuArray($GLOBALS['TSFE']->sys_page->getMenu($data['uid']))) ? '+' : '*';
 			$menuItem = htmlspecialchars($preSign.' '.$data['title']);
 			$menuItem = $this->link($preSpace.$menuItem,$data['uid']);

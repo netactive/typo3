@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Ingo Renner <ingo@typo3.org>
+*  (c) 2008-2010 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,8 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
- * @version $Id: class.t3lib_cache_exception_nosuchcache.php 5165 2009-03-09 18:28:59Z ohader $
+ * @api
+ * @version $Id: class.t3lib_cache_exception_nosuchcache.php 7905 2010-06-13 14:42:33Z ohader $
  */
 class t3lib_cache_exception_NoSuchCache extends t3lib_cache_Exception {
 

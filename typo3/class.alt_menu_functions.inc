@@ -29,7 +29,7 @@
  * Will make the vertical, horizontal, selectorbox based menus AND the "about modules" display.
  * Basically it traverses the module structure and generates output based on that.
  *
- * $Id: class.alt_menu_functions.inc 5871 2009-09-01 17:19:02Z ohader $
+ * $Id: class.alt_menu_functions.inc 7896 2010-06-12 15:51:26Z psychomieze $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant content
  *
@@ -142,8 +142,7 @@ class alt_menu_functions {
 		}
 
 			// Traverse array with modules
-		reset($theModules);
-		while(list($moduleName,$moduleInfo)=each($theModules))	{
+		foreach ($theModules as $moduleName => $moduleInfo) {
 			$mC++;
 
 			$prefix = $this->getNavFramePrefix($moduleInfo);
@@ -207,13 +206,13 @@ class alt_menu_functions {
 			}
 
 			$selectItems[] = '<option value="top.goToModule(\''.$moduleName.'\');">'.htmlspecialchars($LANG->moduleLabels['tabs'][$moduleKey]).'</option>';
-			$label='&nbsp;<b>'.$label.'</b>&nbsp;';
+			$label='&nbsp;<strong>'.$label.'</strong>&nbsp;';
 
 
 				// make menu collapsable
 			if($collapsable == 1 && is_array($moduleInfo['sub'])) {
 				$collapseJS = 'onclick="window.location.href=\'alt_menu.php?collapsedOverride['.$moduleName.']='.($config[$moduleName] ? '0' : '1').'\'"';
-				$collapseIcon = '<span class="c-iconCollapse"><img'.t3lib_iconWorks::skinImg($backPath,'gfx/ol/'.($config[$moduleName] ? 'plusbullet.gif':'minusbullet.gif'),'width="18" height="16"').' title="" alt="" /></span>';
+				$collapseIcon = t3lib_iconWorks::getSpriteIcon('actions-view-table-' . ($config[$moduleName] ? 'expand' : 'collapse'), array('class' => 'c-iconCollapse'));
 			} else {
 				$collapseJS = $collapseIcon = '';
 			}
@@ -239,10 +238,9 @@ class alt_menu_functions {
 				// Traversing submodules
 			$subCode='';
 			if (is_array($moduleInfo['sub']))	{
-				reset($moduleInfo['sub']);
 				$collection[$moduleKey]['subitems'] = array();
 				$c=0;
-				while(list($subName,$subInfo)=each($moduleInfo['sub']))	{
+				foreach ($moduleInfo['sub'] as $subName => $subInfo) {
 					if ($c==0)		{
 						$subCode.='
 								<tr class="c-first">

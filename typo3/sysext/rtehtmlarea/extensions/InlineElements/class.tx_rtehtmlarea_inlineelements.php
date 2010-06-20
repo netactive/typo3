@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_inlineelements.php 6917 2010-02-19 20:29:04Z stan $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_inlineelements.php 7802 2010-06-03 21:41:58Z stan $
  *
  */
 
@@ -195,32 +195,24 @@ class tx_rtehtmlarea_inlineelements extends tx_rtehtmlareaapi {
 			if (!is_array($this->thisConfig['buttons.']) || !is_array($this->thisConfig['buttons.']['formattext.']) || !$this->thisConfig['buttons.']['formattext.']['orderItems']) {
 				asort($inlineElementsOptions);
 			}
-				// utf8-encode labels if we are responding to an IRRE ajax call
-			if (!$this->htmlAreaRTE->is_FE() && $this->htmlAreaRTE->TCEform->inline->isAjaxCall) {
-				foreach ($inlineElementsOptions as $item => $label) {
-					$inlineElementsOptions[$item] = $GLOBALS['LANG']->csConvObj->utf8_encode($label, $GLOBALS['LANG']->charSet);
-				}
-			}
 				// Generating the javascript options
-			$JSInlineElements = '{
-			"'. $first.'" : "none"';
+			$JSInlineElements = array();
+			$JSInlineElements[] = array($first, 'none');
 			foreach ($inlineElementsOptions as $item => $label) {
-				$JSInlineElements .= ',
-			"' . $label . '" : "' . $item . '"';
+				$JSInlineElements[] = array($label, $item);
 			}
-			$JSInlineElements .= '};';
-
+			if ($this->htmlAreaRTE->is_FE()) {
+				$GLOBALS['TSFE']->csConvObj->convArray($JSInlineElements, $this->htmlAreaRTE->OutputCharset, 'utf-8');
+			} else {
+				$GLOBALS['LANG']->csConvObj->convArray($JSInlineElements, $GLOBALS['LANG']->charSet, 'utf-8');
+			}
 			$registerRTEinJavascriptString .= '
-			RTEarea['.$RTEcounter.'].buttons.formattext.dropDownOptions = '. $JSInlineElements;
+			RTEarea['.$RTEcounter.'].buttons.formattext.options = ' . json_encode($JSInlineElements) . ';';
 		}
 		return $registerRTEinJavascriptString;
 	 }
-
-
-} // end of class
-
+}
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/InlineElements/class.tx_rtehtmlarea_inlineelements.php']) {
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/InlineElements/class.tx_rtehtmlarea_inlineelements.php']);
 }
-
 ?>

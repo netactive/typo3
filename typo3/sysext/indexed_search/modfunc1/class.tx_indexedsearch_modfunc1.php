@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2001-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -366,7 +366,7 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 		while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
 			$out.='
 				<tr class="typo3-red">
-					<td colspan="'.$this->returnNumberOfColumns().'"><b>Warning:</b> phash-row "'.$row['phash'].'" didn\'t have a representation in the index_section table!</td>
+					<td colspan="'.$this->returnNumberOfColumns().'"><strong>Warning:</strong> phash-row "'.$row['phash'].'" didn\'t have a representation in the index_section table!</td>
 				</tr>';
 			$this->allPhashListed[] = $row['phash'];
 		}
@@ -650,9 +650,9 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 						$this->utf8_to_currentCharset(t3lib_div::view_array($debugInfo));
 
 				$content.= '<h4>Debug information / lexer splitting:</h4>'.
-						'<hr/><b>'.
+						'<hr/><strong>'.
 						$this->utf8_to_currentCharset($lexer).
-						'</b><hr/>';
+						'</strong><hr/>';
 			}
 
 
@@ -1008,9 +1008,9 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 	 * @return	string		HTML img-tag with link around.
 	 */
 	function printRemoveIndexed($phash,$alt)	{
-		return '<a href="'.htmlspecialchars(t3lib_div::linkThisScript(array('deletePhash'=>$phash))).'">'.
-				'<img '.t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], 'gfx/garbage.gif', 'width="11" height="12"') . ' hspace="1" vspace="2" border="0" title="'.htmlspecialchars($alt).'" alt="" />'.
-				'</a>';
+		return '<a href="'.htmlspecialchars(t3lib_div::linkThisScript(array('deletePhash'=>$phash))).'" title="' . htmlspecialchars($alt) . '">' .
+				t3lib_iconWorks::getSpriteIcon('actions-edit-delete') .
+			'</a>';
 	}
 
 	/**
@@ -1067,9 +1067,8 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 	 */
 	function printExtraGrListRows($extraGrListRows)	{
 		if (count($extraGrListRows))	{
-			reset($extraGrListRows);
 			$lines=array();
-			while(list(,$r)=each($extraGrListRows))	{
+			foreach ($extraGrListRows as $r) {
 				$lines[] = $r['gr_list'];
 			}
 			return '<br />' . $GLOBALS['TBE_TEMPLATE']->dfw(implode('<br />', $lines));

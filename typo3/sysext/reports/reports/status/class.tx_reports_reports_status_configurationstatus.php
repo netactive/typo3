@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Ingo Renner <ingo@typo3.org>
+*  (c) 2009-2010 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	reports
  *
- * $Id: class.tx_reports_reports_status_configurationstatus.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.tx_reports_reports_status_configurationstatus.php 7905 2010-06-13 14:42:33Z ohader $
  */
 class tx_reports_reports_status_ConfigurationStatus implements tx_reports_StatusProvider {
 
@@ -63,19 +63,21 @@ class tx_reports_reports_status_ConfigurationStatus implements tx_reports_Status
 		$severity = tx_reports_reports_status_Status::OK;
 
 		$count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('*', 'sys_refindex');
+		$registry = t3lib_div::makeInstance('t3lib_Registry');
+		$lastRefIndexUpdate = $registry->get('core', 'sys_refindex_lastUpdate'); 
 
-		if (!$count) {
+		if (!$count && $lastRefIndexUpdate) {
 			$value    = $GLOBALS['LANG']->getLL('status_empty');
 			$severity = tx_reports_reports_status_Status::WARNING;
 
 			$url = 'sysext/lowlevel/dbint/index.php?&id=0&SET[function]=refindex';
 			$message  = sprintf(
-				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:warning.backend_reference'),
+				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:warning.backend_reference_index'),
 				'<a href="' . $url . '">',
-				'</a>'
+				'</a>',
+				t3lib_BeFunc::dateTime($lastRefIndexUpdate)
 			);
 		}
-
 		return t3lib_div::makeInstance('tx_reports_reports_status_Status',
 			$GLOBALS['LANG']->getLL('status_referenceIndex'), $value, $message, $severity
 		);
@@ -180,8 +182,8 @@ class tx_reports_reports_status_ConfigurationStatus implements tx_reports_Status
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/reports/reports/status/class.tx_reports_reports_status_installtoolstatus.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/reports/reports/status/class.tx_reports_reports_status_installtoolstatus.php']);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/reports/reports/status/class.tx_reports_reports_status_configurationstatus.php']) {
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/reports/reports/status/class.tx_reports_reports_status_configurationstatus.php']);
 }
 
 ?>

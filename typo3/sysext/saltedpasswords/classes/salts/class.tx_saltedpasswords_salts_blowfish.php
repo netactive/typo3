@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Marcus Krause <marcus#exp2009@t3sec.info>
+*  (c) 2009-2010 Marcus Krause <marcus#exp2009@t3sec.info>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Contains class "tx_saltedpasswords_salts_blowfish"
  * that provides Blowfish salted hashing.
  *
- * $Id: class.tx_saltedpasswords_salts_blowfish.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.tx_saltedpasswords_salts_blowfish.php 7905 2010-06-13 14:42:33Z ohader $
  */
 
 

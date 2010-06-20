@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Dmitry Dulepov <dmitry@typo3.org>
+*  (c) 2008-2010 Dmitry Dulepov <dmitry@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -45,7 +45,7 @@ require_once('../../init.php');
 /**
  * This class is the OpenID return script for the TYPO3 Backend.
  *
- * $Id: class.tx_openid_return.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.tx_openid_return.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Dmitry Dulepov <dmitry@typo3.org>
  */

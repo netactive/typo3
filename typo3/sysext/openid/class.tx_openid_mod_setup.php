@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Steffen Gebert <steffen@steffen-gebert.de>
+*  (c) 2009-2010 Steffen Gebert <steffen@steffen-gebert.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
 /**
  * This class is the OpenID return script for the TYPO3 Backend (used in the user-settings module).
  *
- * $Id: class.tx_openid_mod_setup.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.tx_openid_mod_setup.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Steffen Gebert <steffen@steffen-gebert.de>
  */

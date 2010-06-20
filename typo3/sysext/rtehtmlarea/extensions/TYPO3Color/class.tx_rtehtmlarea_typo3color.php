@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2008-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_typo3color.php 5489 2009-05-23 15:26:20Z ohader $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_typo3color.php 7802 2010-06-03 21:41:58Z stan $
  *
  */
 
@@ -50,7 +50,7 @@ class tx_rtehtmlarea_typo3color extends tx_rtehtmlareaapi {
 		);
 
 	public function main($parentObject) {
-		return parent::main($parentObject) && $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['rtehtmlarea']['allowStyleAttribute'] && !$this->thisConfig['disableSelectColor'];
+		return parent::main($parentObject) && $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['rtehtmlarea']['allowStyleAttribute'];
 	}
 
 	/**
@@ -80,53 +80,44 @@ class tx_rtehtmlarea_typo3color extends tx_rtehtmlareaapi {
 	 * @return	string		Javascript configuration of colors
 	 */
 	function buildJSColorsConfig($RTEcounter) {
-
 		if ($this->htmlAreaRTE->is_FE()) {
 			$RTEProperties = $this->htmlAreaRTE->RTEsetup;
 		} else {
 			$RTEProperties = $this->htmlAreaRTE->RTEsetup['properties'];
 		}
-
 		$configureRTEInJavascriptString = '';
-
 		$configureRTEInJavascriptString .= '
 			RTEarea['.$RTEcounter.'].disableColorPicker = ' . (trim($this->thisConfig['disableColorPicker']) ? 'true' : 'false') . ';';
-
-			// Building JS array of configured colors
+			// Building the array of configured colors
 		if (is_array($RTEProperties['colors.']) )  {
 			$HTMLAreaColorname = array();
 			foreach ($RTEProperties['colors.'] as $colorName => $conf) {
-				$colorName=substr($colorName,0,-1);
-				$colorLabel = $this->htmlAreaRTE->getPageConfigLabel($conf['name']);
-				$HTMLAreaColorname[$colorName] = '
-				[' . $colorLabel . ' , "' . $conf['value'] . '"]';
+				$colorName = substr($colorName, 0, -1);
+				$colorLabel = $this->htmlAreaRTE->getPageConfigLabel($conf['name'], 0);
+				$HTMLAreaColorname[$colorName] = array($colorLabel, strtoupper(substr($conf['value'], 1, 6)));
 			}
 		}
-
 			// Setting the list of colors if specified in the RTE config
-		if ($this->thisConfig['colors'] ) {
-			$HTMLAreaJSColors = '[';
+		if ($this->thisConfig['colors']) {
 			$HTMLAreaColors = t3lib_div::trimExplode(',' , $this->htmlAreaRTE->cleanList($this->thisConfig['colors']));
-			$HTMLAreaColorsIndex = 0;
+			$HTMLAreaJSColors = array();
 			foreach ($HTMLAreaColors as $colorName) {
-				if($HTMLAreaColorsIndex && $HTMLAreaColorname[$colorName]) {
-					$HTMLAreaJSColors .= ',';
+				if ($HTMLAreaColorname[$colorName]) {
+					$HTMLAreaJSColors[] = $HTMLAreaColorname[$colorName];
 				}
-				$HTMLAreaJSColors .= $HTMLAreaColorname[$colorName];
-				$HTMLAreaColorsIndex++;
 			}
-			$HTMLAreaJSColors .= '];';
+			if ($this->htmlAreaRTE->is_FE()) {
+				$GLOBALS['TSFE']->csConvObj->convArray($HTMLAreaJSColors, $this->htmlAreaRTE->OutputCharset, 'utf-8');
+			} else {
+				$GLOBALS['LANG']->csConvObj->convArray($HTMLAreaJSColors, $GLOBALS['LANG']->charSet, 'utf-8');
+			}
 			$configureRTEInJavascriptString .= '
-			RTEarea['.$RTEcounter.'].colors = '. $HTMLAreaJSColors;
+			RTEarea['.$RTEcounter.'].colors = ' . json_encode($HTMLAreaJSColors) . ';';
 		}
-
 		return $configureRTEInJavascriptString;
 	}
-
-} // end of class
-
+}
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/TYPO3Color/class.tx_rtehtmlarea_typo3color.php']) {
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/TYPO3Color/class.tx_rtehtmlarea_typo3color.php']);
 }
-
 ?>

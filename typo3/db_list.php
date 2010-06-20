@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -33,7 +33,7 @@
  * are NOT located in their actual module directories (fx. mod/web/list/) but in the
  * backend root directory. This has some historical and practical causes.
  *
- * $Id: db_list.php 6954 2010-02-21 20:46:24Z steffenk $
+ * $Id: db_list.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -260,8 +260,7 @@ class SC_db_list {
 				$items = $dblist->clipObj->cleanUpCBC(t3lib_div::_POST('CBC'),$this->cmd_table,1);
 				if (count($items))	{
 					$cmd=array();
-					reset($items);
-					while(list($iK)=each($items))	{
+					foreach ($items as $iK => $value) {
 						$iKParts = explode('|',$iK);
 						$cmd[$iKParts[0]][$iKParts[1]]['delete']=1;
 					}

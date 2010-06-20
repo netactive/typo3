@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Displays the secondary-options palette for the TCEFORMs wherever they are shown.
  *
- * $Id: alt_palette.php 6244 2009-10-22 08:30:40Z baschny $
+ * $Id: alt_palette.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -115,7 +115,7 @@ class formRender extends t3lib_TCEforms {
 			<table border="0" cellpadding="0" cellspacing="0" id="typo3-TCEforms-palette">
 				<tr>
 					<td class="c-close">'.
-					'<a href="#" onclick="closePal();return false;"><img'.t3lib_iconWorks::skinImg('','gfx/close_12h.gif','width="11" height="12"').' title="'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.close',1).'" alt="" /></a>'.
+					'<a href="#" onclick="closePal();return false;">' . t3lib_iconWorks::getSpriteIcon('actions-document-close', array('title' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.close', TRUE))) . '</a>'.
 					'</td>'.
 				implode('',$iRow).'
 				</tr>

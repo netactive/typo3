@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  *
  * inspired by t3lib_fullsearch
  *
- * $Id: class.t3lib_modsettings.php 5761 2009-08-05 10:05:29Z rupi $
+ * $Id: class.t3lib_modsettings.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	René Fritz <r.fritz@colorcube.de>
  */
@@ -247,8 +247,7 @@ class t3lib_modSettings {
 
 		$prefix = $prefix ? $prefix : $this->prefix;
 
-		reset($SOBE->MOD_SETTINGS);
-		while(list($key)=each($SOBE->MOD_SETTINGS))	{
+		foreach ($SOBE->MOD_SETTINGS as $key => $value) {
 			if (preg_match('/^'.$prefix.'/',$key)) {
 				$this->storeList[$key]=$key;
 			}

@@ -103,6 +103,7 @@ class Tx_Extbase_Dispatcher {
 			t3lib_div::sysLog('Extbase was not able to dispatch the request. No configuration.', 'extbase', t3lib_div::SYSLOG_SEVERITY_ERROR);
 			return $content;
 		}
+		
 		$this->initializeConfigurationManagerAndFrameworkConfiguration($configuration);
 
 		$requestBuilder = t3lib_div::makeInstance('Tx_Extbase_MVC_Web_RequestBuilder');
@@ -231,11 +232,12 @@ class Tx_Extbase_Dispatcher {
 		$propertyMapper = t3lib_div::makeInstance('Tx_Extbase_Property_Mapper');
 		$propertyMapper->injectReflectionService(self::$reflectionService);
 		$controller->injectPropertyMapper($propertyMapper);
-		$controller->injectSettings(self::$extbaseFrameworkConfiguration['settings']);
+		
+		$controller->injectSettings(is_array(self::$extbaseFrameworkConfiguration['settings']) ? self::$extbaseFrameworkConfiguration['settings'] : array());
 
-		$flashMessages = t3lib_div::makeInstance('Tx_Extbase_MVC_Controller_FlashMessages'); // singleton
-		$flashMessages->reset();
-		$controller->injectFlashMessages($flashMessages);
+		$flashMessageContainer = t3lib_div::makeInstance('Tx_Extbase_MVC_Controller_FlashMessages'); // singleton
+		$flashMessageContainer->reset();
+		$controller->injectFlashMessageContainer($flashMessageContainer);
 
 		$objectManager = t3lib_div::makeInstance('Tx_Extbase_Object_Manager');
 		$validatorResolver = t3lib_div::makeInstance('Tx_Extbase_Validation_ValidatorResolver');
@@ -255,25 +257,30 @@ class Tx_Extbase_Dispatcher {
 	public static function getPersistenceManager() {
 		if (self::$persistenceManager === NULL) {
 			$identityMap = t3lib_div::makeInstance('Tx_Extbase_Persistence_IdentityMap');
+			$persistenceSession = t3lib_div::makeInstance('Tx_Extbase_Persistence_Session'); // singleton
+
+			$dataMapFactory = t3lib_div::makeInstance('Tx_Extbase_Persistence_Mapper_DataMapFactory');
+			$dataMapFactory->injectReflectionService(self::$reflectionService);
 
 			$dataMapper = t3lib_div::makeInstance('Tx_Extbase_Persistence_Mapper_DataMapper'); // singleton
 			$dataMapper->injectIdentityMap($identityMap);
+			$dataMapper->injectSession($persistenceSession);
 			$dataMapper->injectReflectionService(self::$reflectionService);
-
+			$dataMapper->injectDataMapFactory($dataMapFactory);
+			
 			$storageBackend = t3lib_div::makeInstance('Tx_Extbase_Persistence_Storage_Typo3DbBackend', $GLOBALS['TYPO3_DB']); // singleton
 			$storageBackend->injectDataMapper($dataMapper);
 
-			$qomFactory = t3lib_div::makeInstance('Tx_Extbase_Persistence_QOM_QueryObjectModelFactory', $storageBackend, $dataMapper);
-
-			$persistenceSession = t3lib_div::makeInstance('Tx_Extbase_Persistence_Session'); // singleton
+			$qomFactory = t3lib_div::makeInstance('Tx_Extbase_Persistence_QOM_QueryObjectModelFactory', $storageBackend);
+			
+			$dataMapper->setQomFactory($qomFactory);
 
 			$persistenceBackend = t3lib_div::makeInstance('Tx_Extbase_Persistence_Backend', $persistenceSession, $storageBackend); // singleton
 			$persistenceBackend->injectDataMapper($dataMapper);
 			$persistenceBackend->injectIdentityMap($identityMap);
 			$persistenceBackend->injectReflectionService(self::$reflectionService);
 			$persistenceBackend->injectQueryFactory(t3lib_div::makeInstance('Tx_Extbase_Persistence_QueryFactory'));
-			$persistenceBackend->injectQOMFactory($qomFactory);
-			$persistenceBackend->injectValueFactory(t3lib_div::makeInstance('Tx_Extbase_Persistence_ValueFactory'));
+			$persistenceBackend->injectQomFactory($qomFactory);
 
 			$objectManager = t3lib_div::makeInstance('Tx_Extbase_Object_Manager'); // singleton
 
@@ -314,8 +321,8 @@ class Tx_Extbase_Dispatcher {
 	 * @return void
 	 */
 	public function callModule($module) {
-		if (isset($GLOBALS['TBE_MODULES'][$module])) {
-			$config = $GLOBALS['TBE_MODULES'][$module];
+		if (isset($GLOBALS['TBE_MODULES']['_configuration'][$module])) {
+			$config = $GLOBALS['TBE_MODULES']['_configuration'][$module];
 
 			// Check permissions and exit if the user has no permission for entry
 			$GLOBALS['BE_USER']->modAccess($config, TRUE);
@@ -348,7 +355,7 @@ class Tx_Extbase_Dispatcher {
 	 * @return array The controller/action pair to use for current call
 	 */
 	protected function resolveControllerAction($module) {
-		$configuration = $GLOBALS['TBE_MODULES'][$module];
+		$configuration = $GLOBALS['TBE_MODULES']['_configuration'][$module];
 		$fallbackControllerAction = $this->getFallbackControllerAction($configuration);
 
 			// Extract dispatcher settings from request
@@ -461,7 +468,7 @@ class Tx_Extbase_Dispatcher {
 			$controllerAction['actionName'] = $matches[2];
 		} else {
 				// Support for external SCbase module function rendering
-			$functions = $GLOBALS['TBE_MODULES_EXT'][$module]['MOD_MENU']['function'];
+			$functions = $GLOBALS['TBE_MODULES_EXT']['_configuration'][$module]['MOD_MENU']['function'];
 			if (isset($functions[$moduleFunction])) {
 				$controllerAction['controllerName'] = $defaultController;
 				$controllerAction['actionName'] = 'extObj';
@@ -481,7 +488,7 @@ class Tx_Extbase_Dispatcher {
 	 * @return string The module rendered view
 	 */
 	protected function transfer($module, $controller, $action) {
-		$config = $GLOBALS['TBE_MODULES'][$module];
+		$config = $GLOBALS['TBE_MODULES']['_configuration'][$module];
 
 		$extbaseConfiguration = array(
 			'userFunc' => 'tx_extbase_dispatcher->dispatch',

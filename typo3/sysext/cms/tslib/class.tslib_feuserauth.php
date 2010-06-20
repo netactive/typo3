@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Front End session user. Login and session data
  * Included from index_ts.php
  *
- * $Id: class.tslib_feuserauth.php 6804 2010-01-18 16:06:31Z benni $
+ * $Id: class.tslib_feuserauth.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -326,7 +326,7 @@ class tslib_feUserAuth extends t3lib_userAuth {
 		if (!$this->userTSUpdated) {
 				// Parsing the user TS (or getting from cache)
 			$this->TSdataArray = t3lib_TSparser::checkIncludeLines_array($this->TSdataArray);
-			$userTS = implode(chr(10).'[GLOBAL]'.chr(10),$this->TSdataArray);
+			$userTS = implode(LF.'[GLOBAL]'.LF,$this->TSdataArray);
 			$parseObj = t3lib_div::makeInstance('t3lib_TSparser');
 			$parseObj->parse($userTS);
 			$this->userTS = $parseObj->setup;
@@ -500,11 +500,9 @@ class tslib_feUserAuth extends t3lib_userAuth {
 			}
 			$change=0;
 			$recs_array=$this->getKey('ses','recs');
-			reset($recs);
-			while(list($table,$data)=each($recs))	{
+			foreach ($recs as $table => $data) {
 				if (is_array($data))	{
-					reset($data);
-					while(list($rec_id,$value)=each($data))	{
+					foreach ($data as $rec_id => $value) {
 						if ($value != $recs_array[$table][$rec_id])	{
 							$recs_array[$table][$rec_id] = $value;
 							$change=1;

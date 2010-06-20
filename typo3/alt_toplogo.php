@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Top logo frame
  * Displays the logo in the top frame (upper left corner)
  *
- * $Id: alt_toplogo.php 5174 2009-03-10 20:23:43Z ohader $
+ * $Id: alt_toplogo.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant content
  *

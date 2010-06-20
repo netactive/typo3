@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Class for TYPO3 backend user authentication in the TSFE frontend
  *
- * $Id: class.t3lib_tsfebeuserauth.php 6535 2009-11-25 12:52:08Z stucki $
+ * $Id: class.t3lib_tsfebeuserauth.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -302,7 +302,7 @@ class t3lib_tsfeBeUserAuth extends t3lib_beUserAuth {
 		}
 
 			// Finally a check from t3lib_beuserauth::backendCheckLogin()
-		if (!$TYPO3_CONF_VARS['BE']['adminOnly'] || $this->isAdmin()) {
+		if ($this->isUserAllowedToLogin()) {
 			return true;
 		} else {
 			return false;

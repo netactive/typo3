@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2001-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Index search frontend example hook
  *
- * $Id: class.pihook.php 5165 2009-03-09 18:28:59Z ohader $
+ * $Id: class.pihook.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */

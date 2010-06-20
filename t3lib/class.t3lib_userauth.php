@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains a base class for authentication of users in TYPO3, both frontend and backend.
  *
- * $Id: class.t3lib_userauth.php 7035 2010-02-25 15:53:14Z baschny $
+ * $Id: class.t3lib_userauth.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -485,9 +485,12 @@ class t3lib_userAuth {
 			if ($this->formfield_status && $loginData['uident'] && $loginData['uname'])	{
 				$httpHost = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
 				if (!$this->getMethodEnabled && ($httpHost!=$authInfo['refInfo']['host'] && !$GLOBALS['TYPO3_CONF_VARS']['SYS']['doNotCheckReferer']))	{
-					die('Error: This host address ("'.$httpHost.'") and the referer host ("'.$authInfo['refInfo']['host'].'") mismatches!<br />
+					throw new RuntimeException(
+						'TYPO3 Fatal Error: Error: This host address ("' . $httpHost . '") and the referer host ("' . $authInfo['refInfo']['host'] . '") mismatches!<br />
 						It\'s possible that the environment variable HTTP_REFERER is not passed to the script because of a proxy.<br />
-						The site administrator can disable this check in the "All Configuration" section of the Install Tool (flag: TYPO3_CONF_VARS[SYS][doNotCheckReferer]).');
+						The site administrator can disable this check in the "All Configuration" section of the Install Tool (flag: TYPO3_CONF_VARS[SYS][doNotCheckReferer]).',
+						1270853930
+					);
 				}
 
 					// delete old user session if any
@@ -496,7 +499,10 @@ class t3lib_userAuth {
 
 				// Refuse login for _CLI users (used by commandline scripts)
 			if ((strtoupper(substr($loginData['uname'],0,5))=='_CLI_') && (!defined('TYPO3_cliMode') || !TYPO3_cliMode))	{	// although TYPO3_cliMode should never be set when using active login...
-				die('Error: You have tried to login using a CLI user. Access prohibited!');
+				throw new RuntimeException(
+					'TYPO3 Fatal Error: You have tried to login using a CLI user. Access prohibited!',
+					1270853931
+				);
 			}
 		}
 
@@ -659,8 +665,7 @@ class t3lib_userAuth {
 						$sslPortSuffix = ':'.intval($TYPO3_CONF_VARS['BE']['lockSSLPort']);
 						$server = str_replace($sslPortSuffix,'',$server);	// strip port from server
 					}
-					header('Location: http://'.$server.'/'.$address.TYPO3_mainDir.$backendScript);
-					exit;
+					t3lib_utility_Http::redirect('http://' . $server . '/' . $address . TYPO3_mainDir . $backendScript);
 				}
 			}
 
@@ -872,11 +877,33 @@ class t3lib_userAuth {
 	/**
 	 * The session_id is used to find user in the database.
 	 * Two tables are joined: The session-table with user_id of the session and the usertable with its primary key
+	 * if the client is flash (e.g. from a flash application inside TYPO3 that does a server request)
+	 * then don't evaluate with the hashLockClause, as the client/browser is included in this hash
+	 * and thus, the flash request would be rejected
+	 *
 	 * @return DB result object or false on error
 	 * @access private
 	 */
 	protected function fetchUserSessionFromDB() {
-		$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+
+		if ($GLOBALS['CLIENT']['BROWSER'] == 'flash') {
+			// if on the flash client, the veri code is valid, then the user session is fetched
+			// from the DB without the hashLock clause
+			if (t3lib_div::_GP('vC') == $this->veriCode()) {
+				$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+						'*',
+						$this->session_table.','.$this->user_table,
+						$this->session_table.'.ses_id = '.$GLOBALS['TYPO3_DB']->fullQuoteStr($this->id, $this->session_table).'
+							AND '.$this->session_table.'.ses_name = '.$GLOBALS['TYPO3_DB']->fullQuoteStr($this->name, $this->session_table).'
+							AND '.$this->session_table.'.ses_userid = '.$this->user_table.'.'.$this->userid_column.'
+							'.$this->ipLockClause().'
+							'.$this->user_where_clause()
+				);
+			} else {
+				$dbres = false;
+			}
+		} else {
+			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 					'*',
 					$this->session_table.','.$this->user_table,
 					$this->session_table.'.ses_id = '.$GLOBALS['TYPO3_DB']->fullQuoteStr($this->id, $this->session_table).'
@@ -885,7 +912,8 @@ class t3lib_userAuth {
 						'.$this->ipLockClause().'
 						'.$this->hashLockClause().'
 						'.$this->user_where_clause()
-		);
+			);
+		}
 		return $dbres;
 	}
 
@@ -941,6 +969,16 @@ class t3lib_userAuth {
 			}
 			return implode('.',$IPparts);
 		}
+	}
+
+	/**
+	 * VeriCode returns 10 first chars of a md5 hash of the session cookie AND the encryptionKey from TYPO3_CONF_VARS.
+	 * This code is used as an alternative verification when the JavaScript interface executes cmd's to tce_db.php from eg. MSIE 5.0 because the proper referer is not passed with this browser...
+	 *
+	 * @return	string
+	 */
+	public function veriCode() {
+		return substr(md5($this->id . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']), 0, 10);
 	}
 
 	/**

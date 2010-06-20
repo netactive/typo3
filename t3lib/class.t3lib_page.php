@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains a class with "Page functions" mainly for the frontend
  *
- * $Id: class.t3lib_page.php 6707 2009-12-28 01:21:03Z xperseguers $
+ * $Id: class.t3lib_page.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -306,6 +306,18 @@ class t3lib_pageSelect {
 		if ($lUid<0)	$lUid = $this->sys_language_uid;
 		$row = NULL;
 
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_page.php']['getPageOverlay'])) {
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_page.php']['getPageOverlay'] as $classRef) {
+				$hookObject = t3lib_div::getUserObj($classRef);
+
+				if (!($hookObject instanceof t3lib_pageSelect_getPageOverlayHook)) {
+					throw new UnexpectedValueException('$hookObject must implement interface t3lib_pageSelect_getPageOverlayHook', 1269878881);
+				}
+
+				$hookObject->getPageOverlay_preProcess($pageInput, $lUid, $this);
+			}
+		}
+
 			// If language UID is different from zero, do overlay:
 		if ($lUid)	{
 			$fieldArr = explode(',', $GLOBALS['TYPO3_CONF_VARS']['FE']['pageOverlayFields']);
@@ -368,6 +380,17 @@ class t3lib_pageSelect {
 	function getRecordOverlay($table,$row,$sys_language_content,$OLmode='')	{
 		global $TCA;
 
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_page.php']['getRecordOverlay'])) {
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_page.php']['getRecordOverlay'] as $classRef) {
+				$hookObject = t3lib_div::getUserObj($classRef);
+
+				if (!($hookObject instanceof t3lib_pageSelect_getRecordOverlayHook)) {
+					throw new UnexpectedValueException('$hookObject must implement interface t3lib_pageSelect_getRecordOverlayHook', 1269881658);
+				}
+				$hookObject->getRecordOverlay_preProcess($table,$row,$sys_language_content,$OLmode, $this);
+			}
+		}
+
 		if ($row['uid']>0 && $row['pid']>0)	{
 			if ($TCA[$table] && $TCA[$table]['ctrl']['languageField'] && $TCA[$table]['ctrl']['transOrigPointerField'])	{
 				if (!$TCA[$table]['ctrl']['transOrigPointerTable'])	{	// Will not be able to work with other tables (Just didn't implement it yet; Requires a scan over all tables [ctrl] part for first FIND the table that carries localization information for this table (which could even be more than a single table) and then use that. Could be implemented, but obviously takes a little more....)
@@ -424,7 +447,16 @@ class t3lib_pageSelect {
 				}
 			}
 		}
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_page.php']['getRecordOverlay'])) {
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_page.php']['getRecordOverlay'] as $classRef) {
+				$hookObject = t3lib_div::getUserObj($classRef);
 
+				if (!($hookObject instanceof t3lib_pageSelect_getRecordOverlayHook)) {
+					throw new UnexpectedValueException('$hookObject must implement interface t3lib_pageSelect_getRecordOverlayHook', 1269881659);
+				}
+				$hookObject->getRecordOverlay_postProcess($table,$row,$sys_language_content,$OLmode, $this);
+			}
+		}
 		return $row;
 	}
 
@@ -850,8 +882,8 @@ class t3lib_pageSelect {
 	function checkRecord($table,$uid,$checkPage=0)	{
 		global $TCA;
 		$uid = intval($uid);
-		if (is_array($TCA[$table]))	{
-			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, 'uid='.intval($uid).$this->enableFields($table));
+		if (is_array($TCA[$table]) && $uid > 0) {
+			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, 'uid = ' . $uid . $this->enableFields($table));
 			$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 			$GLOBALS['TYPO3_DB']->sql_free_result($res);
 			if ($row)	{
@@ -887,8 +919,9 @@ class t3lib_pageSelect {
 	function getRawRecord($table,$uid,$fields='*',$noWSOL=FALSE)	{
 		global $TCA;
 		$uid = intval($uid);
-		if (is_array($TCA[$table]) || $table=='pages') {	// Excluding pages here so we can ask the function BEFORE TCA gets initialized. Support for this is followed up in deleteClause()...
-			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $table, 'uid='.intval($uid).$this->deleteClause($table));
+			// Excluding pages here so we can ask the function BEFORE TCA gets initialized. Support for this is followed up in deleteClause()...
+		if ((is_array($TCA[$table]) || $table == 'pages') && $uid > 0) {
+			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $table, 'uid = ' . $uid . $this->deleteClause($table));
 			$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 			$GLOBALS['TYPO3_DB']->sql_free_result($res);
 			if ($row) {

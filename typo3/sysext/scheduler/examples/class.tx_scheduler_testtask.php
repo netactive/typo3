@@ -31,7 +31,7 @@ require_once(PATH_t3lib . 'class.t3lib_htmlmail.php');
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_testtask.php 7237 2010-04-03 14:30:24Z francois $
+ * $Id: class.tx_scheduler_testtask.php 7307 2010-04-12 16:17:20Z benni $
  */
 class tx_scheduler_TestTask extends tx_scheduler_Task {
 
@@ -76,18 +76,18 @@ class tx_scheduler_TestTask extends tx_scheduler_Task {
 			$multiple = $exec->getMultiple();
 			$cronCmd = $exec->getCronCmd();
 			$mailBody =
-				'SCHEDULER TEST-TASK' . chr(10)
-				. '- - - - - - - - - - - - - - - -' . chr(10)
-				. 'UID: ' . $this->taskUid . chr(10)
-				. 'Sitename: ' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'] . chr(10)
-				. 'Site: ' . $site . chr(10)
-				. 'Called by: ' . $calledBy . chr(10)
-				. 'tstamp: ' . date('Y-m-d H:i:s') . ' [' . time() . ']' . chr(10)
-				. 'maxLifetime: ' . $this->scheduler->extConf['maxLifetime'] . chr(10)
-				. 'start: ' . date('Y-m-d H:i:s', $start) . ' [' . $start . ']' . chr(10)
-				. 'end: ' . ((empty($end)) ? '-' : (date('Y-m-d H:i:s', $end) . ' [' . $end . ']')) . chr(10)
-				. 'interval: ' . $interval . chr(10)
-				. 'multiple: ' . ($multiple ? 'yes' : 'no') . chr(10)
+				'SCHEDULER TEST-TASK' . LF
+				. '- - - - - - - - - - - - - - - -' . LF
+				. 'UID: ' . $this->taskUid . LF
+				. 'Sitename: ' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'] . LF
+				. 'Site: ' . $site . LF
+				. 'Called by: ' . $calledBy . LF
+				. 'tstamp: ' . date('Y-m-d H:i:s') . ' [' . time() . ']' . LF
+				. 'maxLifetime: ' . $this->scheduler->extConf['maxLifetime'] . LF
+				. 'start: ' . date('Y-m-d H:i:s', $start) . ' [' . $start . ']' . LF
+				. 'end: ' . ((empty($end)) ? '-' : (date('Y-m-d H:i:s', $end) . ' [' . $end . ']')) . LF
+				. 'interval: ' . $interval . LF
+				. 'multiple: ' . ($multiple ? 'yes' : 'no') . LF
 				. 'cronCmd: ' . ($cronCmd ? $cronCmd : 'not used');
 
 				// Prepare mailer and send the mail

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2009 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 2005-2010 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  *
  * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * $Id: parse_html.php 5165 2009-03-09 18:28:59Z ohader $  *
+ * $Id: parse_html.php 7905 2010-06-13 14:42:33Z ohader $  *
  */
 
 error_reporting (E_ALL ^ E_NOTICE);

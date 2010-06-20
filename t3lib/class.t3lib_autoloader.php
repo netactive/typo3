@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Dmitry Dulepov <dmitry@typo3.org>
+*  (c) 2008-2010 Dmitry Dulepov <dmitry@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains TYPO3 autoloader
  *
- * $Id: class.t3lib_autoloader.php 7263 2010-04-09 08:46:26Z stucki $
+ * $Id: class.t3lib_autoloader.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Dmitry Dulepov	<dmitry@typo3.org>
  * @author	Martin Kutschker <masi@typo3.org>

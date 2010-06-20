@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
-*  (c) 2007-2009 Kraft Bernhard (kraftb@kraftb.at)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2007-2010 Kraft Bernhard (kraftb@kraftb.at)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
 /**
  * A TS-Config parsing class which performs condition evaluation
  *
- * $Id: class.t3lib_tsparser_tsconfig.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.t3lib_tsparser_tsconfig.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Kraft Bernhard <kraftb@kraftb.at>
  */

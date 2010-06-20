@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains class for creating a position map.
  *
- * $Id: class.t3lib_positionmap.php 5175 2009-03-10 20:36:07Z ohader $
+ * $Id: class.t3lib_positionmap.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant (should be)
  *
@@ -367,7 +367,7 @@ class t3lib_positionMap {
 		$codeA = t3lib_div::trimExplode(',',$codes.",line",1);
 
 		$lines=array();
-		while(list(,$code)=each($codeA))	{
+		foreach ($codeA as $code) {
 			if ($code=="blank" || $allBlank)	{
 				$lines[]='<img src="clear.gif" width="18" height="8" align="top" alt="" />';
 			} else {
@@ -407,7 +407,7 @@ class t3lib_positionMap {
 		$colPosArray = t3lib_div::trimExplode(',',$colPosList,1);
 
 		$lines=array();
-		while(list($kk,$vv)=each($colPosArray))	{
+		foreach ($colPosArray as $kk => $vv) {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 							'*',
 							'tt_content',

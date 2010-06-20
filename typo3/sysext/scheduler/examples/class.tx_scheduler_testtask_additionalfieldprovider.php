@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Francois Suter <francois@typo3.org>
+*  (c) 2009-2010 Francois Suter <francois@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_testtask_additionalfieldprovider.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.tx_scheduler_testtask_additionalfieldprovider.php 7905 2010-06-13 14:42:33Z ohader $
  */
 class tx_scheduler_TestTask_AdditionalFieldProvider implements tx_scheduler_AdditionalFieldProvider {
 

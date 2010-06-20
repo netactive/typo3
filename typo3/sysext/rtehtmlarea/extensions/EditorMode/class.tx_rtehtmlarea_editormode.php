@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2009-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_editormode.php 6536 2009-11-25 14:07:18Z stucki $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_editormode.php 7905 2010-06-13 14:42:33Z ohader $
  *
  */
 

@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -26,7 +26,7 @@
 /**
  * Contains JavaScript for TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: jsfunc.tbe_editor.js 7113 2010-03-15 20:20:56Z etobi.de $
+ * $Id: jsfunc.tbe_editor.js 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Oliver Hader <oh@inpublica.de>
@@ -409,13 +409,6 @@ var TBE_EDITOR = {
 	 */
 	checkSubmit: function(sendAlert) {
 		var funcIndex, funcMax, funcRes;
-		if (TBE_EDITOR.backend_interface == "backend_old") {
-			if (TBE_EDITOR.checkLoginTimeout() && confirm(TBE_EDITOR.labels.refresh_login)) {
-				vHWin=window.open(TBE_EDITOR.backPath+'login_frameset.php?','relogin','height=300,width=400,status=0,menubar=0');
-				vHWin.focus();
-				return false;
-			}
-		}
 		var OK=1;
 
 		// $this->additionalJS_submit:

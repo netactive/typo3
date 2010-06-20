@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Folder tree in the File main module.
  *
- * $Id: alt_file_navframe.php 6167 2009-10-19 11:59:31Z rupi $
+ * $Id: alt_file_navframe.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -196,7 +196,7 @@ class SC_alt_file_navframe {
 			}
 			top.fsMod.currentBank = bank;
 
-			if (top.condensedMode) {
+			if (top.TYPO3.configuration.condensedMode) {
 				top.content.location.href = theUrl;
 			} else {
 				parent.list_frame.location.href=theUrl;
@@ -274,7 +274,8 @@ class SC_alt_file_navframe {
 
 			// Refresh
 		$buttons['refresh'] = '<a href="' . htmlspecialchars(t3lib_div::getIndpEnv('REQUEST_URI')) . '">' .
-				'<img' . t3lib_iconWorks::skinImg('','gfx/refresh_n.gif','width="14" height="14"') . ' title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.refresh',1) . '" alt="" /></a>';
+				t3lib_iconWorks::getSpriteIcon('actions-system-refresh') . 
+		'</a>';
 
 			// CSH
 		$buttons['csh'] = str_replace('typo3-csh-inline','typo3-csh-inline show-right',t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'filetree', $GLOBALS['BACK_PATH']));

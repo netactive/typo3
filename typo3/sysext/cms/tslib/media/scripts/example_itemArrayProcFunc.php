@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * This is an example of how to manipulate menu item arrays.
  * Used in the "testsite" package
  *
- * $Id: example_itemArrayProcFunc.php 5165 2009-03-09 18:28:59Z ohader $
+ * $Id: example_itemArrayProcFunc.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -73,10 +73,9 @@
  */
 function user_itemArrayProcFuncTest($menuArr,$conf)	{
 	if ($conf['demoItemStates'])	{		// Used in the example of item states
-		reset($menuArr);
 		$c=0;
 		$teststates=explode(',','NO,ACT,IFSUB,CUR,USR,SPC,USERDEF1,USERDEF2');
-		while(list($k,$v)=each($menuArr))	{
+		foreach ($menuArr as $k => $v) {
 			$menuArr[$k]['ITEM_STATE']=$teststates[$c];
 			$menuArr[$k]['title'].= ($teststates[$c] ? ' ['.$teststates[$c].']' : '');
 			$c++;

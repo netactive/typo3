@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains class for display of backend log
  *
- * $Id: class.t3lib_bedisplaylog.php 5736 2009-07-30 16:45:04Z steffenk $
+ * $Id: class.t3lib_bedisplaylog.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -212,8 +212,10 @@ class t3lib_BEDisplayLog {
 			$text .= ' ' . sprintf($GLOBALS['LANG']->getLL('changesInFields'), '<em>' . $newRow['fieldlist'] . '</em>');
 			$text .= ' <a href="' . htmlspecialchars($GLOBALS['BACK_PATH'] . 'show_rechis.php?sh_uid=' . $newRow['uid'] .
 					'&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI'))) . '">' .
-					'<img' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], 'gfx/history2.gif', 'width="13" height="12"') .
-					' title="' . $GLOBALS['LANG']->getLL('showHistory') . '" alt="" />' .
+					t3lib_iconWorks::getSpriteIcon(
+						'actions-document-history-open',
+						array('title' => $GLOBALS['LANG']->getLL('showHistory'))
+					) .
 					'</a>';
 		}
 
@@ -268,7 +270,7 @@ class t3lib_BEDisplayLog {
 	 */
 	function stripPath($inArr)	{
 		if ($this->stripPath && is_array($inArr))	{
-			while(list($key,$val)=each($inArr))	{
+			foreach ($inArr as $key => $val) {
 				$inArr[$key]=basename($val);
 			}
 		}

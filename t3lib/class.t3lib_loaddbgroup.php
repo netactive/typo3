@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains class for loading database groups
  *
- * $Id: class.t3lib_loaddbgroup.php 6928 2010-02-21 12:37:16Z xperseguers $
+ * $Id: class.t3lib_loaddbgroup.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 September/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -298,7 +298,7 @@ class t3lib_loadDBGroup	{
 
 
 		if ($this->MM_table_where) {
-			$additionalWhere.= "\n".str_replace('###THIS_UID###', intval($uid), $this->MM_table_where);
+			$additionalWhere.= LF.str_replace('###THIS_UID###', intval($uid), $this->MM_table_where);
 		}
 		foreach ($this->MM_match_fields as $field => $value) {
 			$additionalWhere.= ' AND '.$field.'='.$GLOBALS['TYPO3_DB']->fullQuoteStr($value, $tableName);
@@ -359,7 +359,7 @@ class t3lib_loadDBGroup	{
 			$additionalWhere = '';
 				// add WHERE clause if configured
 			if ($this->MM_table_where) {
-				$additionalWhere.= "\n".str_replace('###THIS_UID###', intval($uid), $this->MM_table_where);
+				$additionalWhere.= LF.str_replace('###THIS_UID###', intval($uid), $this->MM_table_where);
 			}
 				// Select, update or delete only those relations that match the configured fields
 			foreach ($this->MM_match_fields as $field => $value) {
@@ -504,7 +504,7 @@ class t3lib_loadDBGroup	{
 			$additionalWhere = '';
 				// add WHERE clause if configured
 			if ($this->MM_table_where) {
-				$additionalWhere.= "\n".str_replace('###THIS_UID###', intval($uid), $this->MM_table_where);
+				$additionalWhere.= LF.str_replace('###THIS_UID###', intval($uid), $this->MM_table_where);
 			}
 				// Select, update or delete only those relations that match the configured fields
 			foreach ($this->MM_match_fields as $field => $value) {

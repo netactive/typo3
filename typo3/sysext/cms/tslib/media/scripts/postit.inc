@@ -29,7 +29,7 @@
  *
  * Creates graphical postit notes with text on them.
  *
- * $Id: postit.inc 5165 2009-03-09 18:28:59Z ohader $
+ * $Id: postit.inc 7601 2010-05-13 17:12:58Z baschny $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -118,7 +118,7 @@ $cols = intval($conf['cols']) ? intval($conf['cols']) : 3;
 
 $lines = explode(chr(10),$data);
 $imageArr = array();
-while(list($key,$content)=each($lines))	{
+foreach ($lines as $key => $content) {
 	$content = trim($content);
 	if ($content)	{
 		$parts = explode('|',$content);

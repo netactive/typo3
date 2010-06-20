@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Ingo Renner <ingo@typo3.org>
+*  (c) 2008-2010 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,8 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
- * @version $Id: class.t3lib_cache_backend_dbbackend.php 7206 2010-03-28 14:15:16Z lolli $
+ * @api
+ * @version $Id: class.t3lib_cache_backend_dbbackend.php 7905 2010-06-13 14:42:33Z ohader $
  */
 class t3lib_cache_backend_DbBackend extends t3lib_cache_backend_AbstractBackend {
 
@@ -125,13 +126,23 @@ class t3lib_cache_backend_DbBackend extends t3lib_cache_backend_AbstractBackend 
 			)
 		);
 
-		foreach ($tags as $tag) {
-			$GLOBALS['TYPO3_DB']->exec_INSERTquery(
+		if (count($tags)) {
+			$fields = array();
+			$fields[] = 'identifier';
+			$fields[] = 'tag';
+
+			$tagRows = array();
+			foreach ($tags as $tag) {
+				$tagRow = array();
+				$tagRow[] = $entryIdentifier;
+				$tagRow[] = $tag;
+				$tagRows[] = $tagRow;
+			}
+
+			$GLOBALS['TYPO3_DB']->exec_INSERTmultipleRows(
 				$this->tagsTable,
-				array(
-					'identifier' => $entryIdentifier,
-					'tag'        => $tag,
-				)
+				$fields,
+				$tagRows
 			);
 		}
 	}
@@ -278,8 +289,8 @@ class t3lib_cache_backend_DbBackend extends t3lib_cache_backend_AbstractBackend 
 	 * @author Ingo Renner <ingo@typo3.org>
 	 */
 	public function flush() {
-		$GLOBALS['TYPO3_DB']->sql_query('TRUNCATE ' . $this->cacheTable);
-		$GLOBALS['TYPO3_DB']->sql_query('TRUNCATE ' . $this->tagsTable);
+		$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery($this->cacheTable);
+		$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery($this->tagsTable);
 	}
 
 	/**

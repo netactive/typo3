@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Starter-script for install screen
  *
- * $Id: index.php 6460 2009-11-17 19:02:55Z rupi $
+ * $Id: index.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @package TYPO3
@@ -47,9 +47,10 @@ if (defined('E_DEPRECATED')) {
 }
 
 $PATH_thisScript = str_replace('//','/', str_replace('\\','/', (PHP_SAPI=='cgi'||PHP_SAPI=='isapi' ||PHP_SAPI=='cgi-fcgi')&&($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED'])? ($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED']):($_SERVER['ORIG_SCRIPT_FILENAME']?$_SERVER['ORIG_SCRIPT_FILENAME']:$_SERVER['SCRIPT_FILENAME'])));
+$PATH_site = dirname(dirname(dirname($PATH_thisScript)));
 
 	// Only allow Install Tool access if the file "typo3conf/ENABLE_INSTALL_TOOL" is found
-$enableInstallToolFile = dirname(dirname(dirname($PATH_thisScript))).'/typo3conf/ENABLE_INSTALL_TOOL';
+$enableInstallToolFile = $PATH_site . '/typo3conf/ENABLE_INSTALL_TOOL';
 
 if (is_file($enableInstallToolFile) && (time() - filemtime($enableInstallToolFile) > 3600)) {
 	$content = file_get_contents($enableInstallToolFile);
@@ -63,17 +64,63 @@ if (is_file($enableInstallToolFile) && (time() - filemtime($enableInstallToolFil
 
 	// Change 1==2 to 1==1 if you want to lock the Install Tool regardless of the file ENABLE_INSTALL_TOOL
 if (1==2 || !is_file($enableInstallToolFile)) {
-	die(nl2br('<strong>The Install Tool is locked.</strong>
+		// Include t3lib_div and t3lib_parsehtml for templating
+	require_once($PATH_site . '/t3lib/class.t3lib_div.php');
+	require_once($PATH_site . '/t3lib/class.t3lib_parsehtml.php');
 
-		Fix: Create a file typo3conf/ENABLE_INSTALL_TOOL
-		This file may simply be empty.
-
-		For security reasons, it is highly recommended to rename
-		or delete the file after the operation is finished.
-
-		<strong>If the file is older than 1 hour TYPO3 has automatically
-		deleted it, so it needs to be created again.</strong>
-	'));
+		// Define the stylesheet
+	$stylesheet = '<link rel="stylesheet" type="text/css" href="' .
+		'../stylesheets/install/install.css" />';
+	$javascript = '<script type="text/javascript" src="' .
+		'../contrib/prototype/prototype.js"></script>' . LF;
+	$javascript .= '<script type="text/javascript" src="' .
+		'../sysext/install/Resources/Public/Javascript/install.js"></script>';
+	
+		// Get the template file
+	$template = @file_get_contents($PATH_site . '/typo3/templates/install.html');
+		// Define the markers content
+	$markers = array(
+		'styleSheet' => $stylesheet,
+		'javascript' => $javascript,
+		'title' => 'The install tool is locked',
+		'content' => '
+			<p>
+				To enable access to the install tool, you have the following option<span class="t3-install-locked-user-settings">s</span>:
+			</p>
+			<ul>
+				<li>
+					Create a file named <strong>ENABLE_INSTALL_TOOL</strong>
+					and put it into the folder <strong>typo3conf/</strong>.<br />
+					This file may simply be empty.
+				</li>
+				<li class="t3-install-locked-user-settings">
+					Go to <a href="../sysext/setup/mod/index.php">User tools &gt; User settings</a> and let TYPO3 create this file for you.
+				</li>
+			</ul>
+			<p>
+				For security reasons, it is highly recommended to rename or
+				delete the file after the operation is finished.
+			</p>
+			<p>
+				If the file is older than 1 hour TYPO3 has automatically deleted
+				it, so it needs to be created again.
+			</p>
+		'
+	);
+		// Fill the markers
+	$content = t3lib_parsehtml::substituteMarkerArray(
+		$template,
+		$markers,
+		'###|###',
+		1,
+		1
+	);
+		// Output the warning message and exit
+	header('Content-Type: text/html; charset=utf-8');
+	header('Cache-Control: no-cache, must-revalidate');
+	header('Pragma: no-cache');
+	echo $content;
+	exit();
 }
 
 

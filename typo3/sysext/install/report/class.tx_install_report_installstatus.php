@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Ingo Renner <ingo@typo3.org>
+*  (c) 2009-2010 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -33,7 +33,7 @@ require_once(t3lib_extMgm::extPath('install', 'requirements.php'));
  * @package		TYPO3
  * @subpackage	tx_install
  *
- * $Id: class.tx_install_report_installstatus.php 6766 2010-01-13 23:53:50Z steffenk $
+ * $Id: class.tx_install_report_installstatus.php 7905 2010-06-13 14:42:33Z ohader $
  */
 class tx_install_report_InstallStatus implements tx_reports_StatusProvider {
 

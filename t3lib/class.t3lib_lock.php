@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Michael Stucki (michael@typo3.org)
+*  (c) 2008-2010 Michael Stucki (michael@typo3.org)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Class for providing locking features in TYPO3
  *
- * $Id: class.t3lib_lock.php 6207 2009-10-21 08:29:45Z steffenk $
+ * $Id: class.t3lib_lock.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Michael Stucki <michael@typo3.org>
  */

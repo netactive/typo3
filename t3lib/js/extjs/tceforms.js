@@ -1,11 +1,11 @@
 /***************************************************************
  * extJS for TCEforms
  *
- * $Id: tceforms.js 6539 2009-11-25 14:49:14Z stucki $
+ * $Id: tceforms.js 7905 2010-06-13 14:42:33Z ohader $
  *
  * Copyright notice
  *
- * (c) 2009 Steffen Kamper <info@sk-typo3.de>
+ * (c) 2009-2010 Steffen Kamper <info@sk-typo3.de>
  * All rights reserved
  *
  * This script is part of the TYPO3 project. The TYPO3 project is
@@ -50,17 +50,17 @@ TYPO3.TCEFORMS = {
 				format:		format[index],
 				value:		Date.parseDate(element.dom.value, format[index]),
 				handler: 	function(picker, date){
-					var relElement = Ext.getDom(picker.id.substring(1));
+					var relElement = Ext.getDom(picker.ownerCt.id.substring(1));
 					relElement.value = date.format(format[index]);
 					if (Ext.isFunction(relElement.onchange)) {
 						relElement.onchange.call(relElement);
 					}
 				},
 				listeners:	{
-					beforeshow:	function(picker) {
-						var relElement = Ext.getDom(picker.id.substring(1));
+					beforeshow:	function(obj) {
+						var relElement = Ext.getDom(obj.picker.ownerCt.id.substring(1));
 						if (relElement.value) {
-							Ext.getCmp('p' + relElement.id).setValue(Date.parseDate(relElement.value, format[index]));
+							obj.picker.setValue(Date.parseDate(relElement.value, format[index]));
 						}
 					}
 				}

@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Francois Suter <francois@typo3.org>
+*  (c) 2009-2010 Francois Suter <francois@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -26,7 +26,7 @@
  *
  * @author	Francois Suter <francois@typo3.org>
  *
- * $Id: tx_scheduler_be.js 6539 2009-11-25 14:49:14Z stucki $
+ * $Id: tx_scheduler_be.js 7905 2010-06-13 14:42:33Z ohader $
  */
 
 /**

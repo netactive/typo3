@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 2008-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -24,9 +24,9 @@
 /**
  * Default Link extension for htmlArea RTE
  *
- * @author Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+ * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_defaultlink.php 5489 2009-05-23 15:26:20Z ohader $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_defaultlink.php 7141 2010-03-22 04:46:15Z stan $
  *
  */
 
@@ -43,9 +43,10 @@ class tx_rtehtmlarea_defaultlink extends tx_rtehtmlareaapi {
 	protected $toolbar;				// Reference to RTE toolbar array
 	protected $LOCAL_LANG; 				// Frontend language array
 
-	protected $pluginButtons = 'link';
+	protected $pluginButtons = 'link, unlink';
 	protected $convertToolbarForHtmlAreaArray = array (
-		'link'	=> 'CreateLink',
+		'link'		=> 'CreateLink',
+		'unlink'	=> 'UnLink',
 		);
 
 	/**

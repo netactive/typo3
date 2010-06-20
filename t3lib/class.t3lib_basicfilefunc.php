@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains class with basic file management functions
  *
- * $Id: class.t3lib_basicfilefunc.php 5947 2009-09-16 17:57:09Z ohader $
+ * $Id: class.t3lib_basicfilefunc.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -144,6 +144,21 @@ class t3lib_basicFileFunctions	{
 
 	/**
 	 * Returns an array with a whole lot of fileinformation.
+	 * Information includes:
+	 * - path			: path part of give file
+	 * - file			: filename
+	 * - filebody		: filename without extension
+	 * - fileext		: lowercase extension
+	 * - realFileext	: extension
+	 * - tstamp			: timestamp of modification
+	 * - size			: file size
+	 * - type			: file type (block/char/dir/fifo/file/link)
+	 * - owner			: user ID of owner of file
+	 * - perms			: numerical representation of file permissions
+	 * - writable		: is file writeable by web user (FALSE = yes; TRUE = no) *)
+	 * - readable		: is file readable by web user (FALSE = yes; TRUE = no) *)
+	 *
+	 * *) logic is reversed because of handling by functions in class.file_list.inc
 	 *
 	 * @param	string		Filepath to existing file. Should probably be absolute. Filefunctions are performed on this value.
 	 * @return	array		Information about the file in the filepath
@@ -324,8 +339,7 @@ class t3lib_basicFileFunctions	{
 	 */
 	function checkPathAgainstMounts($thePath)	{
 		if ($thePath && $this->isPathValid($thePath) && is_array($this->mounts))	{
-			reset ($this->mounts);
-			while(list($k,$val)=each($this->mounts))	{
+			foreach ($this->mounts as $k => $val) {
 				if (t3lib_div::isFirstPartOfStr($thePath,$val['path']))	{
 					return $k;
 				}
@@ -342,8 +356,7 @@ class t3lib_basicFileFunctions	{
 		global $TYPO3_CONF_VARS;
 
 		if (is_array($this->mounts))	{
-			reset ($this->mounts);
-			while(list($k,$val)=each($this->mounts))	{
+			foreach ($this->mounts as $k => $val) {
 				if (t3lib_div::isFirstPartOfStr($val['path'], PATH_site.$TYPO3_CONF_VARS['BE']['fileadminDir']))	{
 					return $k;
 				}
@@ -376,8 +389,7 @@ class t3lib_basicFileFunctions	{
 	 */
 	function findTempFolder()	{
 		if ($this->tempFN && is_array($this->mounts))	{
-			reset ($this->mounts);
-			while(list($k,$val)=each($this->mounts))	{
+			foreach ($this->mounts as $k => $val) {
 				$tDir = $val['path'].$this->tempFN;
 				if (@is_dir($tDir))	{
 					return $tDir;

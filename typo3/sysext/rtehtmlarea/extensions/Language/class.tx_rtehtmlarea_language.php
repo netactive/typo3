@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2008-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_language.php 5061 2009-02-24 02:38:22Z stan $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_language.php 7802 2010-06-03 21:41:58Z stan $
  *
  */
 
@@ -85,14 +85,22 @@ class tx_rtehtmlarea_language extends tx_rtehtmlareaapi {
 				$first = $GLOBALS['LANG']->getLL('No language mark');
 			}
 			$languages = array('none' => $first);
-			$languages = array_merge($languages, $this->getLanguages());
-			$languagesJSArray = 'HTMLArea.languageOptions = ' . json_encode(array_flip($languages));
+			$languages = array_flip(array_merge($languages, $this->getLanguages()));
+			$languagesJSArray = array();
+			foreach ($languages as $key => $value) {
+				$languagesJSArray[] = array('text' => $key, 'value' => $value);
+			}
+			if ($this->htmlAreaRTE->is_FE()) {
+				$GLOBALS['TSFE']->csConvObj->convArray($languagesJSArray, $this->htmlAreaRTE->OutputCharset, 'utf-8');
+			} else {
+				$GLOBALS['LANG']->csConvObj->convArray($languagesJSArray, $GLOBALS['LANG']->charSet, 'utf-8');
+			}
+			$languagesJSArray = json_encode(array('options' => $languagesJSArray));
 			$registerRTEinJavascriptString .= '
-			RTEarea['.$RTEcounter.'].buttons.'. $button .'.languagesUrl = "' . $this->htmlAreaRTE->writeTemporaryFile('', 'languages_'.$this->htmlAreaRTE->contentLanguageUid, 'js', $languagesJSArray) . '";';
+			RTEarea['.$RTEcounter.'].buttons.'. $button .'.dataUrl = "' . $this->htmlAreaRTE->writeTemporaryFile('', $button . '_' . $this->htmlAreaRTE->contentLanguageUid, 'js', $languagesJSArray) . '";';
 		}
 		return $registerRTEinJavascriptString;
 	}
-
 	/**
 	 * Getting all languages into an array
 	 * 	where the key is the ISO alpha-2 code of the language
@@ -129,13 +137,17 @@ class tx_rtehtmlarea_language extends tx_rtehtmlareaapi {
 			$code = strtolower($row['lg_iso_2']).($row['lg_country_iso_2']?'-'.strtoupper($row['lg_country_iso_2']):'');
 			foreach ($titleFields as $titleField) {
 				if ($row[$titleField]) {
-					$nameArray[$code] = $this->htmlAreaRTE->is_FE() ? $GLOBALS['TSFE']->csConv($row[$titleField], $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['static_info_tables']['charset']) : ($this->htmlAreaRTE->TCEform->inline->isAjaxCall ? $GLOBALS['LANG']->csConvObj->utf8_encode($row[$titleField], $GLOBALS['LANG']->charSet) : $row[$titleField]);
-					$nameArray[$code] = $prefixLabelWithCode ? ($code . ' - ' . $nameArray[$code]) : ($postfixLabelWithCode ? ($nameArray[$code] . ' - ' . $code) : $nameArray[$code]);
+					$nameArray[$code] = $prefixLabelWithCode ? ($code . ' - ' . $row[$titleField]) : ($postfixLabelWithCode ? ($row[$titleField] . ' - ' . $code) : $row[$titleField]);
 					break;
 				}
 			}
 		}
 		$GLOBALS['TYPO3_DB']->sql_free_result($res);
+		if ($this->htmlAreaRTE->is_FE()) {
+			$GLOBALS['TSFE']->csConvObj->convArray($nameArray, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['static_info_tables']['charset'], $this->htmlAreaRTE->OutputCharset);
+		} else {
+			$GLOBALS['LANG']->csConvObj->convArray($nameArray, $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['static_info_tables']['charset'], $GLOBALS['LANG']->charSet);
+		}
 		uasort($nameArray, 'strcoll');
 		return $nameArray;
 	}
@@ -155,9 +167,7 @@ class tx_rtehtmlarea_language extends tx_rtehtmlareaapi {
 		}
 	}
 }
-
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/Language/class.tx_rtehtmlarea_language.php']) {
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/Language/class.tx_rtehtmlarea_language.php']);
 }
-
 ?>

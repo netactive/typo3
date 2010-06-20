@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2004-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2004-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * PHP SQL engine
  * EXPERIMENTAL!
  *
- * $Id: class.t3lib_sqlengine.php 6281 2009-10-27 09:58:53Z steffenk $
+ * $Id: class.t3lib_sqlengine.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @deprecated since TYPO3 4.3, this class will be removed in TYPO3 4.5, it has been integrated to extension DBAL.
@@ -641,7 +641,7 @@ class t3lib_sqlengine extends t3lib_sqlparser {
 				$itemKeys = array_intersect($itemKeys, $subSelKeys);
 			}
 		} else {
-			$comp = strtoupper(str_replace(array(' ',"\t","\r","\n"),'',$config['comparator']));
+			$comp = strtoupper(str_replace(array(' ',TAB,CR,LF),'',$config['comparator']));
 			$mod = strtoupper($config['modifier']);
 			switch($comp)	{
 				case 'NOTLIKE':

@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2009 Jeff Segars <jeff@webempoweredchurch.org>
-*  (c) 2008-2009 David Slayback <dave@webempoweredchurch.org>
+*  (c) 2008-2010 Jeff Segars <jeff@webempoweredchurch.org>
+*  (c) 2008-2010 David Slayback <dave@webempoweredchurch.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
 /**
  * Controller class for frontend editing.
  *
- * $Id: class.t3lib_frontendedit.php 6274 2009-10-24 11:42:50Z baschny $
+ * $Id: class.t3lib_frontendedit.php 7905 2010-06-13 14:42:33Z ohader $
  *
  * @author	Jeff Segars <jeff@webempoweredchurch.org>
  * @author	David Slayback <dave@webempoweredchurch.org>

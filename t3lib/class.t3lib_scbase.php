@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains the parent class for 'ScriptClasses' in backend modules.
  *
- * $Id: class.t3lib_scbase.php 5947 2009-09-16 17:57:09Z ohader $
+ * $Id: class.t3lib_scbase.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -292,8 +292,7 @@ class t3lib_SCbase {
 	function mergeExternalItems($modName,$menuKey,$menuArr)	{
 		$mergeArray = $GLOBALS['TBE_MODULES_EXT'][$modName]['MOD_MENU'][$menuKey];
 		if (is_array($mergeArray))	{
-			reset($mergeArray);
-			while(list($k,$v)=each($mergeArray))	{
+			foreach ($mergeArray as $k => $v) {
 				if ((string)$v['ws']==='' ||
 					($GLOBALS['BE_USER']->workspace===0 && t3lib_div::inList($v['ws'],'online')) ||
 					($GLOBALS['BE_USER']->workspace===-1 && t3lib_div::inList($v['ws'],'offline')) ||

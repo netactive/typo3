@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  * The script configures constants, includes libraries and does a little logic here and there in order to instantiate the right classes to create the webpage.
  * All the real data processing goes on in the "tslib/" classes which this script will include and use as needed.
  *
- * $Id: index_ts.php 7263 2010-04-09 08:46:26Z stucki $
+ * $Id: index_ts.php 7905 2010-06-13 14:42:33Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -345,6 +345,10 @@ $TT->pull();
 // Admin Panel & Frontend editing
 // *****************************************
 if ($TSFE->beUserLogin) {
+		// if a BE User is present load, the sprite manager for frontend-editing
+	$spriteManager = t3lib_div::makeInstance('t3lib_SpriteManager', FALSE);
+	$spriteManager->loadCacheFile();
+
 	$BE_USER->initializeFrontendEdit();
  	if ($BE_USER->adminPanel instanceof tslib_AdminPanel) {
 		$LANG = t3lib_div::makeInstance('language');
@@ -471,16 +475,14 @@ if ($TSFE->isOutputting())	{
 			$EXTiS_splitC = explode('<!--EXT_SCRIPT.',$TSFE->content);	// Splits content with the key
 
 				// Special feature: Include libraries
-			reset($EXTiS_config);
-			while(list(,$EXTiS_cPart)=each($EXTiS_config))	{
+			foreach ($EXTiS_config as $EXTiS_cPart) {
 				if (isset($EXTiS_cPart['conf']['includeLibs']) && $EXTiS_cPart['conf']['includeLibs']) {
 					$EXTiS_resourceList = t3lib_div::trimExplode(',',$EXTiS_cPart['conf']['includeLibs'], true);
 					$TSFE->includeLibraries($EXTiS_resourceList);
 				}
 			}
 
-			reset($EXTiS_splitC);
-			while(list($EXTiS_c,$EXTiS_cPart)=each($EXTiS_splitC))	{
+			foreach ($EXTiS_splitC as $EXTiS_c => $EXTiS_cPart) {
 				if (substr($EXTiS_cPart,32,3)=='-->')	{	// If the split had a comment-end after 32 characters it's probably a split-string
 					$EXTiS_key = 'EXT_SCRIPT.'.substr($EXTiS_cPart,0,32);
 					if (is_array($EXTiS_config[$EXTiS_key]))	{
@@ -515,7 +517,7 @@ $TSFE->storeSessionData();
 // ***********
 $TYPO3_MISC['microtime_end'] = microtime(true);
 $TSFE->setParseTime();
-if ($TSFE->isOutputting() && ($TSFE->TYPO3_CONF_VARS['FE']['debug'] || $TSFE->config['config']['debug']))	{
+if ($TSFE->isOutputting() && (!empty($TSFE->TYPO3_CONF_VARS['FE']['debug']) || !empty($TSFE->config['config']['debug']))) {
 	echo '
 <!-- Parsetime: '.$TSFE->scriptParseTime.' ms-->';
 }
@@ -572,7 +574,7 @@ if (is_object($BE_USER) && $BE_USER->isAdminPanelVisible() && $TSFE->beUserLogin
 // *************
 // Debugging Output
 // *************
-if(is_object($error) && @is_callable(array($error,'debugOutput'))) {
+if(isset($error) && is_object($error) && @is_callable(array($error,'debugOutput'))) {
 	$error->debugOutput();
 }
 if (TYPO3_DLOG) {
