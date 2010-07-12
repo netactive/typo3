@@ -27,7 +27,7 @@
 /**
  * Web>File: Create new folders in the filemounts
  *
- * $Id: file_newfolder.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: file_newfolder.php 7974 2010-06-20 08:05:51Z benni $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -221,7 +221,7 @@ class SC_file_newfolder {
 		for ($a=0;$a<$this->number;$a++)	{
 			$code.='
 					<input'.$this->doc->formWidth(20).' type="text" name="file[newfolder]['.$a.'][data]" onchange="changed=true;" />
-					<input type="hidden" name="file[newfolder]['.$a.'][target]" value="'.htmlspecialchars($this->target).'" />
+					<input type="hidden" name="file[newfolder][' . $a . '][target]" value="' . htmlspecialchars($this->target) . '" /><br />
 				';
 		}
 		$code.='

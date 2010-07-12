@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Workspace
 
-$Id: element_version.css 7937 2010-06-16 17:32:00Z psychomieze $
+$Id: element_version.css 8025 2010-06-22 07:00:24Z benni $
 - - - - - - - - - - - - - - - - - - - - - */
 
 #typo3-pagetree .workspace-info {
@@ -36,7 +36,7 @@ ul.tree ul li.ver-branchpoint {
 
 .ver-versions,
 ul.tree ul li.ver-versions {
-	background-color: #ffffaa;
+	background-color: #ffec97;
 }
 
 ul.tree ul li.ver-element ul {
@@ -113,15 +113,15 @@ table.ver-subtree tr.typo3-ver-noComp td {
 }
 
 .ver-wl-details-table {
-	border: 1px solid #d9d5c9;
+	border: 1px solid #cccccc;
 }
 
 .ver-wl-details {
-	background-color: #e6e2d5;
+	background-color: #ffffff;
 }
 
 .ver-wl-details-label {
-	background-color: #e6e2d5;
+	background-color: #ffffff;
 	white-space: nowrap;
 }
 

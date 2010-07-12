@@ -215,7 +215,7 @@ class Tx_Extbase_Persistence_Mapper_DataMapper implements t3lib_Singleton {
 	 * Sets the given properties on the object.
 	 *
 	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $object The object to set properties on
-	 * @param Tx_Extbase_Persistence_RowInterface $row
+	 * @param array $row
 	 * @return void
 	 */
 	protected function thawProperties(Tx_Extbase_DomainObject_DomainObjectInterface $object, array $row) {
@@ -344,23 +344,24 @@ class Tx_Extbase_Persistence_Mapper_DataMapper implements t3lib_Singleton {
 	protected function getPreparedQuery(Tx_Extbase_DomainObject_DomainObjectInterface $parentObject, $propertyName, $fieldValue = '') {
 		$columnMap = $this->getDataMap(get_class($parentObject))->getColumnMap($propertyName);
 		$queryFactory = t3lib_div::makeInstance('Tx_Extbase_Persistence_QueryFactory');
+		$type = $this->getType(get_class($parentObject), $propertyName);
 		if ($columnMap->getTypeOfRelation() === Tx_Extbase_Persistence_Mapper_ColumnMap::RELATION_HAS_ONE) {
-			$query = $queryFactory->create($this->getType(get_class($parentObject), $propertyName));
+			$query = $queryFactory->create($type);
 		} elseif ($columnMap->getTypeOfRelation() === Tx_Extbase_Persistence_Mapper_ColumnMap::RELATION_HAS_MANY) {
-			$query = $queryFactory->create($this->getElementType(get_class($parentObject), $propertyName));
+			$query = $queryFactory->create($type);
 			$query->getQuerySettings()->setRespectStoragePage(FALSE);
 			if ($columnMap->getChildSortByFieldName() !== NULL) {
 				$query->setOrderings(array($columnMap->getChildSortByFieldName() => Tx_Extbase_Persistence_QueryInterface::ORDER_ASCENDING));
 			}
 		} elseif ($columnMap->getTypeOfRelation() === Tx_Extbase_Persistence_Mapper_ColumnMap::RELATION_HAS_AND_BELONGS_TO_MANY) {
-			$query = $queryFactory->create($this->getElementType(get_class($parentObject), $propertyName));
+			$query = $queryFactory->create($type);
 			$query->getQuerySettings()->setRespectStoragePage(FALSE);
 			$query->setSource($this->getSource($parentObject, $propertyName));
 			if ($columnMap->getChildSortByFieldName() !== NULL) {
 				$query->setOrderings(array($columnMap->getChildSortByFieldName() => Tx_Extbase_Persistence_QueryInterface::ORDER_ASCENDING));
 			}
 		} else {
-			throw new Tx_Extbase_Persistence_Exception('Could not determine type of relation for the property "' . $propertyName . '". This is mainly caused by a missing type declaration above the property definition.', 1252502725);
+			throw new Tx_Extbase_Persistence_Exception('Could not determine type of relation for the property "' . $propertyName . '". This is mainly caused by a missing type declaration above the property definition. If the PHPDoc comment is there, make sure it starts with "/**" and not just with "/*".', 1252502725);
 		}
 		$query->matching($this->getConstraint($query, $parentObject, $propertyName, $fieldValue, $columnMap->getRelationTableMatchFields()));
 		return $query;
@@ -407,7 +408,7 @@ class Tx_Extbase_Persistence_Mapper_DataMapper implements t3lib_Singleton {
 	protected function getSource(Tx_Extbase_DomainObject_DomainObjectInterface $parentObject, $propertyName) {
 		$columnMap = $this->getDataMap(get_class($parentObject))->getColumnMap($propertyName);
 		$left = $this->qomFactory->selector(NULL, $columnMap->getRelationTableName());
-		$childClassName = $this->getElementType(get_class($parentObject), $propertyName);
+		$childClassName = $this->getType(get_class($parentObject), $propertyName);
 		$right = $this->qomFactory->selector($childClassName, $columnMap->getChildTableName());
 		$joinCondition = $this->qomFactory->equiJoinCondition($columnMap->getRelationTableName(), $columnMap->getChildKeyFieldName(), $columnMap->getChildTableName(), 'uid');
 		$source = $this->qomFactory->join(
@@ -434,7 +435,7 @@ class Tx_Extbase_Persistence_Mapper_DataMapper implements t3lib_Singleton {
 			$propertyMetaData = $this->reflectionService->getClassSchema(get_class($parentObject))->getProperty($propertyName);
 			$columnMap = $this->getDataMap(get_class($parentObject))->getColumnMap($propertyName);
 			if (in_array($propertyMetaData['type'], array('array', 'ArrayObject', 'SplObjectStorage', 'Tx_Extbase_Persistence_ObjectStorage'))) {
-				$elementType = $this->getElementType(get_class($parentObject), $propertyName);
+				$elementType = $this->getType(get_class($parentObject), $propertyName);
 				$objects = array();
 				foreach ($result as $value) {
 					$objects[] = $value;
@@ -447,6 +448,7 @@ class Tx_Extbase_Persistence_Mapper_DataMapper implements t3lib_Singleton {
 					foreach ($objects as $object) {
 						$propertyValue->attach($object);
 					}
+					$propertyValue->_memorizeCleanState();
 				} else {
 					$propertyValue = $objects;
 				}
@@ -544,29 +546,14 @@ class Tx_Extbase_Persistence_Mapper_DataMapper implements t3lib_Singleton {
 	 */
 	public function getType($parentClassName, $propertyName) {
 		$propertyMetaData = $this->reflectionService->getClassSchema($parentClassName)->getProperty($propertyName);
-		if (!empty($propertyMetaData['type'])) {
+		if (!empty($propertyMetaData['elementType'])) {
+			$type = $propertyMetaData['elementType'];
+		} elseif (!empty($propertyMetaData['type'])) {
 			$type = $propertyMetaData['type'];
 		} else {
 			throw new Tx_Extbase_Persistence_Exception_UnexpectedTypeException('Could not determine the child object type.', 1251315967);
 		}
 		return $type;
-	}
-
-	/**
-	 * Returns the type of the elements inside an ObjectStorage or array.
-	 *
-	 * @param string $parentClassName The class name of the object this proxy is part of
-	 * @param string $propertyName The name of the proxied property in it's parent
-	 * @return string The class name of the elements inside an ObjectStorage
-	 */
-	public function getElementType($parentClassName, $propertyName) {
-		$propertyMetaData = $this->reflectionService->getClassSchema($parentClassName)->getProperty($propertyName);
-		if (!empty($propertyMetaData['elementType'])) {
-			$elementType = $propertyMetaData['elementType'];
-		} else {
-			throw new Tx_Extbase_Persistence_Exception_UnexpectedTypeException('Could not determine the type of the contained objects.', 1251315966);
-		}
-		return $elementType;		
 	}
 
 }

@@ -26,7 +26,7 @@
 ***************************************************************/
 
 if(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_AJAX) {
-	require_once('interfaces/interface.backend_toolbaritem.php');
+	require_once(PATH_typo3 . 'interfaces/interface.backend_toolbaritem.php');
 	$GLOBALS['LANG']->includeLLFile('EXT:lang/locallang_misc.xml');
 
 		// needed to get the correct icons when reloading the menu after saving it
@@ -38,7 +38,7 @@ if(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_AJAX) {
 /**
  * class to render the shortcut menu
  *
- * $Id: class.shortcutmenu.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.shortcutmenu.php 7998 2010-06-21 08:36:47Z steffenk $
  *
  * @author	Ingo Renner <ingo@typo3.org>
  * @package TYPO3

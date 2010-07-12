@@ -28,7 +28,7 @@
  * Include file extending t3lib_recordList
  * Shared between Web>List (db_list.php) and Web>Page (sysext/cms/layout/db_layout.php)
  *
- * $Id: class.db_list.inc 7937 2010-06-16 17:32:00Z psychomieze $
+ * $Id: class.db_list.inc 8008 2010-06-21 16:50:01Z jsegars $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -335,12 +335,12 @@ class recordList extends t3lib_recordList {
 				-->
 				<table border="0" cellpadding="0" cellspacing="0" class="bgColor4" id="typo3-dblist-search">
 					<tr>
-						<td>'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.enterSearchString',1).'<input type="text" name="search_field" value="'.htmlspecialchars($this->searchString).'"'.$GLOBALS['TBE_TEMPLATE']->formWidth(10).' /></td>
-						<td>'.$lMenu.'</td>
-						<td><input type="submit" name="search" value="'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.search',1).'" /></td>
+						<td><label for="search_field">' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.enterSearchString', 1) . '</label><input type="text" name="search_field" id="search_field" value="' . htmlspecialchars($this->searchString) . '"' . $GLOBALS['TBE_TEMPLATE']->formWidth(10) . ' /></td>
+						<td>' . $lMenu . '</td>
+						<td><input type="submit" name="search" value="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.search', 1) . '" /></td>
 					</tr>
 					<tr>
-						<td colspan="3">'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showRecords',1).':<input type="text" name="showLimit" value="'.htmlspecialchars($this->showLimit?$this->showLimit:'').'"'.$GLOBALS['TBE_TEMPLATE']->formWidth(4).' /></td>
+						<td colspan="3"><label for="showLimit">' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showRecords', 1) . '</label>:<input type="text" name="showLimit" id="showLimit" value="' . htmlspecialchars($this->showLimit ? $this->showLimit : '') . '"' . $GLOBALS['TBE_TEMPLATE']->formWidth(4) . ' /></td>
 					</tr>
 				</table>
 			'.$formElements[1];

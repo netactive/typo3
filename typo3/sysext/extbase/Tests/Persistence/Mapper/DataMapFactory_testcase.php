@@ -53,6 +53,27 @@ class Tx_Extbase_Persistence_Mapper_DataMapFactory_testcase extends Tx_Extbase_B
 	/**
 	 * @test
 	 */
+	public function setRelationsDetectsOneToOneRelationWithIntermediateTable() {
+		$mockColumnMap = $this->getMock('Tx_Extbase_Persistence_Mapper_ColumnMap', array(), array(), '', FALSE);
+	    $columnConfiguration = array(
+			'type' => 'select',
+			'foreign_table' => 'tx_myextension_bar',
+			'MM' => 'tx_myextension_mm'
+			);
+		$propertyMetaData = array(
+			'type' => 'Tx_Myext_Domain_Model_Foo',
+			'elementType' => NULL
+			);
+		$mockDataMapFactory = $this->getMock($this->buildAccessibleProxy('Tx_Extbase_Persistence_Mapper_DataMapFactory'), array('setOneToOneRelation', 'setOneToManyRelation', 'setManyToManyRelation'), array(), '', FALSE);
+		$mockDataMapFactory->expects($this->never())->method('setOneToOneRelation');
+		$mockDataMapFactory->expects($this->never())->method('setOneToManyRelation');
+		$mockDataMapFactory->expects($this->once())->method('setManyToManyRelation');
+		$mockDataMapFactory->_callRef('setRelations', $mockColumnMap, $columnConfiguration, $propertyMetaData);
+	}
+	
+	/**
+	 * @test
+	 */
 	public function setRelationsDetectsOneToManyRelation() {
 		$mockColumnMap = $this->getMock('Tx_Extbase_Persistence_Mapper_ColumnMap', array(), array(), '', FALSE);
 	    $columnConfiguration = array(
@@ -308,6 +329,15 @@ class Tx_Extbase_Persistence_Mapper_DataMapFactory_testcase extends Tx_Extbase_B
 		$mockDataMapFactory = $this->getMock($this->buildAccessibleProxy('Tx_Extbase_Persistence_Mapper_DataMapFactory'), array('getControlSection'), array(), '', FALSE);
 		$mockDataMapFactory->expects($this->once())->method('getControlSection')->with($this->equalTo('tx_myextension_mm'))->will($this->returnValue(array('ctrl' => array('foo' => 'bar'))));
 		$mockDataMapFactory->_callRef('setManyToManyRelation', $mockColumnMap, $leftColumnsDefinition['rights']);
+	}
+	
+	/**
+	 * @test
+	 * @expectedException Tx_Extbase_Persistence_Exception_InvalidClass
+	 */
+	public function buildDataMapThrowsExceptionIfClassNameIsNotKnown() {
+		$mockDataMapFactory = $this->getMock($this->buildAccessibleProxy('Tx_Extbase_Persistence_Mapper_DataMapFactory'), array('getControlSection'), array(), '', FALSE);
+		$mockDataMapFactory->buildDataMap('UnknownObject');
 	}
 	
 }

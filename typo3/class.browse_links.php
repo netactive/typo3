@@ -29,7 +29,7 @@
  * Used from TCEFORMS an other elements
  * In other words: This is the ELEMENT BROWSER!
  *
- * $Id: class.browse_links.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.browse_links.php 7974 2010-06-20 08:05:51Z benni $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2526,11 +2526,8 @@ class browse_links {
 	 */
 	function barheader($str)	{
 		return '
-
-			<!--
-				Bar header:
-			-->
-			<h3 class="bgColor5">'.htmlspecialchars($str).'</h3>
+			<!-- Bar header: -->
+			<h3>' . htmlspecialchars($str) . '</h3>
 			';
 	}
 
@@ -2566,16 +2563,17 @@ class browse_links {
 	 * @return	string		HTML content, wrapped in a table.
 	 */
 	function printCurrentUrl($str)	{
-		return '
-
-			<!--
-				Print current URL
-			-->
-			<table border="0" cellpadding="0" cellspacing="0" class="bgColor5" id="typo3-curUrl">
-				<tr>
-					<td>'.$GLOBALS['LANG']->getLL('currentLink',1).': '.htmlspecialchars(rawurldecode($str)).'</td>
-				</tr>
-			</table>';
+		if (strlen($str)) {
+			return '
+				<!-- Print current URL -->
+				<table border="0" cellpadding="0" cellspacing="0" id="typo3-curUrl">
+					<tr>
+						<td>' . $GLOBALS['LANG']->getLL('currentLink',1) . ': ' .htmlspecialchars(rawurldecode($str)) . '</td>
+					</tr>
+				</table>';
+		} else {
+			return '';
+		}
 	}
 
 	/**

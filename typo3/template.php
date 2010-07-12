@@ -27,7 +27,7 @@
 /**
  * Contains class with layout/output function for TYPO3 Backend Scripts
  *
- * $Id: template.php 7937 2010-06-16 17:32:00Z psychomieze $
+ * $Id: template.php 7974 2010-06-20 08:05:51Z benni $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -1348,7 +1348,7 @@ $str.=$this->docBodyTagBegin().
 		)
 	);
 	var $table_TR = '<tr>';
-	var $table_TABLE = '<table border="0" cellspacing="0" cellpadding="0" id="typo3-tmpltable">';
+	var $table_TABLE = '<table border="0" cellspacing="0" cellpadding="0" class="typo3-dblist" id="typo3-tmpltable">';
 
 	/**
 	 * Returns a table based on the input $data

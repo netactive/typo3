@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Context sensitive help
 
-$Id: element_csh.css 7906 2010-06-13 14:56:44Z ohader $
+$Id: element_csh.css 7989 2010-06-20 14:34:23Z benni $
 - - - - - - - - - - - - - - - - - - - - - */
 
 table.typo3-csh-inline {
@@ -72,15 +72,15 @@ div.typo3-view-help h1 {
 
 div.typo3-view-help h2 {
 	margin-top: 0;
-	padding: 2px 2px 2px 12px;
+	padding: 4px 2px 4px 10px;
 }
 
 div.typo3-view-help h3 {
-	padding: 5px;
+	padding: 5px 10px;
 }
 
 div.typo3-view-help h4 {
-	padding: 2px 6px;
+	padding: 2px 10px;
 }
 
 div.typo3-view-help {
@@ -89,11 +89,15 @@ div.typo3-view-help {
 }
 
 div.typo3-view-help p {
-	padding: 4px 4px 4px 12px;
+	margin: 4px 4px 12px 10px;
 }
 
 div.typo3-view-help div.c-toc {
 	padding-left: 6px;
+}
+
+div.typo3-view-help div.c-toc p {
+	margin: 0;
 }
 
 div.typo3-view-help div.c-toc ul {
@@ -114,5 +118,5 @@ div.typo3-view-help .introduction {
 }
 
 div.typo3-view-help img.c-inlineimg  {
-	margin-left: 6px;
+	margin-left: 10px;
 }

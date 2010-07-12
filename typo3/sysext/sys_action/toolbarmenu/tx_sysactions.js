@@ -27,7 +27,7 @@
 /**
  * class to handle the dev links menu
  *
- * $Id: tx_sysactions.js 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: tx_sysactions.js 8030 2010-06-22 11:33:46Z steffenk $
  */
 var SysActionMenu = Class.create({
 
@@ -39,7 +39,7 @@ var SysActionMenu = Class.create({
 
 		Ext.onReady(function() {
 			this.positionMenu();
-			this.toolbarItemIcon = $$('#tx-sys-action-menu .toolbar-item img')[0].src;
+			this.toolbarItemIcon = $$('#tx-sys-action-menu .toolbar-item span')[0].src;
 
 			Event.observe('tx-sys-action-menu', 'click', this.toggleMenu);
 

@@ -28,7 +28,7 @@
  * Document for viewing the online help texts, also known as TCA_DESCR.
  * See Inside TYPO3 for details.
  *
- * $Id: view_help.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: view_help.php 7989 2010-06-20 14:34:23Z benni $
  * Revised for TYPO3 3.7 5/2004 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -620,11 +620,11 @@ class SC_view_help {
 	function headerLine($str,$type=0)	{
 		switch($type)	{
 			case 1:
-				$str='<h3>'.htmlspecialchars($str).'</h3>
+				$str = '<h2 class="t3-row-header">' . htmlspecialchars($str) . '</h2>
 				';
 			break;
 			case 0:
-				$str='<h4 class="uppercase">'.htmlspecialchars($str).'</h4>
+				$str = '<h3 class="divider">' . htmlspecialchars($str) . '</h3>
 				';
 			break;
 		}

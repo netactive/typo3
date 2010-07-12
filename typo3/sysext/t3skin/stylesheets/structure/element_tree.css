@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Trees
 
-$Id: element_tree.css 7937 2010-06-16 17:32:00Z psychomieze $
+$Id: element_tree.css 7974 2010-06-20 08:05:51Z benni $
 - - - - - - - - - - - - - - - - - - - - - */
 
 table#typo3-tree {
@@ -36,6 +36,13 @@ body#typo3-alt-db-navframe-php div.c-notice {
 	margin-bottom: 10px;
 	padding: 5px 5px 5px 5px;
 	width: 95%;
+}
+
+/* - - - - - - - - - - - - - - - - - - - - -
+Configuration trees, used in Admin Tools => Configuration
+- - - - - - - - - - - - - - - - - - - - - */
+table.t3-tree-config {
+	min-width: 500px;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - -

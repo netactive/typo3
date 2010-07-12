@@ -27,7 +27,7 @@
 /**
  * Starter-script for install screen
  *
- * $Id: index.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: index.php 8035 2010-06-22 13:35:40Z jsegars $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @package TYPO3
@@ -49,9 +49,15 @@ if (defined('E_DEPRECATED')) {
 $PATH_thisScript = str_replace('//','/', str_replace('\\','/', (PHP_SAPI=='cgi'||PHP_SAPI=='isapi' ||PHP_SAPI=='cgi-fcgi')&&($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED'])? ($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED']):($_SERVER['ORIG_SCRIPT_FILENAME']?$_SERVER['ORIG_SCRIPT_FILENAME']:$_SERVER['SCRIPT_FILENAME'])));
 $PATH_site = dirname(dirname(dirname($PATH_thisScript)));
 
-	// Only allow Install Tool access if the file "typo3conf/ENABLE_INSTALL_TOOL" is found
+$quickstartFile = $PATH_site . '/typo3conf/FIRST_INSTALL';
 $enableInstallToolFile = $PATH_site . '/typo3conf/ENABLE_INSTALL_TOOL';
 
+	// If typo3conf/QUICKSTART is present and can be deleted, automatically create typo3conf/ENABLE_INSTALL_TOOL
+if (is_file($quickstartFile) && unlink($quickstartFile)) {
+	touch($enableInstallToolFile);
+}
+
+	// Only allow Install Tool access if the file "typo3conf/ENABLE_INSTALL_TOOL" is found
 if (is_file($enableInstallToolFile) && (time() - filemtime($enableInstallToolFile) > 3600)) {
 	$content = file_get_contents($enableInstallToolFile);
 	$verifyString = 'KEEP_FILE';
@@ -82,28 +88,27 @@ if (1==2 || !is_file($enableInstallToolFile)) {
 	$markers = array(
 		'styleSheet' => $stylesheet,
 		'javascript' => $javascript,
-		'title' => 'The install tool is locked',
+		'title' => 'The Install Tool is locked',
 		'content' => '
 			<p>
-				To enable access to the install tool, you have the following option<span class="t3-install-locked-user-settings">s</span>:
+				To enable the Install Tool, the file ENABLE_INSTALL_TOOL must be created.
 			</p>
 			<ul>
 				<li>
-					Create a file named <strong>ENABLE_INSTALL_TOOL</strong>
-					and put it into the folder <strong>typo3conf/</strong>.<br />
-					This file may simply be empty.
+					In the typo3conf/ folder, create a file named ENABLE_INSTALL_TOOL. The file name is 
+					case sensitive, but the file itself can simply be an empty file.
 				</li>
 				<li class="t3-install-locked-user-settings">
-					Go to <a href="../sysext/setup/mod/index.php">User tools &gt; User settings</a> and let TYPO3 create this file for you.
+					Alternatively, in the Backend, go to <a href="../sysext/setup/mod/index.php">User tools &gt; User settings</a>
+					and let TYPO3 create this file for you. When you\'re finished, you can also visit 
+					<a href="../sysext/setup/mod/index.php">User tools &gt; User settings</a> and delete the file from there.
 				</li>
 			</ul>
 			<p>
-				For security reasons, it is highly recommended to rename or
-				delete the file after the operation is finished.
+				For security reasons, it is highly recommended that you either rename or delete the file after the operation is finished.
 			</p>
 			<p>
-				If the file is older than 1 hour TYPO3 has automatically deleted
-				it, so it needs to be created again.
+				As an additional security measure, if the file is older than one hour, TYPO3 will automatically delete it.
 			</p>
 		'
 	);

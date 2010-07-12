@@ -36,7 +36,7 @@ $BE_USER->modAccess($MCONF, 1); // This checks permissions and exits if the user
  * @author		Ingo Renner <ingo@typo3.org>
  * @package		TYPO3
  * @subpackage	tx_scheduler
- * @version		$Id: index.php 7905 2010-06-13 14:42:33Z ohader $
+ * @version		$Id: index.php 7972 2010-06-19 19:15:22Z francois $
  */
 class tx_scheduler_Module extends t3lib_SCbase {
 
@@ -1118,8 +1118,14 @@ class tx_scheduler_Module extends t3lib_SCbase {
 						// Check if the last run failed
 					$failureOutput = '';
 					if (!empty($schedulerRecord['lastexecution_failure'])) {
+							// Try to get the stored exception object
 						$exception = unserialize($schedulerRecord['lastexecution_failure']);
-						$failureDetail = sprintf($GLOBALS['LANG']->getLL('msg.executionFailureReport'), $exception->getCode(), $exception->getMessage());
+							// If the exception could not be unserialized, issue a default error message
+						if ($exception === FALSE) {
+							$failureDetail = $GLOBALS['LANG']->getLL('msg.executionFailureDefault');
+						} else {
+							$failureDetail = sprintf($GLOBALS['LANG']->getLL('msg.executionFailureReport'), $exception->getCode(), $exception->getMessage());
+						}
 						$failureOutput = ' <img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_failure.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.failure')) . '" title="' . htmlspecialchars($failureDetail) . '" />';
 					}
 

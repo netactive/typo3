@@ -29,7 +29,7 @@
  * Will display the list of main- and sub-modules available to the user.
  * Each module will be show with description and a link to the module.
  *
- * $Id: alt_intro.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: alt_intro.php 7974 2010-06-20 08:05:51Z benni $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -118,7 +118,7 @@ class SC_alt_intro {
 			'.t3lib_BEfunc::displayWarningMessages();
 
 		$this->content .= '
-			<p>'.$LANG->getLL('introtext2').'</p>';
+			<h3>' . $LANG->getLL('introtext2') . '</h3>';
 
 
 			// Printing the description of the modules available

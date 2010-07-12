@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Tab menu (template.php)
 
-$Id: element_tab.css 7937 2010-06-16 17:32:00Z psychomieze $
+$Id: element_tab.css 7974 2010-06-20 08:05:51Z benni $
 - - - - - - - - - - - - - - - - - - - - - */
 
 table#typo3-tabmenu {
@@ -72,7 +72,6 @@ table.typo3-dyntabmenu td.tabact_over a,
 table#typo3-tabmenu td.tabact a,
 table#typo3-tabmenu td.tabact_over a {
 	margin-top: 0px;
-	padding-bottom: 6px;
 }
 
 table.typo3-dyntabmenu td.tab_over a,

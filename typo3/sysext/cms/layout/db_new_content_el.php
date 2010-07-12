@@ -28,7 +28,7 @@
  * New content elements wizard
  * (Part of the 'cms' extension)
  *
- * $Id: db_new_content_el.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: db_new_content_el.php 7989 2010-06-20 14:34:23Z benni $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compatible.
  *
@@ -254,7 +254,7 @@ class SC_db_new_content_el {
 			$wizardItems = $this->getWizardItems();
 
 				// Wrapper for wizards
-			$this->elementWrapper['sectionHeader'] = array('<h3 class="bgColor5">', '</h3>');
+			$this->elementWrapper['sectionHeader'] = array('<h3 class="divider">', '</h3>');
 			$this->elementWrapper['section'] = array('<table border="0" cellpadding="1" cellspacing="2">', '</table>');
 			$this->elementWrapper['wizard'] = array('<tr>', '</tr>');
 			$this->elementWrapper['wizardPart'] = array('<td>', '</td>');

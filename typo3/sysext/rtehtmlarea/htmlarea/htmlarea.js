@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 7927 2010-06-15 05:06:22Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 8003 2010-06-21 15:48:30Z stan $
  */
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
 if (typeof(HTMLArea) == 'undefined') {
@@ -216,7 +216,7 @@ HTMLArea.Config = Ext.extend(HTMLArea.Config, {
 						url: config.storeUrl
 					});
 				}
-				config.hideLabel = Ext.isEmpty(config.fieldLabel);
+				config.hideLabel = Ext.isEmpty(config.fieldLabel) || Ext.isIE6;
 				config.helpTitle = config.tooltip;
 				break;
 			default:
@@ -3515,9 +3515,9 @@ HTMLArea.util.Color = function () {
 				return (d < 16) ? ('0' + d.toString(16)) : d.toString(16);
 			};
 			if (typeof(v) == 'number') {
-				var r = v & 0xFF;
+				var b = v & 0xFF;
 				var g = (v >> 8) & 0xFF;
-				var b = (v >> 16) & 0xFF;
+				var r = (v >> 16) & 0xFF;
 				return '#' + hex(r) + hex(g) + hex(b);
 			}
 			if (v.substr(0, 3) === 'rgb') {

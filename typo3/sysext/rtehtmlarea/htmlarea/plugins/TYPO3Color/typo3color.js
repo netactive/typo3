@@ -27,7 +27,7 @@
 /*
  * TYPO3 Color Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: typo3color.js 7808 2010-06-05 13:13:05Z stan $
+ * TYPO3 SVN ID: $Id: typo3color.js 8003 2010-06-21 15:48:30Z stan $
  */
 HTMLArea.TYPO3Color = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {
@@ -258,7 +258,11 @@ HTMLArea.TYPO3Color = HTMLArea.Plugin.extend({
 	 */
 	showColor: function (color) {
 		if (color) {
-			this.dialog.find('itemId', 'show-color')[0].el.setStyle('backgroundColor', '#' + color);
+			var newColor = color;
+			if (newColor.indexOf('#') == 0) {
+				newColor = newColor.substr(1);
+			}
+			this.dialog.find('itemId', 'show-color')[0].el.setStyle('backgroundColor', HTMLArea.util.Color.colorToHex(parseInt(newColor, 16)));
 		}
 	},
 	/*
@@ -340,7 +344,10 @@ HTMLArea.TYPO3Color = HTMLArea.Plugin.extend({
 		var buttonId = this.dialog.arguments.buttonId;
 		var color = this.dialog.find('itemId', 'color')[0].getValue();
 		if (color) {
-			color = '#' + color;
+			if (color.indexOf('#') == 0) {
+				color = color.substr(1);
+			}
+			color = HTMLArea.util.Color.colorToHex(parseInt(color, 16));
 		}
 		this.editor.focus();
 		var 	element,

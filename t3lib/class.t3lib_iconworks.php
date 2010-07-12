@@ -27,7 +27,7 @@
 /**
  * Contains class for icon generation in the backend
  *
- * $Id: class.t3lib_iconworks.php 7914 2010-06-14 09:52:11Z steffenk $
+ * $Id: class.t3lib_iconworks.php 8032 2010-06-22 12:03:12Z steffenk $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -821,11 +821,10 @@ final class t3lib_iconWorks	{
 				$recordType[0] = 'tcarecords-' . $table . '-default';
 			}
 		}
-
-		$recordTypeCount = count($recordType);
-		for($i = $recordTypeCount; $i >= 0; $i--) {
-			if(in_array($recordType[$i], $GLOBALS['TBE_STYLES']['spriteIconApi']['iconsAvailable'])) {
-				return self::getSpriteIconClasses($recordType[$i]); 
+		krsort($recordType);
+		foreach ($recordType as $record) {
+			if (in_array($record, $GLOBALS['TBE_STYLES']['spriteIconApi']['iconsAvailable'])) {
+				return self::getSpriteIconClasses($record); 
 			}
 		}
 		return self::getSpriteIconClasses('status-status-icon-missing');

@@ -3,7 +3,7 @@
 /***************************************************************
 *  Inline-Relational-Record Editing
 *
-* $Id: jsfunc.inline.js 7905 2010-06-13 14:42:33Z ohader $
+* $Id: jsfunc.inline.js 8010 2010-06-21 16:56:36Z jsegars $
 *
 *
 *
@@ -60,7 +60,7 @@ var inline = {
 				$(objectId + '_icon').hide();
 				$(objectId + '_iconcontainer').addClassName('loading-indicator');
 			}
-			return this.getRecordDetails(objectId, returnURL);	
+			return this.getRecordDetails(objectId, returnURL);
 		}		
 		
 		var currentState = '';
@@ -224,6 +224,7 @@ var inline = {
 			if (json.scriptCall && json.scriptCall.length) {
 				$A(json.scriptCall).each(function(value) { eval(value); });
 			}
+			TYPO3.TCEFORMS.convertDateFieldsToDatePicker();
 		}
 	},
 

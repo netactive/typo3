@@ -28,7 +28,7 @@
  * Module: About
  * This document shows some standard-information for TYPO3 CMS: About-text, version number and so on.
  *
- * $Id: index.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: index.php 7974 2010-06-20 08:05:51Z benni $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -106,8 +106,7 @@ class SC_mod_help_about_index {
 			<div id="typo3-mod-help-about-index-php-outer">
 				<img' . t3lib_iconWorks::skinImg($BACK_PATH, 'gfx/typo3logo.gif', 'width="123" height="34"') . ' alt="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:typo3_logo', true) . '" />
 				<div class="typo3-mod-help-about-index-php-inner">
-					<h2>'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:information', true).'</h2>
-					<h3>'.$LANG->getLL('welcome',1).'</h3>
+					<h2>' . $LANG->getLL('welcome', TRUE) . '</h2>
 					<p>'.$minorText.'</p>
 				</div>
 

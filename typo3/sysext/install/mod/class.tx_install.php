@@ -27,7 +27,7 @@
 /**
  * Contains the class for the Install Tool
  *
- * $Id: class.tx_install.php 7923 2010-06-14 16:58:32Z steffenk $
+ * $Id: class.tx_install.php 8039 2010-06-22 14:02:30Z jsegars $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Ingmar Schlecht <ingmar@typo3.org>
@@ -153,6 +153,8 @@ require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_inst
 require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_installnewsysexts.php');
 require_once(t3lib_extMgm::extPath('install') . 'mod/class.tx_install_session.php');
 require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_statictemplates.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_t3skin.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_compressionlevel.php');
 
 /**
  * Install Tool module
@@ -431,8 +433,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$wrongPasswordSubPart,
 				$wrongPasswordMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				TRUE
 			);
 		}
 			// Session has expired
@@ -450,8 +452,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$sessionExpiredSubPart,
 				$sessionExpiredMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				TRUE
 			);
 		}
 			// Substitute the subpart for the expired session in the template
@@ -494,8 +496,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$template,
 			$markers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			TRUE
 		);
 			// Send content to the page wrapper function
 		$this->output($this->outputWrapper($content));
@@ -699,8 +701,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$template,
 						$markers,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 						// Send content to the page wrapper function
 					$this->output($this->outputWrapper($content));
@@ -895,7 +897,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			// Define the markers content
 		$markers = array(
 			'stepHeader' => $this->stepHeader(),
-			'notice' => 'Skip this wizard (for powerusers only)',
+			'notice' => 'Skip this wizard (for power users only)',
 			'skip123' => $this->scriptSelf
 		);
 
@@ -910,7 +912,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				Host: <em>' . TYPO3_db_host . '</em>,
 				Using Password: YES)
 				<br />
-				Go to Step 1 and enter a proper username/password!
+				Go to Step 1 and enter a valid username and password!
 			</p>
 		';
 		$error_missingDB = '
@@ -919,7 +921,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					There is no access to the database (<em>' . TYPO3_db . '</em>)!
 				</strong>
 				<br />
-				Go to Step 2 and select an accessible database!
+				Go to Step 2 and select a valid database!
 			</p>
 		';
 
@@ -953,17 +955,16 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$templateFile, '###STEP1###'
 					);
 						// Add header marker for main template
-					$markers['header'] = 'Welcome to the TYPO3 installation process';
+					$markers['header'] = 'Welcome to the TYPO3 Install Tool';
 						// Define the markers content for the subpart
 					$step1SubPartMarkers = array(
 						'llIntroduction' => '
 							<p>
 								TYPO3 is an enterprise content management system
-								that is very powerful and yet easy to install.
+								that is powerful, yet easy to install.
 							</p>
 							<p>
-								Choose your database, import some data and
-								you\'re done!
+								In three simple steps you\'ll be ready to add content to your website.
 							</p>
 						',
 						'step' => $this->step + 1,
@@ -975,8 +976,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$step1SubPart,
 						$step1SubPartMarkers,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 				break;
 				case 2:
@@ -998,15 +999,16 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						'password' => TYPO3_db_password,
 						'labelHost' => 'Host',
 						'host' => TYPO3_db_host ? TYPO3_db_host : 'localhost',
-						'continue' => 'Continue'
+						'continue' => 'Continue',
+						'llDescription' => 'If you have not already created a username and password to access the database, please do so now. This can be done using tools provided by your host.'
 					);
 						// Add step marker for main template
 					$markers['step'] = t3lib_parsehtml::substituteMarkerArray(
 						$step2SubPart,
 						$step2SubPartMarkers,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 				break;
 				case 3:
@@ -1039,8 +1041,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								$step3DatabaseOptionsSubPart,
 								$step3DatabaseOptionMarkers,
 								'###|###',
-								1,
-								1
+								TRUE,
+								TRUE
 							);
 							if ($dbname==TYPO3_db)	$dbIncluded=1;
 						}
@@ -1056,8 +1058,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								$step3DatabaseOptionsSubPart,
 								$step3DatabaseOptionMarkers,
 								'###|###',
-								1,
-								1
+								TRUE,
+								TRUE
 							);
 						}
 							// Substitute the subpart for the database options
@@ -1069,12 +1071,12 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							// Define the markers content
 						$step3SubPartMarkers = array(
 							'step' => $this->step + 1,
-							'llOptions' => 'You have two options in this step.',
+							'llOptions' => 'You have two options:',
 							'action' => htmlspecialchars($this->action),
-							'llOption1' => '1: Create new database (recommended):',
-							'llRemark1' => 'Enter your desired name for the database.',
-							'llOption2' => '2: Select an EMPTY existing database:',
-							'llRemark2' => 'All tables used by TYPO3 will be overwritten in step 3.',
+							'llOption1' => 'Create a new database (recommended):',
+							'llRemark1' => 'Enter a name for your TYPO3 database.',
+							'llOption2' => 'Select an EMPTY existing database:',
+							'llRemark2' => 'Any tables used by TYPO3 will be overwritten.',
 							'continue' => 'Continue'
 						);
 							// Add step marker for main template
@@ -1082,8 +1084,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$content,
 							$step3SubPartMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							TRUE
 						);
 					} else {
 							// Add step marker for main template when no connection
@@ -1092,7 +1094,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				break;
 				case 4:
 						// Add header marker for main template
-					$markers['header'] = 'Import the database sql-file';
+					$markers['header'] = 'Import the Database Tables';
 						// There should be a database host connection at this point
 					if ($result = $GLOBALS['TYPO3_DB']->sql_pconnect(
 						TYPO3_db_host, TYPO3_db_username, TYPO3_db_password
@@ -1112,12 +1114,12 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 
 								// Check if default database scheme "database.sql" already exists, otherwise create it
 							if (!strstr(implode(',',$sFiles).',', '/database.sql,')) {
-								array_unshift($sFiles,'Create default database tables');
+								array_unshift($sFiles,'Default TYPO3 Tables');
 							}
 
 							$opt='';
 							foreach ($sFiles as $f) {
-								if ($f=='Create default database tables')	$key='CURRENT_TABLES+STATIC';
+								if ($f=='Default TYPO3 Tables')	$key='CURRENT_TABLES+STATIC';
 								else $key=htmlspecialchars($f);
 									// Define the markers content for database type subpart
 								$step4DatabaseTypeOptionMarkers = array(
@@ -1129,8 +1131,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$step4DatabaseTypeOptionsSubPart,
 									$step4DatabaseTypeOptionMarkers,
 									'###|###',
-									1,
-									1
+									TRUE,
+									FALSE
 								);
 							}
 								// Substitute the subpart for the database type options
@@ -1151,7 +1153,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								'llNumberTables' => 'Number of tables:',
 								'numberTables' => count($whichTables),
 								'action' => htmlspecialchars($this->action),
-								'llDatabaseType' => 'Please select a database dump:',
+								'llDatabaseType' => 'Select database contents:',
 								'label' => 'Import database'
 							);
 								// Add step marker for main template
@@ -1159,8 +1161,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								$content,
 								$step4SubPartMarkers,
 								'###|###',
-								1,
-								1
+								TRUE,
+								TRUE
 							);
 						} else {
 								// Add step marker for main template when no database
@@ -1173,7 +1175,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				break;
 				case 'go':
 						// Add header marker for main template
-					$markers['header'] = 'You\'re done!';
+					$markers['header'] = 'Congratulations!';
 						// There should be a database host connection at this point
 					if ($result = $GLOBALS['TYPO3_DB']->sql_pconnect(
 						TYPO3_db_host, TYPO3_db_username, TYPO3_db_password
@@ -1189,13 +1191,12 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									// Define the markers content
 								$stepGoSubPartMarkers = array(
 									'messageBasicFinished' => $this->messageBasicFinished(),
-									'llImportant' => 'Important',
+									'llImportant' => 'Important Security Warning',
 									'securityRisk' => $this->securityRisk(),
-									'llSwitchMode' => 'Enter
+									'llSwitchMode' => '
 										<a href="' . $this->scriptSelf . '">
-											"Normal"
+											Change the Install Tool password here
 										</a>
-										mode for the Install Tool to change this!
 									'
 								);
 									// Add step marker for main template
@@ -1203,8 +1204,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$stepGoSubPart,
 									$stepGoSubPartMarkers,
 									'###|###',
-									1,
-									1
+									TRUE,
+									TRUE
 								);
 							} else {
 									// Add step marker for main template when empty database
@@ -1226,8 +1227,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$template,
 			$markers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 
 		return $content;
@@ -1361,8 +1362,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$filesSubpart,
 				$filesMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 		}
 
@@ -1419,8 +1420,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$fileEditContent,
 				$fileEditMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 		}
 
@@ -1439,8 +1440,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$allowFileEditOutsideTypo3ConfDirSubPart,
 				$allowFileEditOutsideTypo3ConfDirMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 		}
 			// Substitute the subpart to edit the file
@@ -1472,8 +1473,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$fileListContent,
 			$fileListMarkers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 			// Add the content to the message array
 		$this->message($headCode, 'Files in folder', $fileListContent);
@@ -1538,8 +1539,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$template,
 			$markers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 			// Add the content to the message array
 		$this->message($headCode, 'DEBUG information', $content);
@@ -1659,8 +1660,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$cleanUpOptionsSubpart,
 				$cleanUpMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 		}
 			// Substitute the subpart for the 'Clean up' dropdown
@@ -1682,8 +1683,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$content,
 			$markers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 			// Add the content to the message array
 		$this->message($headCode, 'Statistics', $content, 1);
@@ -1816,8 +1817,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$deleteOptionsSubpart,
 				$deleteMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 		}
 			// Substitute the subpart for 'Delete files by condition' dropdown
@@ -1841,8 +1842,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$actionOptionsSubpart,
 				$actionMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 		}
 			// Substitute the subpart for 'Number of files at a time' dropdown
@@ -1867,8 +1868,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$subDirectoryOptionsSubpart,
 				$subDirectoryMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 		}
 			// Substitute the subpart for 'From sub-directory' dropdown
@@ -1903,8 +1904,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$content,
 			$markers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 			// Add the content to the message array
 		$this->message($headCode, 'Statistics', $content, 1);
@@ -1979,8 +1980,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$textAreaSubpart,
 									$textAreaMarkers,
 									'###|###',
-									1,
-									0
+									TRUE,
+									FALSE
 								);
 							} elseif (preg_match('/^boolean/i',$description)) {
 									// Get the subpart for a checkbox
@@ -1997,8 +1998,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$booleanSubpart,
 									$booleanMarkers,
 									'###|###',
-									1,
-									0
+									TRUE,
+									FALSE
 								);
 							} else {
 									// Get the subpart for an input text field
@@ -2014,8 +2015,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$textLineSubpart,
 									$textLineMarkers,
 									'###|###',
-									1,
-									0
+									TRUE,
+									FALSE
 								);
 							}
 								// Substitute the subpart for a textarea
@@ -2047,8 +2048,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								$content,
 								$markers,
 								'###|###',
-								1,
-								1
+								TRUE,
+								FALSE
 							);
 								// Add the content to the message array
 							$this->message($ext, $k2, $content);
@@ -2625,8 +2626,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$template,
 					$markers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					TRUE
 				);
 			break;
 			default:
@@ -2970,8 +2971,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$rowsSubPart,
 					$rowsMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 			}
 				// Substitute the subpart for the ImageMagick versions
@@ -3000,8 +3001,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$formSubPart,
 			$formMarkers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 			// Add the content to the message array
 		$this->message($ext, 'Search for ImageMagick:', $formSubPart, 0);
@@ -3228,8 +3229,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$sqlSafeModeUserSubpart,
 						$sqlSafeModeUserMarkers,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 				}
 					// Get the subpart for all modes
@@ -3274,8 +3275,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$databaseItemSubpart,
 							$databaseItemMarkers,
 							'###|###',
-							1,
-							0
+							TRUE,
+							FALSE
 						);
 						if ($dbname==TYPO3_db)	$dbIncluded=1;
 					}
@@ -3288,8 +3289,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$databaseItemSubpart,
 							$databaseItemMarkers,
 							'###|###',
-							1,
-							0
+							TRUE,
+							FALSE
 						);
 					}
 						// Substitute the subpart for the database tables
@@ -3313,8 +3314,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$databaseNotAvailableSubpart,
 						$databaseNotAvailableMarkers,
 						'###|###',
-						1,
-						0
+						TRUE,
+						FALSE
 					);
 				}
 					// Substitute the subpart when database is available
@@ -3340,8 +3341,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$allModesSubpart,
 					$allModesMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 					// Substitute the subpart for all modes
 				$form = t3lib_parsehtml::substituteSubpart(
@@ -3379,8 +3380,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$disableExecFunctionSubpart,
 							$regularModeMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 					}
 						// Substitute the subpart for the disable exec function
@@ -3403,8 +3404,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$gdLibSubpart,
 							$regularModeMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 					}
 						// Substitute the subpart for the disable gdlib
@@ -3439,8 +3440,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								$gdLibPngOptionSubpart,
 								$gdLibPngMarker,
 								'###|###',
-								1,
-								1
+								TRUE,
+								FALSE
 							);
 						}
 							// Substitute the subpart for the dropdown options
@@ -3454,8 +3455,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$gdLibPngSubpart,
 							$regularModeMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 					}
 						// Substitute the subpart for the gdlib png
@@ -3479,8 +3480,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$imageMagickSubpart,
 							$regularModeMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 
 							// IM Combine Filename
@@ -3496,8 +3497,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$imCombineFileNameSubpart,
 							$regularModeMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 
 							// IM Version 5
@@ -3513,8 +3514,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$imVersion5Subpart,
 							$regularModeMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 
 						if ($GLOBALS['TYPO3_CONF_VARS']['GFX']['im']) {
@@ -3537,8 +3538,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$imPathSubpart,
 									$regularModeMarkers,
 									'###|###',
-									1,
-									1
+									TRUE,
+									FALSE
 								);
 							}
 								// IM Path LZW
@@ -3573,8 +3574,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 										$imPathOptionSubpart,
 										$imPathLzwMarker,
 										'###|###',
-										1,
-										1
+										TRUE,
+										FALSE
 									);
 								}
 									// Substitute the subpart for ImageMagick lzw path dropdown options
@@ -3588,8 +3589,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$imPathLzwSubpart,
 									$regularModeMarkers,
 									'###|###',
-									1,
-									1
+									TRUE,
+									FALSE
 								);
 							}
 						}
@@ -3636,8 +3637,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$ttfDpiSubpart,
 						$regularModeMarkers,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 						// Substitute the subpart for TrueType dpi
 					$regularModeSubpart = t3lib_parsehtml::substituteSubpart(
@@ -3650,8 +3651,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$regularModeSubpart,
 						$regularModeMarkers,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 				}
 
@@ -3669,8 +3670,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$form,
 					$formMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 			break;
 			default:
@@ -3863,8 +3864,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$messagesSubPart,
 							$messagesMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 					}
 						// Substitute the subpart for messages
@@ -3884,8 +3885,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$content,
 						$markers,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 					$this->outputExitBasedOnStep($content);
 				break;
@@ -3904,8 +3905,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$template,
 						$markers,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 					$this->outputExitBasedOnStep($content);
 				break;
@@ -5121,8 +5122,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$differentFileSizeSubpart,
 					$differentFileSizeMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 
 				$errorLevels[]=2;
@@ -5146,8 +5147,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$differentPixelDimensionsSubpart,
 					$differentPixelDimensionsMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 
 				$errorLevels[]=2;
@@ -5172,8 +5173,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$noteSubpart,
 					$noteMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 			}
 				// Substitute the subpart for the note
@@ -5198,8 +5199,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$imCommandsSubpart,
 					$imCommandsMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 			}
 				// Substitute the subpart for the ImageMagick commands
@@ -5213,8 +5214,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$imageSubpart,
 				$imageMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 
 		} else {
@@ -5235,8 +5236,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$commandsSubpart,
 					$commandsMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 			}
 				// Substitute the subpart for the ImageMagick commands
@@ -5255,8 +5256,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$noImageSubpart,
 				$noImageMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 
 			$errorLevels[]=3;
@@ -5331,8 +5332,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$menuItemSubPart,
 				$markers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 		}
 			// Substitute the subpart for the single item in the menu
@@ -5498,8 +5499,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$extraSql,
 				$extraSqlMarkers,
 				'###|###',
-				1,
-				0
+				TRUE,
+				FALSE
 			);
 		}
 			// Substitute the subpart for extra SQL
@@ -5513,8 +5514,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$menu,
 			$menuMarkers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 
 		if ($directJump) {
@@ -5930,8 +5931,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 												$existSubpart,
 												$existMarkers,
 												'###|###',
-												1,
-												1
+												TRUE,
+												FALSE
 											);
 										}
 											// Substitute the subpart for table exists
@@ -5954,8 +5955,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 											$tableHtml,
 											$tableMarkers,
 											'###|###',
-											1,
-											1
+											TRUE,
+											FALSE
 										);
 									}
 										// Substitute the subpart for the rows
@@ -5981,8 +5982,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$content,
 									$contentMarkers,
 									'###|###',
-									1,
-									1
+									TRUE,
+									FALSE
 								);
 
 								$form = $this->getUpdateDbFormWrap($action_type, $content);
@@ -6123,8 +6124,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$content,
 							$contentMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 						$form = $this->getUpdateDbFormWrap($action_type, $content);
 						$this->message($headCode, 'Create admin user', '
@@ -6173,8 +6174,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$content,
 							$contentMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 
 						$form = $this->getUpdateDbFormWrap($action_type, $content);
@@ -6230,8 +6231,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 										$tableSubpart,
 										$emptiedTablesMarkers,
 										'###|###',
-										1,
-										1
+										TRUE,
+										FALSE
 									);
 								}
 							}
@@ -6308,8 +6309,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$singleTableSubpart,
 									$singleTableMarkers,
 									'###|###',
-									1,
-									1
+									TRUE,
+									FALSE
 								);
 							}
 						} else {
@@ -6414,8 +6415,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$singleUpdateWizardBoxSubpart,
 									$updateMarkers,
 									'###|###',
-									1,
-									1
+									TRUE,
+									FALSE
 								);
 							}
 						}
@@ -6434,8 +6435,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$updateWizardBoxesSubpart,
 							$updateWizardBoxesMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 					} else {
 						$updateWizardBoxesSubpart = '
@@ -6473,8 +6474,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$updatesAvailableSubpart,
 							$updatesAvailableMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 				}
 				$content = t3lib_parsehtml::substituteSubpart(
@@ -6504,8 +6505,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$noUpdatesAvailableSubpart,
 						$noUpdateMarkers,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 					break;
 				} else {
@@ -6528,8 +6529,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$updatesAvailableSubpart,
 							$updateMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							TRUE
 						);
 					}
 					$updatesAvailableSubpart = implode(chr(10), $updateItems);
@@ -6549,8 +6550,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$content,
 					$markers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 				break;
 			case 'performUpdate':	// third step - perform update
@@ -6581,8 +6582,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$checkUserInputSubpart,
 							$userInputMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 					} else {
 
@@ -6602,8 +6603,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 										$databaseQueriesSubpart,
 										$databaseQueryMarkers,
 										'###|###',
-										1,
-										1
+										TRUE,
+										FALSE
 									);
 								}
 							}
@@ -6615,8 +6616,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$customOutputSubpart,
 									$customOutputMarkers,
 									'###|###',
-									1,
-									1
+									TRUE,
+									FALSE
 								);
 							}
 
@@ -6634,8 +6635,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								$updatePerformed,
 								$performUpdateMarkers,
 								'###|###',
-								1,
-								1
+								TRUE,
+								FALSE
 							);
 						} else {
 							$noPerformUpdateMarkers['noUpdateMethod'] = 'No update method available!';
@@ -6643,8 +6644,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								$noPerformUpdateSubpart,
 								$noPerformUpdateMarkers,
 								'###|###',
-								1,
-								1
+								TRUE,
+								FALSE
 							);
 						}
 					}
@@ -6672,8 +6673,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$updateItem,
 						$updateItemsMarkers,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 				}
 				$content = t3lib_parsehtml::substituteSubpart(
@@ -6735,11 +6736,11 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 
 				'.(count($tables)?'':'- You haven\'t imported any tables yet.
 				')
-				.($beuser?'':'- You haven\'t created an admin-user yet.
+				.($beuser?'':'- You haven\'t created an admin user yet.
 				')
 				.'
 
-				You you\'re about to import a database with a complete site in it, these three points should be met.
+				You\'re about to import a database with a complete site in it, these three points should be met.
 				'),-1,1);
 			}
 		}
@@ -6806,8 +6807,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$form,
 			$formMarkers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 
 		return $form;
@@ -6850,8 +6851,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$rowsSubpart,
 					$rowsMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 			}
 		}
@@ -6866,8 +6867,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$template,
 			$templateMarkers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 		return $template;
 	}
@@ -6921,8 +6922,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$rowsSubpart,
 					$rowsMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 			}
 		}
@@ -6937,8 +6938,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$template,
 			$templateMarkers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 		return $out;
 	}
@@ -6977,8 +6978,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$preSubpart,
 							$preMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							FALSE
 						);
 					}
 						// Substitute the subpart for pre
@@ -7000,8 +7001,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$row,
 						$rowsMarkers,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 					$fC++;
 				}
@@ -7018,8 +7019,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$template,
 			$templateMarkers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 		return array($out,$fC);
 	}
@@ -7498,8 +7499,8 @@ $out="
 				$content,
 				$markers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 		}
 		$this->sections[$head][] = $content;
@@ -7530,8 +7531,8 @@ $out="
 				$sectionSubpart,
 				$sectionMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 		}
 			// Substitute the subpart for the sections
@@ -7669,8 +7670,8 @@ $out="
 					$errorMessageSubPart,
 					$errorMessageMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 			}
 				// Substitute the subpart for a single message
@@ -7692,8 +7693,8 @@ $out="
 				$versionSubPart,
 				$versionSubPartMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 		}
 			// Substitute the version subpart
@@ -7725,8 +7726,8 @@ $out="
 			$this->template,
 			$this->markers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 
 		return $this->template;
@@ -7778,8 +7779,8 @@ $out="
 					$menuItemSubPart,
 					$markers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 			}
 				// Substitute the subpart for the single menu items
@@ -7827,8 +7828,8 @@ $out="
 				$stepItemSubPart,
 				$stepItemMarkers,
 				'###|###',
-				1,
-				1
+				TRUE,
+				FALSE
 			);
 		}
 			// Substitute the subpart for the items
@@ -7849,31 +7850,22 @@ $out="
 	function securityRisk() {
 		return '
 			<p>
-				This script is a
-				<strong>great danger to the security of TYPO3</strong>
-				if you don\'t secure it somehow.
-				<br />
-				We suggest one of the following:
+				<strong>An unsecured Install Tool presents a security risk.</strong>
+				Minimize the risk with the following actions:
 			</p>
 			<ul>
 				<li>
-					Change the password as defined by the md5-hash in
-					TYPO3_CONF_VARS[BE][installToolPassword]
+					Change the Install Tool password.
 				</li>
 				<li>
-					Delete the folder \'typo3/install/\' with this script in or
-					just insert an \'exit;\' line in the script-file there
+					Delete the ENABLE_INSTALL_TOOL file in the /typo3conf folder. This can be done 
+					manually or through User tools &gt; User settings in the backend.
 				</li>
 				<li>
-					Password protect the \'typo3/install/\' folder, eg. with a
-					.htaccess file
+					For additional security, the /typo3/install/ folder can be
+					renamed, deleted, or password protected with a .htaccess file.
 				</li>
 			</ul>
-			<p>
-				The TYPO3_CONF_VARS[BE][installToolPassword] is always active,
-				but choosing one of the other options will improve security and
-				is recommended highly.
-			</p>
 		';
 	}
 
@@ -7899,8 +7891,8 @@ $out="
 			$template,
 			$markers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 
 		return $content;
@@ -7920,8 +7912,8 @@ $out="
 				for details. TYPO3 comes with ABSOLUTELY NO WARRANTY;
 				<a href="http://typo3.com/1316.0.html">click</a> for details.
 				This is free software, and you are welcome to redistribute it
-				under certain conditions; click for details. Obstructing the
-				appearance of this notice is prohibited by law.
+				under certain conditions; <a href="http://typo3.com/1316.0.html">click</a>
+				for details. Obstructing the appearance of this notice is prohibited by law.
 			</p>
 			<p>
 				<a href="http://typo3.org/donate"><strong>Donate</strong></a> |
@@ -7940,33 +7932,29 @@ $out="
 	function messageBasicFinished() {
 		return '
 			<p>
-				Apparently you have completed the basic setup of the TYPO3 database.
-				<br />
-				Now you can choose between these options:
+				You have completed the basic setup of the TYPO3 Content Management System. 
+				Choose between these options to continue:
 			</p>
 			<ul>
 				<li>
+					<a href="' . $this->scriptSelf . '">Configure TYPO3</a> (Recommended)
+					<br />
+					This will let you analyze and verify that everything in your
+					installation is in order. In addition, you can configure advanced
+					TYPO3 options in this step.
+		 		</li>
+				<li>
 					<a href="../../index.php">
-						Go to the frontend pages
+						Visit the frontend
 					</a>
 				</li>
 				<li>
 					<a href="../index.php">
-						Go to the backend login
+						Login to the backend
 					</a>
 					<br />
-			 		(username may be: <em>admin</em>, password may be: <em>password</em>.)
+			 		(Default username: <em>admin</em>, default password: <em>password</em>.)
 				</li>
-				<li>
-					<a href="' . $this->scriptSelf . '">
-						Continue to configure TYPO3
-					</a> (Recommended).
-					<br />
-			 		This will let you analyse and verify that everything in your
-			 		PHP installation is alright. Also if you want to configure
-			 		TYPO3 to use all the cool features, you <em>must</em> dig
-			 		into the this!
-			 	</li>
 			 </ul>
 		';
 	}
@@ -8041,8 +8029,8 @@ $out="
 					$multipleTablesSubpart,
 					$multipleTablesMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 			}
 				// Substitute the subpart for multiple tables
@@ -8087,8 +8075,8 @@ $out="
 							$iconSubpart,
 							$iconMarkers,
 							'###|###',
-							1,
-							1
+							TRUE,
+							TRUE
 						);
 					}
 				}
@@ -8112,8 +8100,8 @@ $out="
 						$currentSubpart,
 						$currentMarkers,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 				}
 					// Substitute the subpart for current
@@ -8127,8 +8115,8 @@ $out="
 					$rowsSubpart,
 					$rowsMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 
 				$rows[] = $rowsSubpart;
@@ -8154,8 +8142,8 @@ $out="
 						$warningItemSubpart,
 						$warningItemMarker,
 						'###|###',
-						1,
-						1
+						TRUE,
+						FALSE
 					);
 				}
 					// Substitute the subpart for single warning items
@@ -8177,8 +8165,8 @@ $out="
 			$content,
 			$templateMarkers,
 			'###|###',
-			1,
-			1
+			TRUE,
+			FALSE
 		);
 
 		return $content;
@@ -8226,8 +8214,8 @@ $out="
 					$itemSubpart,
 					$itemMarkers,
 					'###|###',
-					1,
-					1
+					TRUE,
+					FALSE
 				);
 			}
 				// Substitute the subpart for single item

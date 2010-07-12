@@ -27,7 +27,7 @@
 /**
  * Contains the reknown class "t3lib_div" with general purpose functions
  *
- * $Id: class.t3lib_div.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_div.php 7953 2010-06-17 14:07:33Z flyguide $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  * Usage counts are based on search 22/2 2003 through whole source including tslib/
@@ -3626,7 +3626,7 @@ final class t3lib_div {
 			} else {
 				$tabHeader = 'Debug';
 			}
-			
+
 			if (is_object($var)) {
 				$debug = str_replace(
 					array('"', '/', '<', "\n", "\r"),
@@ -3653,7 +3653,7 @@ final class t3lib_div {
 					}
 
 					if (top && typeof Ext !== "object") {
-						Ext = top.Ext;	
+						Ext = top.Ext;
 					}
 
 					Ext.onReady(function() {
@@ -5756,8 +5756,8 @@ final class t3lib_div {
 		}
 
 		if (stripos($log, 'file') !== FALSE) {
-			// write a longer message to the deprecation log
-			$destination = PATH_typo3conf . '/deprecation_' . self::shortMD5(PATH_site . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']) . '.log';
+				// write a longer message to the deprecation log
+			$destination = self::getDeprecationLogFileName();
 			$file = @fopen($destination, 'a');
 			if ($file) {
 				flock($file, LOCK_EX);  // try locking, but ignore if not available (eg. on NFS and FAT)
@@ -5768,13 +5768,27 @@ final class t3lib_div {
 		}
 
 		if (stripos($log, 'devlog') !== FALSE) {
-			// copy message also to the developer log
+				// copy message also to the developer log
 			self::devLog($msg, 'Core', self::SYSLOG_SEVERITY_WARNING);
 		}
 
 		if (stripos($log, 'console') !== FALSE) {
 			self::debug($msg, $date, 'Deprecation Log');
 		}
+	}
+
+	/**
+	 * Gets the absolute path to the deprecation log file.
+	 *
+	 * @return	string	absolute path to the deprecation log file
+	 */
+	public static function getDeprecationLogFileName() {
+		return PATH_typo3conf .
+			'deprecation_' .
+			self::shortMD5(
+				PATH_site . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']
+			) .
+			'.log';
 	}
 
 	/**

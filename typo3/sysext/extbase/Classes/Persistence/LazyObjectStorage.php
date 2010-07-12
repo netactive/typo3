@@ -97,6 +97,7 @@ class Tx_Extbase_Persistence_LazyObjectStorage extends Tx_Extbase_Persistence_Ob
 			foreach ($objects as $object) {
 				parent::attach($object);
 			}
+			$this->_memorizeCleanState();
 			$this->parentObject->_memorizeCleanState($this->propertyName);
 		}
 	}
@@ -234,6 +235,14 @@ class Tx_Extbase_Persistence_LazyObjectStorage extends Tx_Extbase_Persistence_Ob
 	public function valid() {
 		$this->initialize();
 		return parent::valid();
+	}
+	
+	/**
+	 * @see Tx_Extbase_Persistence_ObjectStorage::toArray
+	 */
+	public function toArray() {
+		$this->initialize();
+		return parent::toArray();
 	}
 		
 }

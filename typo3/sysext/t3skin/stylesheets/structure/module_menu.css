@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Module menu
 
-$Id: module_menu.css 7906 2010-06-13 14:56:44Z ohader $
+$Id: module_menu.css 8021 2010-06-21 21:24:51Z steffenk $
 - - - - - - - - - - - - - - - - - - - - - */
 
 #typo3-menu {
@@ -45,7 +45,7 @@ $Id: module_menu.css 7906 2010-06-13 14:56:44Z ohader $
 }
 
 #typo3-menu li ul li {
-	height: 21px;
+	min-height: 21px;
 }
 
 #typo3-menu li ul li a {

@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Workspace
 
-$Id: element_version.css 7937 2010-06-16 17:32:00Z psychomieze $
+$Id: element_version.css 7974 2010-06-20 08:05:51Z benni $
 - - - - - - - - - - - - - - - - - - - - - */
 
 div.workspace-info {
@@ -20,7 +20,13 @@ table.ver-verElement {
 	width: 100%;
 }
 
+.ver-wl-details-table {
+	width: 100%;
+	margin: 5px 0 10px;
+}
+
 .ver-wl-details {
+	padding: 0 2px;
 	vertical-align: top;
 }
 

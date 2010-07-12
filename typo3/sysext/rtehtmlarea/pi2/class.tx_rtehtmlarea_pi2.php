@@ -29,7 +29,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_pi2.php 7838 2010-06-08 16:10:41Z stan $  *
+ * $Id: class.tx_rtehtmlarea_pi2.php 8017 2010-06-21 18:40:43Z stan $  *
  */
 require_once(t3lib_extMgm::extPath('rtehtmlarea').'class.tx_rtehtmlarea_base.php');
 class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
@@ -207,6 +207,7 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 			// Preloading the pageStyle and including RTE skin stylesheets
 		$this->addPageStyle();
 		$this->addSkin();
+		$this->addPngFix();
 		$pageRenderer->addCssFile($this->siteURL . 't3lib/js/extjs/ux/resize.css');
 			// Loading JavaScript files and code
 		$pageRenderer->loadExtJs();
@@ -258,7 +259,6 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 			';
 		return $item;
 	}
-
 	/**
 	 * Add style sheet file to document header
 	 *
@@ -271,6 +271,18 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 	protected function addStyleSheet($key, $href, $title='', $relation='stylesheet') {
 		$pageRenderer = $GLOBALS['TSFE']->getPageRenderer();
 		$pageRenderer->addCssFile($href, $relation, 'screen', $title);
+	}
+	/**
+	 * Add iepngfix js and inline css for IE6, if available (t3skin must be loaded)
+	 *
+	 * @return	void
+	 */
+	protected function addPngFix() {
+		if ($this->client['browser'] == 'msie' && $this->client['version'] < 7 && t3lib_extMgm::isLoaded('t3skin')) {
+			$pageRenderer = $GLOBALS['TSFE']->getPageRenderer();
+			$pageRenderer->addJsFile($this->siteURL . t3lib_extMgm::siteRelPath('t3skin') . 'pngfix/iepngfix.js');
+			$pageRenderer->addCssInlineBlock('htmlarea-iepngfix', ".htmlarea .toolbar .x-btn-text, .htmlarea-window .x-panel-icon { behavior: url('" . $this->siteURL . t3lib_extMgm::siteRelPath('t3skin') . 'pngfix/iepngfix.php' . "\');");
+		}
 	}
 	/**
 	 * Return true if we are in the FE, but not in the FE editing feature of BE.

@@ -6,6 +6,7 @@ $extensionClassesPath = t3lib_extMgm::extPath('extbase') . 'Classes/';
 $extensionTestsPath = t3lib_extMgm::extPath('extbase') . 'Tests/';
 return array(
 	'tx_extbase_basetestcase' => $extensionTestsPath . 'BaseTestCase.php',
+	'tx_extbase_seleniumbasetestcase' => $extensionTestsPath . 'SeleniumBaseTestCase.php',
 	'tx_extbase_dispatcher' => $extensionClassesPath . 'Dispatcher.php',
 	'tx_extbase_exception' => $extensionClassesPath . 'Exception.php',
 	'tx_extbase_configuration_abstractconfigurationmanager' => $extensionClassesPath . 'Configuration/AbstractConfigurationManager.php',
@@ -90,6 +91,7 @@ return array(
 	'tx_extbase_persistence_lazyloadingproxy' => $extensionClassesPath . 'Persistence/LazyLoadingProxy.php',
 	'tx_extbase_persistence_lazyobjectstorage' => $extensionClassesPath . 'Persistence/LazyObjectStorage.php',
 	'tx_extbase_persistence_loadingstrategyinterface' => $extensionClassesPath . 'Persistence/LoadingStrategyInterface.php',
+	'tx_extbase_persistence_objectmonitoringinterface' => $extensionClassesPath . 'Persistence/ObjectMonitoringInterface.php',
 	'tx_extbase_persistence_manager' => $extensionClassesPath . 'Persistence/Manager.php',
 	'tx_extbase_persistence_managerinterface' => $extensionClassesPath . 'Persistence/ManagerInterface.php',
 	'tx_extbase_persistence_objectstorage' => $extensionClassesPath . 'Persistence/ObjectStorage.php',

@@ -1,8 +1,15 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Element Browser / RTE link selection
 
-$Id: element_rte.css 7906 2010-06-13 14:56:44Z ohader $
+$Id: element_rte.css 7974 2010-06-20 08:05:51Z benni $
 - - - - - - - - - - - - - - - - - - - - - */
+
+#typo3-browse-links-php {
+	background: #ececec;
+	background-image: linear-gradient(center top, #ffffff 30px, #ececec 130px);
+	background-image: -moz-linear-gradient(center top, #ffffff 30px, #ececec 130px);
+	background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(30px, #ffffff), color-stop(130px, #ececec));
+}
 
 table#typo3-curUrl {
 	font-weight: bold;

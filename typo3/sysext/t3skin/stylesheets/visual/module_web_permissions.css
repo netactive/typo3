@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Web > Permissions
 
-$Id: module_web_permissions.css 7906 2010-06-13 14:56:44Z ohader $
+$Id: module_web_permissions.css 7974 2010-06-20 08:05:51Z benni $
 - - - - - - - - - - - - - - - - - - - - - */
 
 a.perm-allowed,
@@ -11,11 +11,6 @@ a.perm-denied,
 	cursor: pointer;
 	font-size: 0px;
 	font-weight: bold;
-}
-
-#perm-legend .perm-allowed,
-#perm-legend .perm-denied {
-	cursor: auto;
 }
 
 a.perm-allowed:hover,

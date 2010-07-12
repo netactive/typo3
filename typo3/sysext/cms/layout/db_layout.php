@@ -29,7 +29,7 @@
  *
  * This module lets you view a page in a more Content Management like style than the ordinary record-list
  *
- * $Id: db_layout.php 7940 2010-06-16 19:37:07Z psychomieze $
+ * $Id: db_layout.php 7980 2010-06-20 11:33:13Z psychomieze $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1260,7 +1260,7 @@ class SC_db_layout {
 					// Delete record
 				if($this->deleteButton) {
 					$buttons['deletedok'] = '<a href="#" onclick="' . htmlspecialchars('return deleteRecord(\'' . $this->eRParts[0] . '\',\'' . $this->eRParts[1] . '\',\'' . t3lib_div::getIndpEnv('SCRIPT_NAME') . '?id=' . $this->id . '\');') . '" title="' . $LANG->getLL('deleteItem', TRUE) . '">' .
-							t3lib_iconWorks::getSpriteIcon('actions-document-delete') .
+							t3lib_iconWorks::getSpriteIcon('actions-edit-delete') .
 						'</a>';
 				}
 

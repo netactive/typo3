@@ -27,7 +27,7 @@
 /*
  * BlockElements Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: block-elements.js 7855 2010-06-09 17:43:44Z stan $
+ * TYPO3 SVN ID: $Id: block-elements.js 7966 2010-06-19 14:19:13Z stan $
  */
 HTMLArea.BlockElements = HTMLArea.Plugin.extend({
 		
@@ -267,8 +267,12 @@ HTMLArea.BlockElements = HTMLArea.Plugin.extend({
 						element = "<" + element + ">";
 					}
 					this.editor.focus();
-					if (Ext.isWebKit && !this.editor._doc.body.hasChildNodes()) {
-						this.editor._doc.body.appendChild((this.editor._doc.createElement("br")));
+					if (Ext.isWebKit) {
+						if (!this.editor._doc.body.hasChildNodes()) {
+							this.editor._doc.body.appendChild((this.editor._doc.createElement("br")));
+						}
+							// WebKit sometimes leaves empty block at the end of the selection
+						this.editor._doc.body.normalize();
 					}
 					try {
 						this.editor._doc.execCommand(buttonId, false, element);
