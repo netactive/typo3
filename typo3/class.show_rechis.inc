@@ -28,7 +28,7 @@
 /**
  * Class for the record history display script (show_rechis.php)
  *
- * $Id: class.show_rechis.inc 6748 2010-01-10 12:23:32Z lolli $
+ * $Id: class.show_rechis.inc 8428 2010-07-28 09:18:27Z ohader $
  * XHTML Compliant
  *
  * @author	Sebastian Kurfuerst <sebastian@garbage-group.de>
@@ -65,7 +65,7 @@ class recordHistory {
 	function recordHistory()	{
 			// GPvars:
 		$this->element = t3lib_div::_GP('element');
-		$this->returnUrl = t3lib_div::_GP('returnUrl');
+		$this->returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 		$this->lastSyslogId = t3lib_div::_GP('diff');
 		$this->rollbackFields = t3lib_div::_GP('rollbackFields');
 			// resolve sh_uid if set

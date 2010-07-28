@@ -27,7 +27,7 @@
 /**
  * HTML mail class
  *
- * $Id: class.t3lib_htmlmail.php 7177 2010-03-26 14:05:42Z francois $
+ * $Id: class.t3lib_htmlmail.php 8334 2010-07-28 08:54:54Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -248,7 +248,7 @@ class t3lib_htmlmail {
 	public function t3lib_htmlmail() {
 		$this->forceReturnPath = $GLOBALS['TYPO3_CONF_VARS']['SYS']['forceReturnPath'];
 
-		$this->mailer = 'TYPO3 '.TYPO3_version;
+		$this->mailer = 'TYPO3';
 	}
 
 
@@ -725,8 +725,8 @@ class t3lib_htmlmail {
 
 			// On windows the -f flag is not used (specific for Sendmail and Postfix),
 			// but instead the php.ini parameter sendmail_from is used.
-		$returnPath = (strlen($this->returnPath) > 0) ? '-f ' . escapeshellarg($this->returnPath) : '';
-		if($this->returnPath) {
+		$returnPath = ($this->forceReturnPath && strlen($this->returnPath) > 0) ? '-f ' . escapeshellarg($this->returnPath) : '';
+		if (TYPO3_OS == 'WIN' && $this->returnPath) {
 			@ini_set('sendmail_from', t3lib_div::normalizeMailAddress($this->returnPath));
 		}
 		$recipient = t3lib_div::normalizeMailAddress($this->recipient);
@@ -1417,9 +1417,9 @@ class t3lib_htmlmail {
 		$c = count($tags);
 		foreach($tags as $tag) {
 			$c--;
-			$regexp .= '<' . sql_regcase($tag) . "[[:space:]]" . (($c) ? '|' : '');
+			$regexp .= '<' . $tag . '[[:space:]]' . (($c) ? '|' : '');
 		}
-		return $regexp . '/';
+		return $regexp . '/i';
 	}
 
 

@@ -27,7 +27,7 @@
 /**
  * TSParser extension class to t3lib_TStemplate
  *
- * $Id: class.t3lib_tsparser_ext.php 6766 2010-01-13 23:53:50Z steffenk $
+ * $Id: class.t3lib_tsparser_ext.php 8356 2010-07-28 08:59:28Z ohader $
  * Contains functions for the TS module in TYPO3 backend
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -620,8 +620,8 @@ class t3lib_tsparser_ext extends t3lib_TStemplate	{
 				$A_E = '';
 			}
 			$HTML .= ($first ? '' : '<img src="' . $GLOBALS['BACK_PATH'] . 'gfx/ol/' . $PM . $BTM . '.gif" width="18" height="16" align="top" border="0" />') .
-				'<img ' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], $icon) . ' align="top" title="' . $alttext.'" /> ' .
-				$A_B . t3lib_div::fixed_lgd_cs($row['title'], $GLOBALS['BE_USER']->uc['titleLen']) . $A_E . '&nbsp;&nbsp;';
+				'<img ' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], $icon) . ' align="top" title="' . htmlspecialchars($alttext) . '" /> ' .
+				$A_B . htmlspecialchars(t3lib_div::fixed_lgd_cs($row['title'], $GLOBALS['BE_USER']->uc['titleLen'])) . $A_E . '&nbsp;&nbsp;';
 			$RL = $this->ext_getRootlineNumber($row['pid']);
 			$keyArray[] = '<tr class="' . ($i++ % 2 == 0 ? 'bgColor4' : 'bgColor6') . '">
 							<td nowrap>' . $HTML . '</td>

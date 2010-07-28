@@ -27,7 +27,7 @@
 /*
  * Language Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: language.js 6539 2009-11-25 14:49:14Z stucki $
+ * TYPO3 SVN ID: $Id: language.js 7856 2010-06-09 17:49:29Z stan $
  */
 Language = HTMLArea.Plugin.extend({
 
@@ -408,6 +408,9 @@ Language = HTMLArea.Plugin.extend({
 							if (parent) {
 								var direction = (buttonId === "RightToLeft") ? "rtl" : "ltr";
 								this.editor._toolbarObjects[buttonId].state("active",(parent.dir == direction || parent.style.direction == direction));
+								this.editor._toolbarObjects[buttonId].state("enabled", !/^body$/i.test(parent.nodeName));
+							} else {
+								this.editor._toolbarObjects[buttonId].state("enabled", false);
 							}
 							break;
 						case "ShowLanguageMarks":

@@ -30,7 +30,7 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
- * @version $Id: class.t3lib_cache_backend_filebackend.php 7226 2010-03-30 21:32:45Z steffenk $
+ * @version $Id: class.t3lib_cache_backend_filebackend.php 7817 2010-06-06 11:38:38Z lolli $
  */
 class t3lib_cache_backend_FileBackend extends t3lib_cache_backend_AbstractBackend {
 
@@ -189,7 +189,7 @@ class t3lib_cache_backend_FileBackend extends t3lib_cache_backend_AbstractBacken
 	 * @author Robert Lemke <robert@typo3.org>
 	 */
 	public function getCacheDirectory() {
-		return $this->cacheDirectory;
+		return $this->root . $this->cacheDirectory;
 	}
 
 	/**

@@ -36,7 +36,7 @@ $BE_USER->modAccess($MCONF, 1); // This checks permissions and exits if the user
  * @author		Ingo Renner <ingo@typo3.org>
  * @package		TYPO3
  * @subpackage	tx_scheduler
- * @version		$Id: index.php 7257 2010-04-08 14:39:51Z ohader $
+ * @version		$Id: index.php 7971 2010-06-19 19:13:53Z francois $
  */
 class tx_scheduler_Module extends t3lib_SCbase {
 
@@ -1092,16 +1092,23 @@ class tx_scheduler_Module extends t3lib_SCbase {
 						$executionStatus  = 'disabled';
 					}
 
-						// A failure is the worst thing that could happen, so it must overwrite all other statuses
+						// Check if the last run failed
+					$failureOutput = '';
 					if (!empty($schedulerRecord['lastexecution_failure'])) {
+							// Try to get the stored exception object
 						$exception = unserialize($schedulerRecord['lastexecution_failure']);
-
-						$executionStatus       = 'failure';
-						$executionStatusDetail = sprintf($GLOBALS['LANG']->getLL('msg.executionFailureReport'), $exception->getCode(), $exception->getMessage());
+							// If the exception could not be unserialized, issue a default error message
+						if ($exception === FALSE) {
+							$failureDetail = $GLOBALS['LANG']->getLL('msg.executionFailureDefault');
+						} else {
+							$failureDetail = sprintf($GLOBALS['LANG']->getLL('msg.executionFailureReport'), $exception->getCode(), $exception->getMessage());
+						}
+						$failureOutput = ' <img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_failure.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.failure')) . '" title="' . htmlspecialchars($failureDetail) . '" />';
 					}
 
-						// Format the execution status
-					$executionStatusOutput = '<img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_' . $executionStatus . '.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.' . $executionStatus)) . '" title="' . htmlspecialchars($executionStatusDetail) . '" />' . ' ' . htmlspecialchars($name);
+						// Format the execution status,
+						// including failure feedback, if any
+					$executionStatusOutput = '<img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_' . $executionStatus . '.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.' . $executionStatus)) . '" title="' . htmlspecialchars($executionStatusDetail) . '" />' . $failureOutput . ' ' . htmlspecialchars($name);
 
 					$table[$tr][] = $startExecutionElement;
 					$table[$tr][] = $actions;

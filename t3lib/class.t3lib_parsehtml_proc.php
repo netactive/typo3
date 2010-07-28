@@ -27,7 +27,7 @@
 /**
  * Functions for parsing HTML, specially for TYPO3 processing in relation to TCEmain and Rich Text Editor (RTE)
  *
- * $Id: class.t3lib_parsehtml_proc.php 7140 2010-03-20 22:42:02Z stan $
+ * $Id: class.t3lib_parsehtml_proc.php 8271 2010-07-26 07:53:51Z dmitry $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compatible.
  *
@@ -643,23 +643,32 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 				unset($attribArray_copy['target']);
 				unset($attribArray_copy['class']);
 				unset($attribArray_copy['title']);
+				unset($attribArray_copy['external']);
 				if ($attribArray_copy['rteerror'])	{	// Unset "rteerror" and "style" attributes if "rteerror" is set!
 					unset($attribArray_copy['style']);
 					unset($attribArray_copy['rteerror']);
 				}
 				if (!count($attribArray_copy))	{	// Only if href, target and class are the only attributes, we can alter the link!
+						// Quoting class and title attributes if they contain spaces
+					$attribArray['class'] = preg_match('/ /', $attribArray['class']) ? '"' . $attribArray['class'] . '"' : $attribArray['class'];
+					$attribArray['title'] = preg_match('/ /', $attribArray['title']) ? '"' . $attribArray['title'] . '"' : $attribArray['title'];
 						// Creating the TYPO3 pseudo-tag "<LINK>" for the link (includes href/url, target and class attributes):
-					$bTag='<link '.$info['url'].($info['query']?',0,'.$info['query']:'').($attribArray['target']?' '.$attribArray['target']:(($attribArray['class'] || $attribArray['title'])?' -':'')).($attribArray['class']?' '.$attribArray['class']:($attribArray['title']?' -':'')).($attribArray['title']?' "'.$attribArray['title'].'"':'').'>';
+						// If external attribute is set, keep the href unchanged
+					$href = $attribArray['external'] ? $attribArray['href'] : $info['url'].($info['query']?',0,'.$info['query']:'');
+					$bTag='<link '. $href . ($attribArray['target']?' '.$attribArray['target']:(($attribArray['class'] || $attribArray['title'])?' -':'')).($attribArray['class']?' '.$attribArray['class']:($attribArray['title']?' -':'')).($attribArray['title']?' '.$attribArray['title']:'').'>';
 					$eTag='</link>';
 					$blockSplit[$k] = $bTag.$this->TS_links_db($this->removeFirstAndLastTag($blockSplit[$k])).$eTag;
 				} else {	// ... otherwise store the link as a-tag.
 						// Unsetting 'rtekeep' attribute if that had been set.
 					unset($attribArray['rtekeep']);
-						// If the url is local, remove url-prefix
-					$siteURL = $this->siteUrl();
-					if ($siteURL && substr($attribArray['href'],0,strlen($siteURL))==$siteURL)	{
-						$attribArray['href']=$this->relBackPath.substr($attribArray['href'],strlen($siteURL));
+					if (!$attribArray['external']) {
+							// If the url is local, remove url-prefix
+						$siteURL = $this->siteUrl();
+						if ($siteURL && substr($attribArray['href'],0,strlen($siteURL))==$siteURL)	{
+							$attribArray['href']=$this->relBackPath.substr($attribArray['href'],strlen($siteURL));
+						}
 					}
+					unset($attribArray['external']);
 					$bTag='<a '.t3lib_div::implodeAttributes($attribArray,1).'>';
 					$eTag='</a>';
 					$blockSplit[$k] = $bTag.$this->TS_links_db($this->removeFirstAndLastTag($blockSplit[$k])).$eTag;
@@ -682,30 +691,36 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 
 			// Split content by the TYPO3 pseudo tag "<link>":
 		$blockSplit = $this->splitIntoBlock('link',$value,1);
+		$siteUrl = $this->siteUrl();
 		foreach($blockSplit as $k => $v)	{
 			$error = '';
 			if ($k%2)	{	// block:
 				$tagCode = t3lib_div::unQuoteFilenames(trim(substr($this->getFirstTag($v),0,-1)),true);
 				$link_param = $tagCode[1];
 				$href = '';
-				$siteUrl = $this->siteUrl();
 					// Parsing the typolink data. This parsing is roughly done like in tslib_content->typolink()
-				if(strstr($link_param,'@'))	{		// mailadr
+				if(strstr($link_param,'@')) {		// mailadr
 					$href = 'mailto:'.preg_replace('/^mailto:/i','',$link_param);
 				} elseif (substr($link_param,0,1)=='#') {	// check if anchor
 					$href = $siteUrl.$link_param;
 				} else {
 					$fileChar=intval(strpos($link_param, '/'));
 					$urlChar=intval(strpos($link_param, '.'));
-
+					$external = FALSE;
+						// Parse URL:
+					$pU = parse_url($link_param);
 						// Detects if a file is found in site-root OR is a simulateStaticDocument.
 					list($rootFileDat) = explode('?',$link_param);
 					$rFD_fI = pathinfo($rootFileDat);
 					if (trim($rootFileDat) && !strstr($link_param,'/') && (@is_file(PATH_site.$rootFileDat) || t3lib_div::inList('php,html,htm',strtolower($rFD_fI['extension']))))	{
 						$href = $siteUrl.$link_param;
-					} elseif($urlChar && (strstr($link_param,'//') || !$fileChar || $urlChar<$fileChar))	{	// url (external): If doubleSlash or if a '.' comes before a '/'.
-						if (!preg_match('/^[a-z]*:\/\//',trim(strtolower($link_param))))	{$scheme='http://';} else {$scheme='';}
-						$href = $scheme.$link_param;
+					} elseif ($pU['scheme'] || ($urlChar && (!$fileChar || $urlChar < $fileChar))) {
+							// url (external): if has scheme or if a '.' comes before a '/'.
+						$href = $link_param;
+						if (!$pU['scheme']) {
+							$href = 'http://' . $href;
+						}
+						$external = TRUE;
 					} elseif($fileChar)	{	// file (internal)
 						$href = $siteUrl.$link_param;
 					} else {	// integer or alias (alias is without slashes or periods or commas, that is 'nospace,alphanum_x,lower,unique' according to tables.php!!)
@@ -740,6 +755,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 							($tagCode[2]&&$tagCode[2]!='-' ? ' target="'.htmlspecialchars($tagCode[2]).'"' : '').
 							($tagCode[3]&&$tagCode[3]!='-' ? ' class="'.htmlspecialchars($tagCode[3]).'"' : '').
 							($tagCode[4] ? ' title="'.htmlspecialchars($tagCode[4]).'"' : '').
+							($external ? ' external="1"' : '').
 							($error ? ' rteerror="'.htmlspecialchars($error).'" style="background-color: yellow; border:2px red solid; color: black;"' : '').	// Should be OK to add the style; the transformation back to databsae will remove it...
 							'>';
 				$eTag = '</a>';
@@ -1586,6 +1602,8 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 					$uP = parse_url(strtolower($attribArray['href']));
 					if (!$uP['scheme'])	{
 						$attribArray['href'] = $this->siteUrl().substr($attribArray['href'],strlen($this->relBackPath));
+					} elseif ($uP['scheme'] != 'mailto') {
+						$attribArray['external'] = 1;
 					}
 				} else {
 					$attribArray['rtekeep'] = 1;

@@ -27,7 +27,7 @@
 /**
  * Contains a base class for authentication of users in TYPO3, both frontend and backend.
  *
- * $Id: class.t3lib_userauth.php 7035 2010-02-25 15:53:14Z baschny $
+ * $Id: class.t3lib_userauth.php 8373 2010-07-28 09:04:24Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -686,7 +686,7 @@ class t3lib_userAuth {
 	 * @return	string		The new session ID
 	 */
 	public function createSessionId() {
-		return substr(md5(uniqid('') . getmypid()), 0, $this->hash_length);
+		return t3lib_div::getRandomHexString($this->hash_length);
 	}
 
 

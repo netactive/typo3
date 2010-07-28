@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 7080 2010-03-05 01:32:07Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 7672 2010-05-25 13:55:00Z stan $
  */
 
 /***************************************************
@@ -1707,7 +1707,13 @@ HTMLArea.prototype.getEndBlocks = function(selection) {
 	var range = this._createRange(selection);
 	if (HTMLArea.is_gecko) {
 		var parentStart = range.startContainer;
+		if (/^(body)$/i.test(parentStart.nodeName)) {
+			parentStart = parentStart.firstChild;
+		}
 		var parentEnd = range.endContainer;
+		if (/^(body)$/i.test(parentEnd.nodeName)) {
+			parentEnd = parentEnd.lastChild;
+		}
 	} else {
 		if (selection.type !== "Control" ) {
 			var rangeEnd = range.duplicate();
@@ -1886,15 +1892,6 @@ HTMLArea._editorEvent = function(ev) {
 							if (editor._checkInsertP()) {
 								HTMLArea._stopEvent(ev);
 							}
-						} else if (HTMLArea.is_safari) {
-							var brNode = editor._doc.createElement("br");
-							editor.insertNodeAtSelection(brNode);
-							if (!brNode.nextSibling || !HTMLArea.getInnerText(brNode.nextSibling)) {
-								var secondBrNode = editor._doc.createElement("br");
-								secondBrNode = brNode.parentNode.appendChild(secondBrNode);
-								editor.selectNode(secondBrNode, false);
-							}
-							HTMLArea._stopEvent(ev);
 						}
 							// update the toolbar state after some time
 						if (editor._timerToolbar) window.clearTimeout(editor._timerToolbar);

@@ -32,7 +32,7 @@
  *
  * Adapted for htmlArea RTE by Stanislas Rolland
  *
- * $Id: class.tx_rtehtmlarea_browse_links.php 6645 2009-12-09 15:06:58Z stan $
+ * $Id: class.tx_rtehtmlarea_browse_links.php 8316 2010-07-28 08:51:24Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
@@ -119,6 +119,8 @@ class tx_rtehtmlarea_folderTree extends rteFolderTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v)	{
+		$title = htmlspecialchars($title);
+		
 		if ($this->ext_isLinkable($v))	{
 			$aOnClick = 'return jumpToUrl(\''.$this->thisScript.'?act='.$GLOBALS['SOBE']->browser->act.'&editorNo='.$GLOBALS['SOBE']->browser->editorNo.'&contentTypo3Language='.$GLOBALS['SOBE']->browser->contentTypo3Language.'&contentTypo3Charset='.$GLOBALS['SOBE']->browser->contentTypo3Charset.'&mode='.$GLOBALS['SOBE']->browser->mode.'&expandFolder='.rawurlencode($v['path']).'\');';
 			return '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.$title.'</a>';
@@ -247,6 +249,10 @@ class tx_rtehtmlarea_browse_links extends browse_links {
 		}
 			// Note: parseCurUrl will invoke the hooks
 		$this->curUrlInfo = $this->parseCurUrl($this->curUrlArray['href'],$this->siteURL);
+		if (isset($this->curUrlArray['external']) && $this->curUrlInfo['act'] != 'mail') {
+			$this->curUrlInfo['act'] = 'url';
+			$this->curUrlInfo['info'] = $this->curUrlArray['href'];
+		}
 			// Determine nature of current url:
 		$this->act = t3lib_div::_GP('act');
 		if (!$this->act)	{
@@ -699,7 +705,7 @@ class tx_rtehtmlarea_browse_links extends browse_links {
 							<tr>
 								<td>URL:</td>
 								<td><input type="text" name="lurl"'.$this->doc->formWidth(20).' value="'.htmlspecialchars($this->curUrlInfo['act']=='url'?$this->curUrlInfo['info']:'http://').'" /> '.
-									'<input type="submit" value="'.$LANG->getLL('setLink',1).'" onclick="if (/^[A-Za-z0-9_+]{1,8}:/.test(document.lurlform.lurl.value)) { browse_links_setHref(document.lurlform.lurl.value); } else { browse_links_setHref(\'http://\'+document.lurlform.lurl.value); }; return link_current();" /></td>
+									'<input type="submit" value="'.$LANG->getLL('setLink',1).'" onclick="if (/^[A-Za-z0-9_+]{1,8}:/.test(document.lurlform.lurl.value)) { browse_links_setHref(document.lurlform.lurl.value); } else { browse_links_setHref(\'http://\'+document.lurlform.lurl.value); }; browse_links_setAdditionalValue(\'external\', \'1\'); return link_current();" /></td>
 							</tr>
 						</table>
 					</form>';
@@ -819,6 +825,7 @@ class tx_rtehtmlarea_browse_links extends browse_links {
 
 				$pagetree = t3lib_div::makeInstance('tx_rtehtmlarea_pageTree');
 				$pagetree->ext_showNavTitle = $GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.showNavTitle');
+				$pagetree->ext_showPageId = $GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.showPageIdWithTitle');
 				$pagetree->addField('nav_title');
 				$tree=$pagetree->getBrowsableTree();
 				$cElements = $this->expandPage();
@@ -878,7 +885,7 @@ class tx_rtehtmlarea_browse_links extends browse_links {
 							<td>
 							</td>
 							<td colspan="3">
-								<input type="submit" value="'.$LANG->getLL('update',1).'" onclick="return link_current();" />
+								<input type="submit" value="'.$LANG->getLL('update',1).'" onclick="' . (($this->act == 'url') ? 'browse_links_setAdditionalValue(\'external\', \'1\'); ' : '') .'return link_current();" />
 							</td>
 						</tr>';
 		}

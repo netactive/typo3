@@ -27,7 +27,7 @@
 /**
  * TYPO3 SQL parser
  *
- * $Id: class.t3lib_sqlparser.php 6903 2010-02-14 17:44:28Z xperseguers $
+ * $Id: class.t3lib_sqlparser.php 7500 2010-05-01 21:15:20Z xperseguers $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -528,7 +528,7 @@ class t3lib_sqlparser {
 		$result['TABLE'] = $this->nextPart($parseString, '^([[:alnum:]_]+)[[:space:]]+');
 
 		if ($result['TABLE'])	{
-			if ($result['action'] = $this->nextPart($parseString, '^(CHANGE|DROP[[:space:]]+KEY|DROP[[:space:]]+PRIMARY[[:space:]]+KEY|ADD[[:space:]]+KEY|ADD[[:space:]]+PRIMARY[[:space:]]+KEY|DROP|ADD|RENAME)([[:space:]]+|\()'))	{
+			if ($result['action'] = $this->nextPart($parseString, '^(CHANGE|DROP[[:space:]]+KEY|DROP[[:space:]]+PRIMARY[[:space:]]+KEY|ADD[[:space:]]+KEY|ADD[[:space:]]+PRIMARY[[:space:]]+KEY|ADD[[:space:]]+UNIQUE|DROP|ADD|RENAME)([[:space:]]+|\()'))	{
 				$actionKey = strtoupper(str_replace(array(' ',"\t","\r","\n"),'',$result['action']));
 
 					// Getting field:
@@ -554,6 +554,7 @@ class t3lib_sqlparser {
 
 						case 'ADDKEY':
 						case 'ADDPRIMARYKEY':
+						case 'ADDUNIQUE':
 							$result['KEY'] = $fieldKey;
 							$result['fields'] = $this->getValue($parseString, '_LIST', 'INDEX');
 							if ($this->parse_error)	{ return $this->parse_error; }
@@ -832,32 +833,48 @@ class t3lib_sqlparser {
 					if (!$this->nextPart($parseString, '^(ON[[:space:]]+)')) {
 						return $this->parseError('No join condition found in parseFromTables()!', $parseString);
 					}
-					$field1 = $this->nextPart($parseString,'^([[:alnum:]_.]+)[[:space:]]*=[[:space:]]*', 1);
-					$field2 = $this->nextPart($parseString,'^([[:alnum:]_.]+)[[:space:]]+');
-					if ($field1 && $field2) {
-
-						// Explode fields into field and table:
-						$tableField = explode('.', $field1, 2);
-						$field1 = array();
-						if (count($tableField) != 2) {
-							$field1['table'] = '';
-							$field1['field'] = $tableField[0];
+					$stack[$pnt]['JOIN'][$joinCnt]['ON'] = array();
+					$condition = array('operator' => '');
+					$parseCondition = TRUE;
+					while ($parseCondition) {
+						if (($fieldName = $this->nextPart($parseString, '^([[:alnum:]._]+)[[:space:]]*(<=|>=|<|>|=|!=)')) !== '') {
+								// Parse field name into field and table:
+							$tableField = explode('.', $fieldName, 2);
+							$condition['left'] = array();
+							if (count($tableField) == 2) {
+								$condition['left']['table'] = $tableField[0];
+								$condition['left']['field'] = $tableField[1];
+							} else {
+								$condition['left']['table'] = '';
+								$condition['left']['field'] = $tableField[0];
+							}
 						} else {
-							$field1['table'] = $tableField[0];
-							$field1['field'] = $tableField[1];
+							return $this->parseError('No join field found in parseFromTables()!', $parseString);
 						}
-						$tableField = explode('.', $field2, 2);
-						$field2 = array();
-						if (count($tableField) != 2) {
-							$field2['table'] = '';
-							$field2['field'] = $tableField[0];
+							// Find "comparator":
+						$condition['comparator'] = $this->nextPart($parseString, '^(<=|>=|<|>|=|!=)');
+						if (($fieldName = $this->nextPart($parseString, '^([[:alnum:]._]+)')) !== '') {
+								// Parse field name into field and table:
+							$tableField = explode('.', $fieldName, 2);
+							$condition['right'] = array();
+							if (count($tableField) == 2) {
+								$condition['right']['table'] = $tableField[0];
+								$condition['right']['field'] = $tableField[1];
+							} else {
+								$condition['right']['table'] = '';
+								$condition['right']['field'] = $tableField[0];
+							}
 						} else {
-							$field2['table'] = $tableField[0];
-							$field2['field'] = $tableField[1];
+							return $this->parseError('No join field found in parseFromTables()!', $parseString);
 						}
-						$stack[$pnt]['JOIN'][$joinCnt]['ON'] = array($field1, $field2);
-						$joinCnt++;
-					} else return $this->parseError('No join fields found in parseFromTables()!', $parseString);
+						$stack[$pnt]['JOIN'][$joinCnt]['ON'][] = $condition;
+						if (($operator = $this->nextPart($parseString, '^(AND|OR)')) !== '') {
+							$condition = array('operator' => $operator);
+						} else {
+							$parseCondition = FALSE;
+						}
+					}
+					$joinCnt++;
 				} else return $this->parseError('No join table found in parseFromTables()!', $parseString);
 			}
 
@@ -1138,6 +1155,8 @@ class t3lib_sqlparser {
 			$parseString = ltrim(substr($parseString,strlen($reg[$trimAll?0:1])));
 			return $reg[1];
 		}
+			// No match found
+		return '';
 	}
 
 	/**
@@ -1513,6 +1532,7 @@ class t3lib_sqlparser {
 			break;
 			case 'ADDKEY':
 			case 'ADDPRIMARYKEY':
+			case 'ADDUNIQUE':
 				$query.=' ('.implode(',',$components['fields']).')';
 			break;
 		}
@@ -1620,11 +1640,16 @@ class t3lib_sqlparser {
 							$outputParts[$k] .= ' ' . $join['as_keyword'] . ' ' . $join['as'];
 						}
 						$outputParts[$k] .= ' ON ';
-						$outputParts[$k] .= ($join['ON'][0]['table']) ? $join['ON'][0]['table'] . '.' : '';
-						$outputParts[$k] .= $join['ON'][0]['field'];
-						$outputParts[$k] .= '=';
-						$outputParts[$k] .= ($join['ON'][1]['table']) ? $join['ON'][1]['table'] . '.' : '';
-						$outputParts[$k] .= $join['ON'][1]['field'];
+						foreach ($join['ON'] as $condition) {
+							if ($condition['operator'] !== '') {
+								$outputParts[$k] .= ' ' . $condition['operator'] . ' ';
+							}
+							$outputParts[$k] .= ($condition['left']['table']) ? $condition['left']['table'] . '.' : '';
+							$outputParts[$k] .= $condition['left']['field'];
+							$outputParts[$k] .= $condition['comparator'];
+							$outputParts[$k] .= ($condition['right']['table']) ? $condition['right']['table'] . '.' : '';
+							$outputParts[$k] .= $condition['right']['field'];
+						}
 					}
 				}
 			}

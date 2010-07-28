@@ -1,5 +1,5 @@
 <?php
-# TYPO3 SVN ID: $Id: ext_tables.php 6289 2009-10-28 09:30:11Z steffenk $
+# TYPO3 SVN ID: $Id: ext_tables.php 7544 2010-05-06 16:26:35Z psychomieze $
 if (!defined ('TYPO3_MODE'))	die ('Access denied.');
 
 
@@ -695,7 +695,6 @@ $TCA['tt_content'] = array (
 			'div' => 'tt_content_div.gif',
 			'html' => 'tt_content_html.gif'
 		),
-		'mainpalette' => '15',
 		'thumbnail' => 'image',
 		'requestUpdate' => 'list_type,rte_enabled',
 		'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY).'tbl_tt_content.php',

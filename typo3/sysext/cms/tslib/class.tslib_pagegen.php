@@ -28,7 +28,7 @@
  * Libraries for pagegen.php
  * The script "pagegen.php" is included by "index_ts.php" when a page is not cached but needs to be rendered.
  *
- * $Id: class.tslib_pagegen.php 7168 2010-03-26 10:05:56Z francois $
+ * $Id: class.tslib_pagegen.php 8293 2010-07-27 21:12:39Z steffenk $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -163,17 +163,11 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		$GLOBALS['TSFE']->sWordRegEx='';
 		$GLOBALS['TSFE']->sWordList = t3lib_div::_GP('sword_list');
 		if (is_array($GLOBALS['TSFE']->sWordList))	{
-			$standAlone = trim(''.$GLOBALS['TSFE']->config['config']['sword_standAlone']);
-			$noMixedCase = trim(''.$GLOBALS['TSFE']->config['config']['sword_noMixedCase']);
+			$space = (!empty($GLOBALS['TSFE']->config['config']['sword_standAlone'])) ? '[[:space:]]' : '';
 
-			$space = ($standAlone) ? '[[:space:]]' : '';
 			foreach ($GLOBALS['TSFE']->sWordList as $val) {
-				if (trim($val)) {
-					if (!$noMixedCase) {
-						$GLOBALS['TSFE']->sWordRegEx.= $space.sql_regcase(quotemeta($val)).$space.'|';
-					} else {
+				if (strlen(trim($val)) > 0) {
 						$GLOBALS['TSFE']->sWordRegEx.= $space.quotemeta($val).$space.'|';
-					}
 				}
 			}
 			$GLOBALS['TSFE']->sWordRegEx = preg_replace('/\|$/','',$GLOBALS['TSFE']->sWordRegEx);
@@ -925,9 +919,28 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 				$pageRenderer->addJsFooterInlineCode('TS_inlineFooter', $inlineFooterJs, $GLOBALS['TSFE']->config['config']['minifyJS']);
 			}
 		} elseif ($GLOBALS['TSFE']->config['config']['removeDefaultJS'] === 'external') {
-				// put default and inlineJS in external file
+			/*
+			 This keeps inlineJS from *_INT Objects from being moved to external files.
+			 At this point in frontend rendering *_INT Objects only have placeholders instead
+			 of actual content so moving these placeholders to external files would
+			 	a) break the JS file (syntax errors due to the placeholders)
+			 	b) the needed JS would never get included to the page
+			 Therefore inlineJS from *_INT Objects must not be moved to external files but
+			 kept internal.
+			*/
+			$inlineJSint = '';
+			self::stripIntObjectPlaceholder($inlineJS, $inlineJSint);
+			if ($inlineJSint) {
+				$pageRenderer->addJsInlineCode('TS_inlineJSint', $inlineJSint, $GLOBALS['TSFE']->config['config']['minifyJS']);
+			}
 			$pageRenderer->addJsFile(TSpagegen::inline2TempFile($scriptJsCode . $inlineJS, 'js'), 'text/javascript', $GLOBALS['TSFE']->config['config']['minifyJS']);
+
 			if ($inlineFooterJs) {
+				$inlineFooterJSint = '';
+				self::stripIntObjectPlaceholder($inlineFooterJs, $inlineFooterJSint);
+				if ($inlineJSint) {
+					$pageRenderer->addJsFooterInlineCode('TS_inlineFooterJSint', $inlineFooterJSint, $GLOBALS['TSFE']->config['config']['minifyJS']);
+				}
 				$pageRenderer->addJsFooterFile(TSpagegen::inline2TempFile($inlineFooterJs, 'js'), 'text/javascript', $GLOBALS['TSFE']->config['config']['minifyJS']);
 			}
 		} else {
@@ -1046,6 +1059,20 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 	 * Remember: Calls internally must still be done on the non-instantiated class: TSpagegen::inline2TempFile()
 	 *
 	 *************************/
+
+	/**
+	 * Searches for placeholder created from *_INT cObjects, removes them from
+	 * $searchString and merges them to $intObjects
+	 *
+	 * @param	string		$searchString: the String which should be cleaned from int-object markers
+	 * @param	string		$intObjects: the String the found int-placeholders are moved to (for further processing)
+	 */
+	protected static function stripIntObjectPlaceholder(&$searchString, &$intObjects) {
+		$tempArray = array();
+		preg_match_all('/\<\!--INT_SCRIPT.[a-z0-9]*--\>/', $searchString, $tempArray);
+		$searchString = preg_replace('/\<\!--INT_SCRIPT.[a-z0-9]*--\>/', '', $searchString);
+		$intObjects = implode('', $tempArray[0]);
+	}
 
 	/**
 	 * Writes string to a temporary file named after the md5-hash of the string

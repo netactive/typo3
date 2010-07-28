@@ -28,7 +28,7 @@
  * Include file extending recordList which extended t3lib_recordList
  * Used specifically for the Web>List module (db_list.php)
  *
- * $Id: class.db_list_extra.inc 6735 2010-01-08 10:08:10Z steffenk $
+ * $Id: class.db_list_extra.inc 7454 2010-04-30 10:20:26Z steffenk $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -679,7 +679,7 @@ class localRecordList extends recordList {
 							'</a>';
 					}
 					$theData[$fCol] = $warning . $this->linkWrapItems($table, $row['uid'], $recTitle, $row);
-					
+
 						// Render thumbsnails if a thumbnail column exists and there is content in it:
 					if ($this->thumbs && trim($row[$thumbsCol])) {
 						$theData[$fCol] .= '<br />' . $this->thumbCode($row,$table,$thumbsCol);
@@ -753,7 +753,7 @@ class localRecordList extends recordList {
 	 */
 	function setReferences($table, $uid) {
 		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-			'*',
+			'tablename, recuid, field',
 			'sys_refindex',
 			'ref_table='.$GLOBALS['TYPO3_DB']->fullQuoteStr($table,'sys_refindex').
 				' AND ref_uid='.intval($uid).
@@ -825,7 +825,7 @@ class localRecordList extends recordList {
 						$cells['delete']=$this->linkClipboardHeaderIcon('<img'.t3lib_iconWorks::skinImg($this->backPath,'gfx/garbage.gif','width="11" height="12"').' title="'.$LANG->getLL('clip_deleteMarked',1).'" alt="" />',$table,'delete',sprintf($LANG->getLL('clip_deleteMarkedWarning'),$LANG->sL($TCA[$table]['ctrl']['title'])));
 
 							// The "Select all" link:
-						$cells['markAll']='<a href="#" onclick="'.htmlspecialchars('checkOffCB(\''.implode(',',$this->CBnames).'\'); return false;').'">'.
+						$cells['markAll'] = '<a class="cbcCheckAll" rel="" href="#" onclick="' . htmlspecialchars('checkOffCB(\'' . implode(',', $this->CBnames) . '\', this); return false;') . '">' .
 								'<img'.t3lib_iconWorks::skinImg($this->backPath,'gfx/clip_select.gif','width="12" height="12"').' title="'.$LANG->getLL('clip_markRecords',1).'" alt="" />'.
 								'</a>';
 					} else {

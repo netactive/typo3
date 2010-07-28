@@ -29,7 +29,7 @@
 /*
  * Undo Redo Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: undo-redo.js 6539 2009-11-25 14:49:14Z stucki $
+ * TYPO3 SVN ID: $Id: undo-redo.js 7392 2010-04-19 16:19:41Z stan $
  */
 UndoRedo = HTMLArea.Plugin.extend({
 	
@@ -78,7 +78,7 @@ UndoRedo = HTMLArea.Plugin.extend({
 				tooltip		: this.localize(buttonId.toLowerCase()),
 				action		: "onButtonPress",
 				context		: button[1],
-				hotKey		: (this.editorConfiguration.buttons[buttonId.toLowerCase()]?this.editorConfiguration.buttons[buttonId.toLowerCase()].hotKey:button[2])
+				hotKey		: ((this.editorConfiguration.buttons[buttonId.toLowerCase()] && this.editorConfiguration.buttons[buttonId.toLowerCase()].hotKey) ? this.editorConfiguration.buttons[buttonId.toLowerCase()].hotKey : button[2])
 			};
 			this.registerButton(buttonConfiguration);
 		}

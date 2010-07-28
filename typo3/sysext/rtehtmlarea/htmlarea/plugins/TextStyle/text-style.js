@@ -27,7 +27,7 @@
 /*
  * Text Style Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: text-style.js 6539 2009-11-25 14:49:14Z stucki $
+ * TYPO3 SVN ID: $Id: text-style.js 7843 2010-06-09 01:06:08Z stan $
  */
 /*
  * Creation of the class of TextStyle plugins
@@ -180,8 +180,8 @@ TextStyle = HTMLArea.Plugin.extend({
 				parent = statusBarSelection;
 			}
 		}
-		if (!selectionEmpty && !fullNodeSelected) {
-				// The selection is not empty, nor full element
+		if (!selectionEmpty && !fullNodeSelected || (!selectionEmpty && fullNodeSelected && parent && HTMLArea.isBlockElement(parent))) {
+				// The selection is not empty, nor full element, or the selection is full block element
 			if (className !== "none") {
 					// Add span element with class attribute
 				var newElement = editor._doc.createElement("span");

@@ -27,7 +27,7 @@
 /**
  * Contains the reknown class "t3lib_div" with general purpose functions
  *
- * $Id: class.t3lib_div.php 7172 2010-03-26 11:51:14Z lolli $
+ * $Id: class.t3lib_div.php 8401 2010-07-28 09:12:31Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  * Usage counts are based on search 22/2 2003 through whole source including tslib/
@@ -1043,6 +1043,36 @@ final class t3lib_div {
 	}
 
 	/**
+	 * Returns a proper HMAC on a given input string and secret TYPO3 encryption key.
+	 *
+	 * @param 	string		Input string to create HMAC from
+	 * @return 	string		resulting (hexadecimal) HMAC currently with a length of 40 (HMAC-SHA-1)
+	 */
+	public static function hmac($input) {
+		$hashAlgorithm = 'sha1';
+		$hashBlocksize = 64;
+		$hmac = '';
+
+		if (extension_loaded('hash') && function_exists('hash_hmac') && function_exists('hash_algos') && in_array($hashAlgorithm, hash_algos())) {
+			$hmac = hash_hmac($hashAlgorithm, $input, $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']);
+		} else {
+				// outer padding
+			$opad = str_repeat(chr(0x5C), $hashBlocksize);
+				// innner padding
+			$ipad = str_repeat(chr(0x36), $hashBlocksize);
+			if (strlen($GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']) > $hashBlocksize) {
+					// keys longer than blocksize are shorten
+				$key = str_pad(pack('H*', call_user_func($hashAlgorithm, $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'])), $hashBlocksize, chr(0x00));
+			} else {
+					// keys shorter than blocksize are zero-padded
+				$key = str_pad($GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'], $hashBlocksize, chr(0x00));
+			}
+			$hmac = call_user_func($hashAlgorithm, ($key^$opad) . pack('H*', call_user_func($hashAlgorithm, ($key^$ipad) . $input)));
+		}
+		return $hmac;
+	}
+
+	/**
 	 * Takes comma-separated lists and arrays and removes all duplicates
 	 * If a value in the list is trim(empty), the value is ignored.
 	 * Usage: 16
@@ -1067,15 +1097,16 @@ final class t3lib_div {
 	 */
 	public static function split_fileref($fileref)	{
 		$reg = array();
-		if (preg_match('/(.*\/)(.*)$/',$fileref,$reg)	)	{
+		if (preg_match('/(.*\/)(.*)$/', $fileref, $reg)) {
 			$info['path'] = $reg[1];
 			$info['file'] = $reg[2];
 		} else {
 			$info['path'] = '';
 			$info['file'] = $fileref;
 		}
-		$reg='';
-		if (	preg_match('/(.*)\.([^\.]*$)/',$info['file'],$reg)	)	{
+
+		$reg = '';
+		if (!is_dir($fileref) && preg_match('/(.*)\.([^\.]*$)/', $info['file'], $reg)) {
 			$info['filebody'] = $reg[1];
 			$info['fileext'] = strtolower($reg[2]);
 			$info['realFileext'] = $reg[2];
@@ -1515,20 +1546,52 @@ final class t3lib_div {
 		if (TYPO3_OS != 'WIN' && ($fh = @fopen('/dev/urandom', 'rb'))) {
 			$output = fread($fh, $count);
 			fclose($fh);
+		} elseif (TYPO3_OS == 'WIN') {
+			if (class_exists('COM')) {
+				try {
+					$com = new COM('CAPICOM.Utilities.1');
+					$output = base64_decode($com->GetRandom($count, 0));
+				} catch(Exception $e) {
+					// CAPICOM not installed
+				}
+			}
+			if ($output === '' && version_compare(PHP_VERSION, '5.3.0', '>=')) {
+				if (function_exists('mcrypt_create_iv')) {
+					$output = mcrypt_create_iv($count, MCRYPT_DEV_URANDOM);
+				} elseif (function_exists('openssl_random_pseudo_bytes')) {
+					$isStrong = null;
+					$output = openssl_random_pseudo_bytes($count, $isStrong);
+						// skip ssl since it wasn't using the strong algo
+					if ($isStrong !== TRUE) {
+						$output = '';
+					}
+				}
+			}
 		}
 
-			// fallback if /dev/urandom is not available
+			// fallback if other random byte generation failed until now
 		if (!isset($output{$count - 1})) {
 				// We initialize with the somewhat random.
 			$randomState = $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']
-							. microtime() . getmypid();
+							. base_convert(memory_get_usage() % pow(10, 6), 10, 2)
+							. microtime() . uniqid('') . getmypid();
 			while (!isset($output{$count - 1})) {
-				$randomState = md5(microtime() . mt_rand() . $randomState);
-				$output .= md5(mt_rand() . $randomState, true);
+				$randomState = sha1(microtime() . mt_rand() . $randomState);
+				$output .= sha1(mt_rand() . $randomState, true);
 			}
 			$output = substr($output, strlen($output) - $count, $count);
 		}
 		return $output;
+	}
+
+	/**
+	 * Returns a hex representation of a random byte string.
+	 *
+	 * @param		integer  Number of hex characters to return
+	 * @return		string   Random Bytes
+	 */
+	public static function getRandomHexString($count) {
+		return substr(bin2hex(self::generateRandomBytes(intval(($count + 1) / 2))), 0, $count);
 	}
 
 	/**
@@ -5368,7 +5431,6 @@ final class t3lib_div {
 			list($type,$destination) = explode(',',$log,3);
 
 			if ($type == 'syslog')	{
-				define_syslog_variables();
 				if (TYPO3_OS == 'WIN')	{
 					$facility = LOG_USER;
 				} else {
@@ -5517,7 +5579,7 @@ final class t3lib_div {
 
 	/**
 	 * Logs a call to a deprecated function.
-	 * The log message will b etaken from the annotation.
+	 * The log message will be taken from the annotation.
 	 * @return	void
 	 */
 	public static function logDeprecatedFunction() {
@@ -5532,29 +5594,21 @@ final class t3lib_div {
 		} else {
 			$function = new ReflectionFunction($trail[1]['function']);
 		}
-		if (!$msg) {
-			if (preg_match('/@deprecated\s+(.*)/', $function->getDocComment(), $match)) {
-				$msg = $match[1];
-			}
+
+		$msg = '';
+		if (preg_match('/@deprecated\s+(.*)/', $function->getDocComment(), $match)) {
+			$msg = $match[1];
 		}
 
-		// trigger PHP error with a short message: <function> is deprecated (called from <source>, defined in <source>)
+			// trigger PHP error with a short message: <function> is deprecated (called from <source>, defined in <source>)
 		$errorMsg = 'Function ' . $trail[1]['function'];
 		if ($trail[1]['class']) {
 			$errorMsg .= ' of class ' . $trail[1]['class'];
 		}
 		$errorMsg .= ' is deprecated (called from '.$trail[1]['file'] . '#' . $trail[1]['line'] . ', defined in ' . $function->getFileName() . '#' . $function->getStartLine() . ')';
 
-// michael@typo3.org: Temporary disabled until error handling is implemented (follows later this week...)
-/*
-		if (defined('E_USER_DEPRECATED')) {
-			trigger_error($errorMsg, E_USER_DEPRECATED);	// PHP 5.3
-		} else {
-			trigger_error($errorMsg, E_USER_NOTICE);	// PHP 5.2
-		}
-*/
 
-		// write a longer message to the deprecation log: <function> <annotion> - <trace> (<source>)
+			// write a longer message to the deprecation log: <function> <annotion> - <trace> (<source>)
 		$logMsg = $trail[1]['class'] . $trail[1]['type'] . $trail[1]['function'];
 		$logMsg .= '() - ' . $msg.' - ' . self::debug_trail();
 		$logMsg .= ' (' . substr($function->getFileName(), strlen(PATH_site)) . '#' . $function->getStartLine() . ')';

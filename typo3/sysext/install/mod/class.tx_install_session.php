@@ -33,7 +33,7 @@
  * @package TYPO3
  * @subpackage tx_install
  *
- * @version $Id: class.tx_install_session.php 6536 2009-11-25 14:07:18Z stucki $
+ * @version $Id: class.tx_install_session.php 8366 2010-07-28 09:01:12Z ohader $
  */
 class tx_install_session {
 
@@ -136,7 +136,8 @@ class tx_install_session {
 	 */
 	public function startSession() {
 		$_SESSION['created'] = time();
-		return session_id();
+			// Be sure to use our own session id, so create a new one
+		return $this->renewSession();
 	}
 
 	/**
@@ -202,6 +203,8 @@ class tx_install_session {
 		$_SESSION['lastSessionId'] = time();
 		$_SESSION['tstamp'] = time();
 		$_SESSION['expires'] = (time() + ($this->expireTimeInMinutes*60));
+			// Renew the session id to avoid session fixation
+		$this->renewSession();
 	}
 
 	/**

@@ -27,7 +27,7 @@
 /**
  * Contains the TYPO3 Core Engine
  *
- * $Id: class.t3lib_tcemain.php 7072 2010-02-27 19:19:27Z andreas $
+ * $Id: class.t3lib_tcemain.php 8135 2010-07-08 15:07:40Z dmitry $
  * Revised for TYPO3 3.9 October 2005 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -384,7 +384,7 @@ class t3lib_TCEmain	{
 		$this->username = $this->BE_USER->user['username'];
 		$this->admin = $this->BE_USER->user['admin'];
 
-		if ($GLOBALS['BE_USER']->uc['recursiveDelete'])    {
+		if ($this->BE_USER->uc['recursiveDelete'])    {
 			$this->deleteTree = 1;
 		}
 
@@ -1695,7 +1695,7 @@ class t3lib_TCEmain	{
 										clearstatcache();
 										if (!@is_file($theDestFile))	$this->log($table,$id,5,0,1,"Copying file '%s' failed!: The destination path (%s) may be write protected. Please make it write enabled!. (%s)",16,array($theFile, dirname($theDestFile), $recFID),$propArr['event_pid']);
 									} else $this->log($table,$id,5,0,1,"Copying file '%s' failed!: No destination file (%s) possible!. (%s)",11,array($theFile, $theDestFile, $recFID),$propArr['event_pid']);
-								} else $this->log($table,$id,5,0,1,"Fileextension '%s' not allowed. (%s)",12,array($fI['fileext'], $recFID),$propArr['event_pid']);
+								} else $this->log($table,$id,5,0,1,"File extension '%s' not allowed. (%s)",12,array($fI['fileext'], $recFID),$propArr['event_pid']);
 							} else $this->log($table,$id,5,0,1,"Filesize (%s) of file '%s' exceeds limit (%s). (%s)",13,array(t3lib_div::formatSize($fileSize),$theFile,t3lib_div::formatSize($maxSize*1024),$recFID),$propArr['event_pid']);
 						} else $this->log($table,$id,5,0,1,'The destination (%s) or the source file (%s) does not exist. (%s)',14,array($dest, $theFile, $recFID),$propArr['event_pid']);
 
@@ -1779,7 +1779,7 @@ class t3lib_TCEmain	{
 											clearstatcache();
 											if (!@is_file($theDestFile)) $this->log($table, $id, 5, 0, 1, "Copying file '%s' failed!: The destination path (%s) may be write protected. Please make it write enabled!. (%s)", 16, array($theFile, dirname($theDestFile), $recFID), $propArr['event_pid']);
 										} else $this->log($table, $id, 5, 0, 1, "Copying file '%s' failed!: No destination file (%s) possible!. (%s)", 11, array($theFile, $theDestFile, $recFID), $propArr['event_pid']);
-									} else $this->log($table, $id, 5, 0, 1, "Fileextension '%s' not allowed. (%s)", 12, array($fI['fileext'], $recFID), $propArr['event_pid']);
+									} else $this->log($table, $id, 5, 0, 1, "File extension '%s' not allowed. (%s)", 12, array($fI['fileext'], $recFID), $propArr['event_pid']);
 								} else $this->log($table, $id, 5, 0, 1, "Filesize (%s) of file '%s' exceeds limit (%s). (%s)", 13, array(t3lib_div::formatSize($fileSize), $theFile,t3lib_div::formatSize($maxSize * 1024),$recFID), $propArr['event_pid']);
 
 									// If the destination file was created, we will set the new filename in the value array, otherwise unset the entry in the value array!
@@ -2623,7 +2623,7 @@ class t3lib_TCEmain	{
 										}
 									break;
 									case 'swap':
-										$swapMode = $GLOBALS['BE_USER']->getTSConfigVal('options.workspaces.swapMode');
+										$swapMode = $this->BE_USER->getTSConfigVal('options.workspaces.swapMode');
 										$elementList = array();
 										if ($swapMode == 'any' || ($swapMode == 'page' && $table == 'pages')) {
 											// check if we are allowed to do synchronios publish. We must have a single element in the cmdmap to be allowed
@@ -2649,14 +2649,14 @@ class t3lib_TCEmain	{
 									case 'setStage':
 										$elementList = array();
 										$idList = $elementList[$table] = t3lib_div::trimExplode(',',$id,1);
-										$setStageMode = $GLOBALS['BE_USER']->getTSConfigVal('options.workspaces.changeStageMode');
+										$setStageMode = $this->BE_USER->getTSConfigVal('options.workspaces.changeStageMode');
 										if ($setStageMode == 'any' || $setStageMode == 'page') {
 											if (count($idList) == 1) {
 												$rec = t3lib_BEfunc::getRecord($table, $idList[0], 't3ver_wsid');
 												$workspaceId = $rec['t3ver_wsid'];
 											}
 											else {
-												$workspaceId = $GLOBALS['BE_USER']->workspace;
+												$workspaceId = $this->BE_USER->workspace;
 											}
 											if ($table !== 'pages') {
 												if ($setStageMode == 'any') {
@@ -3173,8 +3173,8 @@ class t3lib_TCEmain	{
 
 					// Walk through the items, copy them and remember the new id:
 				foreach ($dbAnalysis->itemArray as $k => $v) {
-						// If language is set, this isn't a copy action but a localization of our parent/ancestor:
-					if ($language>0) {
+						// If language is set and differs from original record, this isn't a copy action but a localization of our parent/ancestor:
+					if ($language > 0 && t3lib_BEfunc::isTableLocalizable($table) && $language != $row[$TCA[$table]['ctrl']['languageField']]) {
 							// If children should be localized when the parent gets localized the first time, just do it:
 						if ($localizationMode!=false && isset($conf['behaviour']['localizeChildrenAtParentLocalization']) && $conf['behaviour']['localizeChildrenAtParentLocalization']) {
 							$newId = $this->localize($v['table'], $v['id'], $language);
@@ -3798,11 +3798,11 @@ class t3lib_TCEmain	{
 	 * @param	array		$conf: TCA configuration of current field
 	 * @return	void
 	 */
-	function moveRecord_procBasedOnFieldType($table,$uid,$destPid,$field,$value,$conf) {
+	function moveRecord_procBasedOnFieldType($table, $uid, $destPid, $field, $value, $conf) {
 		$moveTable = '';
 		$moveIds = array();
 
-		if ($conf['type'] == 'inline')	{
+		if ($conf['type'] == 'inline') {
 			$foreign_table = $conf['foreign_table'];
 			$moveChildrenWithParent = (!isset($conf['behaviour']['disableMovingChildrenWithParent']) || !$conf['behaviour']['disableMovingChildrenWithParent']);
 
@@ -3810,18 +3810,23 @@ class t3lib_TCEmain	{
 				$inlineType = $this->getInlineFieldType($conf);
 				if ($inlineType == 'list' || $inlineType == 'field') {
 					$moveTable = $foreign_table;
+					if ($table == 'pages') {
+							// If the inline elements are related to a page record,
+							// make sure they reside at that page and not at its parent
+						$destPid = $uid;
+					}
 					$dbAnalysis = t3lib_div::makeInstance('t3lib_loadDBGroup');
 					$dbAnalysis->start($value, $conf['foreign_table'], '', $uid, $table, $conf);
 				}
 			}
 		}
 
-			// move the records
+			// Move the records
 		if (isset($dbAnalysis)) {
 				// Moving records to a positive destination will insert each
 				// record at the beginning, thus the order is reversed here:
 			foreach (array_reverse($dbAnalysis->itemArray) as $v) {
-				$this->moveRecord($v['table'],$v['id'],$destPid);
+				$this->moveRecord($v['table'], $v['id'], $destPid);
 			}
 		}
 	}
@@ -4437,13 +4442,13 @@ class t3lib_TCEmain	{
 	 * @return	boolean		Whether the record can be undeleted
 	 */
 	public function isRecordUndeletable($table, $uid) {
-		$result = false;
-		$record = t3lib_BEfunc::getRecord($table, $uid, 'pid', '', false);
+		$result = FALSE;
+		$record = t3lib_BEfunc::getRecord($table, $uid, 'pid', '', FALSE);
 		if ($record['pid']) {
-			$page = t3lib_BEfunc::getRecord('pages', $record['pid'], 'deleted, title, uid', '', false);
+			$page = t3lib_BEfunc::getRecord('pages', $record['pid'], 'deleted, title, uid', '', FALSE);
 				// The page containing the record is not deleted, thus the record can be undeleted:
 			if (!$page['deleted']) {
-				$result = true;
+				$result = TRUE;
 				// The page containing the record is deleted and has to be undeleted first:
 			} else {
 				$this->log(
@@ -4452,6 +4457,9 @@ class t3lib_TCEmain	{
 						$page['title'] . ' (UID: ' . $page['uid'] . ')" first'
 				);
 			}
+		} else {
+				// The page containing the record is on rootlevel, so there is no parent record to check, and the record can be undeleted:
+			$result = TRUE;
 		}
 		return $result;
 	}
@@ -4746,7 +4754,7 @@ class t3lib_TCEmain	{
 											// Write lock-file:
 										t3lib_div::writeFileToTypo3tempDir($lockFileName,serialize(array(
 											'tstamp' => $GLOBALS['EXEC_TIME'],
-											'user'=>$GLOBALS['BE_USER']->user['username'],
+											'user' => $this->BE_USER->user['username'],
 											'curVersion'=>$curVersion,
 											'swapVersion'=>$swapVersion
 										)));
@@ -4757,7 +4765,7 @@ class t3lib_TCEmain	{
 											$keepFields[] = $TCA[$table]['ctrl']['sortby'];
 										}
 											// l10n-fields must be kept otherwise the localization will be lost during the publishing
-										if ($TCA[$table]['ctrl']['transOrigPointerField']) {
+										if (!isset($TCA[$table]['ctrl']['transOrigPointerTable']) && $TCA[$table]['ctrl']['transOrigPointerField']) {
 											$keepFields[] = $TCA[$table]['ctrl']['transOrigPointerField'];
 										}
 
@@ -7766,7 +7774,7 @@ State was change by %s (username: %s)
 				case 'inline':
 					if ($TCA[$table]['columns'][$field]['config']['foreign_field']) {
 						if (!t3lib_div::testInt($value)) {
-							$result[$field] = count(t3lib_div::trimExplode(',', true));
+							$result[$field] = count(t3lib_div::trimExplode(',', $value, TRUE));
 						}
 					}
 					break;

@@ -51,7 +51,7 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
- * @version $Id: class.t3lib_cache_backend_memcachedbackend.php 6577 2009-11-29 13:21:28Z ohader $
+ * @version $Id: class.t3lib_cache_backend_memcachedbackend.php 7824 2010-06-06 13:44:59Z lolli $
  */
 class t3lib_cache_backend_MemcachedBackend extends t3lib_cache_backend_AbstractBackend {
 
@@ -237,7 +237,7 @@ class t3lib_cache_backend_MemcachedBackend extends t3lib_cache_backend_AbstractB
 				$chunkNumber = 1;
 
 				foreach ($data as $chunk) {
-					$success &= $this->memcache->set(
+					$success = $success && $this->memcache->set(
 						$this->identifierPrefix . $entryIdentifier . '_chunk_' . $chunkNumber,
 						$chunk,
 						$this->flags,
@@ -245,7 +245,7 @@ class t3lib_cache_backend_MemcachedBackend extends t3lib_cache_backend_AbstractB
 					);
 					$chunkNumber++;
 				}
-				$success &= $this->memcache->set(
+				$success = $success && $this->memcache->set(
 					$this->identifierPrefix . $entryIdentifier,
 					'TYPO3*chunked:' . $chunkNumber,
 					$this->flags,
@@ -264,6 +264,11 @@ class t3lib_cache_backend_MemcachedBackend extends t3lib_cache_backend_AbstractB
 				$this->removeIdentifierFromAllTags($entryIdentifier);
 				$this->addTagsToTagIndex($tags);
 				$this->addIdentifierToTags($entryIdentifier, $tags);
+			} else {
+				throw new t3lib_cache_Exception(
+					'Could not set data to memcache server.',
+					1275830266
+				);
 			}
 		} catch(Exception $exception) {
 			throw new t3lib_cache_Exception(
@@ -484,7 +489,7 @@ class t3lib_cache_backend_MemcachedBackend extends t3lib_cache_backend_AbstractB
 
 					// Update identifier-to-tag index
 				$existingTags = $this->findTagsByIdentifier($entryIdentifier);
-				if (array_search($entryIdentifier, $existingTags) === false) {
+				if (array_search($tag, $existingTags) === FALSE) {
 					$this->memcache->set($this->identifierPrefix . 'ident_' . $entryIdentifier,
 						array_merge($existingTags, $tags));
 				}

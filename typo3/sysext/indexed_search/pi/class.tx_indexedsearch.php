@@ -27,7 +27,7 @@
 /**
  * Index search frontend
  *
- * $Id: class.tx_indexedsearch.php 7134 2010-03-18 13:29:16Z dmitry $
+ * $Id: class.tx_indexedsearch.php 8163 2010-07-12 13:24:08Z dmitry $
  *
  * Creates a searchform for indexed search. Indexing must be enabled
  * for this to make sense.
@@ -1853,9 +1853,9 @@ class tx_indexedsearch extends tslib_pibase {
 	 * @return	string		Input string wrapped in <a> tag with onclick event attribute set.
 	 */
 	function makePointerSelector_link($str,$p,$freeIndexUid)	{
-		$onclick = 'document.'.$this->prefixId.'[\''.$this->prefixId.'[pointer]\'].value=\''.$p.'\';'.
-					'document.'.$this->prefixId.'[\''.$this->prefixId.'[_freeIndexUid]\'].value=\''.rawurlencode($freeIndexUid).'\';'.
-					'document.'.$this->prefixId.'.submit();return false;';
+		$onclick = 'document.getElementById(\'' . $this->prefixId . '_pointer\').value=\'' . $p . '\';' .
+					'document.getElementById(\'' . $this->prefixId . '_freeIndexUid\').value=\'' . rawurlencode($freeIndexUid) . '\';' .
+					'document.getElementById(\'' . $this->prefixId . '\').submit();return false;';
 		return '<a href="#" onclick="'.htmlspecialchars($onclick).'">'.$str.'</a>';
 	}
 
@@ -2118,6 +2118,7 @@ class tx_indexedsearch extends tslib_pibase {
 		} else {
 			$pathStr = htmlspecialchars($this->getPathFromPageId($pathId,$pathMP));
 			$tmplArray['path'] = $this->linkPage($pathId,$pathStr,array(
+				'cHashParams' => $row['cHashParams'],
 				'data_page_type' => $row['data_page_type'],
 				'data_page_mp' => $pathMP,
 				'sys_language_uid' => $row['sys_language_uid'],

@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_tableoperations.php 5489 2009-05-23 15:26:20Z ohader $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_tableoperations.php 7283 2010-04-11 01:12:02Z stan $
  *
  */
 
@@ -113,16 +113,18 @@ class tx_rtehtmlarea_tableoperations extends tx_rtehtmlareaapi {
 				// Dialogue fieldsets removal configuration
 			$dialogues = array('table', 'tableproperties', 'rowproperties', 'columnproperties', 'cellproperties');
 			foreach ($dialogues as $dialogue) {
-				if (!is_array( $this->thisConfig['buttons.']) || !is_array( $this->thisConfig['buttons.'][$dialogue.'.'])) {
-					$registerRTEinJavascriptString .= '
-			RTEarea['.$RTEcounter.'].buttons.'.$dialogue.' = new Object();
-			RTEarea['.$RTEcounter.'].buttons.'.$dialogue.'.removeFieldsets = "' . $disabledFieldsets . '";';
-				} else if ($this->thisConfig['buttons.'][$dialogue.'.']['removeFieldsets']) {
-					$registerRTEinJavascriptString .= '
-			RTEarea['.$RTEcounter.'].buttons.'.$dialogue.'.removeFieldsets += ",' . $disabledFieldsets . '";';
-				} else {
-					$registerRTEinJavascriptString .= '
-			RTEarea['.$RTEcounter.'].buttons.'.$dialogue.'.removeFieldsets = ",' . $disabledFieldsets . '";';
+				if (in_array($dialogue, $this->toolbar)) {
+					if (!is_array( $this->thisConfig['buttons.']) || !is_array( $this->thisConfig['buttons.'][$dialogue.'.'])) {
+						$registerRTEinJavascriptString .= '
+				RTEarea['.$RTEcounter.'].buttons.'.$dialogue.' = new Object();
+				RTEarea['.$RTEcounter.'].buttons.'.$dialogue.'.removeFieldsets = "' . $disabledFieldsets . '";';
+					} else if ($this->thisConfig['buttons.'][$dialogue.'.']['removeFieldsets']) {
+						$registerRTEinJavascriptString .= '
+				RTEarea['.$RTEcounter.'].buttons.'.$dialogue.'.removeFieldsets += ",' . $disabledFieldsets . '";';
+					} else {
+						$registerRTEinJavascriptString .= '
+				RTEarea['.$RTEcounter.'].buttons.'.$dialogue.'.removeFieldsets = ",' . $disabledFieldsets . '";';
+					}
 				}
 			}
 

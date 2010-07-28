@@ -32,7 +32,7 @@
  * @author	Steffen Kamper <info@sk-typo3.de>
  * @package TYPO3
  * @subpackage t3lib
- * $Id: class.t3lib_pagerenderer.php 7231 2010-04-01 13:56:42Z steffenk $
+ * $Id: class.t3lib_pagerenderer.php 8180 2010-07-13 20:47:04Z steffenk $
  */
 class t3lib_PageRenderer implements t3lib_Singleton {
 
@@ -654,7 +654,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 	 * @return void
 	 */
 	public function addJsInlineCode($name, $block, $compress = TRUE, $forceOnTop = FALSE) {
-		if (!isset($this->jsInline[$name])) {
+		if (!isset($this->jsInline[$name]) && !empty($block)) {
 			$this->jsInline[$name] = array (
 				'code'        => $block . chr(10),
 				'section'     => self::PART_HEADER,
@@ -674,7 +674,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 	 * @return void
 	 */
 	public function addJsFooterInlineCode($name, $block, $compress = TRUE, $forceOnTop = FALSE) {
-		if (!isset($this->jsInline[$name])) {
+		if (!isset($this->jsInline[$name]) && !empty($block)) {
 			$this->jsInline[$name] = array (
 				'code'        => $block . chr(10),
 				'section'     => self::PART_FOOTER,
@@ -734,7 +734,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 	 * @return void
 	 */
 	public function addCssInlineBlock($name, $block, $compressed = FALSE, $forceOnTop = FALSE) {
-		if (!isset($this->cssInline[$name])) {
+		if (!isset($this->cssInline[$name]) && !empty($block)) {
 			$this->cssInline[$name] = array (
 				'code'       => $block,
 				'compress'   => $compress,
@@ -961,13 +961,13 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 		$jsFooterFiles = '';
 		$noJS = FALSE;
 
-		
+
 		// preRenderHook for possible manuipulation
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_pagerenderer.php']['render-preProcess'])) {
 			$params = array (
 				'jsLibs'         => &$this->jsLibs,
 				'jsFiles'        => &$this->jsFiles,
-				'jsFooterFiles'  => &$this->jsFiles,
+				'jsFooterFiles'  => &$this->jsFooterFiles,
 				'cssFiles'       => &$this->cssFiles,
 				'headerData'     => &$this->headerData,
 				'footerData'     => &$this->footerData,
@@ -980,7 +980,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 		}
 
 		$jsLibs = $this->renderJsLibraries();
-		
+
 		if ($this->compressCss || $this->compressJavascript) {
 				// do the file compression
 			$this->doCompress();
@@ -1292,7 +1292,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 			$params = array (
 				'jsLibs'         => &$this->jsLibs,
 				'jsFiles'        => &$this->jsFiles,
-				'jsFooterFiles'  => &$this->jsFiles,
+				'jsFooterFiles'  => &$this->jsFooterFiles,
 				'cssFiles'       => &$this->cssFiles,
 				'headerData'     => &$this->headerData,
 				'footerData'     => &$this->footerData,
@@ -1318,7 +1318,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 				'jsFooterInline'  => &$this->jsFooterInline,
 				'jsLibs'          => &$this->jsLibs,
 				'jsFiles'         => &$this->jsFiles,
-				'jsFooterFiles'   => &$this->jsFiles,
+				'jsFooterFiles'   => &$this->jsFooterFiles,
 				'headerData'      => &$this->headerData,
 				'footerData'      => &$this->footerData,
 			);

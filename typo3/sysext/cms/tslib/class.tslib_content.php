@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 7159 2010-03-24 23:16:09Z lolli $
+ * $Id: class.tslib_content.php 8419 2010-07-28 09:15:45Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2013,6 +2013,15 @@ class tslib_cObj {
 					break;
 					case 'hidden':
 						$value = trim($parts[2]);
+
+							// If this form includes an auto responder message, include a HMAC checksum field
+							// in order to verify potential abuse of this feature.
+						if (strlen($value) && t3lib_div::inList($confData['fieldname'], 'auto_respond_msg')) {
+							$hmacChecksum = t3lib_div::hmac($value);
+							$hiddenfields .= sprintf('<input type="hidden" name="auto_respond_checksum" id="%sauto_respond_checksum" value="%s" />',
+												$prefix, $hmacChecksum);
+						}
+
 						if (strlen($value) && t3lib_div::inList('recipient_copy,recipient',$confData['fieldname']) && $GLOBALS['TYPO3_CONF_VARS']['FE']['secureFormmail'])	{
 							break;
 						}
@@ -2779,7 +2788,7 @@ class tslib_cObj {
 				$conf['params.'] = array_merge((array) $conf['params.'], $conf['predefined']);
 				$content = $this->QTOBJECT($conf);
 			break;
-			case 'media':
+			case 'embed':
 				$paramsArray = array_merge((array) $typeConf['default.']['params.'], (array) $conf['params.'], $conf['predefined']);
 				$conf['params']= '';
 				foreach ($paramsArray as $key => $value) {
@@ -4296,11 +4305,16 @@ class tslib_cObj {
 				if (($strLen + $thisStrLen > $absChars)) {
 					$croppedOffset = $offset;
 					$cropPosition = $absChars - $strLen;
+						// The snippet "&[^&\s;]{2,8};" in the RegEx below represents entities.
+					$patternMatchEntityAsSingleChar = '(&[^&\s;]{2,8};|.)';
 					if ($crop2space) {
-						$cropRegEx = $chars < 0 ? '#(?<=\s)(.(?![^&\s]{2,7};)|(&[^&\s;]{2,7};)){0,' . $cropPosition . '}$#ui' : '#^(.(?![^&\s]{2,7};)|(&[^&\s;]{2,7};)){0,' . $cropPosition . '}(?=\s)#ui';
+						$cropRegEx = $chars < 0 ?
+							'#(?<=\s)' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}$#ui' :
+							'#^' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}(?=\s)#ui';
 					} else {
-						// The snippets "&[^&\s;]{2,7};" in the RegEx below represents entities.
-						$cropRegEx = $chars < 0 ? '#(.(?![^&\s]{2,7};)|(&[^&\s;]{2,7};)){0,' . $cropPosition . '}$#ui' : '#^(.(?![^&\s]{2,7};)|(&[^&\s;]{2,7};)){0,' . $cropPosition . '}#ui';
+						$cropRegEx = $chars < 0 ?
+							'#' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}$#ui' :
+							'#^' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}#ui';
 					}
 					if (preg_match($cropRegEx, $tempContent, $croppedMatch)) {
 						$tempContent = $croppedMatch[0];
@@ -4663,7 +4677,9 @@ class tslib_cObj {
 			foreach ($mimeTypes as $v) {
 				$parts = explode('=',$v,2);
 				if (strtolower($fI['extension']) == strtolower(trim($parts[0])))	{
-					$mimetype = '&mimeType='.rawurlencode(trim($parts[1]));
+					$mimetypeValue = trim($parts[1]);
+					$mimetype = '&mimeType=' . rawurlencode($mimetypeValue);
+					break;
 				}
 			}
 		}
@@ -4672,6 +4688,7 @@ class tslib_cObj {
 		$hArr = array(
 			$jumpUrl,
 			$locationData,
+			$mimetypeValue,
 			$GLOBALS['TSFE']->TYPO3_CONF_VARS['SYS']['encryptionKey']
 		);
 		$juHash='&juHash='.t3lib_div::shortMD5(serialize($hArr));
@@ -4980,7 +4997,12 @@ class tslib_cObj {
 						if ($GLOBALS['TSFE']->no_cache && $conf['sword'] && is_array($GLOBALS['TSFE']->sWordList) && $GLOBALS['TSFE']->sWordRegEx)	{
 							$newstring = '';
 							do {
-								$pieces = preg_split('/' . $GLOBALS['TSFE']->sWordRegEx . '/', $data, 2);
+								$pregSplitMode = 'i';
+								if (isset($GLOBALS['TSFE']->config['config']['sword_noMixedCase']) &&
+									!empty($GLOBALS['TSFE']->config['config']['sword_noMixedCase'])) {
+										$pregSplitMode = '';
+								}
+								$pieces = preg_split('/' . $GLOBALS['TSFE']->sWordRegEx . '/' . $pregSplitMode, $data, 2);
 								$newstring.=$pieces[0];
 								$match_len = strlen($data)-(strlen($pieces[0])+strlen($pieces[1]));
 								if (strstr($pieces[0],'<') || strstr($pieces[0],'>'))	{
@@ -5559,24 +5581,18 @@ class tslib_cObj {
 			if ((string)$key!='')	{
 				$type = strtolower(trim($parts[0]));
 				switch($type) {
-					case 'gp':
 					case 'gpvar':
-						list($firstKey, $rest) = explode('|', $key, 2);
-						if (strlen(trim($firstKey)))	{
-							$retVal = t3lib_div::_GP(trim($firstKey));
-								// Look for deeper levels:
-							if (strlen(trim($rest)))	{
-								$retVal = is_array($retVal) ? $this->getGlobal($rest, $retVal) : '';
-							}
-								// Check that output is not an array:
-							if (is_array($retVal))	$retVal = '';
-						}
-						if ($type == 'gpvar') {
-							t3lib_div::deprecationLog('Using gpvar in TypoScript getText is deprecated since TYPO3 4.3 - Use gp instead of gpvar.');
-						}
+						t3lib_div::deprecationLog('Using gpvar in TypoScript getText is deprecated since TYPO3 4.3 - Use gp instead of gpvar.');
+						// Fall Through
+					case 'gp':
+							// Merge GET and POST and get $key out of the merged array
+						$retVal = $this->getGlobal(
+							$key,
+							t3lib_div::array_merge_recursive_overrule(t3lib_div::_GET(), t3lib_div::_POST())
+						);
 					break;
 					case 'tsfe':
-						$retVal = $this->getGlobal ('TSFE|'.$key);
+						$retVal = $this->getGlobal ('TSFE|' . $key);
 					break;
 					case 'getenv':
 						$retVal = getenv($key);
@@ -5713,33 +5729,30 @@ class tslib_cObj {
 	 * @param	string		Global var key, eg. "HTTP_GET_VAR" or "HTTP_GET_VARS|id" to get the GET parameter "id" back.
 	 * @param	array		Alternative array than $GLOBAL to get variables from.
 	 * @return	mixed		Whatever value. If none, then blank string.
-	 * @access private
 	 * @see getData()
 	 */
-	function getGlobal($var, $source=NULL)	{
-		$vars = explode('|', $var);
-		$c = count($vars);
-		$k = trim($vars[0]);
-		$theVar = isset($source) ? $source[$k] : $GLOBALS[$k];
+	function getGlobal($keyString, $source = NULL) {
+		$keys = explode('|', $keyString);
+		$numberOfLevels = count($keys);
+		$rootKey = trim($keys[0]);
+		$value = isset($source) ? $source[$rootKey] : $GLOBALS[$rootKey];
 
-		for ($a=1;$a<$c;$a++)	{
-			if (!isset($theVar))	{ break; }
-
-			$key = trim($vars[$a]);
-			if (is_object($theVar))	{
-				$theVar = $theVar->$key;
-			} elseif (is_array($theVar))	{
-				$theVar = $theVar[$key];
+		for ($i = 1; $i < $numberOfLevels && isset($value); $i++) {
+			$currentKey = trim($keys[$i]);
+			if (is_object($value)) {
+				$value = $value->$currentKey;
+			} elseif (is_array($value)) {
+				$value = $value[$currentKey];
 			} else {
-				return '';
+				$value = '';
+				break;
 			}
 		}
 
-		if (!is_array($theVar) && !is_object($theVar))	{
-			return $theVar;
-		} else {
-			return '';
+		if (!is_scalar($value)) {
+			$value = '';
 		}
+		return $value;
 	}
 
 	/**
@@ -6018,11 +6031,16 @@ class tslib_cObj {
 							// Query Params:
 						$addQueryParams = $conf['addQueryString'] ? $this->getQueryArguments($conf['addQueryString.']) : '';
 						$addQueryParams .= trim($this->stdWrap($conf['additionalParams'],$conf['additionalParams.']));
-						if (substr($addQueryParams,0,1)!='&')		{
+						if ($addQueryParams == '&' || substr($addQueryParams, 0, 1) != '&') {
 							$addQueryParams = '';
-						} elseif ($conf['useCacheHash']) {	// cache hashing:
-								// Added '.$this->linkVars' dec 2003: The need for adding the linkVars is that they will be included in the link, but not the cHash. Thus the linkVars will always be the problem that prevents the cHash from working. I cannot see what negative implications in terms of incompatibilities this could bring, but for now I hope there are none. So here we go... (- kasper);
-							$addQueryParams .= '&cHash=' . t3lib_div::generateCHash($addQueryParams . $GLOBALS['TSFE']->linkVars);
+						}
+						if ($conf['useCacheHash']) {
+								// Mind the order below! See http://bugs.typo3.org/view.php?id=5117
+							$params = $GLOBALS['TSFE']->linkVars . $addQueryParams;
+							if (trim($params, '& ') != '') {
+								$addQueryParams .= '&cHash=' . t3lib_div::generateCHash($params);
+							}
+							unset($params);
 						}
 
 						$targetDomain = '';
@@ -6057,7 +6075,8 @@ class tslib_cObj {
 							// Find all domain records in the rootline of the target page
 							$targetPageRootline = $GLOBALS['TSFE']->sys_page->getRootLine($page['uid']);
 							$foundDomains = array();
-							$foundForcedDomains = array();
+							$firstFoundDomains = array();
+							$firstFoundForcedDomains = array();
 							$targetPageRootlinePids = array();
 							foreach ($targetPageRootline as $data)	{
 								$targetPageRootlinePids[] = intval($data['uid']);
@@ -6072,27 +6091,28 @@ class tslib_cObj {
 							);
 							// TODO maybe it makes sense to hold all sys_domain records in a cache to save additional DB querys on each typolink
 							while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-								if (!isset($foundDomains[$row['pid']])) {
-									$foundDomains[$row['pid']] = preg_replace('/\/$/', '', $row['domainName']);
+								$foundDomains[] = preg_replace('/\/$/', '', $row['domainName']);
+								if (!isset($firstFoundDomains[$row['pid']])) {
+									$firstFoundDomains[$row['pid']] = preg_replace('/\/$/', '', $row['domainName']);
 								}
-								if ($row['forced'] && !isset($foundForcedDomains[$row['pid']])) {
-									$foundForcedDomains[$row['pid']] = preg_replace('/\/$/', '', $row['domainName']);
+								if ($row['forced'] && !isset($firstFoundForcedDomains[$row['pid']])) {
+									$firstFoundForcedDomains[$row['pid']] = preg_replace('/\/$/', '', $row['domainName']);
 								}
 							}
 							$GLOBALS['TYPO3_DB']->sql_free_result($res);
 
 							// Set targetDomain to first found domain record if the target page cannot be reached within the current domain
 							if (count($foundDomains) > 0
-							  && (!in_array($currentDomain, $foundDomains) || count($foundForcedDomains) > 0)) {
+							  && (!in_array($currentDomain, $foundDomains) || count($firstFoundForcedDomains) > 0)) {
 								foreach ($targetPageRootlinePids as $pid) {
 									// Always use the 'forced' domain if we found one
-									if (isset($foundForcedDomains[$pid])) {
-										$targetDomain = $foundForcedDomains[$pid];
+									if (isset($firstFoundForcedDomains[$pid])) {
+										$targetDomain = $firstFoundForcedDomains[$pid];
 										break;
 									}
 									// Use the first found domain record
-									if ($targetDomain === '' && isset($foundDomains[$pid])) {
-										$targetDomain = $foundDomains[$pid];
+									if ($targetDomain === '' && isset($firstFoundDomains[$pid])) {
+										$targetDomain = $firstFoundDomains[$pid];
 									}
 								}
 								// Do not prepend the domain if its the current hostname
@@ -7328,19 +7348,20 @@ class tslib_cObj {
 					$dontCheckEnableFields,
 					$addSelectFields,
 					$moreWhereClauses,
-					$prevId_array
+					$prevId_array,
+					$GLOBALS['TSFE']->gr_list
 				);
 				$requestHash = md5(serialize($parameters));
 
-				$cacheEntry = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
+				list($cacheEntry) = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
 					'treelist',
 					'cache_treelist',
 					'md5hash = \'' . $requestHash . '\' AND ( expires > ' . $GLOBALS['EXEC_TIME'] . ' OR expires = 0 )'
 				);
 
-				if (!empty($cacheEntry[0]['treelist'])) {
+				if (is_array($cacheEntry)) {
 						// cache hit
-					return $cacheEntry[0]['treelist'];
+					return $cacheEntry['treelist'];
 				}
 
 					// If Id less than zero it means we should add the real id to list:
@@ -7441,26 +7462,27 @@ class tslib_cObj {
 				}
 				$GLOBALS['TYPO3_DB']->sql_free_result($res);
 			}
-		}
-			// If first run, check if the ID should be returned:
-		if (!$recursionLevel) {
-			if ($addId) {
-				if ($begin > 0) {
-					$theList.= 0;
-				} else {
-					$theList.= $addId;
-				}
-			}
 
-			$GLOBALS['TYPO3_DB']->exec_INSERTquery(
-				'cache_treelist',
-				array(
-					'md5hash'  => $requestHash,
-					'pid'      => $id,
-					'treelist' => $theList,
-					'tstamp'   => $GLOBALS['EXEC_TIME'],
-				)
-			);
+				// If first run, check if the ID should be returned:
+			if (!$recursionLevel) {
+				if ($addId) {
+					if ($begin > 0) {
+						$theList.= 0;
+					} else {
+						$theList.= $addId;
+					}
+				}
+
+				$GLOBALS['TYPO3_DB']->exec_INSERTquery(
+					'cache_treelist',
+					array(
+						'md5hash'  => $requestHash,
+						'pid'      => $id,
+						'treelist' => $theList,
+						'tstamp'   => $GLOBALS['EXEC_TIME'],
+					)
+				);
+			}
 		}
 			// Return list:
 		return $theList;
@@ -7604,6 +7626,9 @@ class tslib_cObj {
 			$conf['recursive'] = intval($conf['recursive']);
 			if ($conf['recursive'] > 0) {
 				foreach (explode(',', $conf['pidInList']) as $value) {
+					if ($value === 'this') {
+						$value = $GLOBALS['TSFE']->id;
+					}
 					$pidList .= $value . ',' . $this->getTreeList($value, $conf['recursive']);
 				}
 				$conf['pidInList'] = trim($pidList, ',');

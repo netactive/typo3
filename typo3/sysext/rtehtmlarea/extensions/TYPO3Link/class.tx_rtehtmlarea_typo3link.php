@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_typo3link.php 5489 2009-05-23 15:26:20Z ohader $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_typo3link.php 7576 2010-05-10 17:03:57Z stan $
  *
  */
 
@@ -87,10 +87,8 @@ class tx_rtehtmlarea_typo3link extends tx_rtehtmlareaapi {
 				$registerRTEinJavascriptString .= '
 			RTEarea['.$RTEcounter.'].buttons.'. $button .'.classesAnchorUrl = "' . $this->htmlAreaRTE->writeTemporaryFile('', 'classesAnchor_'.$this->htmlAreaRTE->contentLanguageUid, 'js', $this->buildJSClassesAnchorArray()) . '";';
 			}
-			if ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extensionKey]['plugins'][$this->pluginName]['additionalAttributes']) {
-				$registerRTEinJavascriptString .= '
-			RTEarea['.$RTEcounter.'].buttons.'. $button .'.additionalAttributes = "' . $GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extensionKey]['plugins'][$this->pluginName]['additionalAttributes'] .'";';
-			}
+			$registerRTEinJavascriptString .= '
+			RTEarea['.$RTEcounter.'].buttons.'. $button .'.additionalAttributes = "external' . ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extensionKey]['plugins'][$this->pluginName]['additionalAttributes'] ? (',' . $GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extensionKey]['plugins'][$this->pluginName]['additionalAttributes']) : '') . '";';
 		}
 		return $registerRTEinJavascriptString;
 	}

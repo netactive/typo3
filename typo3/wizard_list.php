@@ -27,7 +27,7 @@
 /**
  * Wizard to list records from a page id.
  *
- * $Id: wizard_list.php 6469 2009-11-17 23:56:35Z benni $
+ * $Id: wizard_list.php 8428 2010-07-28 09:18:27Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -117,7 +117,7 @@ class SC_wizard_list {
 
 			// Make redirect:
 		if (!strcmp($this->pid,'') || strcmp($this->id,''))	{	// If pid is blank OR if id is set, then return...
-			$redirectUrl = $this->P['returnUrl'];
+			$redirectUrl = t3lib_div::sanitizeLocalUrl($this->P['returnUrl']);
 		} else {	// Otherwise, show the list:
 			$redirectUrl = 'db_list.php?id=' . $this->pid . '&table=' . $this->P['params']['table'] . '&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI'));
 		}

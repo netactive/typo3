@@ -27,7 +27,7 @@
 /*
  * TYPO3Link plugin for htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: typo3link.js 6658 2009-12-12 02:52:07Z stan $
+ * TYPO3 SVN ID: $Id: typo3link.js 8292 2010-07-27 21:01:20Z stan $
  */
 TYPO3Link = HTMLArea.Plugin.extend({
 	
@@ -124,7 +124,8 @@ TYPO3Link = HTMLArea.Plugin.extend({
 			if (this.pageTSConfiguration && this.pageTSConfiguration.additionalAttributes) {
 				var additionalAttributes = this.pageTSConfiguration.additionalAttributes.split(",");
 				for (var i = additionalAttributes.length; --i >= 0;) {
-					if (node.hasAttribute(additionalAttributes[i])) {
+						// hasAttribute() not available in IE < 8
+					if ((node.hasAttribute && node.hasAttribute(additionalAttributes[i])) || node.getAttribute(additionalAttributes[i]) != null) {
 						additionalParameter += "&curUrl[" + additionalAttributes[i] + "]=" + encodeURIComponent(node.getAttribute(additionalAttributes[i]));
 					}
 				}

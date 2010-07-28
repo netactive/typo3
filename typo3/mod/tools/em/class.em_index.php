@@ -28,7 +28,7 @@
 /**
  * Module: Extension manager
  *
- * $Id: class.em_index.php 7244 2010-04-05 22:10:27Z jsegars $
+ * $Id: class.em_index.php 8428 2010-07-28 09:18:27Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Karsten Dambekalns <karsten@typo3.org>
@@ -1606,10 +1606,11 @@ EXTENSION KEYS:
 		list($fetchData,) = $this->prepareImportExtList(true);
 
 		$versions = array_keys($fetchData[$extKey]['versions']);
+		natsort($versions);
 		$version = ($version == '') ? end($versions) : $version;
 
 		$opt = array();
-		foreach(array_keys($fetchData[$extKey]['versions']) as $ver)	{
+		foreach($versions as $ver) {
 			$opt[]='<option value="'.$ver.'"'.(($version == $ver) ? ' selected="selected"' : '').'>'.$ver.'</option>';
 		}
 
@@ -2169,7 +2170,7 @@ EXTENSION KEYS:
 			// Function menu here:
 		if(!$this->CMD['standAlone'] && !t3lib_div::_GP('standAlone')) {
 			$content = $GLOBALS['LANG']->getLL('ext_details_ext') . '&nbsp;<strong>' .
-				$this->extensionTitleIconHeader($extKey, $list[$extKey]) . '</strong> (' . $extKey . ')';
+				$this->extensionTitleIconHeader($extKey, $list[$extKey]) . '</strong> (' . htmlspecialchars($extKey) . ')';
 			$this->content.= $this->doc->section('', $content);
 		}
 
@@ -2328,7 +2329,7 @@ EXTENSION KEYS:
 
 				// Editing extension file:
 				$editFile = $this->CMD['editFile'];
-				if (t3lib_div::isFirstPartOfStr($editFile,PATH_site) && t3lib_div::isFirstPartOfStr($editFile,$absPath))	{	// Paranoia...
+				if (t3lib_div::isAllowedAbsPath($editFile) && t3lib_div::isFirstPartOfStr($editFile, $absPath)) {
 
 					$fI = t3lib_div::split_fileref($editFile);
 					if (@is_file($editFile) && t3lib_div::inList($this->editTextExtensions,($fI['fileext']?$fI['fileext']:$fI['filebody'])))	{
@@ -2424,7 +2425,7 @@ EXTENSION KEYS:
 					}
 				} else {
 					die (sprintf($GLOBALS['LANG']->getLL('ext_details_fatal_edit_error'),
-							$editFile
+							htmlspecialchars($editFile)
 						)
 					);
 				}
@@ -2591,7 +2592,7 @@ EXTENSION KEYS:
 	function requestInstallExtensions($extList)	{
 
 			// Return URL:
-		$returnUrl = t3lib_div::_GP('returnUrl');
+		$returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 		$installOrImportExtension = t3lib_div::_POST('installOrImportExtension');
 
 			// Extension List:
@@ -3625,7 +3626,7 @@ EXTENSION KEYS:
 		if (is_array($imgInfo))	{
 			$out.= '<img src="'.$GLOBALS['BACK_PATH'].$this->typeRelPaths[$extInfo['type']].$extKey.'/ext_icon.gif" '.$imgInfo[3].' align="'.$align.'" alt="" />';
 		}
-		$out.= $extInfo['EM_CONF']['title'] ? htmlspecialchars(t3lib_div::fixed_lgd_cs($extInfo['EM_CONF']['title'],40)) : '<em>'.$extKey.'</em>';
+		$out.= $extInfo['EM_CONF']['title'] ? htmlspecialchars(t3lib_div::fixed_lgd_cs($extInfo['EM_CONF']['title'],40)) : '<em>' . htmlspecialchars($extKey) . '</em>';
 		return $out;
 	}
 
@@ -4209,22 +4210,33 @@ EXTENSION KEYS:
 									);
 								}
 							}
-							//
-							$XclassParts = preg_split('/if \(defined\([\'"]TYPO3_MODE[\'"]\) && \$TYPO3_CONF_VARS\[TYPO3_MODE\]\[[\'"]XCLASS[\'"]\]/', $fContent, 2);
+
+								// Check for proper XCLASS definition
+								// Match $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS'] with single or doublequotes
+							$XclassSearch = '\$TYPO3_CONF_VARS\[TYPO3_MODE\]\[[\'"]XCLASS[\'"]\]';
+							$XclassParts = preg_split('/if \(defined\([\'"]TYPO3_MODE[\'"]\) && ' . $XclassSearch . '/', $fContent, 2);
+							if (count($XclassParts) !== 2) {
+									// Match $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS'] with single or doublequotes
+								$XclassSearch = '\$GLOBALS\[[\'"]TYPO3_CONF_VARS[\'"]\]\[TYPO3_MODE\]\[[\'"]XCLASS[\'"]\]';
+								$XclassParts = preg_split('/if \(defined\([\'"]TYPO3_MODE[\'"]\) && ' . $XclassSearch . '/', $fContent, 2);
+							}
 							if (count($XclassParts)==2)	{
 								unset($reg);
 								preg_match('/^\[[\'"]([[:alnum:]_\/\.]*)[\'"]\]/',$XclassParts[1],$reg);
 								if ($reg[1]) {
 									$cmpF = 'ext/'.$extKey.'/'.$fileName;
 									if (!strcmp($reg[1],$cmpF))	{
-										if (preg_match('/_once[[:space:]]*\(\$TYPO3_.ONF_VARS\[TYPO3_MODE\]\[[\'"]XCLASS[\'"]\]\[[\'"]'.preg_quote($cmpF,'/').'[\'"]\]\);/', $XclassParts[1]))	{
+										if (preg_match('/_once[[:space:]]*\(' . $XclassSearch . '\[[\'"]' . preg_quote($cmpF, '/') . '[\'"]\]\);/', $XclassParts[1])) {
 											$out['msg'][] = sprintf($GLOBALS['LANG']->getLL('detailedExtAnalysis_xclass_ok'), $fileName);
 										} else $out['errors'][] = $GLOBALS['LANG']->getLL('detailedExtAnalysis_xclass_no_include');
 									} else $out['errors'][] = sprintf($GLOBALS['LANG']->getLL('detailedExtAnalysis_xclass_incorrect'),
 										$reg[1], $cmpF
 									);
 								} else $out['errors'][] = sprintf($GLOBALS['LANG']->getLL('detailedExtAnalysis_no_xclass_filename'), $fileName);
-							} elseif (!$this->first_in_array('ux_', $out['files'][$fileName]['classes'])) $out['errors'][] = sprintf($GLOBALS['LANG']->getLL('detailedExtAnalysis_no_xclass_found'), $fileName);
+							} elseif (!$this->first_in_array('ux_', $out['files'][$fileName]['classes'])) {
+									// No Xclass definition required if classname starts with 'ux_'
+								$out['errors'][] = sprintf($GLOBALS['LANG']->getLL('detailedExtAnalysis_no_xclass_found'), $fileName);
+							}
 						}
 					}
 				}

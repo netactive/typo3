@@ -27,7 +27,7 @@
 /**
  * Login-screen of TYPO3.
  *
- * $Id: index.php 7255 2010-04-08 10:54:29Z steffenk $
+ * $Id: index.php 8428 2010-07-28 09:18:27Z ohader $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -121,7 +121,7 @@ class SC_index {
 			// We need a PHP session session for most login levels
 		session_start();
 
-		$this->redirect_url = t3lib_div::_GP('redirect_url');
+		$this->redirect_url = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('redirect_url'));
 		$this->GPinterface = t3lib_div::_GP('interface');
 
 			// Grabbing preset username and password, for security reasons this feature only works if SSL is used
@@ -207,7 +207,7 @@ class SC_index {
 		}
 
 			// Starting page:
-		$this->content.=$TBE_TEMPLATE->startPage('TYPO3 Login: '.$TYPO3_CONF_VARS['SYS']['sitename']);
+		$this->content .= $TBE_TEMPLATE->startPage('TYPO3 Login: ' . htmlspecialchars($TYPO3_CONF_VARS['SYS']['sitename']));
 
 			// Add login form:
 		$this->content.=$this->wrapLoginForm($loginForm);
@@ -339,7 +339,7 @@ class SC_index {
 			'SITELINK'         => '<a href="/">###SITENAME###</a>',
 
 				// global variables will now be replaced (at last)
-			'SITENAME'         => $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']
+			'SITENAME'         => htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'])
 		);
 		return t3lib_parsehtml::substituteMarkerArray($mainContent, $markers, '###|###');
 	}

@@ -27,7 +27,7 @@
 /**
  * Wizard to display the RTE in "full screen" mode
  *
- * $Id: wizard_rte.php 5947 2009-09-16 17:57:09Z ohader $
+ * $Id: wizard_rte.php 8428 2010-07-28 09:18:27Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -250,7 +250,7 @@ class SC_wizard_rte {
 		);
 
 		if ($this->P['table'] && $this->P['field'] && $this->P['uid'] && $this->checkEditAccess($this->P['table'],$this->P['uid'])) {
-			$closeUrl = $this->P['returnUrl'];
+			$closeUrl = t3lib_div::sanitizeLocalUrl($this->P['returnUrl']);
 
 			// Getting settings for the undo button:
 			$undoButton = 0;

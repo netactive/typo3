@@ -28,7 +28,7 @@
 /**
  * Class to handle and determine browser specific information.
  *
- * $Id: class.t3lib_utility_client.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.t3lib_utility_client.php 7943 2010-06-16 22:25:13Z steffenk $
  *
  * @author	Oliver Hader <oliver@typo3.org>
  */
@@ -51,7 +51,10 @@ final class t3lib_utility_Client {
 					'returnResult' => &$returnResult,
 				);
 
-				$hookResult = t3lib_div::callUserFunction($hookFunction, $hookParameters, NULL);
+					// need reference for third parameter in t3lib_div::callUserFunction,
+					// so create a reference to NULL
+				$null = NULL;
+				$hookResult = t3lib_div::callUserFunction($hookFunction, $hookParameters, $null);
 				if ($returnResult && is_array($hookResult) && count($hookResult)) {
 					return $hookResult;
 				}
@@ -188,7 +191,10 @@ final class t3lib_utility_Client {
 					'returnResult' => &$returnResult,
 				);
 
-				$hookResult = t3lib_div::callUserFunction($hookFunction, $hookParameters, NULL);
+					// need reference for third parameter in t3lib_div::callUserFunction,
+					// so create a reference to NULL
+				$null = NULL;
+				$hookResult = t3lib_div::callUserFunction($hookFunction, $hookParameters, $null);
 				if ($returnResult && is_string($hookResult) && !empty($hookResult)) {
 					return $hookResult;
 				}

@@ -27,7 +27,7 @@
 /**
  * Contains class with functions for parsing HTML code.
  *
- * $Id: class.t3lib_parsehtml.php 5424 2009-05-15 23:12:32Z k-fish $
+ * $Id: class.t3lib_parsehtml.php 7946 2010-06-17 03:15:24Z stan $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -811,8 +811,27 @@ class t3lib_parsehtml	{
 													$tagAttrib[0][$attr]=t3lib_div::intInRange($tagAttrib[0][$attr],intval($params['range'][0]));
 												}
 											}
-											if (is_array($params['list']))	{
-												if (!in_array($this->caseShift($tagAttrib[0][$attr],$params['casesensitiveComp']),$this->caseShift($params['list'],$params['casesensitiveComp'],$tagName)))	$tagAttrib[0][$attr]=$params['list'][0];
+											if (is_array($params['list'])) {
+													// For the class attribute, remove from the attribute value any class not in the list
+													// Classes are case sensitive
+												if ($attr == 'class') {
+													$newClasses = array();
+													$classes = t3lib_div::trimExplode(' ', $tagAttrib[0][$attr], TRUE);
+													foreach ($classes as $class) {
+														if (in_array($class, $params['list'])) {
+															$newClasses[] = $class;
+														}
+													}
+													if (count($newClasses)) {
+														$tagAttrib[0][$attr] = implode(' ', $newClasses);
+													} else {
+														$tagAttrib[0][$attr] = '';
+													}
+												} else {
+													if (!in_array($this->caseShift($tagAttrib[0][$attr],$params['casesensitiveComp']),$this->caseShift($params['list'],$params['casesensitiveComp'],$tagName))) {
+														$tagAttrib[0][$attr]=$params['list'][0];
+													}
+												}
 											}
 											if (($params['removeIfFalse'] && $params['removeIfFalse']!='blank' && !$tagAttrib[0][$attr]) || ($params['removeIfFalse']=='blank' && !strcmp($tagAttrib[0][$attr],'')))	{
 												unset($tagAttrib[0][$attr]);
@@ -966,7 +985,7 @@ class t3lib_parsehtml	{
 	 */
 	function prefixResourcePath($main_prefix,$content,$alternatives=array(),$suffix='')	{
 
-		$parts = $this->splitTags('embed,td,table,body,img,input,form,link,script,a',$content);
+		$parts = $this->splitTags('embed,td,table,body,img,input,form,link,script,a,param',$content);
 		foreach ($parts as $k => $v)	{
 			if ($k%2)	{
 				$params = $this->get_tag_attributes($v,1);
@@ -1012,6 +1031,16 @@ class t3lib_parsehtml	{
 							$somethingDone=1;
 						}
 					break;
+						// value attribute
+					case 'param':
+						$test = $params[0]['name'];
+						if ($test && $test === 'movie') {
+							if ($params[0]['value']) {
+								$params[0]['value'] = $this->prefixRelPath($prefix, $params[0]['value'], $suffix);
+								$somethingDone = 1;
+							}
+						}
+					break;
 				}
 				if ($somethingDone)	{
 					$tagParts = preg_split('/\s+/s',$v,2);
@@ -1046,10 +1075,11 @@ class t3lib_parsehtml	{
 	 * @return	string		Output path, prefixed if no scheme in input string
 	 * @access private
 	 */
-	function prefixRelPath($prefix,$srcVal,$suffix='')	{
+	function prefixRelPath($prefix, $srcVal, $suffix = '')	{
 		$pU = parse_url($srcVal);
-		if (!$pU['scheme'] && substr($srcVal, 0, 1)!='/')	{ // If not an absolute URL.
-			$srcVal = $prefix.$srcVal.$suffix;
+			// If not an absolute URL.
+		if (!$pU['scheme'] && substr($srcVal, 0, 1) != '/' && substr($srcVal, 0, 1) != '#')	{
+			$srcVal = $prefix . $srcVal . $suffix;
 		}
 		return $srcVal;
 	}

@@ -27,7 +27,7 @@
 /*
  * BlockElements Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: block-elements.js 6652 2009-12-11 03:05:24Z stan $
+ * TYPO3 SVN ID: $Id: block-elements.js 7967 2010-06-19 14:32:56Z stan $
  */
 BlockElements = HTMLArea.Plugin.extend({
 		
@@ -147,7 +147,7 @@ BlockElements = HTMLArea.Plugin.extend({
 					tooltip		: this.localize(buttonId + "-Tooltip"),
 					action		: "onButtonPress",
 					context		: button[0],
-					hotKey		: (this.buttonsConfiguration[button[2]] ? this.buttonsConfiguration[button[2]].hotKey : (button[1] ? button[1] : null))
+					hotKey		: ((this.buttonsConfiguration[button[2]] && this.buttonsConfiguration[button[2]].hotKey) ? this.buttonsConfiguration[button[2]].hotKey : (button[1] ? button[1] : null))
 				};
 				this.registerButton(buttonConfiguration);
 			}
@@ -229,8 +229,12 @@ BlockElements = HTMLArea.Plugin.extend({
 					element = "<" + element + ">";
 				}
 				this.editor.focusEditor();
-				if (HTMLArea.is_safari && !this.editor._doc.body.hasChildNodes()) {
-					this.editor._doc.body.appendChild((this.editor._doc.createElement("br")));
+				if (HTMLArea.is_safari) {
+					if (!this.editor._doc.body.hasChildNodes()) {
+						this.editor._doc.body.appendChild((this.editor._doc.createElement("br")));
+					}
+						// WebKit sometimes leaves empty block at the end of the selection
+					this.editor._doc.body.normalize();
 				}
 				try {
 					this.editor._doc.execCommand(buttonId, false, element);
@@ -607,31 +611,33 @@ BlockElements = HTMLArea.Plugin.extend({
 		if (endBlocks.start === endBlocks.end) {
 			--index;
 		}
-		for (var block = startAncestors[index]; block; block = block.nextSibling) {
-			if (HTMLArea.isBlockElement(block)) {
-				switch (buttonId) {
-					case "Indent" :
-						if (!HTMLArea._hasClass(block, this.useClass[buttonId])) {
-							HTMLArea._addClass(block, this.useClass[buttonId]);
-						}
-						break;
-					case "Outdent" :
-						if (HTMLArea._hasClass(block, this.useClass["Indent"])) {
-							HTMLArea._removeClass(block, this.useClass["Indent"]);
-						}
-						break;
-					case "JustifyLeft"   :
-					case "JustifyCenter" :
-					case "JustifyRight"  :
-					case "JustifyFull"   :
-						this.toggleAlignmentClass(block, buttonId);
-						break;
-					default :
-						break;
+		if (!/^(body)$/i.test(startAncestors[index].nodeName)) {
+			for (var block = startAncestors[index]; block; block = block.nextSibling) {
+				if (HTMLArea.isBlockElement(block)) {
+					switch (buttonId) {
+						case "Indent" :
+							if (!HTMLArea._hasClass(block, this.useClass[buttonId])) {
+								HTMLArea._addClass(block, this.useClass[buttonId]);
+							}
+							break;
+						case "Outdent" :
+							if (HTMLArea._hasClass(block, this.useClass["Indent"])) {
+								HTMLArea._removeClass(block, this.useClass["Indent"]);
+							}
+							break;
+						case "JustifyLeft"   :
+						case "JustifyCenter" :
+						case "JustifyRight"  :
+						case "JustifyFull"   :
+							this.toggleAlignmentClass(block, buttonId);
+							break;
+						default :
+							break;
+					}
 				}
-			}
-			if (block == endAncestors[index]) {
-				break;
+				if (block == endAncestors[index]) {
+					break;
+				}
 			}
 		}
 	},
@@ -919,7 +925,45 @@ BlockElements = HTMLArea.Plugin.extend({
 		}
 		var statusBarSelection = this.editor.getPluginInstance("StatusBar") ? this.editor.getPluginInstance("StatusBar").getSelection() : null;
 		var parentElement = statusBarSelection ? statusBarSelection : this.editor.getParentElement();
-		if (parentElement.nodeName.toLowerCase() === "body") return false;
+		if (parentElement.nodeName.toLowerCase() === "body") {
+				// The selection is not contained in any block
+			var dropDownConfiguration = this.getDropDownConfiguration("FormatBlock");
+			if ((typeof(dropDownConfiguration) !== "undefined") && this.isButtonInToolbar(dropDownConfiguration.id)) {
+				this.updateDropDown(dropDownConfiguration);
+			}
+			for (var buttonId in this.buttonList) {
+				if (this.buttonList.hasOwnProperty(buttonId) && this.isButtonInToolbar(buttonId)) {
+					switch (buttonId) {
+						case 'Outdent' :
+							this.editor._toolbarObjects[buttonId].state("enabled", false);
+							break;
+						case 'Indent' :
+							break;
+						case 'InsertParagraphBefore' :
+						case 'InsertParagraphAfter'  :
+							this.editor._toolbarObjects[buttonId].state("enabled", false);
+							break;
+						case 'Blockquote' :
+							this.editor._toolbarObjects[buttonId].state("active", false);
+							break;
+						case 'JustifyLeft'   :
+						case 'JustifyCenter' :
+						case 'JustifyRight'  :
+						case 'JustifyFull'   :
+							this.editor._toolbarObjects[buttonId].state("active", false);
+							this.editor._toolbarObjects[buttonId].state("enabled", false);
+							break;
+						case 'InsertOrderedList':
+						case 'InsertUnorderedList':
+							this.editor._toolbarObjects[buttonId].state("active", false);
+							break;
+						default	:
+							break;
+					}
+				}
+			}
+			return false;
+		}
 		while (parentElement && !HTMLArea.isBlockElement(parentElement) || /^li$/i.test(parentElement.nodeName)) {
 			parentElement = parentElement.parentNode;
 		}

@@ -31,7 +31,7 @@
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * $Id: class.tx_rtehtmlarea_dam_browse_media.php 5947 2009-09-16 17:57:09Z ohader $  *
+ * $Id: class.tx_rtehtmlarea_dam_browse_media.php 7840 2010-06-08 23:11:03Z stan $  *
  */
 require_once(t3lib_extMgm::extPath('dam').'class.tx_dam_browse_media.php');
 
@@ -504,18 +504,14 @@ class tx_rtehtmlarea_dam_browse_media extends tx_dam_browse_media {
 						}
 						selectedImageRef.removeAttribute("border");
 					}
-
 					if (document.imageData.iFloat) {
 						var iFloat = document.imageData.iFloat.options[document.imageData.iFloat.selectedIndex].value;
-						if (iFloat || selectedImageRef.style.cssFloat || selectedImageRef.style.styleFloat) {
-							if (document.all) {
-								selectedImageRef.style.styleFloat = (iFloat != "none") ? iFloat : "";
-							} else {
-								selectedImageRef.style.cssFloat = (iFloat != "none") ? iFloat : "";
-							}
+						if (document.all) {
+							selectedImageRef.style.styleFloat = iFloat ? iFloat : "";
+						} else {
+							selectedImageRef.style.cssFloat = iFloat ? iFloat : "";
 						}
 					}
-
 					if (classesImage && document.imageData.iClass) {
 						var iClass = document.imageData.iClass.options[document.imageData.iClass.selectedIndex].value;
 						if (iClass || (selectedImageRef.attributes["class"] && selectedImageRef.attributes["class"].value)) {

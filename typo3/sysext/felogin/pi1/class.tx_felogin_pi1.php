@@ -85,7 +85,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 
 			// GPvars:
 		$this->logintype = t3lib_div::_GP('logintype');
-		$this->referer = t3lib_div::_GP('referer');
+		$this->referer = $this->validateRedirectUrl(t3lib_div::_GP('referer'));
 		$this->noRedirect = ($this->piVars['noredirect'] || $this->conf['redirectDisable']);
 
 			// if config.typolinkLinkAccessRestrictedPages is set, the var is return_url
@@ -95,6 +95,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 		} else {
 			$this->redirectUrl = t3lib_div::_GP('redirect_url');
 		}
+		$this->redirectUrl = $this->validateRedirectUrl($this->redirectUrl);
 
 			// Get Template
 		$templateFile = $this->conf['templateFile'] ? $this->conf['templateFile'] : 'EXT:felogin/template.html';
@@ -260,7 +261,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 					// all is fine, continue with new password
 				$postData = t3lib_div::_POST($this->prefixId);
 
-				if ($postData['changepasswordsubmit']) {
+				if (isset($postData['changepasswordsubmit'])) {
 					if (strlen($postData['password1']) < $minLength) {
 			 			$markerArray['###STATUS_MESSAGE###'] = sprintf($this->getDisplayText('change_password_tooshort_message', $this->conf['changePasswordMessage_stdWrap.']), $minLength);
 					} elseif ($postData['password1'] != $postData['password2']) {
@@ -326,7 +327,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 		$validEnd = time() + 3600 * $hours;
 		$validEndString = date($this->conf['dateFormat'], $validEnd);
 
-		$hash =  md5(rand());
+		$hash = md5(t3lib_div::generateRandomBytes(64));
 		$randHash = $validEnd . '|' . $hash;
 		$randHashDB = $validEnd . '|' . md5($hash);
 
@@ -484,7 +485,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 			$extraHidden = implode(chr(10), $extraHiddenAr);
 		}
 
-		if (!$gpRedirectUrl && $this->redirectUrl && $this->logintype === 'login') {
+		if (!$gpRedirectUrl && $this->redirectUrl) {
 			$gpRedirectUrl = $this->redirectUrl;
 		}
 
@@ -547,7 +548,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 								'felogin_redirectPid!="" AND uid IN (' . implode(',', $groupData['uid']) . ')'
 							);
 							if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_row($res))	{
-								$redirect_url[] = $this->pi_getPageLink($row[0], array(), TRUE); // take the first group with a redirect page
+								$redirect_url[] = $this->pi_getPageLink($row[0]); // take the first group with a redirect page
 							}
 						break;
 						case 'userLogin':
@@ -557,12 +558,12 @@ class tx_felogin_pi1 extends tslib_pibase {
 								$GLOBALS['TSFE']->fe_user->userid_column . '=' . $GLOBALS['TSFE']->fe_user->user['uid'] . ' AND felogin_redirectPid!=""'
 							);
 							if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_row($res))	{
-								$redirect_url[] = $this->pi_getPageLink($row[0], array(), TRUE);
+								$redirect_url[] = $this->pi_getPageLink($row[0]);
 							}
 						break;
 						case 'login':
 							if ($this->conf['redirectPageLogin']) {
-								$redirect_url[] = $this->pi_getPageLink(intval($this->conf['redirectPageLogin']), array(), TRUE);
+								$redirect_url[] = $this->pi_getPageLink(intval($this->conf['redirectPageLogin']));
 							}
 						break;
 						case 'getpost':
@@ -606,7 +607,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 					switch ($redirMethod) {
 						case 'loginError':
 							if ($this->conf['redirectPageLoginError']) {
-								$redirect_url[] = $this->pi_getPageLink(intval($this->conf['redirectPageLoginError']), array(), TRUE);
+								$redirect_url[] = $this->pi_getPageLink(intval($this->conf['redirectPageLoginError']));
 							}
 						break;
 					}
@@ -620,7 +621,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 
 				} elseif (($this->logintype == '') && ($redirMethod == 'logout') && $this->conf['redirectPageLogout'] && $GLOBALS['TSFE']->loginUser) {
 						// if logout and page not accessible
-					$redirect_url[] = $this->pi_getPageLink(intval($this->conf['redirectPageLogout']), array(), TRUE);
+					$redirect_url[] = $this->pi_getPageLink(intval($this->conf['redirectPageLogout']));
 
 				} elseif ($this->logintype === 'logout') { // after logout
 
@@ -637,7 +638,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 					switch ($redirMethod) {
 						case 'logout':
 							if ($this->conf['redirectPageLogout']) {
-								$redirect_url[] = $this->pi_getPageLink(intval($this->conf['redirectPageLogout']), array(), TRUE);
+								$redirect_url[] = $this->pi_getPageLink(intval($this->conf['redirectPageLogout']));
 							}
 						break;
 					}
@@ -847,6 +848,81 @@ class tx_felogin_pi1 extends tslib_pibase {
 			$marker['###USER###'] = $marker['###FEUSER_USERNAME###'];
 		}
 		return $marker;
+	}
+
+	/**
+	 * Returns a valid and XSS cleaned url for redirect, checked against configuration "allowedRedirectHosts"
+	 *
+	 * @param string $url
+	 * @return string cleaned referer or empty string if not valid
+	 */
+	protected function validateRedirectUrl($url) {
+		$url = strval($url);
+		if ($url === '') {
+			return '';
+		}
+
+		$sanitizedUrl = t3lib_div::removeXSS(rawurldecode($url));
+		if ($url !== $sanitizedUrl) {
+			t3lib_div::sysLog(sprintf($this->pi_getLL('xssAttackDetected'), $url), 'felogin', t3lib_div::SYSLOG_SEVERITY_WARNING);
+			return '';
+		}
+
+		if (!t3lib_div::isValidUrl($sanitizedUrl)) {
+			t3lib_div::sysLog(sprintf($this->pi_getLL('noValidRedirectUrl'), $sanitizedUrl), 'felogin', t3lib_div::SYSLOG_SEVERITY_WARNING);
+			return '';
+		}
+
+			// Validate the URL:
+		if ($this->isInCurrentDomain($sanitizedUrl) || $this->isInLocalDomain($sanitizedUrl)) {
+			return $sanitizedUrl;
+		}
+
+			// URL is not allowed
+		t3lib_div::sysLog(sprintf($this->pi_getLL('noValidRedirectUrl'), $url), 'felogin', t3lib_div::SYSLOG_SEVERITY_WARNING);
+		return '';
+	}
+
+	/**
+	 * Determines whether the URL is on the current host
+	 * and belongs to the current TYPO3 installation.
+	 *
+	 * @param string $url URL to be checked
+	 * @return boolean Whether the URL belongs to the current TYPO3 installation
+	 */
+	protected function isInCurrentDomain($url) {
+		return (t3lib_div::isOnCurrentHost($url) AND strpos($url, t3lib_div::getIndpEnv('TYPO3_SITE_URL')) === 0);
+	}
+
+	/**
+	 * Determines whether the URL matches a domain
+	 * in the sys_domain databse table.
+	 *
+	 * @param string $domain Name of the domain to be looked up
+	 * @return boolean Whether the domain name is considered to be local
+	 */
+	protected function isInLocalDomain($url) {
+		$result = FALSE;
+
+		$parsedUrl = parse_url($url);
+		$domain = $parsedUrl['host'] . $parsedUrl['path'];
+
+		$localDomains = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
+			'domainName',
+			'sys_domain',
+			'1=1' . $this->cObj->enableFields('sys_domain')
+		);
+
+		if (is_array($localDomains)) {
+			foreach ($localDomains as $localDomain) {
+				if (stripos($domain, $localDomain['domainName']) === 0) {
+					$result = TRUE;
+					break;
+				}
+			}
+		}
+
+		return $result;
 	}
 }
 

@@ -27,7 +27,7 @@
 /**
  * Contains TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: class.t3lib_tceforms.php 7094 2010-03-10 10:25:28Z steffenk $
+ * $Id: class.t3lib_tceforms.php 8401 2010-07-28 09:12:31Z ohader $
  * Revised for TYPO3 3.6 August/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1619,7 +1619,7 @@ class t3lib_TCEforms	{
 				if ($sM) {
 					list($selectIconFile,$selectIconInfo) = $this->getIcon($p[2]);
 						if (!empty($selectIconInfo)) {
-							$selectedStyle = ' style="background-image: url('.$selectIconFile.'); background-repeat: no-repeat; background-position: 0% 50%; padding: 1px; padding-left: 24px; -webkit-background-size: 0;"';
+							$selectedStyle = ' style="background: #fff url(' . $selectIconFile . ') 0% 50% no-repeat; padding: 1px 1px 1px 24px; -webkit-background-size: 0;"';
 						}
 				}
 			}
@@ -1645,7 +1645,7 @@ class t3lib_TCEforms	{
 					$opt[]= '<option value="'.htmlspecialchars($p[1]).'"'.
 							$sM.
 							($styleAttrValue ? ' style="'.htmlspecialchars($styleAttrValue).'"' : '').
-							'>'.t3lib_div::deHSCentities(htmlspecialchars($p[0])).'</option>' . "\n";
+							'>' . t3lib_div::deHSCentities(($p[0])) . '</option>' . "\n";
 				}
 			}
 
@@ -2027,7 +2027,7 @@ class t3lib_TCEforms	{
 			// Perform modification of the selected items array:
 		foreach($itemArray as $tk => $tv) {
 			$tvP = explode('|',$tv,2);
-			$evalValue = rawurldecode($tvP[0]);
+			$evalValue = ($tvP[0]);
 			$isRemoved = in_array($evalValue,$removeItems)  || ($config['form_type']=='select' && $config['authMode'] && !$GLOBALS['BE_USER']->checkAuthMode($table,$field,$evalValue,$config['authMode']));
 			if ($isRemoved && !$PA['fieldTSConfig']['disableNoMatchingValueElement'] && !$config['disableNoMatchingValueElement'])	{
 				$tvP[1] = rawurlencode(@sprintf($nMV_label, $evalValue));
@@ -2038,7 +2038,7 @@ class t3lib_TCEforms	{
 					// Case: flexform, default values supplied, no label provided (bug #9795)
 				foreach ($selItems as $selItem) {
 					if ($selItem[1] == $tvP[0]) {
-						$tvP[1] = $selItem[0];
+						$tvP[1] = html_entity_decode($selItem[0]);
 						break;
 					}
 				}
@@ -2057,7 +2057,7 @@ class t3lib_TCEforms	{
 				}
 				$opt[]= '<option value="'.htmlspecialchars($p[1]).'"'.
 								($styleAttrValue ? ' style="'.htmlspecialchars($styleAttrValue).'"' : '').
-								'>'.htmlspecialchars($p[0]).'</option>';
+								'>' . $p[0] . '</option>';
 			}
 
 				// Put together the selector box:
@@ -3862,6 +3862,7 @@ class t3lib_TCEforms	{
 									$params['formName'] = $this->formName;
 									$params['itemName'] = $itemName;
 									$params['fieldChangeFunc'] = $fieldChangeFunc;
+									$params['fieldChangeFuncHash'] = t3lib_div::hmac(serialize($fieldChangeFunc));
 
 									switch((string)$wConf['type'])	{
 										case 'popup':
@@ -4031,7 +4032,7 @@ class t3lib_TCEforms	{
 			}
 
 			$padTop = t3lib_div::intInRange(($selIconInfo[1]-12)/2,0);
-			$styleAttr = 'background-image: url('.$selIconFile.'); background-repeat: no-repeat; height: '.t3lib_div::intInRange(($selIconInfo[1]+2)-$padTop,0).'px; padding-top: '.$padTop.'px; padding-left: '.$padLeft.'px;';
+			$styleAttr = 'background: #fff url(' . $selIconFile . ') 0% 50% no-repeat; height: ' . t3lib_div::intInRange(($selIconInfo[1] + 2) - $padTop, 0) . 'px; padding-top: ' . $padTop . 'px; padding-left: ' . $padLeft . 'px;';
 			return $styleAttr;
 		}
 	}
@@ -4703,8 +4704,8 @@ class t3lib_TCEforms	{
 
 					// Add the item:
 				$items[] = array(
-					$lPrefix.strip_tags(t3lib_BEfunc::getRecordTitle($f_table,$row)),
-					$uidPre.$row['uid'],
+					$lPrefix . htmlspecialchars(t3lib_BEfunc::getRecordTitle($f_table, $row)),
+					$uidPre . $row['uid'],
 					$icon
 				);
 			}
@@ -4874,10 +4875,10 @@ class t3lib_TCEforms	{
 			#t3lib_BEfunc::fixVersioningPid($table,$rec);	// Kasper: Should not be used here because NEW records are not offline workspace versions...
 			$truePid = t3lib_BEfunc::getTSconfig_pidValue($table,$rec['uid'],$rec['pid']);
 			$prec = t3lib_BEfunc::getRecordWSOL('pages',$truePid,'title');
-			$rLabel = '<em>[PID: '.$truePid.'] '.htmlspecialchars(trim(t3lib_div::fixed_lgd_cs(t3lib_BEfunc::getRecordTitle('pages',$prec),40))).'</em>';
+			$rLabel = '<em>[PID: '.$truePid.'] ' . t3lib_BEfunc::getRecordTitle('pages', $prec, TRUE, FALSE) . '</em>';
 		} else {
 			$newLabel = ' <span class="typo3-TCEforms-recUid">['.$rec['uid'].']</span>';
-			$rLabel  = htmlspecialchars(trim(t3lib_div::fixed_lgd_cs(t3lib_BEfunc::getRecordTitle($table,$rec),40)));
+			$rLabel   = t3lib_BEfunc::getRecordTitle($table, $rec, TRUE, FALSE);
 		}
 
 		foreach ($arr as $k => $v)	{

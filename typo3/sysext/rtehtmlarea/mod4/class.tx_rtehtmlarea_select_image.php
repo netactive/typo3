@@ -31,7 +31,7 @@
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_select_image.php 5955 2009-09-17 17:59:16Z ohader $  *
+ * $Id: class.tx_rtehtmlarea_select_image.php 8316 2010-07-28 08:51:24Z ohader $  *
  */
 require_once(PATH_typo3.'class.browse_links.php');
 
@@ -53,6 +53,8 @@ class tx_rtehtmlarea_image_folderTree extends t3lib_folderTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v)	{
+		$title = htmlspecialchars($title);
+		
 		if ($this->ext_isLinkable($v))	{
 			$aOnClick = 'return jumpToUrl(\'?editorNo='.$GLOBALS['SOBE']->browser->editorNo.'&expandFolder='.rawurlencode($v['path']).'\');';
 			return '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.$title.'</a>';
@@ -611,12 +613,10 @@ class tx_rtehtmlarea_select_image extends browse_links {
 					}
 					if (document.imageData.iFloat) {
 						var iFloat = document.imageData.iFloat.options[document.imageData.iFloat.selectedIndex].value;
-						if (iFloat || selectedImageRef.style.cssFloat || selectedImageRef.style.styleFloat) {
-							if (document.all) {
-								selectedImageRef.style.styleFloat = (iFloat != "none") ? iFloat : "";
-							} else {
-								selectedImageRef.style.cssFloat = (iFloat != "none") ? iFloat : "";
-							}
+						if (document.all) {
+							selectedImageRef.style.styleFloat = iFloat ? iFloat : "";
+						} else {
+							selectedImageRef.style.cssFloat = iFloat ? iFloat : "";
 						}
 					}
 					if (classesImage && document.imageData.iClass) {
@@ -1166,6 +1166,10 @@ class tx_rtehtmlarea_select_image extends browse_links {
 			// Call hook for extra options
 		foreach ($this->hookObjects as $hookObject) {
 			$allowedItems = $hookObject->addAllowedItems($allowedItems);
+		}
+			// Remove tab "image" if there is no current image
+		if ($this->act !== 'image') {
+			$allowedItems = array_diff($allowedItems, array('image'));
 		}
 			// Remove options according to RTE configuration
 		if (is_array($this->buttonConfig['options.']) && $this->buttonConfig['options.']['removeItems']) {

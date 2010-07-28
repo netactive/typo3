@@ -29,7 +29,7 @@
  * Used from TCEFORMS an other elements
  * In other words: This is the ELEMENT BROWSER!
  *
- * $Id: class.browse_links.php 7140 2010-03-20 22:42:02Z stan $
+ * $Id: class.browse_links.php 8401 2010-07-28 09:12:31Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -238,6 +238,12 @@ class TBE_browser_recordList extends localRecordList {
 class localPageTree extends t3lib_browseTree {
 
 	/**
+	 * whether the page ID should be shown next to the title, activate through userTSconfig (options.pageTree.showPageIdWithTitle)
+	 * @boolean
+	 */
+	public $ext_showPageId = FALSE;
+
+	/**
 	 * Constructor. Just calling init()
 	 *
 	 * @return	void
@@ -355,8 +361,12 @@ class localPageTree extends t3lib_browseTree {
 	 * @param	array		The row for the current element
 	 * @return	string		The processed icon input value.
 	 */
-	function wrapIcon($icon,$row)	{
-		return $this->addTagAttributes($icon,' title="id='.$row['uid'].'"');
+	function wrapIcon($icon, $row) {
+		$content = $this->addTagAttributes($icon, ' title="id=' . $row['uid'] . '"');
+		if ($this->ext_showPageId) {
+		 	$content .= '[' . $row['uid'] . ']&nbsp;';
+		}
+		return $content;
 	}
 }
 
@@ -413,6 +423,8 @@ class TBE_PageTree extends localPageTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v,$ext_pArrPages)	{
+		$title = htmlspecialchars($title);
+
 		if ($ext_pArrPages)	{
 			$ficon=t3lib_iconWorks::getIcon('pages',$v);
 			$onClick = "return insertElement('pages', '".$v['uid']."', 'db', ".t3lib_div::quoteJSvalue($v['title']).", '', '', '".$ficon."','',1);";
@@ -460,6 +472,8 @@ class localFolderTree extends t3lib_folderTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v)	{
+		$title = htmlspecialchars($title);
+
 		if ($this->ext_isLinkable($v))	{
 			$aOnClick = 'return jumpToUrl(\''.$this->thisScript.'?act='.$GLOBALS['SOBE']->browser->act.'&mode='.$GLOBALS['SOBE']->browser->mode.'&expandFolder='.rawurlencode($v['path']).'\');';
 			return '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.$title.'</a>';
@@ -612,6 +626,8 @@ class TBE_FolderTree extends localFolderTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v)	{
+		$title = htmlspecialchars($title);
+
 		if ($this->ext_isLinkable($v))	{
 			$aOnClick = 'return jumpToUrl(\''.$this->thisScript.'?act='.$GLOBALS['SOBE']->browser->act.'&mode='.$GLOBALS['SOBE']->browser->mode.'&expandFolder='.rawurlencode($v['path']).'\');';
 			return '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.$title.'</a>';
@@ -804,7 +820,7 @@ class browse_links {
 
 			// CurrentUrl - the current link url must be passed around if it exists
 		if ($this->mode == 'wizard')	{
-			$currentLinkParts = t3lib_div::trimExplode(' ',$this->P['currentValue']);
+			$currentLinkParts = t3lib_div::unQuoteFilenames($this->P['currentValue'], TRUE);
 			$initialCurUrlArray = array (
 				'href'   => $currentLinkParts[0],
 				'target' => $currentLinkParts[1],
@@ -906,6 +922,9 @@ class browse_links {
 		';
 
 		if ($this->mode == 'wizard')	{	// Functions used, if the link selector is in wizard mode (= TCEforms fields)
+			if (!$this->areFieldChangeFunctionsValid()) {
+				$this->P['fieldChangeFunc'] = array();
+			}
 			unset($this->P['fieldChangeFunc']['alert']);
 			reset($this->P['fieldChangeFunc']);
 			$update='';
@@ -967,6 +986,12 @@ class browse_links {
 						}
 						if (cur_title == "" && cur_class == "-") {
 							cur_class = "";
+						}
+						if (cur_class.indexOf(" ") != -1) {
+							cur_class = "\"" + cur_class + "\"";
+						}
+						if (cur_title.indexOf(" ") != -1) {
+							cur_title = "\"" + cur_title + "\"";
 						}
 						input = input + " " + cur_target + " " + cur_class + " " + cur_title;
 						field.value = input;
@@ -1403,6 +1428,7 @@ class browse_links {
 			case 'page':
 				$pagetree = t3lib_div::makeInstance('rtePageTree');
 				$pagetree->thisScript = $this->thisScript;
+				$pagetree->ext_showPageId = $GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.showPageIdWithTitle');
 				$tree=$pagetree->getBrowsableTree();
 				$cElements = $this->expandPage();
 				$content.= '
@@ -1550,6 +1576,7 @@ class browse_links {
 		$pagetree->thisScript=$this->thisScript;
 		$pagetree->ext_pArrPages = !strcmp($pArr[3],'pages')?1:0;
 		$pagetree->ext_showNavTitle = $GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.showNavTitle');
+		$pagetree->ext_showPageId = $GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.showPageIdWithTitle');
 		$pagetree->addField('nav_title');
 		$tree=$pagetree->getBrowsableTree();
 
@@ -2065,6 +2092,7 @@ class browse_links {
 	function TBE_expandFolder($expandFolder=0,$extensionList='',$noThumbs=0)	{
 		global $LANG;
 
+		$extensionList = ($extensionList == '*') ? '' : $extensionList;
 		$expandFolder = $expandFolder ? $expandFolder : $this->expandFolder;
 		$out='';
 		if ($expandFolder && $this->checkFolder($expandFolder))	{
@@ -2333,6 +2361,7 @@ class browse_links {
 	function TBE_dragNDrop($expandFolder=0,$extensionList='')	{
 		global $BACK_PATH;
 
+		$extensionList = ($extensionList == '*') ? '' : $extensionList;
 		$expandFolder = $expandFolder ? $expandFolder : $this->expandFolder;
 		$out='';
 		if ($expandFolder && $this->checkFolder($expandFolder))	{
@@ -2752,6 +2781,19 @@ class browse_links {
 				'</div>'.$this->doc->spacer(15);
 		}
 		return $out;
+	}
+
+	/**
+	 * Determines whether submitted field change functions are valid
+	 * and are coming from the system and not from an external abuse.
+	 *
+	 * @return boolean Whether the submitted field change functions are valid
+	 */
+	protected function areFieldChangeFunctionsValid() {
+		return (
+			isset($this->P['fieldChangeFunc']) && is_array($this->P['fieldChangeFunc']) && isset($this->P['fieldChangeFuncHash'])
+			&& $this->P['fieldChangeFuncHash'] == t3lib_div::hmac(serialize($this->P['fieldChangeFunc']))
+		);
 	}
 }
 

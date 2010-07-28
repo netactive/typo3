@@ -32,7 +32,7 @@
  * The class is instantiated as $GLOBALS['TSFE'] in index_ts.php.
  * The use of this class should be inspired by the order of function calls as found in index_ts.php.
  *
- * $Id: class.tslib_fe.php 6575 2009-11-29 12:31:10Z steffenk $
+ * $Id: class.tslib_fe.php 8428 2010-07-28 09:18:27Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -441,7 +441,7 @@
 				$GLOBALS['TT']->setTSlogMessage($warning,2);
 			} else {
 				$warning = '&no_cache=1 has been supplied, so caching is disabled! URL: "'.t3lib_div::getIndpEnv('TYPO3_REQUEST_URL').'"';
-				$this->no_cache = $no_cache ? 1 : 0;
+				$this->disableCache();
 			}
 			t3lib_div::sysLog($warning, 'cms', 2);
 		}
@@ -830,7 +830,7 @@
 
 				// If the front-end is showing a preview, caching MUST be disabled.
 			if ($this->fePreview)	{
-				$this->set_no_cache();
+				$this->disableCache();
 			}
 		}
 		$GLOBALS['TT']->pull();
@@ -1682,8 +1682,10 @@
 				} else {
 					$message = 'You logged out from Workspace preview mode. Click this link to <a href="%1$s">go back to the website</a>';
 				}
+				
+				$returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GET('returnUrl'));
 				die(sprintf($message,
-					htmlspecialchars(preg_replace('/\&?ADMCMD_prev=[[:alnum:]]+/','',t3lib_div::_GET('returnUrl')))
+					htmlspecialchars(preg_replace('/\&?ADMCMD_prev=[[:alnum:]]+/', '', $returnUrl))
 					));
 			}
 
@@ -2610,13 +2612,16 @@
 	function jumpUrl()	{
 		if ($this->jumpurl)	{
 			if (t3lib_div::_GP('juSecure'))	{
+				$locationData = t3lib_div::_GP('locationData');
+				$mimeType = t3lib_div::_GP('mimeType');
+
 				$hArr = array(
 					$this->jumpurl,
 					t3lib_div::_GP('locationData'),
+					t3lib_div::_GP('mimeType'),
 					$this->TYPO3_CONF_VARS['SYS']['encryptionKey']
 				);
 				$calcJuHash=t3lib_div::shortMD5(serialize($hArr));
-				$locationData = t3lib_div::_GP('locationData');
 				$juHash = t3lib_div::_GP('juHash');
 				if ($juHash == $calcJuHash)	{
 					if ($this->locDataCheck($locationData))	{
@@ -2624,7 +2629,6 @@
 							// Deny access to files that match TYPO3_CONF_VARS[SYS][fileDenyPattern] and whose parent directory is typo3conf/ (there could be a backup file in typo3conf/ which does not match against the fileDenyPattern)
 						if (t3lib_div::verifyFilenameAgainstDenyPattern($this->jumpurl) && basename(dirname($this->jumpurl)) !== 'typo3conf') {
 							if (@is_file($this->jumpurl)) {
-								$mimeType = t3lib_div::_GP('mimeType');
 								$mimeType = $mimeType ? $mimeType : 'application/octet-stream';
 								header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 								header('Content-Type: '.$mimeType);
@@ -4570,10 +4574,20 @@ if (version == "n3") {
 			$GLOBALS['TT']->setTSlogMessage($warning,2);
 		} else {
 			$warning.= ' Caching is disabled!';
-			$this->no_cache = 1;
+			$this->disableCache();
 		}
 
 		t3lib_div::sysLog($warning, 'cms', 2);
+	}
+
+	/**
+	 * Disables caching of the current page.
+	 *
+	 * @return void
+	 * @internal
+	 */
+	protected function disableCache() {
+		$this->no_cache = 1;
 	}
 
 	/**

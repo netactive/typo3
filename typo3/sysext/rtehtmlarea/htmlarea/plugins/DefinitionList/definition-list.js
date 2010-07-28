@@ -27,7 +27,7 @@
 /*
  * DefinitionList Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: definition-list.js 6539 2009-11-25 14:49:14Z stucki $
+ * TYPO3 SVN ID: $Id: definition-list.js 7856 2010-06-09 17:49:29Z stan $
  */
 DefinitionList = BlockElements.extend({
 		
@@ -77,7 +77,7 @@ DefinitionList = BlockElements.extend({
 					tooltip		: this.localize(buttonId + "-Tooltip"),
 					action		: "onButtonPress",
 					context		: button[0],
-					hotKey		: (this.buttonsConfiguration[button[2]] ? this.buttonsConfiguration[button[2]].hotKey : (button[1] ? button[1] : null))
+					hotKey		: ((this.buttonsConfiguration[button[2]] && this.buttonsConfiguration[button[2]].hotKey) ? this.buttonsConfiguration[button[2]].hotKey : (button[1] ? button[1] : null))
 				};
 				this.registerButton(buttonConfiguration);
 			}
@@ -314,7 +314,19 @@ DefinitionList = BlockElements.extend({
 		}
 		var statusBarSelection = this.editor.getPluginInstance("StatusBar") ? this.editor.getPluginInstance("StatusBar").getSelection() : null;
 		var parentElement = statusBarSelection ? statusBarSelection : this.editor.getParentElement();
-		if (parentElement.nodeName.toLowerCase() === "body") return false;
+		if (parentElement.nodeName.toLowerCase() === "body") {
+				// The selection is not contained in any block
+			for (var buttonId in this.buttonList) {
+				if (this.buttonList.hasOwnProperty(buttonId) && this.isButtonInToolbar(buttonId)) {
+					switch (buttonId) {
+						case 'Outdent':
+							this.base();
+							break;
+					}
+				}
+			}
+			return false;
+		}
 		while (parentElement && (!HTMLArea.isBlockElement(parentElement) || /^(li)$/i.test(parentElement.nodeName))) {
 			parentElement = parentElement.parentNode;
 		}

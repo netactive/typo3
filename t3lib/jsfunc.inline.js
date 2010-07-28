@@ -3,7 +3,7 @@
 /***************************************************************
 *  Inline-Relational-Record Editing
 *
-* $Id: jsfunc.inline.js 7109 2010-03-14 20:27:32Z ohader $
+* $Id: jsfunc.inline.js 8015 2010-06-21 18:01:55Z jsegars $
 *
 *
 *
@@ -205,6 +205,7 @@ var inline = {
 			if (json.scriptCall && json.scriptCall.length) {
 				$A(json.scriptCall).each(function(value) { eval(value); });
 			}
+			TYPO3.TCEFORMS.convertDateFieldsToDatePicker();
 		}
 	},
 

@@ -28,7 +28,7 @@
  * Include file extending t3lib_recordList
  * Shared between Web>List (db_list.php) and Web>Page (sysext/cms/layout/db_layout.php)
  *
- * $Id: class.db_list.inc 6469 2009-11-17 23:56:35Z benni $
+ * $Id: class.db_list.inc 8428 2010-07-28 09:18:27Z ohader $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -210,8 +210,8 @@ class recordList extends t3lib_recordList {
 			// Save modified user uc
 			$GLOBALS['BE_USER']->uc['moduleData']['db_list.php'] = $this->tablesCollapsed;
 			$GLOBALS['BE_USER']->writeUC($GLOBALS['BE_USER']->uc);
-			if (t3lib_div::_GP('returnUrl')) {
-				$location = t3lib_div::_GP('returnUrl');
+			if (t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'))) {
+				$location = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 				t3lib_utility_Http::redirect($location);
 			}
 		}
@@ -252,9 +252,17 @@ class recordList extends t3lib_recordList {
 					// Load full table definitions:
 				t3lib_div::loadTCA($tableName);
 
-					// Hide tables which are configured via TSConfig not to be shown (also works for admins):
-				if (isset($this->tableTSconfigOverTCA[$tableName.'.']['hideTable']) ? $this->tableTSconfigOverTCA[$tableName.'.']['hideTable'] :
-						(t3lib_div::inList($this->hideTables, $tableName) ? true : $GLOBALS['TCA'][$tableName]['ctrl']['hideTable'])) {
+					// Don't show table if hidden by TCA ctrl section
+				$hideTable = $GLOBALS['TCA'][$tableName]['ctrl']['hideTable'] ? TRUE : FALSE;
+					// Don't show table if hidden by pageTSconfig mod.web_list.hideTables
+				if (in_array($tableName, t3lib_div::trimExplode(',', $this->hideTables))) {
+					$hideTable = TRUE;
+				}
+					// Override previous selection if table is enabled or hidden by TSconfig TCA override mod.web_list.table
+				if (isset($this->tableTSconfigOverTCA[$tableName.'.']['hideTable'])) {
+					$hideTable = $this->tableTSconfigOverTCA[$tableName.'.']['hideTable'] ? TRUE : FALSE;
+				}
+				if ($hideTable) {
 					continue;
 				}
 

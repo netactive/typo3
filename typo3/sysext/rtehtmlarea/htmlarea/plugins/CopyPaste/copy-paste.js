@@ -27,7 +27,7 @@
 /*
  * Copy Paste for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: copy-paste.js 6539 2009-11-25 14:49:14Z stucki $
+ * TYPO3 SVN ID: $Id: copy-paste.js 7391 2010-04-19 16:01:42Z stan $
  */
 CopyPaste = HTMLArea.Plugin.extend({
 		
@@ -70,7 +70,7 @@ CopyPaste = HTMLArea.Plugin.extend({
 					tooltip		: this.localize(buttonId.toLowerCase()),
 					action		: "onButtonPress",
 					context		: button[0],
-					hotKey		: (this.buttonsConfiguration[button[2]] ? this.buttonsConfiguration[button[2]].hotKey : (button[1] ? button[1] : null))
+					hotKey		: ((this.buttonsConfiguration[button[2]] && this.buttonsConfiguration[button[2]].hotKey) ? this.buttonsConfiguration[button[2]].hotKey : (button[1] ? button[1] : null))
 				};
 				this.registerButton(buttonConfiguration);
 				if (!this.isButtonInToolbar(buttonId)) {
