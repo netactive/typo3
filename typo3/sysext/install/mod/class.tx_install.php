@@ -27,7 +27,7 @@
 /**
  * Contains the class for the Install Tool
  *
- * $Id: class.tx_install.php 6254 2009-10-22 09:05:09Z baschny $
+ * $Id: class.tx_install.php 8426 2010-07-28 09:17:12Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Ingmar Schlecht <ingmar@typo3.org>
@@ -263,7 +263,7 @@ class tx_install extends t3lib_install {
 		} else {
 			$this->step = intval(t3lib_div::_GP('step'));
 		}
-		$this->redirect_url = t3lib_div::_GP('redirect_url');
+		$this->redirect_url = t3lib_div::sanitizeBackEndUrl(t3lib_div::_GP('redirect_url'));
 
 		$this->INSTALL['type'] = '';
 		if ($_GET['TYPO3_INSTALL']['type']) {
@@ -4854,7 +4854,7 @@ a:hover {color: #006; text-decoration:underline;}
 					<tr>
 						<td bgcolor="#F4F0E8">
 						<div align="center"><span class="size4text"><strong>TYPO3 '.TYPO3_branch.' Install Tool</strong></span></div>
-						<div align="center"><span style="color:navy;"><strong>Site: '.$GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'].'</strong></span></div>
+						<div align="center"><span style="color:navy;"><strong>Site: ' . htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']) . '</strong></span></div>
 						'.($this->passwordOK ? '<div align="center"><span style="color:navy;"><strong>Version: '.TYPO3_version.'</strong></span></div>':'').'<br />
 
 '.($this->step?$this->stepHeader():$this->menu()).$content.'<hr />'.$this->note123().$this->endNotes().'

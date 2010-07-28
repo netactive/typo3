@@ -27,7 +27,7 @@
 /**
  * Wizard to help make forms (fx. for tt_content elements) of type 'form'.
  *
- * $Id: wizard_forms.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: wizard_forms.php 8426 2010-07-28 09:17:12Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -354,7 +354,7 @@ class SC_wizard_forms {
 
 					// If the save/close button was pressed, then redirect the screen:
 				if ($_POST['saveandclosedok_x'])	{
-					header('Location: '.t3lib_div::locationHeaderUrl($this->P['returnUrl']));
+					header('Location: ' . t3lib_div::locationHeaderUrl(t3lib_div::sanitizeBackEndUrl($this->P['returnUrl'])));
 					exit;
 				}
 			}
@@ -636,7 +636,7 @@ class SC_wizard_forms {
 			<div id="c-saveButtonPanel">';
 		$content.= '<input type="image" class="c-inputButton" name="savedok"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/savedok.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveDoc',1).'" />';
 		$content.= '<input type="image" class="c-inputButton" name="saveandclosedok"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/saveandclosedok.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveCloseDoc',1).'" />';
-		$content.= '<a href="#" onclick="'.htmlspecialchars('jumpToUrl(unescape(\''.rawurlencode($this->P['returnUrl']).'\')); return false;').'">'.
+		$content.= '<a href="#" onclick="'.htmlspecialchars('jumpToUrl(unescape(\''.rawurlencode(t3lib_div::sanitizeBackEndUrl($this->P['returnUrl'])).'\')); return false;').'">'.
 					'<img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/closedok.gif','width="21" height="16"').' class="c-inputButton" title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.closeDoc',1).'" alt="" />'.
 					'</a>';
 		$content.= '<input type="image" class="c-inputButton" name="_refresh"'.t3lib_iconWorks::skinImg('','gfx/refresh_n.gif','').' title="'.$LANG->getLL('forms_refresh',1).'" />';

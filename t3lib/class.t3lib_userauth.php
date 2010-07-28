@@ -27,7 +27,7 @@
 /**
  * Contains a base class for authentication of users in TYPO3, both frontend and backend.
  *
- * $Id: class.t3lib_userauth.php 5299 2009-04-08 19:48:06Z lolli $
+ * $Id: class.t3lib_userauth.php 8371 2010-07-28 09:03:46Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -212,7 +212,7 @@ class t3lib_userAuth {
 		$mode = '';
 		$this->newSessionID = FALSE;
 			// $id is set to ses_id if cookie is present. Else set to false, which will start a new session
-		$id = isset($_COOKIE[$this->name]) ? stripslashes($_COOKIE[$this->name]) : '';
+		$id = $this->getCookie($this->name);
 		$this->hash_length = t3lib_div::intInRange($this->hash_length,6,32);
 		$this->svConfig = $TYPO3_CONF_VARS['SVCONF']['auth'];
 
@@ -228,7 +228,7 @@ class t3lib_userAuth {
 			// If new session or client tries to fix session...
 		if (!$id || !$this->isExistingSessionRecord($id))	{
 				// New random session-$id is made
-			$id = substr(md5(uniqid('').getmypid()),0,$this->hash_length);
+			$id = t3lib_div::getRandomHexString($this->hash_length);
 				// New session
 			$this->newSessionID = TRUE;
 		}
@@ -323,6 +323,36 @@ class t3lib_userAuth {
 		if ((rand()%100) <= $this->gc_probability)	{
 			$this->gc();
 		}
+	}
+
+	/**
+	 * Get the value of a specified cookie.
+	 *
+	 * Uses HTTP_COOKIE, if available, to avoid a IE8 bug where multiple
+	 * cookies with the same name might be returned if the user accessed
+	 * the site without "www." first and switched to "www." later:
+	 *   Cookie: fe_typo_user=AAA; fe_typo_user=BBB
+	 * In this case PHP will set _COOKIE as the first cookie, when we
+	 * would need the last one (which is what this function then returns).
+	 *
+	 * @param	string		The cookie ID
+	 * @return	string		The value stored in the cookie
+	 */
+	function getCookie($cookieName) {
+		if (isset($_SERVER['HTTP_COOKIE'])) {
+			$cookies = t3lib_div::trimExplode(';', $_SERVER['HTTP_COOKIE']);
+			foreach ($cookies as $cookie) {
+				list ($name, $value) = t3lib_div::trimExplode('=', $cookie);
+				if ($name == $cookieName) {
+					// Use the last one
+					$cookieValue = stripslashes($value);
+				}
+			}
+		} else {
+			// Fallback if there is no HTTP_COOKIE, use original method:
+			$cookieValue = isset($_COOKIE[$cookieName]) ? stripslashes($_COOKIE[$cookieName]) : '';
+		}
+		return $cookieValue;
 	}
 
 	/**

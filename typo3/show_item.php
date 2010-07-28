@@ -27,7 +27,7 @@
 /**
  * Shows information about a database or file item
  *
- * $Id: show_item.php 1855 2006-12-05 00:22:45Z stucki $
+ * $Id: show_item.php 8426 2010-07-28 09:17:12Z ohader $
  * Revised for TYPO3 3.7 May/2004 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -226,7 +226,8 @@ class SC_show_item {
 		global $LANG;
 
 		if ($this->access)	{
-			$returnLinkTag = t3lib_div::_GP('returnUrl') ? '<a href="'.t3lib_div::_GP('returnUrl').'" class="typo3-goBack">' : '<a href="#" onclick="window.close();">';
+			$returnLink = t3lib_div::sanitizeBackEndUrl(t3lib_div::_GP('returnUrl'));
+			$returnLinkTag = $returnLink ? '<a href="' . $returnLink . '" class="typo3-goBack">' : '<a href="#" onclick="window.close();">';
 
 				// render type by user func
 			$typeRendered = false;
@@ -257,7 +258,7 @@ class SC_show_item {
 			}
 
 				// If return Url is set, output link to go back:
-			if (t3lib_div::_GP('returnUrl'))	{
+			if ($returnLink)	{
 				$this->content = $this->doc->section('',$returnLinkTag.'<strong>'.$LANG->sL('LLL:EXT:lang/locallang_core.xml:labels.goBack',1).'</strong></a><br /><br />').$this->content;
 
 				$this->content .= $this->doc->section('','<br />'.$returnLinkTag.'<strong>'.$LANG->sL('LLL:EXT:lang/locallang_core.xml:labels.goBack',1).'</strong></a>');

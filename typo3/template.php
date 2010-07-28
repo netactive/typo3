@@ -27,7 +27,7 @@
 /**
  * Contains class with layout/output function for TYPO3 Backend Scripts
  *
- * $Id: template.php 5357 2009-04-24 18:26:25Z lolli $
+ * $Id: template.php 8426 2010-07-28 09:17:12Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -546,7 +546,7 @@ class template {
 		));
 
 		$out ="
-	var T3_RETURN_URL = '".str_replace('%20','',rawurlencode(t3lib_div::_GP('returnUrl')))."';
+	var T3_RETURN_URL = '".str_replace('%20','',rawurlencode(t3lib_div::sanitizeBackEndUrl(t3lib_div::_GP('returnUrl'))))."';
 	var T3_THIS_LOCATION = '".str_replace('%20','',rawurlencode($thisLocation))."';
 		";
 		return $out;

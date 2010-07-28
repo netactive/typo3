@@ -27,7 +27,7 @@
 /**
  * Wizard to display the RTE in "full screen" mode
  *
- * $Id: wizard_rte.php 1899 2007-01-09 12:55:52Z sebastian $
+ * $Id: wizard_rte.php 8426 2010-07-28 09:17:12Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -178,7 +178,7 @@ class SC_wizard_rte {
 			$rec['pid'] = $rawRec['pid'];
 
 				// Making the toolbar:
-			$closeUrl = $this->P['returnUrl'];
+			$closeUrl = t3lib_div::sanitizeBackEndUrl($this->P['returnUrl']);
 			$R_URI=t3lib_div::linkThisScript(array('popView'=>''));
 
 				// Getting settings for the undo button:

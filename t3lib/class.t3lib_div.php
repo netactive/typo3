@@ -27,7 +27,7 @@
 /**
  * Contains the reknown class "t3lib_div" with general purpose functions
  *
- * $Id: class.t3lib_div.php 6260 2009-10-22 10:24:08Z baschny $
+ * $Id: class.t3lib_div.php 8399 2010-07-28 09:12:12Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  * Usage counts are based on search 22/2 2003 through whole source including tslib/
@@ -971,6 +971,36 @@ class t3lib_div {
 	}
 
 	/**
+	 * Returns a proper HMAC on a given input string and secret TYPO3 encryption key.
+	 *
+	 * @param 	string		Input string to create HMAC from
+	 * @return 	string		resulting (hexadecimal) HMAC currently with a length of 40 (HMAC-SHA-1)
+	 */
+	function hmac($input) {
+		$hashAlgorithm = 'sha1';
+		$hashBlocksize = 64;
+		$hmac = '';
+
+		if (extension_loaded('hash') && function_exists('hash_hmac') && function_exists('hash_algos') && in_array($hashAlgorithm, hash_algos())) {
+			$hmac = hash_hmac($hashAlgorithm, $input, $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']);
+		} else {
+				// outer padding
+			$opad = str_repeat(chr(0x5C), $hashBlocksize);
+				// innner padding
+			$ipad = str_repeat(chr(0x36), $hashBlocksize);
+			if (strlen($GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']) > $hashBlocksize) {
+					// keys longer than blocksize are shorten
+				$key = str_pad(pack('H*', call_user_func($hashAlgorithm, $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'])), $hashBlocksize, chr(0x00));
+			} else {
+					// keys shorter than blocksize are zero-padded
+				$key = str_pad($GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'], $hashBlocksize, chr(0x00));
+			}
+			$hmac = call_user_func($hashAlgorithm, ($key^$opad) . pack('H*', call_user_func($hashAlgorithm, ($key^$ipad) . $input)));
+		}
+		return $hmac;
+	}
+
+	/**
 	 * Takes comma-separated lists and arrays and removes all duplicates
 	 * If a value in the list is trim(empty), the value is ignored.
 	 * Usage: 16
@@ -1383,24 +1413,49 @@ class t3lib_div {
 		if (TYPO3_OS != 'WIN' && ($fh = @fopen('/dev/urandom', 'rb'))) {
 			$output = fread($fh, $count);
 			fclose($fh);
+		} elseif (TYPO3_OS == 'WIN') {
+			if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
+				if (function_exists('mcrypt_create_iv')) {
+					$output = mcrypt_create_iv($count, MCRYPT_DEV_URANDOM);
+				} elseif (function_exists('openssl_random_pseudo_bytes')) {
+					$isStrong = null;
+					$output = openssl_random_pseudo_bytes($count, $isStrong);
+						// skip ssl since it wasn't using the strong algo
+					if ($isStrong !== TRUE) {
+						$output = '';
+					}
+				}
+			}
 		}
 
-			// fallback if /dev/urandom is not available
+			// fallback if other random byte generation failed until now
 		if (!isset($output{$count - 1})) {
 				// We initialize with the somewhat random.
-			$randomState = $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']
-							. microtime() . getmypid();
+			$randomState = $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'];
+			if (version_compare(PHP_VERSION, '4.3.2', '>=') && function_exists('memory_get_usage')) {
+				$randomState .= base_convert(memory_get_usage() % pow(10, 6), 10, 2);
+			}
+			$randomState .= microtime() . getmypid();
 			while (!isset($output{$count - 1})) {
-				$randomState = md5(microtime() . mt_rand() . $randomState);
-				// Fix: Work around PHP4 allowing only one parameter to md5()
-				// $output .= md5(mt_rand() . $randomState, true);
-				$output .= pack('H*', md5(mt_rand() . $randomState));
+				$randomState = sha1(microtime() . mt_rand() . $randomState);
+					// Fix: Work around PHP4 allowing only one parameter to sha1()
+					// $output .= sha1(mt_rand() . $randomState, true);
+				$output .= pack('H*', sha1(mt_rand() . $randomState));
 			}
 			$output = substr($output, strlen($output) - $count, $count);
 		}
 		return $output;
 	}
 
+	/**
+	 * Returns a hex representation of a random byte string.
+	 *
+	 * @param		integer  Number of hex characters to return
+	 * @return		string   Random Bytes
+	 */
+	function getRandomHexString($count) {
+		return substr(bin2hex(t3lib_div::generateRandomBytes(intval(($count + 1) / 2))), 0, $count);
+	}
 
 
 

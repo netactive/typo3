@@ -72,7 +72,7 @@ class tx_sysaction extends mod_user_task {
 			if($actionRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
 
 					// Action header:
-				$header = t3lib_iconworks::getIconImage("sys_action",$actionRow,$this->backPath,'hspace="2" class="absmiddle"').'<b>'.$actionRow["title"].'</b>';
+				$header = t3lib_iconworks::getIconImage("sys_action",$actionRow,$this->backPath,'hspace="2" class="absmiddle"').'<b>'.htmlspecialchars($actionRow["title"]).'</b>';
 				$out.='<table border=0 cellpadding=0 cellspacing=1 width=100%>
 					<tr><td colspan=2 class="bgColor5">'.fw($header).'</td></tr>
 					<tr>
@@ -81,7 +81,7 @@ class tx_sysaction extends mod_user_task {
 					</tr>
 					<tr>
 						<td width=1% valign=top class="bgColor4">'.fw($LANG->sL(t3lib_BEfunc::getItemLabel("sys_action","description"))."&nbsp;").'</td>
-						<td valign=top class="bgColor4">'.fw(nl2br($actionRow["description"])).'</td>
+						<td valign=top class="bgColor4">'.fw(nl2br(htmlspecialchars($actionRow["description"]))).'</td>
 					</tr>';
 				$out.='</table>';
 				$theCode = $this->pObj->doc->section("",$out,0,1);
@@ -104,7 +104,7 @@ class tx_sysaction extends mod_user_task {
 								$userRecord=t3lib_BEfunc::getRecord("be_users",$nId);
 							}
 							if (t3lib_div::_GP("be_users_uid"))	{
-								$userRecord=t3lib_BEfunc::getRecord("be_users",t3lib_div::_GP("be_users_uid"));
+								$userRecord = t3lib_BEfunc::getRecord('be_users', t3lib_div::_GP('be_users_uid'), '*', ' AND cruser_id='.intval($this->BE_USER->user['uid']).' AND createdByAction='.intval($actionRow['uid']));
 							}
 							if (!is_array($userRecord))	{
 								$userRecord=array();
@@ -117,7 +117,7 @@ class tx_sysaction extends mod_user_task {
 							$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'be_users', 'pid=0 AND cruser_id='.intval($this->BE_USER->user['uid']).' AND createdByAction='.intval($actionRow['uid']).t3lib_BEfunc::deleteClause('be_users'), '', 'username');
 							$lines = array();
 							while($uRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-								$lines[] = "<nobr>".($uRow["uid"]==$userRecord["uid"]?"<b>":"").$this->action_linkUserName(t3lib_iconworks::getIconImage("be_users",$uRow,$this->backPath,'title="uid='.$uRow["uid"].'" hspace="2" align="top"').$uRow["username"]." (".$uRow["realName"].")".($uRow["uid"]==$userRecord["uid"]?"</b>":"")."</nobr>",$actionRow["uid"],$uRow["uid"])."<br>";
+								$lines[] = '<nobr>' . ($uRow['uid'] == $userRecord['uid'] ? '<strong>' : '') . $this->action_linkUserName(t3lib_iconworks::getIconImage('be_users', $uRow, $this->backPath, 'title="uid=' . $uRow['uid'] . '" hspace="2" align="top"') . htmlspecialchars($uRow['username']) . ' (' . htmlspecialchars($uRow['realName']) . ')' . ($uRow['uid'] == $userRecord['uid'] ? '</strong>' : '') . '</nobr>', $actionRow['uid'], $uRow['uid']) . '<br />';
 							}
 							if (count($lines))	{
 								$theCode.= $this->pObj->doc->section($LANG->getLL("action_t1_listOfUsers"),implode("",$lines),0,1);
@@ -161,7 +161,7 @@ class tx_sysaction extends mod_user_task {
 								} else {
 									$p.= $LANG->getLL("lNone");
 								}
-								$actionContent.=t3lib_iconworks::getIconImage("be_users",$userRecord,$this->backPath,'title="'.htmlspecialchars($p).'" hspace=2 align=top').$userRecord["username"]." (".$userRecord["realName"].")";
+								$actionContent .= t3lib_iconworks::getIconImage('be_users', $userRecord, $this->backPath, 'title="' . htmlspecialchars($p) . '" hspace="2" align="top"') . htmlspecialchars($userRecord['username']) . ' (' . htmlspecialchars($userRecord['realName']) . ')';
 							}
 							$actionContent.=$this->pObj->doc->table($formA);
 							$theCode.= $this->pObj->doc->section($LANG->getLL($newFlag?"action_Create":"action_Update"),$actionContent,0,1);
@@ -272,7 +272,7 @@ class tx_sysaction extends mod_user_task {
 		$res = $this->getActionResPointer();
 		$lines=array();
 		while($actionRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-			$lines[]='<nobr>'.t3lib_iconworks::getIconImage("sys_action",$actionRow,$this->backPath,'hspace="2" align="top"').$this->action_link($this->fixed_lgd($actionRow["title"]),$actionRow["uid"],$actionRow["description"]).'</nobr><BR>';
+			$lines[]='<nobr>'.t3lib_iconworks::getIconImage("sys_action",$actionRow,$this->backPath,'hspace="2" align="top"').$this->action_link($this->fixed_lgd(htmlspecialchars($actionRow["title"])),$actionRow["uid"],htmlspecialchars($actionRow["description"])).'</nobr><BR>';
 		}
 		$out = implode("",$lines);
 		return $out;

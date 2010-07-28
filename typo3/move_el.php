@@ -28,7 +28,7 @@
  * Move element wizard:
  * Moving pages or content elements (tt_content) around in the system via a page tree navigation.
  *
- * $Id: move_el.php 1997 2007-02-05 18:24:44Z ingmars $
+ * $Id: move_el.php 8426 2010-07-28 09:17:12Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compatible.
  *
@@ -255,7 +255,7 @@ class SC_move_el {
 		$this->sys_language = intval(t3lib_div::_GP('sys_language'));
 		$this->page_id=intval(t3lib_div::_GP('uid'));
 		$this->table=t3lib_div::_GP('table');
-		$this->R_URI=t3lib_div::_GP('returnUrl');
+		$this->R_URI = t3lib_div::sanitizeBackEndUrl(t3lib_div::_GP('returnUrl'));
 		$this->input_moveUid = t3lib_div::_GP('moveUid');
 		$this->moveUid = $this->input_moveUid ? $this->input_moveUid : $this->page_id;
 		$this->makeCopy = t3lib_div::_GP('makeCopy');

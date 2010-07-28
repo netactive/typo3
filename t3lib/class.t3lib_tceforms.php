@@ -27,7 +27,7 @@
 /**
  * Contains TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: class.t3lib_tceforms.php 4974 2009-02-10 07:34:27Z stucki $
+ * $Id: class.t3lib_tceforms.php 8399 2010-07-28 09:12:12Z ohader $
  * Revised for TYPO3 3.6 August/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -3403,6 +3403,7 @@ class t3lib_TCEforms	{
 									$params['formName'] = $this->formName;
 									$params['itemName'] = $itemName;
 									$params['fieldChangeFunc'] = $fieldChangeFunc;
+									$params['fieldChangeFuncHash'] = t3lib_div::hmac(serialize($fieldChangeFunc));
 
 									switch((string)$wConf['type'])	{
 										case 'popup':

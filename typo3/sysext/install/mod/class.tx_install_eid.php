@@ -30,7 +30,11 @@
 // *******************************
 // Set error reporting
 // *******************************
-error_reporting (E_ALL ^ E_NOTICE);
+if (defined('E_DEPRECATED')) {
+	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
+} else {
+	error_reporting(E_ALL ^ E_NOTICE);
+}
 
 
 // ***********************
@@ -67,7 +71,7 @@ class tx_install_eid {
 
 
 	/**
-	 * Main function which creates the ecryption key for the install tools AJAX call 
+	 * Main function which creates the ecryption key for the install tools AJAX call
 	 * It stores the key in $this->content
 	 *
 	 * @return	void
@@ -100,9 +104,8 @@ class tx_install_eid {
 		if (!headers_sent()) {
 			header("Content-type: text/plain");
 		}
-		
-		$bytes = t3lib_div::generateRandomBytes($keyLength);
-		return substr(bin2hex($bytes), -96);
+
+		return t3lib_div::getRandomHexString($keyLength);
 	}
 
 	/**

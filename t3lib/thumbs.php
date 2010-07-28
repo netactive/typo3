@@ -27,7 +27,7 @@
 /**
  * Generates a thumbnail and returns an image stream, either GIF/PNG or JPG
  *
- * $Id: thumbs.php 6264 2009-10-22 11:55:55Z ohader $
+ * $Id: thumbs.php 6462 2009-11-17 19:20:12Z rupi $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author		Kasper Skaarhoj	<kasperYYYY@typo3.com>
@@ -55,7 +55,11 @@
 // *******************************
 // Set error reporting
 // *******************************
-error_reporting (E_ALL ^ E_NOTICE);
+if (defined('E_DEPRECATED')) {
+	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
+} else {
+	error_reporting(E_ALL ^ E_NOTICE);
+}
 
 
 

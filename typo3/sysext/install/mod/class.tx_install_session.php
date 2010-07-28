@@ -136,7 +136,8 @@ class tx_install_session {
 	 */
 	function startSession() {
 		$_SESSION['created'] = time();
-		return session_id();
+			// Be sure to use our own session id, so create a new one
+		return $this->renewSession();
 	}
 
 	/**
@@ -202,6 +203,8 @@ class tx_install_session {
 		$_SESSION['lastSessionId'] = time();
 		$_SESSION['tstamp'] = time();
 		$_SESSION['expires'] = (time() + ($this->expireTimeInMinutes*60));
+			// Renew the session id to avoid session fixation
+		$this->renewSession();
 	}
 
 	/**
@@ -342,11 +345,15 @@ class tx_install_session {
 	 *
 	 * @param integer The setting of session.gc_maxlifetime
 	 *
-	 * @return string
+	 * @return boolean
 	 */
 	function gc($maxLifeTime) {
 		$sessionSavePath = $this->getSessionSavePath();
-		foreach (glob($sessionSavePath . '/hash_*') as $filename) {
+		$files = glob($sessionSavePath . '/hash_*');
+		if (!is_array($files)) {
+			return TRUE;
+		}
+		foreach ($files as $filename) {
 			if (filemtime($filename) + ($this->expireTimeInMinutes*60) < time()) {
 				@unlink($filename);
 			}

@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 4818 2009-01-22 14:44:11Z stucki $
+ * $Id: class.tslib_content.php 8417 2010-07-28 09:15:30Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1869,6 +1869,15 @@ class tslib_cObj {
 					break;
 					case 'hidden':
 						$value = trim($parts[2]);
+
+							// If this form includes an auto responder message, include a HMAC checksum field
+							// in order to verify potential abuse of this feature.
+						if (strlen($value) && t3lib_div::inList($confData['fieldname'], 'auto_respond_msg')) {
+							$hmacChecksum = t3lib_div::hmac($value);
+							$hiddenfields .= sprintf('<input type="hidden" name="auto_respond_checksum" id="%sauto_respond_checksum" value="%s" />',
+												$prefix, $hmacChecksum);
+						}
+
 						if (strlen($value) && t3lib_div::inList('recipient_copy,recipient',$confData['fieldname']) && $GLOBALS['TYPO3_CONF_VARS']['FE']['secureFormmail'])	{
 							break;
 						}
@@ -3913,7 +3922,9 @@ class tslib_cObj {
 			while(list(,$v)=each($mimeTypes))	{
 				$parts = explode('=',$v,2);
 				if (strtolower($fI['extension']) == strtolower(trim($parts[0])))	{
-					$mimetype = '&mimeType='.rawurlencode(trim($parts[1]));
+					$mimetypeValue = trim($parts[1]);
+					$mimetype = '&mimeType=' . rawurlencode($mimetypeValue);
+					break;
 				}
 			}
 		}
@@ -3922,6 +3933,7 @@ class tslib_cObj {
 		$hArr = array(
 			$jumpUrl,
 			$locationData,
+			$mimetypeValue,
 			$GLOBALS['TSFE']->TYPO3_CONF_VARS['SYS']['encryptionKey']
 		);
 		$juHash='&juHash='.t3lib_div::shortMD5(serialize($hArr));

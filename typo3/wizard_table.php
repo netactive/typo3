@@ -28,7 +28,7 @@
  * Wizard to help make tables (eg. for tt_content elements) of type "table".
  * Each line is a table row, each cell divided by a |
  *
- * $Id: wizard_table.php 1997 2007-02-05 18:24:44Z ingmars $
+ * $Id: wizard_table.php 8426 2010-07-28 09:17:12Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -272,7 +272,7 @@ class SC_wizard_table {
 
 					// If the save/close button was pressed, then redirect the screen:
 				if ($_POST['saveandclosedok_x'])	{
-					header('Location: '.t3lib_div::locationHeaderUrl($this->P['returnUrl']));
+					header('Location: '.t3lib_div::locationHeaderUrl(t3lib_div::sanitizeBackEndUrl($this->P['returnUrl'])));
 					exit;
 				}
 			}
@@ -418,7 +418,7 @@ class SC_wizard_table {
 			<div id="c-saveButtonPanel">';
 		$content.= '<input type="image" class="c-inputButton" name="savedok"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/savedok.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveDoc',1).'" />';
 		$content.= '<input type="image" class="c-inputButton" name="saveandclosedok"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/saveandclosedok.gif','').' title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveCloseDoc',1).'" />';
-		$content.= '<a href="#" onclick="'.htmlspecialchars('jumpToUrl(unescape(\''.rawurlencode($this->P['returnUrl']).'\')); return false;').'">'.
+		$content.= '<a href="#" onclick="'.htmlspecialchars('jumpToUrl(unescape(\'' . rawurlencode(t3lib_div::sanitizeBackEndUrl($this->P['returnUrl'])) . '\')); return false;').'">'.
 					'<img'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/closedok.gif','width="21" height="16"').' class="c-inputButton" title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:rm.closeDoc',1).'" alt="" />'.
 					'</a>';
 		$content.= '<input type="image" class="c-inputButton" name="_refresh"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/refresh_n.gif','').' title="'.$LANG->getLL('forms_refresh',1).'" />';

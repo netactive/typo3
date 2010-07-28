@@ -28,7 +28,7 @@
  * Document for viewing the online help texts, also known as TCA_DESCR.
  * See Inside TYPO3 for details.
  *
- * $Id: view_help.php 6240 2009-10-22 08:18:44Z baschny $
+ * $Id: view_help.php 6605 2009-11-30 17:08:22Z steffenk $
  * Revised for TYPO3 3.7 5/2004 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -149,7 +149,7 @@ class SC_view_help {
 			// Setting GPvars:
 		$this->tfID = t3lib_div::_GP('tfID');
 			// Sanitizes the tfID using whitelisting.
-		if (!preg_match('/^[a-zA-Z0-9_\-\.]*$/', $this->tfID)) {
+		if (!preg_match('/^[a-zA-Z0-9_\-\.\*]*$/', $this->tfID)) {
 			$this->tfID = '';
 		}
 		$this->back = t3lib_div::_GP('back');

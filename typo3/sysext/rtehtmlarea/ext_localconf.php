@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2007 Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+*  (c) 2005-2009 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,9 +27,9 @@
 /**
  * Configuration of the htmlArea RTE extension
  *
- * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
+ * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: ext_localconf.php 2564 2007-10-15 21:05:26Z stan $  *
+ * $Id: ext_localconf.php 6348 2009-11-06 04:00:08Z stan $  *
  */
 
 if (!defined ("TYPO3_MODE")) 	die ('Access denied.');
@@ -57,7 +57,7 @@ $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['enableDAMBrowser'] = $_EXTCONF['enableDAM
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['enableAccessibilityIcons'] = $_EXTCONF['enableAccessibilityIcons'] ? $_EXTCONF['enableAccessibilityIcons'] : 0;
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['enableClickEnlarge'] = $_EXTCONF['enableClickEnlarge'] ? $_EXTCONF['enableClickEnlarge'] : 0;
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['enableMozillaExtension'] = $_EXTCONF['enableMozillaExtension'] ? $_EXTCONF['enableMozillaExtension'] : 0;
-$TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['mozAllowClipboardURL'] = $_EXTCONF['mozAllowClipboardURL'] ? $_EXTCONF['mozAllowClipboardURL'] : 'http://typo3.org/fileadmin/dl/allowclipboard_helper/allowclipboard_helper-0.5.5-fx_mz_zm_deLabelFix.xpi';
+$TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['mozAllowClipboardURL'] = $_EXTCONF['mozAllowClipboardURL'] ? $_EXTCONF['mozAllowClipboardURL'] : 'https://addons.mozilla.org/firefox/downloads/latest/852/addon-852-latest.xpi';
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['forceCommandMode'] = $_EXTCONF["forceCommandMode"] ? $_EXTCONF["forceCommandMode"] : 0;
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['enableDebugMode'] = $_EXTCONF['enableDebugMode'] ? $_EXTCONF['enableDebugMode'] : 0;
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['enableCompressedScripts'] = $_EXTCONF['enableCompressedScripts'] ? $_EXTCONF['enableCompressedScripts'] : 0;

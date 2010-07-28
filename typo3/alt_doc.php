@@ -29,7 +29,7 @@
  * By sending certain parameters to this script you can bring up a form
  * which allows the user to edit the content of one or more database records.
  *
- * $Id: alt_doc.php 2618 2007-10-27 16:47:18Z ingmars $
+ * $Id: alt_doc.php 8426 2010-07-28 09:17:12Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -189,7 +189,7 @@ class SC_alt_doc {
 		$this->defVals = t3lib_div::_GP('defVals');
 		$this->overrideVals = t3lib_div::_GP('overrideVals');
 		$this->columnsOnly = t3lib_div::_GP('columnsOnly');
-		$this->returnUrl = t3lib_div::_GP('returnUrl');
+		$this->returnUrl = t3lib_div::sanitizeBackEndUrl(t3lib_div::_GP('returnUrl'));
 		$this->closeDoc = t3lib_div::_GP('closeDoc');
 		$this->doSave = t3lib_div::_GP('doSave');
 		$this->returnEditConf = t3lib_div::_GP('returnEditConf');
@@ -1223,7 +1223,7 @@ class SC_alt_doc {
 			if (is_array($localizedRecord))	{
 					// Create parameters and finally run the classic page module for creating a new page translation
 				$params = '&edit['.$table.']['.$localizedRecord['uid'].']=edit';
-				$returnUrl = '&returnUrl='.rawurlencode(t3lib_div::_GP('returnUrl'));
+				$returnUrl = '&returnUrl='.rawurlencode(t3lib_div::sanitizeBackEndUrl(t3lib_div::_GP('returnUrl')));
 				$location = $GLOBALS['BACK_PATH'].'alt_doc.php?'.$params.$returnUrl;
 
 				header('Location: '.t3lib_div::locationHeaderUrl($location));

@@ -28,7 +28,7 @@
  * This is the MAIN DOCUMENT of the TypoScript driven standard front-end (from the "cms" extension)
  * Basically this is the "index.php" script which all requests for TYPO3 delivered pages goes to in the frontend (the website)
  *
- * $Id: index.php 1421 2006-04-10 09:27:15Z stucki $
+ * $Id: index.php 7625 2010-05-17 13:39:22Z ohader $
  *
  * @author	René Fritz <r.fritz@colorcube.de>
  * @package TYPO3
@@ -39,7 +39,11 @@
 // Set error reporting
 // *******************************
 
-error_reporting (E_ALL ^ E_NOTICE);
+if (defined('E_DEPRECATED')) {
+	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
+} else {
+	error_reporting(E_ALL ^ E_NOTICE);
+}
 
 
 // ******************
@@ -66,7 +70,7 @@ if (@is_dir(PATH_site.'typo3/sysext/cms/tslib/')) {
 }
 
 if (PATH_tslib=='') {
-	die('Cannot find tslib/. Please set path by defining $configured_tslib_path in '.basename(PATH_thisScript).'.');
+	die('Cannot find tslib/. Please set path by defining $configured_tslib_path in ' . htmlspecialchars(basename(PATH_thisScript)) . '.');
 }
 
 // ******************

@@ -49,7 +49,7 @@
  * For a detailed description of this script, the scope of constants and variables in it,
  * please refer to the document "Inside TYPO3"
  *
- * $Id: init.php 4600 2008-12-23 17:21:07Z dmitry $
+ * $Id: init.php 8319 2010-07-28 08:52:15Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -61,7 +61,11 @@
 // *******************************
 // Set error reporting
 // *******************************
-error_reporting (E_ALL ^ E_NOTICE);
+if (defined('E_DEPRECATED')) {
+	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
+} else {
+	error_reporting(E_ALL ^ E_NOTICE);
+}
 
 // *******************************
 // Prevent any unwanted output that may corrupt AJAX/compression. Note: this does
@@ -118,7 +122,10 @@ if (!$temp_path || substr($temp_path,-strlen(TYPO3_mainDir))!=TYPO3_mainDir)	{	/
 		echo 'It seems you are trying to run the TYPO3 source libraries DIRECTLY! You cannot do that.<br />
 		Please read the installation documents for more information.';
 	} else {
-		echo 'This happens if the last '.strlen(TYPO3_mainDir).' characters of this path, '.$temp_path.' ($temp_path), is NOT "'.TYPO3_mainDir.'" for some reason.<br />
+		$temp_path_parts = explode('/', $temp_path);
+		$temp_path_parts = array_slice($temp_path_parts, count($temp_path_parts) - 3);
+		$temp_path = '..../' . implode('/', $temp_path_parts);
+		echo 'This happens if the last ' . strlen(TYPO3_mainDir) . ' characters of this path, ' . $temp_path . ' (end of $temp_path), is NOT "' . TYPO3_mainDir . '" for some reason.<br />
 		You may have a strange server configuration.
 		Or maybe you didn\'t set constant TYPO3_MOD_PATH in your module?';
 	}
@@ -150,6 +157,10 @@ die();
 	define('PATH_typo3conf', PATH_site.'typo3conf/');	// Abs. TYPO3 configuration path (local, not part of source)
 }
 
+// *********************
+// Unset variable(s) in global scope (fixes #13959)
+// *********************
+unset($error);
 
 // *************************************************
 // t3lib_div + extention management class included
