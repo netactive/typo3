@@ -45,7 +45,7 @@ require_once('../../init.php');
 /**
  * This class is the OpenID return script for the TYPO3 Backend.
  *
- * $Id: class.tx_openid_return.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tx_openid_return.php 8157 2010-07-11 12:45:16Z psychomieze $
  *
  * @author	Dmitry Dulepov <dmitry@typo3.org>
  */

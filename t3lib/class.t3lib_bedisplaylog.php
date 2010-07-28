@@ -27,7 +27,7 @@
 /**
  * Contains class for display of backend log
  *
- * $Id: class.t3lib_bedisplaylog.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_bedisplaylog.php 8348 2010-07-28 08:57:59Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -204,6 +204,7 @@ class t3lib_BEDisplayLog {
 				$text = str_replace('%s','',$text);
 			}
 		}
+		$text = htmlspecialchars($text);
 
 			// Finding the history for the record
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,fieldlist', 'sys_history', 'sys_log_uid='.intval($sys_log_uid));

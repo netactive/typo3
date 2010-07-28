@@ -27,7 +27,7 @@
 /**
  * Class with template object that is responsible for generating the template
  *
- * $Id: class.t3lib_tstemplate.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_tstemplate.php 8157 2010-07-11 12:45:16Z psychomieze $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -572,7 +572,7 @@ class t3lib_TStemplate	{
 					$GLOBALS['TYPO3_DB']->sql_free_result($res);
 				}
 			} else {
-					// Normal Operation, which is to include the "based-on" sys_templates, 
+					// Normal Operation, which is to include the "based-on" sys_templates,
 					// if they are not already included, and maintaining the sorting of the templates
 				$basedOnIds = t3lib_div::intExplode(',', $row['basedOn']);
 
@@ -591,7 +591,7 @@ class t3lib_TStemplate	{
 				);
 
 					// traversing list again to ensure the sorting of the templates
-				foreach ($basedOnIds as $id) { 
+				foreach ($basedOnIds as $id) {
 					if (is_array($subTemplates[$id])) {
 						$this->versionOL($subTemplates[$id]);
 						$this->processTemplate($subTemplates[$id], $idList . ',sys_' . $id, $pid, 'sys_' . $id, $templateID);

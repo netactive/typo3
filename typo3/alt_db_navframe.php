@@ -27,7 +27,7 @@
 /**
  * Page navigation tree for the Web module
  *
- * $Id: alt_db_navframe.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: alt_db_navframe.php 8157 2010-07-11 12:45:16Z psychomieze $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

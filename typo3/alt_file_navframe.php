@@ -27,7 +27,7 @@
 /**
  * Folder tree in the File main module.
  *
- * $Id: alt_file_navframe.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: alt_file_navframe.php 8157 2010-07-11 12:45:16Z psychomieze $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -274,7 +274,7 @@ class SC_alt_file_navframe {
 
 			// Refresh
 		$buttons['refresh'] = '<a href="' . htmlspecialchars(t3lib_div::getIndpEnv('REQUEST_URI')) . '">' .
-				t3lib_iconWorks::getSpriteIcon('actions-system-refresh') . 
+				t3lib_iconWorks::getSpriteIcon('actions-system-refresh') .
 		'</a>';
 
 			// CSH

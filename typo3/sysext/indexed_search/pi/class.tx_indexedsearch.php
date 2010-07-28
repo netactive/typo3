@@ -27,7 +27,7 @@
 /**
  * Index search frontend
  *
- * $Id: class.tx_indexedsearch.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tx_indexedsearch.php 8162 2010-07-12 13:22:14Z dmitry $
  *
  * Creates a searchform for indexed search. Indexing must be enabled
  * for this to make sense.
@@ -2115,6 +2115,7 @@ class tx_indexedsearch extends tslib_pibase {
 		} else {
 			$pathStr = htmlspecialchars($this->getPathFromPageId($pathId,$pathMP));
 			$tmplArray['path'] = $this->linkPage($pathId,$pathStr,array(
+				'cHashParams' => $row['cHashParams'],
 				'data_page_type' => $row['data_page_type'],
 				'data_page_mp' => $pathMP,
 				'sys_language_uid' => $row['sys_language_uid'],

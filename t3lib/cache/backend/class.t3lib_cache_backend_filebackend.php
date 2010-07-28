@@ -31,7 +31,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_backend_filebackend.php 7905 2010-06-13 14:42:33Z ohader $
+ * @version $Id: class.t3lib_cache_backend_filebackend.php 8061 2010-06-25 16:45:20Z steffenk $
  */
 class t3lib_cache_backend_FileBackend extends t3lib_cache_backend_AbstractBackend implements t3lib_cache_backend_PhpCapableBackend {
 
@@ -79,7 +79,7 @@ class t3lib_cache_backend_FileBackend extends t3lib_cache_backend_AbstractBacken
 	 * @void
 	 * @author Robert Lemke <robert@typo3.org>
 	 */
-	public function setCache(t3lib_cache_frontend_frontend $cache) {
+	public function setCache(t3lib_cache_frontend_Frontend $cache) {
 		parent::setCache($cache);
 
 		if (empty($this->cacheDirectory)) {

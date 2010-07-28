@@ -27,7 +27,7 @@
 /**
  * Class for generating front end for building queries
  *
- * $Id: class.t3lib_querygenerator.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_querygenerator.php 8157 2010-07-11 12:45:16Z psychomieze $
  *
  * @author	Christian Jul Jensen <christian@typo3.com>
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

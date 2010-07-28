@@ -27,7 +27,7 @@
 /*
  * Acronym plugin for htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: acronym.js 7957 2010-06-17 21:07:16Z stan $
+ * TYPO3 SVN ID: $Id: acronym.js 8088 2010-07-04 20:24:20Z stan $
  */
 HTMLArea.Acronym = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {
@@ -73,6 +73,7 @@ HTMLArea.Acronym = HTMLArea.Plugin.extend({
 	configDefaults: {
 		combo: {
 			editable: true,
+			selectOnFocus: true,
 			typeAhead: true,
 			triggerAction: 'all',
 			forceSelection: true,

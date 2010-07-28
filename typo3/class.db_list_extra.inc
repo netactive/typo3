@@ -28,7 +28,7 @@
  * Include file extending recordList which extended t3lib_recordList
  * Used specifically for the Web>List module (db_list.php)
  *
- * $Id: class.db_list_extra.inc 7917 2010-06-14 10:57:58Z lolli $
+ * $Id: class.db_list_extra.inc 8289 2010-07-27 19:08:35Z psychomieze $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -209,7 +209,7 @@ class localRecordList extends recordList {
 					// Edit
 				$params = '&edit[pages][' . $this->pageRow['uid'] . ']=edit';
 				$buttons['edit'] = '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::editOnClick($params, $this->backPath, -1)) . '" title="' . $LANG->getLL('editPage', TRUE) . '">' .
-									t3lib_iconWorks::getSpriteIcon('actions-document-open') .
+									t3lib_iconWorks::getSpriteIcon('actions-page-open') .
 								'</a>';
 					// Unhide
 				if ($this->pageRow['hidden'])	{
@@ -499,7 +499,7 @@ class localRecordList extends recordList {
 				// Render collapse button if in multi table mode
 				$collapseIcon = '';
 				if (!$this->table) {
-					$collapseIcon = '<a href="' . htmlspecialchars($this->listURL()) . '&collapse[' . $table . ']=' . ($tableCollapsed ? '0' : '1') . '" title="' . ($tableCollapsed ? $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.expandTable', TRUE) : $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.collapseTable', TRUE)) . '">' .
+					$collapseIcon = '<a href="' . htmlspecialchars($this->listURL() . '&collapse[' . $table . ']=' . ($tableCollapsed ? '0' : '1')) . '" title="' . ($tableCollapsed ? $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.expandTable', TRUE) : $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.collapseTable', TRUE)) . '">' .
 							($tableCollapsed ? t3lib_iconWorks::getSpriteIcon('actions-view-list-expand', array('class' => 'collapseIcon')) : t3lib_iconWorks::getSpriteIcon('actions-view-list-collapse', array('class' => 'collapseIcon'))) .
 						'</a>';
 				}
@@ -682,7 +682,6 @@ class localRecordList extends recordList {
 
 				// The icon with link
 			$alttext = t3lib_BEfunc::getRecordIconAltText($row,$table);
-			//$iconImg = t3lib_iconWorks::getIconImage($table,$row,$this->backPath,'title="'.htmlspecialchars($alttext).'"'.);
 			$iconImg = t3lib_iconWorks::getSpriteIconForRecord($table, $row, array('title' => htmlspecialchars($alttext), 'style' => ($indent ? ' margin-left: ' . $indent . 'px;' : '')));
 
 
@@ -1214,7 +1213,7 @@ class localRecordList extends recordList {
 							$versionIcon = count($vers) - 1;
 						}
 
-						$cells['version']='<a href="'.htmlspecialchars($this->backPath.t3lib_extMgm::extRelPath('version')).'cm1/index.php?table='.rawurlencode($table).'&uid='.rawurlencode($row['uid']).'" title="'.$LANG->getLL('displayVersions', TRUE) . '">' .
+						$cells['version'] = '<a href="' . htmlspecialchars($this->backPath . t3lib_extMgm::extRelPath('version') . 'cm1/index.php?table=' . rawurlencode($table) . '&uid=' . rawurlencode($row['uid'])) . '" title="' . $LANG->getLL('displayVersions', TRUE) . '">' .
 								t3lib_iconWorks::getSpriteIcon('status-version-' . $versionIcon) .
 								'</a>';
 					} elseif(!$this->table) {

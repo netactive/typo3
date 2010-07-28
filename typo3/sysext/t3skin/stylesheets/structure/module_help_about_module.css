@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Help > About modules (alt_intro.php)
 
-$Id: module_help_about_module.css 7974 2010-06-20 08:05:51Z benni $
+$Id: module_help_about_module.css 8052 2010-06-24 22:27:08Z steffenk $
 - - - - - - - - - - - - - - - - - - - - - */
 
 div.typo3-alt-intro-php {
@@ -39,4 +39,8 @@ table#typo3-about-modules tr.c-mainitem td img {
 
 table#typo3-about-modules tr.c-subitem-row td:first-child {
 	padding-left: 23px;
+}
+
+table#typo3-about-modules tr.c-subitem-row td.module-description {
+	padding-right: 10px;
 }

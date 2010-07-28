@@ -30,7 +30,7 @@
  * interaction.
  * This class is instantiated globally as $TYPO3_DB in TYPO3 scripts.
  *
- * $Id: class.t3lib_db.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_db.php 8102 2010-07-05 19:51:21Z steffenk $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -1114,7 +1114,7 @@ class t3lib_DB {
 				4
 			);
 		} else {
-			$setDBinit = t3lib_div::trimExplode(LF, $GLOBALS['TYPO3_CONF_VARS']['SYS']['setDBinit'], TRUE);
+			$setDBinit = t3lib_div::trimExplode(LF, str_replace("' . LF . '", LF, $GLOBALS['TYPO3_CONF_VARS']['SYS']['setDBinit']), TRUE);
 			foreach ($setDBinit as $v) {
 				if (mysql_query($v, $this->link) === FALSE) {
 					t3lib_div::sysLog('Could not initialize DB connection with query "' . $v .

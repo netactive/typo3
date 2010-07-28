@@ -29,7 +29,7 @@
  * Used from TCEFORMS an other elements
  * In other words: This is the ELEMENT BROWSER!
  *
- * $Id: class.browse_links.php 7974 2010-06-20 08:05:51Z benni $
+ * $Id: class.browse_links.php 8402 2010-07-28 09:12:41Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -423,6 +423,8 @@ class TBE_PageTree extends localPageTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v,$ext_pArrPages)	{
+		$title = htmlspecialchars($title);
+
 		if ($ext_pArrPages)	{
 			$ficon=t3lib_iconWorks::getIcon('pages',$v);
 			$onClick = "return insertElement('pages', '".$v['uid']."', 'db', ".t3lib_div::quoteJSvalue($v['title']).", '', '', '".$ficon."','',1);";
@@ -470,6 +472,8 @@ class localFolderTree extends t3lib_folderTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v)	{
+		$title = htmlspecialchars($title);
+
 		if ($this->ext_isLinkable($v))	{
 			$aOnClick = 'return jumpToUrl(\''.$this->thisScript.'?act='.$GLOBALS['SOBE']->browser->act.'&mode='.$GLOBALS['SOBE']->browser->mode.'&expandFolder='.rawurlencode($v['path']).'\');';
 			return '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.$title.'</a>';
@@ -622,6 +626,8 @@ class TBE_FolderTree extends localFolderTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v)	{
+		$title = htmlspecialchars($title);
+
 		if ($this->ext_isLinkable($v))	{
 			$aOnClick = 'return jumpToUrl(\''.$this->thisScript.'?act='.$GLOBALS['SOBE']->browser->act.'&mode='.$GLOBALS['SOBE']->browser->mode.'&expandFolder='.rawurlencode($v['path']).'\');';
 			return '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.$title.'</a>';
@@ -916,6 +922,9 @@ class browse_links {
 		';
 
 		if ($this->mode == 'wizard')	{	// Functions used, if the link selector is in wizard mode (= TCEforms fields)
+			if (!$this->areFieldChangeFunctionsValid()) {
+				$this->P['fieldChangeFunc'] = array();
+			}
 			unset($this->P['fieldChangeFunc']['alert']);
 			$update='';
 			foreach ($this->P['fieldChangeFunc'] as $k => $v) {
@@ -1819,7 +1828,7 @@ class browse_links {
 				// Create header for listing, showing the page title/icon:
 			$titleLen=intval($GLOBALS['BE_USER']->uc['titleLen']);
 			$mainPageRec = t3lib_BEfunc::getRecordWSOL('pages',$expPageId);
-			$picon = t3lib_iconWorks::getIconImage('pages', $mainPageRec, $BACK_PATH, '');
+			$picon = t3lib_iconWorks::getSpriteIconForRecord('pages', $mainPageRec);
 			$picon.= htmlspecialchars(t3lib_div::fixed_lgd_cs($mainPageRec['title'],$titleLen));
 			$out.=$picon.'<br />';
 
@@ -1839,7 +1848,7 @@ class browse_links {
 			$c=0;
 			while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
 				$c++;
-				$icon=t3lib_iconWorks::getIconImage('tt_content',$row,$BACK_PATH,'');
+				$icon = t3lib_iconWorks::getSpriteIconForRecord('tt_content', $row);
 				if ($this->curUrlInfo['act']=='page' && $this->curUrlInfo['cElement']==$row['uid'])	{
 					$arrCol='<img'.t3lib_iconWorks::skinImg($BACK_PATH,'gfx/blinkarrow_left.gif','width="5" height="9"').' class="c-blinkArrowL" alt="" />';
 				} else {
@@ -1910,7 +1919,7 @@ class browse_links {
 				$ATag_alt=substr($ATag,0,-4).",'',1);\">";
 				$ATag_e='</a>';
 			}
-			$picon=t3lib_iconWorks::getIconImage('pages',$mainPageRec,$BACK_PATH,'');
+			$picon=t3lib_iconWorks::getSpriteIconForRecord('pages', $mainPageRec);
 			$pBicon=$ATag2?'<img'.t3lib_iconWorks::skinImg($BACK_PATH,'gfx/plusbullet2.gif','width="18" height="16"').' alt="" />':'';
 			$pText=htmlspecialchars(t3lib_div::fixed_lgd_cs($mainPageRec['title'],$titleLen));
 			$out.=$picon.$ATag2.$pBicon.$ATag_e.$ATag.$pText.$ATag_e.'<br />';
@@ -2785,6 +2794,19 @@ class browse_links {
 				'</div>'.$this->doc->spacer(15);
 		}
 		return $out;
+	}
+
+	/**
+	 * Determines whether submitted field change functions are valid
+	 * and are coming from the system and not from an external abuse.
+	 *
+	 * @return boolean Whether the submitted field change functions are valid
+	 */
+	protected function areFieldChangeFunctionsValid() {
+		return (
+			isset($this->P['fieldChangeFunc']) && is_array($this->P['fieldChangeFunc']) && isset($this->P['fieldChangeFuncHash'])
+			&& $this->P['fieldChangeFuncHash'] == t3lib_div::hmac(serialize($this->P['fieldChangeFunc']))
+		);
 	}
 }
 

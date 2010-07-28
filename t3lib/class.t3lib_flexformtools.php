@@ -27,7 +27,7 @@
 /**
  * Contains functions for manipulating flex form data
  *
- * $Id: class.t3lib_flexformtools.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_flexformtools.php 8157 2010-07-11 12:45:16Z psychomieze $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

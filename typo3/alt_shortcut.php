@@ -30,7 +30,7 @@
  * Provides links to registered shortcuts
  * If the 'cms' extension is loaded you will also have a field for entering page id/alias which will be found/edited
  *
- * $Id: alt_shortcut.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: alt_shortcut.php 8379 2010-07-28 09:06:11Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant output
  *
@@ -164,6 +164,7 @@ class SC_alt_shortcut {
 		global $BE_USER;
 		$description = '';	// Default description
 		$url = urldecode($this->URL);
+		$queryParts = parse_url($url);
 
 			// Lookup the title of this page and use it as default description
 		$page_id = $this->getLinkedPageId($url);
@@ -187,8 +188,9 @@ class SC_alt_shortcut {
 		}
 
 
-			// Adding a shortcut being set from another frame
-		if ($this->modName && $this->URL)	{
+			// Adding a shortcut being set from another frame,
+			// but only if it's a relative URL (i.e. scheme part is not defined)
+		if ($this->modName && $this->URL && empty($queryParts['scheme'])) {
 			$fields_values = array(
 				'userid' => $BE_USER->user['uid'],
 				'module_name' => $this->modName.'|'.$this->M_modName,
@@ -632,7 +634,7 @@ class SC_alt_shortcut {
 			if($this->searchFor) {
 				$data['type']            = 'search';
 				$data['firstMountPoint'] = intval($GLOBALS['WEBMOUNTS'][0]);
-				$data['searchFor']       = rawurlencode($this->searchFor);
+				$data['searchFor']       = $this->searchFor;
 			}
 
 			$content = json_encode($data);
@@ -714,7 +716,7 @@ class SC_alt_shortcut {
 		}
 
 		$selector.= '<a href="mod/user/ws/index.php" target="content">'.
-					t3lib_iconWorks::getIconImage('sys_workspace',array(),$this->doc->backPath,'align="top"').
+					t3lib_iconWorks::getSpriteIconForRecord('sys_workspace', array()).
 					'</a>';
 		if (count($options) > 1) {
 			$selector .= '<select name="_workspaceSelector" onchange="changeWorkspace(this.options[this.selectedIndex].value);">'.implode('',$options).'</select>';

@@ -28,7 +28,7 @@
  * New content elements wizard
  * (Part of the 'cms' extension)
  *
- * $Id: db_new_content_el.php 7989 2010-06-20 14:34:23Z benni $
+ * $Id: db_new_content_el.php 8429 2010-07-28 09:19:00Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compatible.
  *
@@ -185,7 +185,7 @@ class SC_db_new_content_el {
 			// Setting internal vars:
 		$this->id = intval(t3lib_div::_GP('id'));
 		$this->sys_language = intval(t3lib_div::_GP('sys_language_uid'));
-		$this->R_URI = t3lib_div::_GP('returnUrl');
+		$this->R_URI = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 		$this->colPos = t3lib_div::_GP('colPos');
 		$this->uid_pid = intval(t3lib_div::_GP('uid_pid'));
 
@@ -378,6 +378,9 @@ class SC_db_new_content_el {
 				$code.= $posMap->printContentElementColumns($this->id,0,$colPosList,1,$this->R_URI);
 				$this->content.= $this->doc->section($LANG->getLL('2_selectPosition'),$code,0,1);
 			}
+
+				// Close wrapper div
+			$this->content .= '</div>';
 		} else {		// In case of no access:
 			$this->content = '';
 			$this->content.= $this->doc->header($LANG->getLL('newContentElement'));

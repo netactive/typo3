@@ -28,7 +28,7 @@
  * Include file extending t3lib_recordList
  * Shared between Web>List (db_list.php) and Web>Page (sysext/cms/layout/db_layout.php)
  *
- * $Id: class.db_list.inc 8008 2010-06-21 16:50:01Z jsegars $
+ * $Id: class.db_list.inc 8429 2010-07-28 09:19:00Z ohader $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -210,8 +210,8 @@ class recordList extends t3lib_recordList {
 			// Save modified user uc
 			$GLOBALS['BE_USER']->uc['moduleData']['db_list.php'] = $this->tablesCollapsed;
 			$GLOBALS['BE_USER']->writeUC($GLOBALS['BE_USER']->uc);
-			if (t3lib_div::_GP('returnUrl')) {
-				$location = t3lib_div::_GP('returnUrl');
+			if (t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'))) {
+				$location = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 				t3lib_utility_Http::redirect($location);
 			}
 		}
@@ -386,7 +386,7 @@ class recordList extends t3lib_recordList {
 			while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($result))	{
 
 					// Create content:
-				$iconImg = t3lib_iconWorks::getIconImage('sys_note',$row,$this->backPath,'');
+				$iconImg = t3lib_iconWorks::getSpriteIconForRecord('sys_note', $row);
 				$subject = htmlspecialchars($row['subject']);
 				$fields = array();
 				$fields['Author:'] = htmlspecialchars($row['author'].($row['email'] && $row['author'] ? ', ':'').$row['email']);

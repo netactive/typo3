@@ -28,7 +28,7 @@
 /**
  * Module: Extension manager
  *
- * $Id: class.em_index.php 7974 2010-06-20 08:05:51Z benni $
+ * $Id: class.em_index.php 8429 2010-07-28 09:19:00Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Karsten Dambekalns <karsten@typo3.org>
@@ -2141,7 +2141,7 @@ EXTENSION KEYS:
 			// Function menu here:
 		if(!$this->CMD['standAlone'] && !t3lib_div::_GP('standAlone')) {
 			$content = $GLOBALS['LANG']->getLL('ext_details_ext') . '&nbsp;<strong>' .
-				$this->extensionTitleIconHeader($extKey, $list[$extKey]) . '</strong> (' . $extKey . ')';
+				$this->extensionTitleIconHeader($extKey, $list[$extKey]) . '</strong> (' . htmlspecialchars($extKey) . ')';
 			$this->content.= $this->doc->section('', $content);
 		}
 
@@ -2304,7 +2304,7 @@ EXTENSION KEYS:
 
 				// Editing extension file:
 				$editFile = $this->CMD['editFile'];
-				if (t3lib_div::isFirstPartOfStr($editFile,PATH_site) && t3lib_div::isFirstPartOfStr($editFile,$absPath))	{	// Paranoia...
+				if (t3lib_div::isAllowedAbsPath($editFile) && t3lib_div::isFirstPartOfStr($editFile, $absPath)) {
 
 					$fI = t3lib_div::split_fileref($editFile);
 					if (@is_file($editFile) && t3lib_div::inList($this->editTextExtensions,($fI['fileext']?$fI['fileext']:$fI['filebody'])))	{
@@ -2400,7 +2400,7 @@ EXTENSION KEYS:
 					}
 				} else {
 					die (sprintf($GLOBALS['LANG']->getLL('ext_details_fatal_edit_error'),
-							$editFile
+							htmlspecialchars($editFile)
 						)
 					);
 				}
@@ -2567,7 +2567,7 @@ EXTENSION KEYS:
 	function requestInstallExtensions($extList)	{
 
 			// Return URL:
-		$returnUrl = t3lib_div::_GP('returnUrl');
+		$returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 		$installOrImportExtension = t3lib_div::_POST('installOrImportExtension');
 
 			// Extension List:
@@ -3365,9 +3365,9 @@ EXTENSION KEYS:
 				$cells[] = '<td' . $this->labelInfo($GLOBALS['LANG']->getLL('listRowHeader_title_upload_date')) . '>' .
 							$GLOBALS['LANG']->getLL('listRowHeader_upload_date') . '</td>';
 				$cells[] = '<td>' . $GLOBALS['LANG']->getLL('extInfoArray_author') . '</td>';
-				$cells[] = '<td class="bgColor6"' . $this->labelInfo($GLOBALS['LANG']->getLL('listRowHeader_title_current_version')) . '>' .
+				$cells[] = '<td' . $this->labelInfo($GLOBALS['LANG']->getLL('listRowHeader_title_current_version')) . '>' .
 							$GLOBALS['LANG']->getLL('listRowHeader_current_version') . '</td>';
-				$cells[] = '<td class="bgColor6"' . $this->labelInfo($GLOBALS['LANG']->getLL('listRowHeader_title_current_type')) . '>' .
+				$cells[] = '<td' . $this->labelInfo($GLOBALS['LANG']->getLL('listRowHeader_title_current_type')) . '>' .
 							$GLOBALS['LANG']->getLL('listRowHeader_current_type') . '</td>';
 				$cells[] = '<td' . $this->labelInfo($GLOBALS['LANG']->getLL('listRowHeader_title_number_of_downloads')) . '>' .
 							$GLOBALS['LANG']->getLL('listRowHeader_download_short') . '</td>';
@@ -3609,7 +3609,7 @@ EXTENSION KEYS:
 		if (is_array($imgInfo))	{
 			$out.= '<img src="'.$GLOBALS['BACK_PATH'].$this->typeRelPaths[$extInfo['type']].$extKey.'/ext_icon.gif" '.$imgInfo[3].' align="'.$align.'" alt="" />';
 		}
-		$out.= $extInfo['EM_CONF']['title'] ? htmlspecialchars(t3lib_div::fixed_lgd_cs($extInfo['EM_CONF']['title'],40)) : '<em>'.$extKey.'</em>';
+		$out.= $extInfo['EM_CONF']['title'] ? htmlspecialchars(t3lib_div::fixed_lgd_cs($extInfo['EM_CONF']['title'],40)) : '<em>' . htmlspecialchars($extKey) . '</em>';
 		return $out;
 	}
 
@@ -3637,7 +3637,7 @@ EXTENSION KEYS:
 	 * @return	string		<img> + text string.
 	 */
 	function noImportMsg()	{
-		return t3lib_iconWorks::getSpriteIcon('status-dialog-warning') . 
+		return t3lib_iconWorks::getSpriteIcon('status-dialog-warning') .
 			'<strong>' . $GLOBALS['LANG']->getLL('helperFunction_import_not_possible') . '</strong>';
 	}
 
@@ -5434,7 +5434,7 @@ $EM_CONF[$_EXTKEY] = '.$this->arrayToCode($EM_CONF, 0).';
 							<td><img src="clear.gif" width="10" height="1" alt="" /></td>
 							<td nowrap="nowrap">' .
 								($exist ?
-									t3lib_iconWorks::getSpriteIcon('status-dialog-warning') . 
+									t3lib_iconWorks::getSpriteIcon('status-dialog-warning') .
 									$GLOBALS['LANG']->getLL('checkDBupdates_table_exists')
 									: '') .
 							'</td>

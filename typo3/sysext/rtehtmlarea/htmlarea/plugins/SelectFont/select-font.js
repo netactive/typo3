@@ -27,7 +27,7 @@
 /*
  * SelectFont Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: select-font.js 7301 2010-04-12 07:10:34Z stan $
+ * TYPO3 SVN ID: $Id: select-font.js 8064 2010-06-26 14:39:18Z stan $
  */
 HTMLArea.SelectFont = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {
@@ -77,25 +77,27 @@ HTMLArea.SelectFont = HTMLArea.Plugin.extend({
 		 */
 		Ext.each(this.dropDownList, function (dropDown) {
 			var buttonId = dropDown[0];
-			var dropDownConfiguration = {
-				id: buttonId,
-				tooltip: this.localize(buttonId.toLowerCase()),
-				storeUrl: this.buttonsConfiguration[dropDown[2]].dataUrl,
-				action: 'onChange',
-				tpl: this.disablePCexamples ? '' : '<tpl for="."><div ext:qtip="{value}" style="' + dropDown[3] + '" class="x-combo-list-item">{text}</div></tpl>'
-			};
-			if (this.buttonsConfiguration[dropDown[2]]) {
-				if (this.editorConfiguration.buttons[dropDown[2]].width) {
-					dropDownConfiguration.width = parseInt(this.editorConfiguration.buttons[dropDown[2]].width, 10);
+			if (this.isButtonInToolbar(buttonId)) {
+				var dropDownConfiguration = {
+					id: buttonId,
+					tooltip: this.localize(buttonId.toLowerCase()),
+					storeUrl: this.buttonsConfiguration[dropDown[2]].dataUrl,
+					action: 'onChange',
+					tpl: this.disablePCexamples ? '' : '<tpl for="."><div ext:qtip="{value}" style="' + dropDown[3] + '" class="x-combo-list-item">{text}</div></tpl>'
+				};
+				if (this.buttonsConfiguration[dropDown[2]]) {
+					if (this.editorConfiguration.buttons[dropDown[2]].width) {
+						dropDownConfiguration.width = parseInt(this.editorConfiguration.buttons[dropDown[2]].width, 10);
+					}
+					if (this.editorConfiguration.buttons[dropDown[2]].listWidth) {
+						dropDownConfiguration.listWidth = parseInt(this.editorConfiguration.buttons[dropDown[2]].listWidth, 10);
+					}
+					if (this.editorConfiguration.buttons[dropDown[2]].maxHeight) {
+						dropDownConfiguration.maxHeight = parseInt(this.editorConfiguration.buttons[dropDown[2]].maxHeight, 10);
+					}
 				}
-				if (this.editorConfiguration.buttons[dropDown[2]].listWidth) {
-					dropDownConfiguration.listWidth = parseInt(this.editorConfiguration.buttons[dropDown[2]].listWidth, 10);
-				}
-				if (this.editorConfiguration.buttons[dropDown[2]].maxHeight) {
-					dropDownConfiguration.maxHeight = parseInt(this.editorConfiguration.buttons[dropDown[2]].maxHeight, 10);
-				}
+				this.registerDropDown(dropDownConfiguration);
 			}
-			this.registerDropDown(dropDownConfiguration);
 			return true;
 		}, this);
 		return true;
@@ -127,10 +129,12 @@ HTMLArea.SelectFont = HTMLArea.Plugin.extend({
 	onGenerate: function () {
 			// Load the dropdowns
 		Ext.each(this.dropDownList, function (dropDown) {
-			this.getButton(dropDown[0]).getStore().load({
-				callback: function () { this.getButton(dropDown[0]).setValue('none'); },
-				scope: this
-			})
+			if (this.getButton(dropDown[0])) {
+				this.getButton(dropDown[0]).getStore().load({
+					callback: function () { this.getButton(dropDown[0]).setValue('none'); },
+					scope: this
+				})
+			}
 		}, this);
 	},
 	/*

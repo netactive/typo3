@@ -29,7 +29,7 @@
  * Will make the vertical, horizontal, selectorbox based menus AND the "about modules" display.
  * Basically it traverses the module structure and generates output based on that.
  *
- * $Id: class.alt_menu_functions.inc 7896 2010-06-12 15:51:26Z psychomieze $
+ * $Id: class.alt_menu_functions.inc 8183 2010-07-13 20:54:06Z steffenk $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant content
  *
@@ -364,7 +364,7 @@ class alt_menu_functions {
 
 					if (!empty($moduleLabel) || !empty($moduleDescription)) {
 						$descrCode .= '
-								<td>' . $moduleLabelHtml . $moduleDescription . '</td>';
+								<td class="module-description">' . $moduleLabelHtml . $moduleDescription . '</td>';
 					} else {
 						$descrCode .= '
 								<td>&nbsp;</td>';
@@ -389,20 +389,21 @@ class alt_menu_functions {
 				}
 			}
 
-				// Add spacers after each main section:
-			$subCode.='
-					<tr class="c-endrow">
-						<td colspan="3"></td>
-					</tr>';
-			$descrCode.='
-					<tr class="c-endrow">
-						<td colspan="3"></td>
-					</tr>';
+			if (!empty($subCode)) {
+					// Add spacers after each main section:
+				$subCode .= '
+						<tr class="c-endrow">
+							<td colspan="3"></td>
+						</tr>';
+				$descrCode .= '
+						<tr class="c-endrow">
+							<td colspan="3"></td>
+						</tr>';
 
-				// Add sub-code:
-			$menuCode.=$subCode;
+					// Add sub-code:
+				$menuCode .= $subCode;
+			}
 		}
-
 			// $descr==0:	Ordinary vertical menu
 		if ($menuCode)	{
 			if($collapsable == 1 || $config['expandAll'] == 1) {

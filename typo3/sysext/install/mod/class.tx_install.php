@@ -27,7 +27,7 @@
 /**
  * Contains the class for the Install Tool
  *
- * $Id: class.tx_install.php 8039 2010-06-22 14:02:30Z jsegars $
+ * $Id: class.tx_install.php 8429 2010-07-28 09:19:00Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Ingmar Schlecht <ingmar@typo3.org>
@@ -267,7 +267,7 @@ class tx_install extends t3lib_install {
 		} else {
 			$this->step = intval(t3lib_div::_GP('step'));
 		}
-		$this->redirect_url = t3lib_div::_GP('redirect_url');
+		$this->redirect_url = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('redirect_url'));
 
 		$this->INSTALL['type'] = '';
 		if ($_GET['TYPO3_INSTALL']['type']) {
@@ -471,7 +471,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			// Define the markers content
 		$markers = array(
 			'siteName' => 'Site: ' .
-				$GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'],
+				htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']),
 			'headTitle' => 'Login to TYPO3 ' . TYPO3_version . ' Install Tool',
 			'redirectUrl' => htmlspecialchars($redirect_url),
 			'enterPassword' => 'Password',
@@ -1973,8 +1973,9 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								$textAreaMarkers = array(
 									'id' => $k . '-' . $vk,
 									'name' => 'TYPO3_INSTALL[extConfig]['.$k.']['.$vk.']',
-									'value' => $value
+									'value' => str_replace(array("'.chr(10).'", "' . LF . '"), array(LF, LF), $value)
 								);
+								$value = str_replace(array("'.chr(10).'", "' . LF . '"), array(' | ', ' | '), $value);
 									// Fill the markers in the subpart
 								$textAreaSubpart = t3lib_parsehtml::substituteMarkerArray(
 									$textAreaSubpart,
@@ -2082,9 +2083,9 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$description = trim($commentArr[1][$k][$vk]);
 									if (preg_match('/^string \(textarea\)/i', $description)) {
 											// Force Unix linebreaks in textareas
-										$value = str_replace(chr(13),'',$value);
+										$value = str_replace(chr(13), '', $value);
 											// Preserve linebreaks
-										$value = str_replace(chr(10),"'.chr(10).'",$value);
+										$value = str_replace(LF, "' . LF . '", $value);
 									}
 									if (preg_match('/^boolean/i', $description)) {
 											// When submitting settings in the Install Tool, values that default to "false" or "true"
@@ -4805,7 +4806,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				if ($gdActive) {
 					// GD with box
 					$imageProc->IM_commands=array();
-					$im = $imageProc->imageCreate(170,136);
+					$im = imagecreatetruecolor(170, 136);
 					$Bcolor = ImageColorAllocate ($im, 0, 0, 0);
 					ImageFilledRectangle($im, 0, 0, 170, 136, $Bcolor);
 					$workArea=array(0,0,170,136);
@@ -4841,7 +4842,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 
 						// GD with text
 					$imageProc->IM_commands=array();
-					$im = $imageProc->imageCreate(170,136);
+					$im = imagecreatetruecolor(170, 136);
 					$Bcolor = ImageColorAllocate ($im, 128,128,150);
 					ImageFilledRectangle($im, 0, 0, 170, 136, $Bcolor);
 					$workArea=array(0,0,170,136);
@@ -7631,7 +7632,7 @@ $out="
 		} else {
 			$this->markers['headTitle'] = '
 				TYPO3 ' . TYPO3_version . '
-				Install Tool on site: ' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'] . '
+				Install Tool on site: ' . htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']) . '
 			';
 		}
 		$this->markers['title'] = 'TYPO3 ' . TYPO3_version;

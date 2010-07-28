@@ -27,7 +27,7 @@
 /**
  * Contains class for creating a position map.
  *
- * $Id: class.t3lib_positionmap.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_positionmap.php 8155 2010-07-11 09:03:31Z psychomieze $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant (should be)
  *
@@ -541,7 +541,7 @@ class t3lib_positionMap {
 	 * @return	string		HTML
 	 */
 	function getRecordHeader($row)	{
-		$line = t3lib_iconWorks::getIconImage('tt_content',$row,$this->backPath,' align="top" title="'.htmlspecialchars(t3lib_BEfunc::getRecordIconAltText($row,'tt_content')).'"');
+		$line = t3lib_iconWorks::getSpriteIconForRecord('tt_content', $row, array('title' => htmlspecialchars(t3lib_BEfunc::getRecordIconAltText($row,'tt_content'))));
 		$line.= t3lib_BEfunc::getRecordTitle('tt_content',$row,TRUE);
 		return $this->wrapRecordTitle($line,$row);
 	}

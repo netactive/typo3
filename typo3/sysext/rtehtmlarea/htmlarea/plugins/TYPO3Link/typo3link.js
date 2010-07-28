@@ -27,7 +27,7 @@
 /*
  * TYPO3Link plugin for htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: typo3link.js 7301 2010-04-12 07:10:34Z stan $
+ * TYPO3 SVN ID: $Id: typo3link.js 8291 2010-07-27 20:58:25Z stan $
  */
 HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {
@@ -44,7 +44,7 @@ HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 		 * Registering plugin "About" information
 		 */
 		var pluginInformation = {
-			version		: '2.0',
+			version		: '2.1',
 			developer	: 'Stanislas Rolland',
 			developerUrl	: 'http://www.sjbr.ca/',
 			copyrightOwner	: 'Stanislas Rolland',
@@ -146,7 +146,8 @@ HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 				if (this.pageTSConfiguration && this.pageTSConfiguration.additionalAttributes) {
 					var additionalAttributes = this.pageTSConfiguration.additionalAttributes.split(",");
 					for (var i = additionalAttributes.length; --i >= 0;) {
-						if (node.hasAttribute(additionalAttributes[i])) {
+							// hasAttribute() not available in IE < 8
+						if ((node.hasAttribute && node.hasAttribute(additionalAttributes[i])) || node.getAttribute(additionalAttributes[i]) != null) {
 							additionalParameter += "&curUrl[" + additionalAttributes[i] + "]=" + encodeURIComponent(node.getAttribute(additionalAttributes[i]));
 						}
 					}
@@ -165,7 +166,7 @@ HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 			}
 			this.openContainerWindow(
 				buttonId,
-				buttonId.toLowerCase(),
+				this.getButton(buttonId).tooltip.title,
 				this.getWindowDimensions(
 					{
 						width:	550,
@@ -413,6 +414,18 @@ HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 	onUpdateToolbar: function (button, mode, selectionEmpty, ancestors) {
 		if (mode === 'wysiwyg' && this.editor.isEditable() && button.itemId === 'CreateLink') {
 			button.setDisabled(selectionEmpty && !button.isInContext(mode, selectionEmpty, ancestors));
+			if (!button.disabled) {
+				var node = this.editor.getParentElement();
+				var el = HTMLArea.getElementObject(node, 'a');
+				if (el != null && /^a$/i.test(el.nodeName)) {
+					node = el;
+				}
+				if (node != null && /^a$/i.test(node.nodeName)) {
+					button.setTooltip({ title: this.localize('Modify link') });
+				} else {
+					button.setTooltip({ title: this.localize('Insert link') });
+				}
+			}
 		}
 	}
 });

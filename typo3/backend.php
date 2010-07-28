@@ -252,14 +252,14 @@ class TYPO3backend {
 		$hasExtDirectRouter = FALSE;
 		if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ExtDirect']) && is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ExtDirect'])) {
 			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ExtDirect'] as $key => $value) {
-				if (strpos($key, 'TYPO3.Backend') !== FALSE) {
+				if (strpos($key, 'TYPO3.Ajax.ExtDirect') !== FALSE) {
 					$hasExtDirectRouter = TRUE;
 					break;
 				}
 			}
 		}
 		if ($hasExtDirectRouter) {
-			$this->pageRenderer->addJsFile('ajax.php?ajaxID=ExtDirect::getAPI&namespace=TYPO3.Backend', NULL, FALSE);
+			$this->pageRenderer->addJsFile('ajax.php?ajaxID=ExtDirect::getAPI&namespace=TYPO3.Ajax.ExtDirect', NULL, FALSE);
 		}
 
 		$this->generateJavascript();
@@ -357,6 +357,9 @@ class TYPO3backend {
 			// If another page module was specified, replace the default Page module with the new one
 		$newPageModule = trim($GLOBALS['BE_USER']->getTSConfigVal('options.overridePageModule'));
 		$pageModule    = t3lib_BEfunc::isModuleSetInTBE_MODULES($newPageModule) ? $newPageModule : 'web_layout';
+		if (!$GLOBALS['BE_USER']->check('modules', $pageModule)) {
+			$pageModule = '';
+		}
 
 		$menuFrameName = 'menu';
 		if($GLOBALS['BE_USER']->uc['noMenuMode'] === 'icons') {
@@ -385,7 +388,7 @@ class TYPO3backend {
 			'veriCode' => $GLOBALS['BE_USER']->veriCode(),
 			'denyFileTypes' => PHP_EXTENSIONS_DEFAULT,
 			'moduleMenuWidth' => $this->menuWidth - 1,
-			'topBarHeight' => (int) $GLOBALS['TBE_STYLES']['dims']['topFrameH'],
+			'topBarHeight' => (isset($GLOBALS['TBE_STYLES']['dims']['topFrameH']) ? intval($GLOBALS['TBE_STYLES']['dims']['topFrameH']) : 30),
 			'showRefreshLoginPopup' => isset($GLOBALS['TYPO3_CONF_VARS']['BE']['showRefreshLoginPopup']) ? intval($GLOBALS['TYPO3_CONF_VARS']['BE']['showRefreshLoginPopup']) : FALSE,
 		);
 		$t3LLLcore = array(

@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Tab menu (template.php)
 
-$Id: element_tab.css 7978 2010-06-20 11:09:24Z psychomieze $
+$Id: element_tab.css 8264 2010-07-24 10:58:56Z steffenk $
 - - - - - - - - - - - - - - - - - - - - - */
 
 table.typo3-dyntabmenu td a,
@@ -33,6 +33,15 @@ table.typo3-dyntabmenu td.disabled_over a {
 	background: #ccc;
 	color: #999;
 	cursor: default;
+}
+
+table.typo3-dyntabmenu td a {
+	border-bottom: 1px solid #ffffff;
+}
+
+table.typo3-dyntabmenu td.tab a,
+table.typo3-dyntabmenu td.tab_over a {
+	border-bottom: 1px solid #c0c0c0;
 }
 
 table.typo3-dyntabmenu td a,

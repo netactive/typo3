@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tslib_content.php 8420 2010-07-28 09:15:53Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2027,6 +2027,15 @@ class tslib_cObj {
 					break;
 					case 'hidden':
 						$value = trim($parts[2]);
+
+							// If this form includes an auto responder message, include a HMAC checksum field
+							// in order to verify potential abuse of this feature.
+						if (strlen($value) && t3lib_div::inList($confData['fieldname'], 'auto_respond_msg')) {
+							$hmacChecksum = t3lib_div::hmac($value);
+							$hiddenfields .= sprintf('<input type="hidden" name="auto_respond_checksum" id="%sauto_respond_checksum" value="%s" />',
+												$prefix, $hmacChecksum);
+						}
+
 						if (strlen($value) && t3lib_div::inList('recipient_copy,recipient',$confData['fieldname']) && $GLOBALS['TYPO3_CONF_VARS']['FE']['secureFormmail'])	{
 							break;
 						}
@@ -4695,7 +4704,9 @@ class tslib_cObj {
 			foreach ($mimeTypes as $v) {
 				$parts = explode('=',$v,2);
 				if (strtolower($fI['extension']) == strtolower(trim($parts[0])))	{
-					$mimetype = '&mimeType='.rawurlencode(trim($parts[1]));
+					$mimetypeValue = trim($parts[1]);
+					$mimetype = '&mimeType=' . rawurlencode($mimetypeValue);
+					break;
 				}
 			}
 		}
@@ -4704,6 +4715,7 @@ class tslib_cObj {
 		$hArr = array(
 			$jumpUrl,
 			$locationData,
+			$mimetypeValue,
 			$GLOBALS['TSFE']->TYPO3_CONF_VARS['SYS']['encryptionKey']
 		);
 		$juHash='&juHash='.t3lib_div::shortMD5(serialize($hArr));
@@ -5012,7 +5024,12 @@ class tslib_cObj {
 						if ($GLOBALS['TSFE']->no_cache && $conf['sword'] && is_array($GLOBALS['TSFE']->sWordList) && $GLOBALS['TSFE']->sWordRegEx)	{
 							$newstring = '';
 							do {
-								$pieces = preg_split('/' . $GLOBALS['TSFE']->sWordRegEx . '/', $data, 2);
+								$pregSplitMode = 'i';
+								if (isset($GLOBALS['TSFE']->config['config']['sword_noMixedCase']) &&
+									!empty($GLOBALS['TSFE']->config['config']['sword_noMixedCase'])) {
+										$pregSplitMode = '';
+								}
+								$pieces = preg_split('/' . $GLOBALS['TSFE']->sWordRegEx . '/' . $pregSplitMode, $data, 2);
 								$newstring.=$pieces[0];
 								$match_len = strlen($data)-(strlen($pieces[0])+strlen($pieces[1]));
 								if (strstr($pieces[0],'<') || strstr($pieces[0],'>'))	{
@@ -6048,13 +6065,13 @@ class tslib_cObj {
 							// Query Params:
 						$addQueryParams = $conf['addQueryString'] ? $this->getQueryArguments($conf['addQueryString.']) : '';
 						$addQueryParams .= trim($this->stdWrap($conf['additionalParams'],$conf['additionalParams.']));
-						if (substr($addQueryParams,0,1)!='&')		{
+						if ($addQueryParams == '&' || substr($addQueryParams, 0, 1) != '&') {
 							$addQueryParams = '';
 						}
 						if ($conf['useCacheHash']) {
 								// Mind the order below! See http://bugs.typo3.org/view.php?id=5117
 							$params = $GLOBALS['TSFE']->linkVars . $addQueryParams;
-							if ($params) {
+							if (trim($params, '& ') != '') {
 								$addQueryParams .= '&cHash=' . t3lib_div::generateCHash($params);
 							}
 							unset($params);

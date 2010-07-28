@@ -27,7 +27,7 @@
 /**
  * Contains TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: class.t3lib_tceforms.php 8009 2010-06-21 16:51:09Z steffenk $
+ * $Id: class.t3lib_tceforms.php 8402 2010-07-28 09:12:41Z ohader $
  * Revised for TYPO3 3.6 August/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2277,7 +2277,7 @@ class t3lib_TCEforms	{
 					$onlySingleTableAllowed = (count($tempFT) == 1);
 					foreach ($tempFT as $theT) {
 						$info.= '<span class="nobr">&nbsp;&nbsp;&nbsp;&nbsp;' .
-								t3lib_iconWorks::getIconImage($theT, array(), $this->backPath, 'align="top"') .
+								t3lib_iconWorks::getSpriteIconForRecord($theT, array()) .
 								htmlspecialchars($this->sL($GLOBALS['TCA'][$theT]['ctrl']['title'])) .
 								'</span><br />';
 					}
@@ -3896,6 +3896,7 @@ class t3lib_TCEforms	{
 									$params['formName'] = $this->formName;
 									$params['itemName'] = $itemName;
 									$params['fieldChangeFunc'] = $fieldChangeFunc;
+									$params['fieldChangeFuncHash'] = t3lib_div::hmac(serialize($fieldChangeFunc));
 
 									switch((string)$wConf['type'])	{
 										case 'popup':
@@ -4970,8 +4971,8 @@ class t3lib_TCEforms	{
 			$arr[$k] = str_replace('###RECORD_LABEL###', $rLabel, $arr[$k]);
 			$arr[$k] = str_replace('###TABLE_TITLE###',htmlspecialchars($this->sL($TCA[$table]['ctrl']['title'])),$arr[$k]);
 
-			$titleA=t3lib_BEfunc::titleAltAttrib($this->getRecordPath($table,$rec));
-			$arr[$k]=str_replace('###RECORD_ICON###',t3lib_iconWorks::getIconImage($table,$rec,$this->backPath,'class="absmiddle"'.$titleA),$arr[$k]);
+			$arr[$k] = str_replace('###RECORD_ICON###', t3lib_iconWorks::getSpriteIconForRecord($table, $rec, array('title' => $this->getRecordPath($table, $rec))), $arr[$k]);
+
 		}
 		return $arr;
 	}

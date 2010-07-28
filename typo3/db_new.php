@@ -30,7 +30,7 @@
  * This script lets users choose a new database element to create.
  * Includes a wizard mode for visually pointing out the position of new pages
  *
- * $Id: db_new.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: db_new.php 8429 2010-07-28 09:19:00Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -166,7 +166,7 @@ class SC_db_new {
 		}
 			// Setting GPvars:
 		$this->id = intval(t3lib_div::_GP('id'));	// The page id to operate from
-		$this->returnUrl = t3lib_div::_GP('returnUrl');
+		$this->returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 		$this->pagesOnly = t3lib_div::_GP('pagesOnly');
 
 			// Create instance of template class for output
@@ -381,7 +381,7 @@ class SC_db_new {
 		$table = 'pages';
 		$v = $GLOBALS['TCA'][$table];
 		$pageIcon = t3lib_iconWorks::getSpriteIconForRecord($table,array());
-						
+
 		$newPageIcon = t3lib_iconWorks::getSpriteIcon('actions-page-new');
 		$rowContent = $firstLevel . $newPageIcon . '&nbsp;<strong>' . $GLOBALS['LANG']->getLL('createNewPage') . '</strong>';
 

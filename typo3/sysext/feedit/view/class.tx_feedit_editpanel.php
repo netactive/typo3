@@ -28,7 +28,7 @@
 /**
  * View class for the edit panels in frontend editing.
  *
- * $Id: class.tx_feedit_editpanel.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tx_feedit_editpanel.php 8157 2010-07-11 12:45:16Z psychomieze $
  *
  * @author	Jeff Segars <jeff@webempoweredchurch.org>
  * @author	David Slayback <dave@webempoweredchurch.org>

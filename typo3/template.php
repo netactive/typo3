@@ -27,7 +27,7 @@
 /**
  * Contains class with layout/output function for TYPO3 Backend Scripts
  *
- * $Id: template.php 7974 2010-06-20 08:05:51Z benni $
+ * $Id: template.php 8429 2010-07-28 09:19:00Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -449,7 +449,7 @@ class template {
 	function getHeader($table,$row,$path,$noViewPageIcon=0,$tWrap=array('',''))	{
 		global $TCA;
 		if (is_array($row) && $row['uid'])	{
-			$iconImgTag=t3lib_iconWorks::getIconImage($table,$row,$this->backPath,'title="'.htmlspecialchars($path).'"');
+			$iconImgTag=t3lib_iconWorks::getSpriteIconForRecord($table, $row , array('title' => htmlspecialchars($path)));
 			$title= strip_tags($row[$TCA[$table]['ctrl']['label']]);
 			$viewPage = $noViewPageIcon ? '' : $this->viewPageIcon($row['uid'],$this->backPath,'');
 			if ($table=='pages')	$path.=' - '.t3lib_BEfunc::titleAttribForPages($row,'',0);
@@ -598,7 +598,7 @@ class template {
 		));
 
 		$out ="
-	var T3_RETURN_URL = '".str_replace('%20','',rawurlencode(t3lib_div::_GP('returnUrl')))."';
+	var T3_RETURN_URL = '".str_replace('%20','',rawurlencode(t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'))))."';
 	var T3_THIS_LOCATION = '".str_replace('%20','',rawurlencode($thisLocation))."';
 		";
 		return $out;
@@ -2191,7 +2191,7 @@ $str.=$this->docBodyTagBegin().
 			$title = t3lib_BEfunc::getRecordTitle('pages', $pageRecord);
 		} else {	// On root-level of page tree
 				// Make Icon
-			$iconImg = t3lib_iconWorks::getSpriteIcon('apps-pagetree-root', array('title' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']));
+			$iconImg = t3lib_iconWorks::getSpriteIcon('apps-pagetree-root', array('title' => htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'])));
 			if($BE_USER->user['admin']) {
 				$theIcon = $GLOBALS['SOBE']->doc->wrapClickMenuOnIcon($iconImg, 'pages', 0);
 			} else {

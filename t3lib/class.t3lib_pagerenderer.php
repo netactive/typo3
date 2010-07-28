@@ -32,7 +32,7 @@
  * @author	Steffen Kamper <info@sk-typo3.de>
  * @package TYPO3
  * @subpackage t3lib
- * $Id: class.t3lib_pagerenderer.php 7912 2010-06-13 23:41:26Z steffenk $
+ * $Id: class.t3lib_pagerenderer.php 8181 2010-07-13 20:47:20Z steffenk $
  */
 class t3lib_PageRenderer implements t3lib_Singleton {
 
@@ -743,7 +743,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 	 * @return void
 	 */
 	public function addJsInlineCode($name, $block, $compress = TRUE, $forceOnTop = FALSE) {
-		if (!isset($this->jsInline[$name])) {
+		if (!isset($this->jsInline[$name]) && !empty($block)) {
 			$this->jsInline[$name] = array (
 				'code'        => $block . LF,
 				'section'     => self::PART_HEADER,
@@ -763,7 +763,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 	 * @return void
 	 */
 	public function addJsFooterInlineCode($name, $block, $compress = TRUE, $forceOnTop = FALSE) {
-		if (!isset($this->jsInline[$name])) {
+		if (!isset($this->jsInline[$name]) && !empty($block)) {
 			$this->jsInline[$name] = array (
 				'code'        => $block . LF,
 				'section'     => self::PART_FOOTER,
@@ -828,7 +828,7 @@ class t3lib_PageRenderer implements t3lib_Singleton {
 	 * @return void
 	 */
 	public function addCssInlineBlock($name, $block, $compressed = FALSE, $forceOnTop = FALSE) {
-		if (!isset($this->cssInline[$name])) {
+		if (!isset($this->cssInline[$name]) && !empty($block)) {
 			$this->cssInline[$name] = array (
 				'code'       => $block,
 				'compress'   => $compress,

@@ -29,7 +29,7 @@
  *
  * This module lets you view a page in a more Content Management like style than the ordinary record-list
  *
- * $Id: db_layout.php 7980 2010-06-20 11:33:13Z psychomieze $
+ * $Id: db_layout.php 8429 2010-07-28 09:19:00Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -250,7 +250,7 @@ class SC_db_layout {
 		$this->search_field = t3lib_div::_GP('search_field');
 		$this->search_levels = t3lib_div::_GP('search_levels');
 		$this->showLimit = t3lib_div::_GP('showLimit');
-		$this->returnUrl = t3lib_div::_GP('returnUrl');
+		$this->returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 		$this->externalTables = $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['cms']['db_layout']['addTables'];
 
 			// Load page info array:

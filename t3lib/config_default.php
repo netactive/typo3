@@ -8,7 +8,7 @@
  * 'IM' is short for 'ImageMagick', which is an external image manipulation package available from www.imagemagick.org. Version is ABSOLUTELY preferred to be 4.2.9, but may be 5+. See the install notes for TYPO3!!
  * 'GD' is short for 'GDLib/FreeType', which are libraries that should be compiled into PHP4. GDLib <=1.3 supports GIF, while the latest version 1.8.x and 2.x supports only PNG. GDLib is available from www.boutell.com/gd/. Freetype has a link from there.
  *
- * $Id: config_default.php 8046 2010-06-22 15:35:12Z benni $
+ * $Id: config_default.php 8431 2010-07-28 09:31:12Z benni $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -17,10 +17,10 @@
 if (!defined ('PATH_typo3conf')) 	die ('The configuration path was not properly defined!');
 
 //Security related constant: Default value of fileDenyPattern
-define('FILE_DENY_PATTERN_DEFAULT', '\.php[3-6]?(\..*)?$|^\.htaccess$');
+define('FILE_DENY_PATTERN_DEFAULT', '\.(php[3-6]?|phpsh|phtml)(\..*)?$|^\.htaccess$');
 
 //Security related constant: Comma separated list of file extensions that should be registered as php script file extensions
-define('PHP_EXTENSIONS_DEFAULT', 'php,php3,php4,php5,php6,phpsh,inc');
+define('PHP_EXTENSIONS_DEFAULT', 'php,php3,php4,php5,php6,phpsh,inc,phtml');
 
 $TYPO3_CONF_VARS = array(
 	'GFX' => array(		// Configuration of the image processing features in TYPO3. 'IM' and 'GD' are short for ImageMagick and  GD library respectively.
@@ -35,7 +35,7 @@ $TYPO3_CONF_VARS = array(
 		'gdlib_png' => FALSE,					// Boolean. Enables the use of GD, with PNG only. This means that all items normally generated as gif-files will be png-files instead!
 
 		'im' => TRUE,							// Boolean. Enables the use of IM.
-		'im_path' => '/usr/X11R6/bin/',			// Path to the IM tools 'convert', 'combine', 'identify'. Version 4.2.9 of ImageMagick is highly recommended due to features and speed!
+		'im_path' => '/usr/X11R6/bin/',			// Path to the IM tools 'convert', 'combine', 'identify'.
 		'im_path_lzw' => '/usr/bin/',			// Path to the IM tool 'convert' with LZW enabled! See 'gif_compress'. If your version 4.2.9 of ImageMagick is compiled with LZW you may leave this field blank AND disable the flag 'gif_compress'! Tip: You can call LZW 'convert' with a prefix like 'myver_convert' by setting this path with it, eg. '/usr/bin/myver_' instead of just '/usr/bin/'.
 
 		'im_version_5' => '',					// String. Set this if you're using ImageMagick/GraphicsMagick but not IM 4.x. Setting this value will automatically configure some settings for use with the specified program version. Allowed values are: "im4", "im5", "im6" and "gm" (uses GraphicsMagick instead of ImageMagick).
@@ -110,7 +110,8 @@ $TYPO3_CONF_VARS = array(
 			'defaultBackend'  => 't3lib_cache_backend_FileBackend',
 			'cacheFrontends' => array(
 				't3lib_cache_frontend_VariableFrontend' => 't3lib/cache/frontend/class.t3lib_cache_frontend_variablefrontend.php:t3lib_cache_frontend_VariableFrontend',
-				't3lib_cache_frontend_StringFrontend'   => 't3lib/cache/frontend/class.t3lib_cache_frontend_stringfrontend.php:t3lib_cache_frontend_StringFrontend'
+				't3lib_cache_frontend_StringFrontend'   => 't3lib/cache/frontend/class.t3lib_cache_frontend_stringfrontend.php:t3lib_cache_frontend_StringFrontend',
+				't3lib_cache_frontend_PhpFrontend'      => 't3lib/cache/frontend/class.t3lib_cache_frontend_phpfrontend.php:t3lib_cache_frontend_PhpFrontend',
 			),
 			'cacheBackends' => array(
 				't3lib_cache_backend_DbBackend'        => 't3lib/cache/backend/class.t3lib_cache_backend_dbbackend.php:t3lib_cache_backend_DbBackend',
@@ -387,7 +388,7 @@ $TYPO3_CONF_VARS = array(
 $T3_VAR = array();	// Initialize.
 
 	// TYPO3 version
-$TYPO_VERSION = '4.4.0';	// deprecated: use the constants defined below
+$TYPO_VERSION = '4.4.1';	// deprecated: use the constants defined below
 define('TYPO3_version', $TYPO_VERSION);
 define('TYPO3_branch', '4.4');
 define('TYPO3_copyright_year', '1998-2010');

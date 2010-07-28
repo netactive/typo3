@@ -32,7 +32,7 @@
  * @author	Philipp Borgmann <philipp.borgmann@gmx.de>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_base.php 7935 2010-06-16 14:07:26Z stan $  *
+ * $Id: class.tx_rtehtmlarea_base.php 8306 2010-07-27 22:37:36Z stan $  *
  */
 
 class tx_rtehtmlarea_base extends t3lib_rteapi {
@@ -1106,14 +1106,11 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			$this->cumulativeScripts[$this->TCEform->RTEcounter][] = $destination;
 		}
 		if ($this->is_FE()) {
-			return ($GLOBALS['TSFE']->absRefPrefix ? $GLOBALS['TSFE']->absRefPrefix : '') . t3lib_div::createVersionNumberedFilename($relativeFilename);
+			$filename =  ($GLOBALS['TSFE']->absRefPrefix ? $GLOBALS['TSFE']->absRefPrefix : '') . t3lib_div::createVersionNumberedFilename($relativeFilename);
 		} else {
-			$filename = t3lib_div::createVersionNumberedFilename(($this->isFrontendEditActive() ? '' : ('../' . $this->backPath)) . $relativeFilename);
-			if ($this->isFrontendEditActive()) {
-				$filename = preg_replace('/^..\//', '', $filename);
-			}
-			return $filename;
+			$filename = t3lib_div::createVersionNumberedFilename(($this->isFrontendEditActive() ? '' : ($this->backPath . '../')) . $relativeFilename);
 		}
+		return t3lib_div::resolveBackPath($filename);
 	}
 	/**
 	 * Concatenates all accumulated scripts in a file in typo3temp/rtehtmlarea directory and returns the file name
@@ -1149,15 +1146,12 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		} else {
 			if ($compress) {
 				$compressor = t3lib_div::makeInstance('t3lib_Compressor');
-				$filename = $compressor->compressJsFile('../' . ($this->isFrontendEditActive() ? '' : $this->backPath) . $relativeFilename);
+				$filename = $compressor->compressJsFile(($this->isFrontendEditActive() ? '' : ($this->backPath . '../')) . $relativeFilename);
 			} else {
-				$filename = t3lib_div::createVersionNumberedFilename(($this->isFrontendEditActive() ? '' : ('../' . $this->backPath)) . $relativeFilename);
-			}
-			if ($this->isFrontendEditActive()) {
-				$filename = preg_replace('/^..\//', '', $filename);
+				$filename = t3lib_div::createVersionNumberedFilename(($this->isFrontendEditActive() ? '' : ($this->backPath . '../')) . $relativeFilename);
 			}
 		}
-		return $filename;
+		return t3lib_div::resolveBackPath($filename);
 	}
 
 	/**
@@ -1310,14 +1304,14 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			list($extKey,$local) = explode('/',substr($filename,4),2);
 			$newFilename = '';
 			if (strcmp($extKey,'') &&  t3lib_extMgm::isLoaded($extKey) && strcmp($local,'')) {
-				$newFilename = ($this->is_FE() ? t3lib_extMgm::siteRelPath($extKey) : $this->backPath . t3lib_extMgm::extRelPath($extKey)) . $local;
+				$newFilename = (($this->is_FE() || $this->isFrontendEditActive()) ? t3lib_extMgm::siteRelPath($extKey) : $this->backPath . t3lib_extMgm::extRelPath($extKey)) . $local;
 			}
 		} elseif (substr($filename,0,1) != '/') {
-			$newFilename = (($this->is_FE() || $this->isFrontendEditActive()) ? '' : ('../' . $this->backPath)) . $filename;
+			$newFilename = (($this->is_FE() || $this->isFrontendEditActive()) ? '' : ($this->backPath . '../')) . $filename;
 		} else {
-			$newFilename = (($this->is_FE() || $this->isFrontendEditActive()) ? '' : ('../' . $this->backPath)) . substr($filename, 1);
+			$newFilename = (($this->is_FE() || $this->isFrontendEditActive()) ? '' : ($this->backPath . '../')) . substr($filename, 1);
 		}
-		return  $newFilename;
+		return  t3lib_div::resolveBackPath($newFilename);
 	}
 
 	/**

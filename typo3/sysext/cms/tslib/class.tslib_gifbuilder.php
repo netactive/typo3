@@ -28,7 +28,7 @@
  * Generating gif/png-files from TypoScript
  * Used by the menu-objects and imgResource in TypoScript.
  *
- * $Id: class.tslib_gifbuilder.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tslib_gifbuilder.php 8139 2010-07-08 15:57:05Z psychomieze $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -348,7 +348,7 @@ class tslib_gifBuilder extends t3lib_stdGraphic {
 		$XY = $this->XY;
 
 			// Gif-start
-		$this->im = $this->imagecreate($XY[0],$XY[1]);
+		$this->im = imagecreatetruecolor($XY[0], $XY[1]);
 		$this->w = $XY[0];
 		$this->h = $XY[1];
 

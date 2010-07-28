@@ -31,7 +31,7 @@
  * Call ALL methods without making an object!
  * Eg. to get a page-record 51 do this: 't3lib_BEfunc::getRecord('pages',51)'
  *
- * $Id: class.t3lib_befunc.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_befunc.php 8415 2010-07-28 09:15:10Z ohader $
  * Usage counts are based on search 22/2 2003 through whole backend source of typo3/
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
@@ -868,7 +868,11 @@ final class t3lib_BEfunc {
 			// Traverse languages
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,title,flag', 'sys_language', 'pid=0' . self::deleteClause('sys_language'));
 		while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-			$sysLanguages[] = array($row['title'].' ['.$row['uid'].']', $row['uid'], ($row['flag'] ? 'flags/'.$row['flag'] : ''));
+			$sysLanguages[] = array(
+				htmlspecialchars($row['title']) . ' [' . $row['uid'] . ']',
+				$row['uid'],
+				($row['flag'] ? 'flags/' . $row['flag'] : '')
+			);
 		}
 		$GLOBALS['TYPO3_DB']->sql_free_result($res);
 
@@ -3167,7 +3171,11 @@ final class t3lib_BEfunc {
 			foreach ($fTWHERE_parts as $kk => $vv) {
 				if ($kk) {
 					$fTWHERE_subpart = explode('###', $vv, 2);
-					$fTWHERE_parts[$kk] = $TSconfig['_THIS_ROW'][$fTWHERE_subpart[0]].$fTWHERE_subpart[1];
+					if (substr($fTWHERE_parts[0], -1) === '\'' && $fTWHERE_subpart[1]{0} === '\'') {
+						$fTWHERE_parts[$kk] = $GLOBALS['TYPO3_DB']->quoteStr($TSconfig['_THIS_ROW'][$fTWHERE_subpart[0]], $foreign_table) . $fTWHERE_subpart[1];
+					} else {
+						$fTWHERE_parts[$kk] = $GLOBALS['TYPO3_DB']->fullQuoteStr($TSconfig['_THIS_ROW'][$fTWHERE_subpart[0]], $foreign_table) . $fTWHERE_subpart[1];
+					}
 				}
 			}
 			$fTWHERE = implode('', $fTWHERE_parts);
@@ -4403,7 +4411,7 @@ final class t3lib_BEfunc {
 		while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
 			$theRows[] = $row;
 			$out.='<span class="nobr"><a href="'.htmlspecialchars($script.'?id='.$row['uid']).'">'.
-					t3lib_iconWorks::getIconImage('pages', $row, $backPath, 'title="' . htmlspecialchars(self::getRecordPath($row['uid'], $perms_clause, 20)) . '" align="top"') .
+					t3lib_iconWorks::getSpriteIconForRecord('pages', $row, array('title' => htmlspecialchars(self::getRecordPath($row['uid'], $perms_clause, 20)))) .
 					htmlspecialchars($row['title']).
 					'</a></span><br />';
 		}

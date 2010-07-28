@@ -27,7 +27,7 @@
 /**
  * TSParser extension class to t3lib_TStemplate
  *
- * $Id: class.t3lib_tsparser_ext.php 8006 2010-06-21 16:37:11Z benni $
+ * $Id: class.t3lib_tsparser_ext.php 8298 2010-07-27 21:33:35Z steffenk $
  * Contains functions for the TS module in TYPO3 backend
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -396,7 +396,10 @@ class t3lib_tsparser_ext extends t3lib_TStemplate	{
 				if ($PM=='join')	{
 					$HTML.=$theIcon;
 				} else {
-					$aHref='index.php?id='.$GLOBALS['SOBE']->id.'&tsbr['.$depth.']='.($deeper?0:1).'#'.$goto;
+					$aHref='index.php?id=' . $GLOBALS['SOBE']->id .
+						'&tsbr[' . $depth.']=' . ($deeper ? 0 : 1) .
+						(t3lib_div::_GP("breakPointLN") ? '&breakPointLN=' . t3lib_div::_GP("breakPointLN") : '') .
+						'#' .$goto;
 					$HTML.='<a name="'.$goto.'" href="'.htmlspecialchars($aHref).'">'.$theIcon.'</a>';
 				}
 
@@ -405,7 +408,9 @@ class t3lib_tsparser_ext extends t3lib_TStemplate	{
 					$label='<font color="#666666">'.$label.'</font>';
 				} else {
 					if ($this->linkObjects)	{
-						$aHref = 'index.php?id='.$GLOBALS['SOBE']->id.'&sObj='.$depth;
+						$aHref = 'index.php?id='.$GLOBALS['SOBE']->id .
+							'&sObj=' . $depth .
+							(t3lib_div::_GP("breakPointLN") ? '&breakPointLN=' . t3lib_div::_GP("breakPointLN") : '');
 						if ($this->bType!='const')	{
 							$ln = is_array($arr[$key.'.ln..']) ? 'Defined in: '.$this->lineNumberToScript($arr[$key.'.ln..']) : 'N/A';
 						} else {
@@ -600,7 +605,7 @@ class t3lib_tsparser_ext extends t3lib_TStemplate	{
 			$alttext .= $row['pid'] ? ' - ' . t3lib_BEfunc::getRecordPath($row['pid'], $GLOBALS['SOBE']->perms_clause, 20) : '';
 
 			$icon = (substr($row['templateID'],0,3) == 'sys' ? 
-						t3lib_iconWorks::getSpriteIconForRecord('sys_template', $row['root'], array('title' => $alttext)) 
+						t3lib_iconWorks::getSpriteIconForRecord('sys_template', $row, array('title' => $alttext)) 
 						: t3lib_iconWorks::getSpriteIcon('mimetypes-x-content-template-static', array('title' => $alttext))
 					);
 			if (in_array($row['templateID'], $this->clearList_const) || in_array($row['templateID'], $this->clearList_setup)) {
@@ -683,6 +688,7 @@ class t3lib_tsparser_ext extends t3lib_TStemplate	{
 			$all = chop($all);
 			$tsparser = t3lib_div::makeInstance('t3lib_TSparser');
 			$tsparser->lineNumberOffset=$this->ext_lineNumberOffset+1;
+			$tsparser->parentObject = $this;
 			return $tsparser->doSyntaxHighlight($all,$lineNumbers?array($this->ext_lineNumberOffset+1):'',$syntaxHLBlockmode);
 		} else {
 			return $this->ext_formatTS($all,$lineNumbers,$comments,$crop);

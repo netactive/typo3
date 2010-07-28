@@ -27,7 +27,7 @@
 /**
  * Dynamic configuation of the system-related tables, typ. sys_* series
  *
- * $Id: tbl_cms.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: tbl_cms.php 8120 2010-07-06 18:47:31Z lolli $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -44,7 +44,7 @@
 $TCA['fe_users'] = array(
 	'ctrl' => $TCA['fe_users']['ctrl'],
 	'interface' => array(
-		'showRecordFieldList' => 'username,password,usergroup,lockToDomain,name,title,company,address,zip,city,country,email,www,telephone,fax,disable,starttime,endtime,lastlogin'
+		'showRecordFieldList' => 'username,password,usergroup,lockToDomain,name,first_name,middle_name,last_name,title,company,address,zip,city,country,email,www,telephone,fax,disable,starttime,endtime,lastlogin',
 	),
 	'feInterface' => $TCA['fe_users']['feInterface'],
 	'columns' => array(

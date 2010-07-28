@@ -28,7 +28,7 @@
 /**
  * Class to handle and determine browser specific information.
  *
- * $Id: class.t3lib_utility_client.php 7944 2010-06-16 22:25:40Z steffenk $
+ * $Id: class.t3lib_utility_client.php 8159 2010-07-11 17:31:15Z steffenk $
  *
  * @author	Oliver Hader <oliver@typo3.org>
  */
@@ -78,6 +78,8 @@ final class t3lib_utility_Client {
 			// Find all phrases (or return empty array if none found)
 		if (!preg_match_all($pattern, strtolower($userAgent), $matches)) {
 			$browserInfo['browser'] = 'unknown';
+			$browserInfo['version'] = '';
+			$browserInfo['all'] = array();
 		} else {
 				// Since some UAs have more than one phrase (e.g Firefox has a Gecko phrase,
 				// Opera 7,8 have a MSIE phrase), use the last one found (the right-most one

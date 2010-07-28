@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	reports
  *
- * $Id: class.tx_reports_reports_status_configurationstatus.php 7953 2010-06-17 14:07:33Z flyguide $
+ * $Id: class.tx_reports_reports_status_configurationstatus.php 8157 2010-07-11 12:45:16Z psychomieze $
  */
 class tx_reports_reports_status_ConfigurationStatus implements tx_reports_StatusProvider {
 

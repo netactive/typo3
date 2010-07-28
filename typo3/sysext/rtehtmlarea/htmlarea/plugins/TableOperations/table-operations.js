@@ -31,7 +31,7 @@
 /*
  * Table Operations Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: table-operations.js 7936 2010-06-16 14:42:06Z stan $
+ * TYPO3 SVN ID: $Id: table-operations.js 8088 2010-07-04 20:24:20Z stan $
  */
 HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 		
@@ -138,6 +138,7 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 	configDefaults: {
 		combo: {
 			editable: true,
+			selectOnFocus: true,
 			typeAhead: true,
 			triggerAction: 'all',
 			forceSelection: true,

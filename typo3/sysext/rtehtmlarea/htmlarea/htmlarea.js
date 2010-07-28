@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 8003 2010-06-21 15:48:30Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 8287 2010-07-27 17:47:19Z stan $
  */
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
 if (typeof(HTMLArea) == 'undefined') {
@@ -152,8 +152,10 @@ HTMLArea.Config = function (editorId) {
 		htmlareacombo: {
 			cls: 'select',
 			typeAhead: true,
+			lastQuery: '',
 			triggerAction: 'all',
 			editable: !Ext.isIE,
+			selectOnFocus: !Ext.isIE,
 			validationEvent: false,
 			validateOnBlur: false,
 			submitValue: false,
@@ -206,7 +208,6 @@ HTMLArea.Config = Ext.extend(HTMLArea.Config, {
 						data: config.options
 					});
 				} else if (config.storeUrl) {
-					config.mode = 'remote';
 						// Create combo json store
 					config.store = new Ext.data.JsonStore({
 						autoDestroy:  true,
@@ -966,14 +967,26 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		if (Ext.isOpera) {
 			if (this.document.readyState != 'complete') {
 				stylesAreLoaded = false;
-				errorText = 'Stylesheets not yet loaded';
+				errorText = 'Document.readyState not complete';
 			}
 		} else {
-			Ext.each(this.document.styleSheets, function (styleSheet) {
-				if (!Ext.isIE) try { rules = styleSheet.cssRules; } catch(e) { stylesAreLoaded = false; errorText = e; }
-				if (Ext.isIE) try { rules = styleSheet.rules; } catch(e) { stylesAreLoaded = false; errorText = e; }
-				if (Ext.isIE) try { rules = styleSheet.imports; } catch(e) { stylesAreLoaded = false; errorText = e; }
-			});
+				// Test if the styleSheets array is at all accessible
+			if (Ext.isIE) {
+				try { rules = this.document.styleSheets[0].rules; } catch(e) { stylesAreLoaded = false; errorText = e; }
+			} else {
+				try { rules = this.document.styleSheets[0].cssRules; } catch(e) { stylesAreLoaded = false; errorText = e; }
+			}
+				// Then test if all stylesheets are accessible
+			if (stylesAreLoaded) {
+				Ext.each(this.document.styleSheets, function (styleSheet) {
+					if (Ext.isIE) {
+						try { rules = styleSheet.rules; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
+						try { rules = styleSheet.imports; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
+					} else {
+						try { rules = styleSheet.cssRules; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
+					}
+				});
+			}
 		}
 		if (!stylesAreLoaded) {
 			this.getStyleSheets.defer(100, this);
@@ -1057,8 +1070,8 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 	setOptions: function () {
 		if (!Ext.isIE) {
 			try {
-				if (this.document.queryCommandEnabled('insertbronreturn')) {
-					this.document.execCommand('insertbronreturn', false, this.config.disableEnterParagraphs);
+				if (this.document.queryCommandEnabled('insertBrOnReturn')) {
+					this.document.execCommand('insertBrOnReturn', false, this.config.disableEnterParagraphs);
 				}
 				if (this.document.queryCommandEnabled('styleWithCSS')) {
 					this.document.execCommand('styleWithCSS', false, this.config.useCSS);
@@ -1322,7 +1335,23 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 			return false;
 		}
 		if (event.shiftKey || this.config.disableEnterParagraphs) {
-			this.getEditor()._detectURL(event);
+			var editor = this.getEditor();
+			editor._detectURL(event);
+			if (Ext.isSafari) {
+				var brNode = editor.document.createElement('br');
+				editor.insertNodeAtSelection(brNode);
+				brNode.parentNode.normalize();
+					// Selection issue when an URL was detected
+				if (editor._unlinkOnUndo) {
+					brNode = brNode.parentNode.parentNode.insertBefore(brNode, brNode.parentNode.nextSibling);
+				}
+				if (!brNode.nextSibling || !/\S+/i.test(brNode.nextSibling.textContent)) {
+					var secondBrNode = editor.document.createElement('br');
+					secondBrNode = brNode.parentNode.appendChild(secondBrNode);
+				}
+				editor.selectNode(brNode, false);
+				event.stopEvent();
+			}
 		}
 			// Update the toolbar state after some time
 		this.getToolbar().updateLater.delay(200);
@@ -2361,19 +2390,21 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 			sorted: HTMLArea.util.TYPO3.simplifyNested(this.config.tceformsNested)
 		};
 		this.isNested = !Ext.isEmpty(this.nestedParentElements.sorted);
-			// Get width of wizards
-		this.wizards = this.textArea.parent().parent().next();
-		if (this.wizards) {
-			if (!this.isNested || HTMLArea.util.TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
-				this.textAreaInitialSize.wizardsWidth = this.wizards.getWidth();
-			} else {
-					// Clone the array of nested tabs and inline levels instead of using a reference as HTMLArea.util.TYPO3.accessParentElements will modify the array
-				var parentElements = [].concat(this.nestedParentElements.sorted);
-					// Walk through all nested tabs and inline levels to get correct size
-				this.textAreaInitialSize.wizardsWidth = HTMLArea.util.TYPO3.accessParentElements(parentElements, 'args[0].getWidth()', [this.wizards]);
+			// If in BE, get width of wizards
+		if (Ext.get('typo3-docheader')) {
+			this.wizards = this.textArea.parent().parent().next();
+			if (this.wizards) {
+				if (!this.isNested || HTMLArea.util.TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
+					this.textAreaInitialSize.wizardsWidth = this.wizards.getWidth();
+				} else {
+						// Clone the array of nested tabs and inline levels instead of using a reference as HTMLArea.util.TYPO3.accessParentElements will modify the array
+					var parentElements = [].concat(this.nestedParentElements.sorted);
+						// Walk through all nested tabs and inline levels to get correct size
+					this.textAreaInitialSize.wizardsWidth = HTMLArea.util.TYPO3.accessParentElements(parentElements, 'args[0].getWidth()', [this.wizards]);
+				}
+					// Hide the wizards so that they do not move around while the editor framework is being sized
+				this.wizards.hide();
 			}
-				// Hide the wizards so that they do not move around while the editor framework is being sized
-			this.wizards.hide();
 		}
 			// Plugins register
 		this.plugins = {};
@@ -2742,9 +2773,11 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 		}, this);
 		this.purgeListeners();
 			// Cleaning references to DOM in order to avoid IE memory leaks
-		this.wizards.dom = null;
-		this.textArea.parent().parent().dom = null;
-		this.textArea.parent().dom = null;
+		if (this.wizards) {
+			this.wizards.dom = null;
+			this.textArea.parent().parent().dom = null;
+			this.textArea.parent().dom = null;
+		}
 		this.textArea.dom = null;
 		RTEarea[this.editorId].editor = null;
 	}
@@ -3156,20 +3189,38 @@ HTMLArea.Editor.prototype.getFullySelectedNode = function (selection, range, anc
 		if (!range) {
 			var range = this._createRange(selection);
 		}
-		if (!ancestors) {
-			var ancestors = this.getAllAncestors();
+		if (!Ext.isIE) {
+				// Testing boundaries
+			if (range.startContainer.nodeType === 3
+					&& range.startOffset == range.startContainer.textContent.length
+					&& range.startContainer.nextSibling.textContent == range.toString()) {
+				fullNodeSelected = true;
+				node = range.startContainer.nextSibling;
+			}
+			if (!fullNodeSelected
+					&& range.endContainer.nodeType === 3
+					&& range.endOffset == 0
+					&& range.endContainer.previousSibling.textContent == range.toString()) {
+				fullNodeSelected = true;
+				node = range.endContainer.previousSibling;
+			}
 		}
-		Ext.each(ancestors, function (ancestor) {
-			if (Ext.isIE) {
-				fullNodeSelected = (selection.type !== 'Control' && ancestor.innerText == range.text) || (selection.type === 'Control' && ancestor.innerText == range.item(0).text);
-			} else {
-				fullNodeSelected = (ancestor.textContent == range.toString());
+		if (!fullNodeSelected) {
+			if (!ancestors) {
+				var ancestors = this.getAllAncestors();
 			}
-			if (fullNodeSelected) {
-				node = ancestor;
-				return false;
-			}
-		});
+			Ext.each(ancestors, function (ancestor) {
+				if (Ext.isIE) {
+					fullNodeSelected = (selection.type !== 'Control' && ancestor.innerText == range.text) || (selection.type === 'Control' && ancestor.innerText == range.item(0).text);
+				} else {
+					fullNodeSelected = (ancestor.textContent == range.toString());
+				}
+				if (fullNodeSelected) {
+					node = ancestor;
+					return false;
+				}
+			});
+		}
 			// Working around bug with WebKit selection
 		if (Ext.isWebKit && !fullNodeSelected) {
 			var statusBarSelection = this.statusBar ? this.statusBar.getSelection() : null;
@@ -4413,7 +4464,7 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	openContainerWindow: function (buttonId, title, dimensions, url) {
 		this.dialog = new Ext.Window({
 			id: this.editor.editorId + buttonId,
-			title: this.localize(title),
+			title: this.localize(title) || title,
 			cls: 'htmlarea-window',
 			width: dimensions.width,
 			height: dimensions.height,

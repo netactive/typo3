@@ -28,7 +28,7 @@
  * Move element wizard:
  * Moving pages or content elements (tt_content) around in the system via a page tree navigation.
  *
- * $Id: move_el.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: move_el.php 8429 2010-07-28 09:19:00Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compatible.
  *
@@ -255,7 +255,7 @@ class SC_move_el {
 		$this->sys_language = intval(t3lib_div::_GP('sys_language'));
 		$this->page_id=intval(t3lib_div::_GP('uid'));
 		$this->table=t3lib_div::_GP('table');
-		$this->R_URI=t3lib_div::_GP('returnUrl');
+		$this->R_URI=t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 		$this->input_moveUid = t3lib_div::_GP('moveUid');
 		$this->moveUid = $this->input_moveUid ? $this->input_moveUid : $this->page_id;
 		$this->makeCopy = t3lib_div::_GP('makeCopy');
@@ -289,7 +289,7 @@ class SC_move_el {
 			$elRow = t3lib_BEfunc::getRecordWSOL($this->table,$this->moveUid);
 
 				// Headerline: Icon, record title:
-			$hline = t3lib_iconWorks::getIconImage($this->table,$elRow,$BACK_PATH,' id="c-recIcon" title="'.htmlspecialchars(t3lib_BEfunc::getRecordIconAltText($elRow,$this->table)).'"');
+			$hline = t3lib_iconWorks::getSpriteIconForRecord($this->table, $elRow, array('id' => "c-recIcon", 'title' => htmlspecialchars(t3lib_BEfunc::getRecordIconAltText($elRow,$this->table))));
 			$hline.= t3lib_BEfunc::getRecordTitle($this->table,$elRow,TRUE);
 
 				// Make-copy checkbox (clicking this will reload the page with the GET var makeCopy set differently):
@@ -324,7 +324,7 @@ class SC_move_el {
 									t3lib_BEfunc::getRecordTitle('pages',$pidPageInfo,TRUE).
 									'</a><br />';
 							} else {
-								$code.= t3lib_iconWorks::getIconImage('pages',$pidPageInfo,$BACK_PATH,'').
+								$code.= t3lib_iconWorks::getSpriteIconForRecord('pages', $pidPageInfo) .
 									t3lib_BEfunc::getRecordTitle('pages',$pidPageInfo,TRUE).
 									'<br />';
 							}
@@ -355,7 +355,7 @@ class SC_move_el {
 					$posMap->cur_sys_language = $this->sys_language;
 
 						// Headerline for the parent page: Icon, record title:
-					$hline = t3lib_iconWorks::getIconImage('pages',$pageinfo,$BACK_PATH,' title="'.htmlspecialchars(t3lib_BEfunc::getRecordIconAltText($pageinfo,'pages')).'"');
+					$hline = t3lib_iconWorks::getSpriteIconForRecord('pages', $pageinfo, array('title' => htmlspecialchars(t3lib_BEfunc::getRecordIconAltText($pageinfo, 'pages'))));
 					$hline.= t3lib_BEfunc::getRecordTitle('pages',$pageinfo,TRUE);
 
 						// Load SHARED page-TSconfig settings and retrieve column list from there, if applicable:
@@ -379,7 +379,7 @@ class SC_move_el {
 									t3lib_BEfunc::getRecordTitle('pages',$pidPageInfo,TRUE).
 									'</a><br />';
 							} else {
-								$code.= t3lib_iconWorks::getIconImage('pages',$pidPageInfo,$BACK_PATH,'').
+								$code.= t3lib_iconWorks::getSpriteIconForRecord('pages', $pidPageInfo).
 									t3lib_BEfunc::getRecordTitle('pages',$pidPageInfo,TRUE).
 									'<br />';
 							}

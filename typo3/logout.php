@@ -28,7 +28,7 @@
  * Logout script for the backend
  * This script saves the interface positions and calls the closeTypo3Windows in the frameset
  *
- * $Id: logout.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: logout.php 8429 2010-07-28 09:19:00Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -71,8 +71,8 @@ class SC_logout {
 
 		$BE_USER->writelog(255,2,0,1,'User %s logged out from TYPO3 Backend',Array($BE_USER->user['username']));	// Logout written to log
 		$BE_USER->logoff();
-
-		$redirectUrl = (t3lib_div::_GP('redirect') ? t3lib_div::_GP('redirect') : 'index.php');
+		$redirect = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('redirect'));
+		$redirectUrl = $redirect ? $redirect : 'index.php';
 		t3lib_utility_Http::redirect($redirectUrl);
 	}
 }

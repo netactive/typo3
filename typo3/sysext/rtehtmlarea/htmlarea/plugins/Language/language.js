@@ -27,7 +27,7 @@
 /*
  * Language Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: language.js 7855 2010-06-09 17:43:44Z stan $
+ * TYPO3 SVN ID: $Id: language.js 8068 2010-06-27 21:03:24Z stan $
  */
 HTMLArea.Language = HTMLArea.Plugin.extend({
 
@@ -152,7 +152,7 @@ HTMLArea.Language = HTMLArea.Plugin.extend({
 					styleSheet.addRule(selector, style);
 				}
 				return true;
-			});
+			}, this);
 				// Load the language dropdown
 			select.getStore().load({
 				callback: function () { this.getButton('Language').setValue('none'); },

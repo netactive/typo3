@@ -28,7 +28,7 @@
  * Contains a class for evaluation of database integrity according to $TCA
  * Most of these functions are considered obsolete!
  *
- * $Id: class.t3lib_admin.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_admin.php 8155 2010-07-11 09:03:31Z psychomieze $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -167,7 +167,7 @@ class t3lib_admin {
 				$this->genTree_HTML.= $depthData.
 					'<img'.t3lib_iconWorks::skinImg($this->backPath,'gfx/ol/'.$PM.$BTM.'.gif','width="18" height="16"').' align="top" alt="" />'.
 					$versionLabel.
-					t3lib_iconWorks::getIconImage('pages',$row,$this->backPath,'align="top"').
+					t3lib_iconWorks::getSpriteIconForRecord('pages', $row) .
 					htmlspecialchars($row['uid'].': '.t3lib_div::fixed_lgd_cs(strip_tags($row['title']),50)).'</span></div>';
 			}
 
@@ -257,7 +257,7 @@ class t3lib_admin {
 				$this->genTree_HTML.= $depthData.
 					'<img'.t3lib_iconWorks::skinImg($this->backPath,'gfx/ol/'.$PM.$BTM.'.gif','width="18" height="16"').' align="top" alt="" />'.
 					$versionLabel.
-					t3lib_iconWorks::getIconImage($table,$row,$this->backPath,'align="top" title="'.$table.'"').htmlspecialchars($row['uid'].': '.t3lib_BEfunc::getRecordTitle($table,$row)).'</span></div>';
+					t3lib_iconWorks::getSpriteIconForRecord($table, $row, array('title'=> $table)) . htmlspecialchars($row['uid'] . ': ' . t3lib_BEfunc::getRecordTitle($table,$row)) . '</span></div>';
 			}
 
 				// Register various data for this item:

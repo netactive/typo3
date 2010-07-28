@@ -27,7 +27,7 @@
 /**
  * Contains the TypoScript parser class
  *
- * $Id: class.t3lib_tsparser.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_tsparser.php 8256 2010-07-23 21:44:50Z steffenk $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -122,6 +122,7 @@ class t3lib_TSparser {
 	var $highLightBlockStyles = '';		// Additional attributes for the <span> tags for a blockmode line
 	var $highLightBlockStyles_basecolor = '#cccccc';		// The hex-HTML color for the blockmode
 
+	public $parentObject; //Instance of parentObject, used by t3lib_tsparser_ext
 
 	/**
 	 * Start parsing the input TypoScript text piece. The result is stored in $this->setup
@@ -692,6 +693,9 @@ class t3lib_TSparser {
 
 			if (is_array($lineNumDat))	{
 				$lineNum = $rawP+$lineNumDat[0];
+				if ($this->parentObject instanceof t3lib_tsparser_ext) {
+					$lineNum = $this->parentObject->ext_lnBreakPointWrap($lineNum, $lineNum);
+				}
 				$lineC = $this->highLightStyles['linenum'][0].str_pad($lineNum,4,' ',STR_PAD_LEFT).':'.$this->highLightStyles['linenum'][1].' '.$lineC;
 			}
 

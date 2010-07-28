@@ -31,7 +31,7 @@
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_select_image.php 7905 2010-06-13 14:42:33Z ohader $  *
+ * $Id: class.tx_rtehtmlarea_select_image.php 8317 2010-07-28 08:51:33Z ohader $  *
  */
 require_once(PATH_typo3.'class.browse_links.php');
 
@@ -53,6 +53,8 @@ class tx_rtehtmlarea_image_folderTree extends t3lib_folderTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v)	{
+		$title = htmlspecialchars($title);
+		
 		if ($this->ext_isLinkable($v))	{
 			$aOnClick = 'return jumpToUrl(\'?editorNo='.$GLOBALS['SOBE']->browser->editorNo.'&expandFolder='.rawurlencode($v['path']).'\');';
 			return '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.$title.'</a>';
@@ -1153,6 +1155,10 @@ class tx_rtehtmlarea_select_image extends browse_links {
 			// Call hook for extra options
 		foreach ($this->hookObjects as $hookObject) {
 			$allowedItems = $hookObject->addAllowedItems($allowedItems);
+		}
+			// Remove tab "image" if there is no current image
+		if ($this->act !== 'image') {
+			$allowedItems = array_diff($allowedItems, array('image'));
 		}
 			// Remove options according to RTE configuration
 		if (is_array($this->buttonConfig['options.']) && $this->buttonConfig['options.']['removeItems']) {

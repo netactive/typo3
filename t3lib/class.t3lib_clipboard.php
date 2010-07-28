@@ -27,7 +27,7 @@
 /**
  * Contains class for TYPO3 clipboard for records and files
  *
- * $Id: class.t3lib_clipboard.php 7937 2010-06-16 17:32:00Z psychomieze $
+ * $Id: class.t3lib_clipboard.php 8157 2010-07-11 12:45:16Z psychomieze $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -366,7 +366,7 @@ class t3lib_clipboard {
 				'</td>
 				<td>'.
 				'<a href="'.htmlspecialchars($rmall_url).'#clip_head">'.
-					t3lib_iconWorks::getSpriteIcon('actions-document-close', array('title' => $LANG->sL('LLL:EXT:lang/locallang_core.php:buttons.clear', TRUE))) . 
+					t3lib_iconWorks::getSpriteIcon('actions-document-close', array('title' => $LANG->sL('LLL:EXT:lang/locallang_core.php:buttons.clear', TRUE))) .
 				'</a></td>
 			</tr>';
 
@@ -527,7 +527,7 @@ class t3lib_clipboard {
 					$lines[]='
 					<tr>
 						<td class="' . $bgColClass . '">' .
-							t3lib_iconWorks::getIconImage($table, $rec, $this->backPath,' style="margin-left: 38px;"') . '</td>
+							t3lib_iconWorks::getSpriteIconForRecord($table, $rec, array('style' => "margin-left: 38px;")) . '</td>
 						<td class="' . $bgColClass . '" nowrap="nowrap" width="95%">&nbsp;' . htmlspecialchars(
 								t3lib_div::fixed_lgd_cs(t3lib_BEfunc::getRecordTitle($table, $rec), $GLOBALS['BE_USER']->uc['titleLen'])) .
 								$modeData . '&nbsp;</td>

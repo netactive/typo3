@@ -29,7 +29,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_backend_dbbackend.php 7905 2010-06-13 14:42:33Z ohader $
+ * @version $Id: class.t3lib_cache_backend_dbbackend.php 8279 2010-07-26 22:56:50Z lolli $
  */
 class t3lib_cache_backend_DbBackend extends t3lib_cache_backend_AbstractBackend {
 
@@ -174,22 +174,21 @@ class t3lib_cache_backend_DbBackend extends t3lib_cache_backend_AbstractBackend 
 	/**
 	 * Checks if a cache entry with the specified identifier exists.
 	 *
-	 * @param unknown_type
+	 * @param string Specifies the identifier to check for existence
 	 * @return boolean TRUE if such an entry exists, FALSE if not
 	 * @author Ingo Renner <ingo@typo3.org>
 	 */
 	public function has($entryIdentifier) {
-		$hasEntry = false;
+		$hasEntry = FALSE;
 
-		$cacheEntries = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-			'content',
+		$cacheEntries = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows(
+			'*',
 			$this->cacheTable,
-			'identifier = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($entryIdentifier, $this->cacheTable) . ' '
-				. 'AND crdate + lifetime >= ' . $GLOBALS['EXEC_TIME']
+			'identifier = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($entryIdentifier, $this->cacheTable) .
+				' AND crdate + lifetime >= ' . $GLOBALS['EXEC_TIME']
 		);
-
-		if (count($cacheEntries) == 1) {
-			$hasEntry = true;
+		if ($cacheEntries >= 1) {
+			$hasEntry = TRUE;
 		}
 
 		return $hasEntry;

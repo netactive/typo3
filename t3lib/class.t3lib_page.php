@@ -27,7 +27,7 @@
 /**
  * Contains a class with "Page functions" mainly for the frontend
  *
- * $Id: class.t3lib_page.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_page.php 8249 2010-07-21 14:37:29Z flyguide $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -641,7 +641,7 @@ class t3lib_pageSelect {
 		$loopCheck = 0;
 		$theRowArray = Array();
 
-		while ($uid!=0 && $loopCheck<20)	{	// Max 20 levels in the page tree.
+		while ($uid != 0 && $loopCheck < 99) {	// Max 99 levels in the page tree.
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($selFields, 'pages', 'uid='.intval($uid).' AND pages.deleted=0 AND pages.doktype!=255');
 			$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 			$GLOBALS['TYPO3_DB']->sql_free_result($res);

@@ -41,7 +41,7 @@
  * Thus you preserve backwards compatibility.
  *
  *
- * $Id: tables.php 8028 2010-06-22 11:18:13Z steffenk $
+ * $Id: tables.php 8269 2010-07-25 18:16:39Z psychomieze $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -54,21 +54,20 @@
  * $PAGES_TYPES defines the various types of pages (field: doktype) the system can handle and what restrictions may apply to them.
  * Here you can set the icon and especially you can define which tables are allowed on a certain pagetype (doktype)
  * NOTE: The 'default' entry in the $PAGES_TYPES-array is the 'base' for all types, and for every type the entries simply overrides the entries in the 'default' type!
+ *
+ * NOTE: usage of 'icon' is deprecated since TYPO3 4.4, use t3lib_SpriteManager::addTcaTypeIcon() instead
  */
 $PAGES_TYPES = array(
 	'254' => array(		//  Doktype 254 is a 'sysFolder' - a general purpose storage folder for whatever you like. In CMS context it's NOT a viewable page. Can contain any element.
 		'type' => 'sys',
-		'icon' => 'sysf.gif',
 		'allowedTables' => '*'
 	),
 	'255' => array(		// Doktype 255 is a recycle-bin.
 		'type' => 'sys',
-		'icon' => 'recycler.gif',
 		'allowedTables' => '*'
 	),
 	'default' => array(
 		'type' => 'web',
-		'icon' => 'pages.gif',
 		'allowedTables' => 'pages',
 		'onlyAllowedTables' => '0'
 	)
@@ -80,6 +79,7 @@ $PAGES_TYPES = array(
  * Each key is a value from the "module" field of page records and the value is an array with a key/value pair, eg. "icon" => "modules_shop.gif"
  *
  * @see t3lib_iconWorks::getIcon(), typo3/sysext/cms/ext_tables.php
+ * @deprecated since TYPO3 4.4, use t3lib_SpriteManager::addTcaTypeIcon instead
  */
 $ICON_TYPES = array();
 
@@ -179,7 +179,7 @@ $TCA['pages'] = array(
 			'contains-board' => 'apps-pagetree-folder-contains-board',
 			'contains-news' => 'apps-pagetree-folder-contains-news',
 			'default' => 'apps-pagetree-page-default',
-			
+
 		),
 		'typeicons' => array(
 			'1' => 'pages.gif',
@@ -329,7 +329,7 @@ $TCA['be_users'] = array(
 			'0' => 'status-user-backend',
 			'1' => 'status-user-admin',
 			'default' => 'status-user-backend',
-		), 
+		),
 		'mainpalette' => '1',
 		'useColumnsForDefaultValues' => 'usergroup,lockToDomain,options,db_mountpoints,file_mountpoints,fileoper_perms,userMods',
 		'dividers2tabs' => true,
@@ -361,7 +361,7 @@ $TCA['be_groups'] = array(
 		),
 		'typeicon_classes' => array(
 			'default' => 'status-user-group-backend',
-		), 
+		),
 		'enablecolumns' => array(
 			'disabled' => 'hidden'
 		),
@@ -417,7 +417,7 @@ $TCA['sys_language'] = array(
 		),
 		'typeicon_classes' => array(
 			'default' => 'mimetypes-x-sys_language',
-		), 
+		),
 		'dynamicConfigFile' => 'T3LIB:tbl_be.php',
 		'versioningWS_alwaysAllowLiveEdit' => TRUE
 	)

@@ -29,7 +29,7 @@
 /**
  * class to render the menu for the cache clearing actions
  *
- * $Id: class.clearcachemenu.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.clearcachemenu.php 8157 2010-07-11 12:45:16Z psychomieze $
  *
  * @author	Ingo Renner <ingo@typo3.org>
  * @package TYPO3
@@ -138,7 +138,7 @@ class ClearCacheMenu implements backend_toolbarItem {
 		$cacheMenu = array();
 
 		$cacheMenu[] = '<a href="#" class="toolbar-item">' .
-			t3lib_iconWorks::getSpriteIcon('apps-toolbar-menu-cache', array('title' => $title)) . 
+			t3lib_iconWorks::getSpriteIcon('apps-toolbar-menu-cache', array('title' => $title)) .
 			'</a>';
 
 		$cacheMenu[] = '<ul class="toolbar-item-menu" style="display: none;">';

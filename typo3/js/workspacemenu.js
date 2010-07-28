@@ -28,7 +28,7 @@ Ext.ns('TYPO3', 'TYPO3.configuration');
 /**
  * class to handle the workspace menu
  *
- * $Id: workspacemenu.js 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: workspacemenu.js 8296 2010-07-27 21:28:17Z steffenk $
  */
 var WorkspaceMenu = Class.create({
 
@@ -168,7 +168,9 @@ var WorkspaceMenu = Class.create({
 						// the boolean "true" makes the page reload from the server
 					$('content').contentWindow.location.reload(true);
 				} else {
-					top.goToModule('web_layout');
+					if (TYPO3.configuration.pageModule) {
+						top.goToModule(TYPO3.configuration.pageModule);
+					}
 				}
 
 					// reload the module menu

@@ -27,7 +27,7 @@
 /**
  * The Inline-Relational-Record-Editing (IRRE) functions as part of the TCEforms.
  *
- * $Id: class.t3lib_tceforms_inline.php 8041 2010-06-22 14:58:50Z jsegars $
+ * $Id: class.t3lib_tceforms_inline.php 8157 2010-07-11 12:45:16Z psychomieze $
  *
  * @author	Oliver Hader <oh@inpublica.de>
  */
@@ -539,7 +539,7 @@ class t3lib_TCEforms_inline {
 		}
 
 		$altText = t3lib_BEfunc::getRecordIconAltText($rec, $foreign_table);
-		$iconImg = t3lib_iconWorks::getIconImage($foreign_table, $rec, $this->backPath, 'title="' . htmlspecialchars($altText) . '" class="absmiddle" id="' . $objectId . '_icon"');
+		$iconImg = t3lib_iconWorks::getSpriteIconForRecord($foreign_table, $rec, array('title' => htmlspecialchars($altText), 'id' => $objectId . '_icon"'));
 		$label = '<span id="' . $objectId . '_label">' . $recTitle . '</span>';
 		if (!$isVirtualRecord) {
 			$iconImg = $this->wrapWithAnchor($iconImg, '#', array('onclick' => $onClick));

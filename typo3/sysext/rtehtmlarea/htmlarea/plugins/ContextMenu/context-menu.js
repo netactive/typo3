@@ -30,7 +30,7 @@
 /*
  * Context Menu Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: context-menu.js 7638 2010-05-17 22:05:03Z stan $
+ * TYPO3 SVN ID: $Id: context-menu.js 8253 2010-07-23 16:09:26Z stan $
  */
 HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 	constructor : function(editor, pluginName) {
@@ -54,7 +54,7 @@ HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 		 * Registering plugin "About" information
 		 */
 		var pluginInformation = {
-			version		: '3.0',
+			version		: '3.1',
 			developer	: 'Mihai Bazon & Stanislas Rolland',
 			developerUrl	: 'http://www.sjbr.ca/',
 			copyrightOwner	: 'dynarch.com & Stanislas Rolland',
@@ -201,6 +201,7 @@ HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 			} else if (xtype === 'menuitem') {
 				var button = this.getButton(menuItem.getItemId());
 				if (button) {
+					menuItem.setText(button.tooltip.title);
 					menuItem.setVisible(!button.disabled);
 					lastIsButton = lastIsButton || !button.disabled;
 				} else {

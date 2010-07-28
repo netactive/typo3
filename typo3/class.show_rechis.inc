@@ -28,7 +28,7 @@
 /**
  * Class for the record history display script (show_rechis.php)
  *
- * $Id: class.show_rechis.inc 7786 2010-05-31 09:44:20Z steffenk $
+ * $Id: class.show_rechis.inc 8429 2010-07-28 09:19:00Z ohader $
  * XHTML Compliant
  *
  * @author	Sebastian Kurfuerst <sebastian@garbage-group.de>
@@ -65,7 +65,7 @@ class recordHistory {
 	function recordHistory()	{
 			// GPvars:
 		$this->element = t3lib_div::_GP('element');
-		$this->returnUrl = t3lib_div::_GP('returnUrl');
+		$this->returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 		$this->lastSyslogId = t3lib_div::_GP('diff');
 		$this->rollbackFields = t3lib_div::_GP('rollbackFields');
 			// resolve sh_uid if set
@@ -346,7 +346,7 @@ class recordHistory {
 		$lines=array();
 
 			// Initialize:
-		$lines[] = '<tr class="bgColor5 c-head">
+		$lines[] = '<tr class="t3-row-header">
 				<td> </td>
 				<td>'.$LANG->getLL('time',1).'</td>
 				<td>'.$LANG->getLL('age',1).'</td>
@@ -388,7 +388,7 @@ class recordHistory {
 				$expirationWarning = 1;
 
 				$lines[] = '
-				<tr class="bgColor4-20">
+				<tr class="c-headLine">
 					<td colspan="7"><strong>'.$LANG->getLL('consistenceWarning',1).'</strong></td>
 				</tr>';
 			}
@@ -443,11 +443,10 @@ class recordHistory {
 				$singleLine[] = '';
 			}
 
-			$bgColorClass = $entry['snapshot'] ? 'bgColor2' : 'bgColor4-20';
 				// put line together
 			$lines[] = '
-				<tr class="'.$bgColorClass.'">
-					<td>'.implode('</td><td>',$singleLine).'</td>
+				<tr class="db_list_normal">
+					<td>' . implode('</td><td>', $singleLine) . '</td>
 				</tr>';
 		}
 
@@ -456,8 +455,8 @@ class recordHistory {
 			<!--
 				History (list):
 			-->
-			<table border="0" cellpadding="2" cellspacing="2" id="typo3-history">
-				'.implode('',$lines).'
+			<table class="typo3-dblist" border="0" cellpadding="0" cellspacing="0" id="typo3-history">
+				' . implode('', $lines) . '
 			</table>';
 
 		if ($this->lastSyslogId)	{

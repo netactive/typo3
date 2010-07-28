@@ -29,7 +29,7 @@
  * By sending certain parameters to this script you can bring up a form
  * which allows the user to edit the content of one or more database records.
  *
- * $Id: alt_doc.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: alt_doc.php 8429 2010-07-28 09:19:00Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -78,9 +78,9 @@
  */
 
 
-require('init.php');
-require('template.php');
-$LANG->includeLLFile('EXT:lang/locallang_alt_doc.xml');
+require_once('init.php');
+require_once('template.php');
+$GLOBALS['LANG']->includeLLFile('EXT:lang/locallang_alt_doc.xml');
 
 t3lib_BEfunc::lockRecords();
 
@@ -193,7 +193,7 @@ class SC_alt_doc {
 		$this->defVals = t3lib_div::_GP('defVals');
 		$this->overrideVals = t3lib_div::_GP('overrideVals');
 		$this->columnsOnly = t3lib_div::_GP('columnsOnly');
-		$this->returnUrl = t3lib_div::_GP('returnUrl');
+		$this->returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 		$this->closeDoc = t3lib_div::_GP('closeDoc');
 		$this->doSave = t3lib_div::_GP('doSave');
 		$this->returnEditConf = t3lib_div::_GP('returnEditConf');
@@ -1089,13 +1089,20 @@ class SC_alt_doc {
 				$fetchFields = 'uid,'.$languageField.','.$transOrigPointerField;
 
 					// get record in current language
+				$rowCurrent = t3lib_befunc::getLiveVersionOfRecord($table, $uid, $fetchFields);
+				if (!is_array($rowCurrent)) {
 				$rowCurrent = t3lib_befunc::getRecord($table, $uid, $fetchFields);
+				}
+
 				$currentLanguage = $rowCurrent[$languageField];
 
 				if ($currentLanguage>-1)	{	// Disabled for records with [all] language!
 						// get record in default language if needed
 					if ($currentLanguage) {
+						$rowsByLang[0] = t3lib_befunc::getLiveVersionOfRecord($table, $rowCurrent[$transOrigPointerField], $fetchFields);
+						if (!is_array($rowsByLang[0])) {
 						$rowsByLang[0] = t3lib_befunc::getRecord($table, $rowCurrent[$transOrigPointerField], $fetchFields);
+						}
 					} else {
 						$rowsByLang[0] = $rowCurrent;
 					}
@@ -1177,7 +1184,7 @@ class SC_alt_doc {
 			if (is_array($localizedRecord))	{
 					// Create parameters and finally run the classic page module for creating a new page translation
 				$params = '&edit['.$table.']['.$localizedRecord['uid'].']=edit';
-				$returnUrl = '&returnUrl='.rawurlencode(t3lib_div::_GP('returnUrl'));
+				$returnUrl = '&returnUrl='.rawurlencode(t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl')));
 				$location = $GLOBALS['BACK_PATH'].'alt_doc.php?'.$params.$returnUrl;
 
 				t3lib_utility_Http::redirect($location);

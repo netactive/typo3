@@ -1,3 +1,49 @@
+2010-07-27  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #15244: htmlArea RTE: textearea Id may not be unique in FE
+	* Fixed bug #15250: htmlArea RTE: FE additionalJS_post javascript may be displayed as HTML text
+	* Fixed bug #15121: htmlArea RTE: Javascript Error in IE7 prevent Link dialogue from opening
+	* Fixed bug #14859: htmlArea RTE won't load in backend extension
+
+2010-07-26  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #15243: htmlArea RTE: Extension stylesheets refer to incorrect selectors
+
+2010-07-25  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Updated htmlArea RTE version to 2.0.3
+
+2010-07-23  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #15203: htmlArea RTE: Modify link option missing in context menu
+
+2010-07-10  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #14896: ExtJS is not included when RTE is invoked by USER_INT frontend script
+
+2010-07-04  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #14929: htmlArea RTE: Font Family and Font Size Dropdown boxes don't open
+	* Fixed bug #14996: htmlArea RTE: Clicking in drop down boxes should mark text
+
+2010-06-29  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #14905: htmlArea RTE: Image dialogue shows tab "Current picture" when there is no current image
+
+2010-06-28  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #14830: htmlArea RTE: Entering line breaks with Safari not possible
+
+2010-06-27  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #14886: htmlArea RTE: Incorrect function scope when error is raised
+	* Fixed bug #14887: htmlArea RTE: RTE may be started before style sheets are loaded
+
+2010-06-26  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #14876: htmlArea RTE: SelectFont plugin may cause js error
+	* Follow-up to bug #14793: htmlArea RTE: Problematic icons in IE6
+
 2010-06-21  Stanislas Rolland  <typo3@sjbr.ca>
 
 	* Fixed bug #14799: htmlArea RTE: Color dialogue may raise a js error in IE

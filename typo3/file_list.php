@@ -27,7 +27,7 @@
 /**
  * Web>File: File listing
  *
- * $Id: file_list.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: file_list.php 8157 2010-07-11 12:45:16Z psychomieze $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -411,11 +411,11 @@ class SC_file_list {
 		$buttons['csh'] = t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'filelist_module', $GLOBALS['BACK_PATH'], '', TRUE);
 
 			// upload button
-		$buttons['upload'] = '<a href="' . $BACK_PATH . 'file_upload.php?target=' . rawurlencode($this->id) . '&amp;returnUrl=' . rawurlencode($this->filelist->listURL()) . '" id="button-upload" title="'.$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:cm.upload',1)).'">' . 
+		$buttons['upload'] = '<a href="' . $BACK_PATH . 'file_upload.php?target=' . rawurlencode($this->id) . '&amp;returnUrl=' . rawurlencode($this->filelist->listURL()) . '" id="button-upload" title="'.$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:cm.upload',1)).'">' .
 			t3lib_iconWorks::getSpriteIcon('actions-edit-upload') .
 		'</a>';
 
-		$buttons['new'] = '<a href="' . $BACK_PATH . 'file_newfolder.php?target=' . rawurlencode($this->id) . '&amp;returnUrl=' . rawurlencode($this->filelist->listURL()) . '" title="'.$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:cm.new',1)).'">' . 
+		$buttons['new'] = '<a href="' . $BACK_PATH . 'file_newfolder.php?target=' . rawurlencode($this->id) . '&amp;returnUrl=' . rawurlencode($this->filelist->listURL()) . '" title="'.$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:cm.new',1)).'">' .
 			t3lib_iconWorks::getSpriteIcon('actions-document-new') .
 		'</a>';
 

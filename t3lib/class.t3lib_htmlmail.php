@@ -27,7 +27,7 @@
 /**
  * HTML mail class
  *
- * $Id: class.t3lib_htmlmail.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_htmlmail.php 8335 2010-07-28 08:55:04Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -248,7 +248,7 @@ class t3lib_htmlmail {
 	public function t3lib_htmlmail() {
 		$this->forceReturnPath = $GLOBALS['TYPO3_CONF_VARS']['SYS']['forceReturnPath'];
 
-		$this->mailer = 'TYPO3 '.TYPO3_version;
+		$this->mailer = 'TYPO3';
 	}
 
 
@@ -751,7 +751,7 @@ class t3lib_htmlmail {
 			$theParts = explode('/',$this->auto_respond_msg,2);
 			$theParts[0] = str_replace('###SUBJECT###', $this->subject, $theParts[0]);
 			$theParts[1] = str_replace("/",LF,$theParts[1]);
-			$theParts[1] = str_replace("###MESSAGE###", $this->getContent('plain'), $theParts[1]);			
+			$theParts[1] = str_replace("###MESSAGE###", $this->getContent('plain'), $theParts[1]);
 			if ($returnPathPossible) {
 				$mailWasSent = t3lib_utility_Mail::mail($this->from_email,
 					$theParts[0],
@@ -1419,9 +1419,9 @@ class t3lib_htmlmail {
 		$c = count($tags);
 		foreach($tags as $tag) {
 			$c--;
-			$regexp .= '<' . sql_regcase($tag) . "[[:space:]]" . (($c) ? '|' : '');
+			$regexp .= '<' . $tag . '[[:space:]]' . (($c) ? '|' : '');
 		}
-		return $regexp . '/';
+		return $regexp . '/i';
 	}
 
 

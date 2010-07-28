@@ -1104,6 +1104,8 @@ tt_content.media {
 			flv = SWF
 			swf = SWF
 			mov = QT
+			m4v = QT
+			m4a = QT
 		}
 		
 		mimeConf.swfobject < tt_content.swfobject.20
@@ -1822,4 +1824,4 @@ plugin.tx_cssstyledcontent._CSS_DEFAULT_STYLE (
 	.csc-textpic-intext-left ol, .csc-textpic-intext-left ul {padding-left: 40px; overflow: auto; }
 )
 
-# TYPO3 SVN ID: $Id: setup.txt 7435 2010-04-27 16:10:35Z psychomieze $
+# TYPO3 SVN ID: $Id: setup.txt 8059 2010-06-25 12:09:22Z steffenk $

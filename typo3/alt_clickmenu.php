@@ -35,7 +35,7 @@
  *
  * If you want to integrate a context menu in your scripts, please see template::getContextMenuCode()
  *
- * $Id: alt_clickmenu.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: alt_clickmenu.php 8157 2010-07-11 12:45:16Z psychomieze $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1089,7 +1089,7 @@ class clickMenu {
 
 			// Return the printed elements:
 		return $this->printItems($menuItems,
-			t3lib_iconWorks::getIconImage($table,$this->rec,$this->PH_backPath,' class="absmiddle" title="'.htmlspecialchars(t3lib_BEfunc::getRecordIconAltText($this->rec,$table)).'"').t3lib_BEfunc::getRecordTitle($table,$this->rec,TRUE)
+			t3lib_iconWorks::getSpriteIconForRecord($table,$this->rec,array('title'=> t3lib_BEfunc::getRecordTitle($table,$this->rec,TRUE)))
 		);
 	}
 

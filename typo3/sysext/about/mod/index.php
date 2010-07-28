@@ -28,7 +28,7 @@
  * Module: About
  * This document shows some standard-information for TYPO3 CMS: About-text, version number and so on.
  *
- * $Id: index.php 7974 2010-06-20 08:05:51Z benni $
+ * $Id: index.php 8157 2010-07-11 12:45:16Z psychomieze $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
