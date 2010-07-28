@@ -26,7 +26,7 @@
 /**
  * Contains JavaScript for TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: jsfunc.tbe_editor.js 5480 2009-05-22 18:59:18Z ohader $
+ * $Id: jsfunc.tbe_editor.js 7112 2010-03-15 20:20:35Z etobi.de $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Oliver Hader <oh@inpublica.de>
@@ -206,15 +206,27 @@ var TBE_EDITOR = {
 					}
 				}
 			} else if (type == 'range' && elementData.range) {
+				var numberOfElements = 0;
 				form = document[TBE_EDITOR.formname][elementName+'_list'];
 				if (!form) {
 						// special treatment for IRRE fields:
 					var tempObj = document[TBE_EDITOR.formname][elementName];
 					if (tempObj && Element.hasClassName(tempObj, 'inlineRecord')) {
 						form = tempObj.value ? tempObj.value.split(',') : [];
+						numberOfElements = form.length;
+					}
+
+				} else {
+						// special treatment for file uploads
+					var tempObj = document[TBE_EDITOR.formname][elementName.replace(/^data/, 'data_files')];
+					numberOfElements = form.length;
+					
+					if (tempObj && tempObj.type == 'file' && tempObj.value) {
+						numberOfElements++; // Add new uploaded file to the number of elements
 					}
 				}
-				if (!TBE_EDITOR.checkRange(form, elementData.range[0], elementData.range[1])) {
+
+				if (!TBE_EDITOR.checkRange(numberOfElements, elementData.range[0], elementData.range[1])) {
 					result = 0;
 					if (autoNotify) {
 						TBE_EDITOR.setImage('req_'+elementData.rangeImg, TBE_EDITOR.images.req);
@@ -432,8 +444,13 @@ var TBE_EDITOR = {
 			return false;
 		}
 	},
-	checkRange: function(el,lower,upper) {
-		if (el && el.length>=lower && el.length<=upper) {
+	checkRange: function(numberOfElements, lower, upper) {
+			// for backwards compatibility, check if we're dealing with an element as first parameter
+		if(typeof numberOfElements == 'object') {
+			numberOfElements = numberOfElements.length;
+		}
+
+		if (numberOfElements >= lower && numberOfElements <= upper) {
 			return true;
 		} else {
 			return false;

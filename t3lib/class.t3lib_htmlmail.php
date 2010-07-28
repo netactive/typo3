@@ -27,7 +27,7 @@
 /**
  * HTML mail class
  *
- * $Id: class.t3lib_htmlmail.php 4487 2008-11-25 09:16:07Z steffenk $
+ * $Id: class.t3lib_htmlmail.php 8333 2010-07-28 08:54:46Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -247,7 +247,7 @@ class t3lib_htmlmail {
 	public function t3lib_htmlmail() {
 		$this->forceReturnPath = $GLOBALS['TYPO3_CONF_VARS']['SYS']['forceReturnPath'];
 
-		$this->mailer = 'TYPO3 '.TYPO3_version;
+		$this->mailer = 'TYPO3';
 	}
 
 

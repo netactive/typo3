@@ -28,7 +28,7 @@
  * Wizard to help make tables (eg. for tt_content elements) of type "table".
  * Each line is a table row, each cell divided by a |
  *
- * $Id: wizard_table.php 3439 2008-03-16 19:16:51Z flyguide $
+ * $Id: wizard_table.php 8427 2010-07-28 09:17:45Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -277,7 +277,7 @@ class SC_wizard_table {
 
 					// If the save/close button was pressed, then redirect the screen:
 				if ($_POST['saveandclosedok_x'])	{
-					header('Location: '.t3lib_div::locationHeaderUrl($this->P['returnUrl']));
+					header('Location: '.t3lib_div::locationHeaderUrl(t3lib_div::sanitizeLocalUrl($this->P['returnUrl'])));
 					exit;
 				}
 			}

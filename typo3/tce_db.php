@@ -29,7 +29,7 @@
  * This script is a gateway for POST forms to class.t3lib_TCEmain that manipulates all information in the database!!
  * For syntax and API information, see the document 'TYPO3 Core APIs'
  *
- * $Id: tce_db.php 3439 2008-03-16 19:16:51Z flyguide $
+ * $Id: tce_db.php 8427 2010-07-28 09:17:45Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -118,7 +118,7 @@ class SC_tce_db {
 		$this->cmd = t3lib_div::_GP('cmd');
 		$this->mirror = t3lib_div::_GP('mirror');
 		$this->cacheCmd = t3lib_div::_GP('cacheCmd');
-		$this->redirect = t3lib_div::_GP('redirect');
+		$this->redirect = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('redirect'));
 		$this->prErr = t3lib_div::_GP('prErr');
 		$this->_disableRTE = t3lib_div::_GP('_disableRTE');
 		$this->CB = t3lib_div::_GP('CB');

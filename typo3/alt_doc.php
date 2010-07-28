@@ -29,7 +29,7 @@
  * By sending certain parameters to this script you can bring up a form
  * which allows the user to edit the content of one or more database records.
  *
- * $Id: alt_doc.php 4256 2008-09-28 19:52:42Z ohader $
+ * $Id: alt_doc.php 8427 2010-07-28 09:17:45Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -200,7 +200,7 @@ class SC_alt_doc {
 		$this->defVals = t3lib_div::_GP('defVals');
 		$this->overrideVals = t3lib_div::_GP('overrideVals');
 		$this->columnsOnly = t3lib_div::_GP('columnsOnly');
-		$this->returnUrl = t3lib_div::_GP('returnUrl');
+		$this->returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 		$this->closeDoc = t3lib_div::_GP('closeDoc');
 		$this->doSave = t3lib_div::_GP('doSave');
 		$this->returnEditConf = t3lib_div::_GP('returnEditConf');
@@ -271,7 +271,7 @@ class SC_alt_doc {
 		$this->cmd = t3lib_div::_GP('cmd');
 		$this->mirror = t3lib_div::_GP('mirror');
 		$this->cacheCmd = t3lib_div::_GP('cacheCmd');
-		$this->redirect = t3lib_div::_GP('redirect');
+		$this->redirect = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('redirect'));
 		$this->returnNewPageId = t3lib_div::_GP('returnNewPageId');
 		$this->vC = t3lib_div::_GP('vC');
 
@@ -1161,7 +1161,7 @@ class SC_alt_doc {
 			if (is_array($localizedRecord))	{
 					// Create parameters and finally run the classic page module for creating a new page translation
 				$params = '&edit['.$table.']['.$localizedRecord['uid'].']=edit';
-				$returnUrl = '&returnUrl='.rawurlencode(t3lib_div::_GP('returnUrl'));
+				$returnUrl = '&returnUrl='.rawurlencode(t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl')));
 				$location = $GLOBALS['BACK_PATH'].'alt_doc.php?'.$params.$returnUrl;
 
 				header('Location: '.t3lib_div::locationHeaderUrl($location));

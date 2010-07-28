@@ -27,7 +27,7 @@
 /**
  * Contains the TYPO3 Core Engine
  *
- * $Id: class.t3lib_tcemain.php 5961 2009-09-17 19:37:22Z rupi $
+ * $Id: class.t3lib_tcemain.php 8427 2010-07-28 09:17:45Z ohader $
  * Revised for TYPO3 3.9 October 2005 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -2395,6 +2395,11 @@ class t3lib_TCEmain	{
 				// update record in intermediate table (sorting & pointer uid to parent record)
 			$dbAnalysis->writeForeignField($tcaFieldConf, $id, 0, $skipSorting);
 			$newValue = ($keepTranslation ? 0 : $dbAnalysis->countItems(false));
+			// IRRE with MM relation:
+		} else if ($this->getInlineFieldType($tcaFieldConf) == 'mm') {
+				// in order to fully support all the MM stuff, directly call checkValue_group_select_processDBdata instead of repeating the needed code here
+			$valueArray = $this->checkValue_group_select_processDBdata($valueArray, $tcaFieldConf, $id, $status, 'select', $table, $field);
+			$newValue = ($keepTranslation ? 0 : $valueArray[0]);
 			// IRRE with comma separated values:
 		} else {
 			$valueArray = $dbAnalysis->getValueArray();
@@ -3639,11 +3644,11 @@ class t3lib_TCEmain	{
 	 * @param	array		$conf: TCA configuration of current field
 	 * @return	void
 	 */
-	function moveRecord_procBasedOnFieldType($table,$uid,$destPid,$field,$value,$conf) {
+	function moveRecord_procBasedOnFieldType($table, $uid, $destPid, $field, $value, $conf) {
 		$moveTable = '';
 		$moveIds = array();
 
-		if ($conf['type'] == 'inline')	{
+		if ($conf['type'] == 'inline') {
 			$foreign_table = $conf['foreign_table'];
 			$moveChildrenWithParent = (!isset($conf['behaviour']['disableMovingChildrenWithParent']) || !$conf['behaviour']['disableMovingChildrenWithParent']);
 
@@ -3651,18 +3656,23 @@ class t3lib_TCEmain	{
 				$inlineType = $this->getInlineFieldType($conf);
 				if ($inlineType == 'list' || $inlineType == 'field') {
 					$moveTable = $foreign_table;
+					if ($table == 'pages') {
+							// If the inline elements are related to a page record,
+							// make sure they reside at that page and not at its parent
+						$destPid = $uid;
+					}
 					$dbAnalysis = t3lib_div::makeInstance('t3lib_loadDBGroup');
 					$dbAnalysis->start($value, $conf['foreign_table'], '', $uid, $table, $conf);
 				}
 			}
 		}
 
-			// move the records
+			// Move the records
 		if (isset($dbAnalysis)) {
 				// Moving records to a positive destination will insert each
 				// record at the beginning, thus the order is reversed here:
 			foreach (array_reverse($dbAnalysis->itemArray) as $v) {
-				$this->moveRecord($v['table'],$v['id'],$destPid);
+				$this->moveRecord($v['table'], $v['id'], $destPid);
 			}
 		}
 	}
@@ -6354,7 +6364,10 @@ $this->log($table,$id,6,0,0,'Stage raised...',30,array('comment'=>$comment,'stag
 	function dbAnalysisStoreExec()	{
 		reset($this->dbAnalysisStore);
 		while(list($k,$v)=each($this->dbAnalysisStore))	{
-			$id = t3lib_BEfunc::wsMapId($v[4],$this->substNEWwithIDs[$v[2]]);
+			$id = t3lib_BEfunc::wsMapId(
+				$v[4],
+				(t3lib_div::testInt($v[2]) ? $v[2] : $this->substNEWwithIDs[$v[2]])
+			);
 			if ($id)	{
 				$v[2] = $id;
 				$v[0]->writeMM($v[1],$v[2],$v[3]);
@@ -7204,6 +7217,7 @@ State was change by %s (username: %s)
 					</tr>';
 			}
 
+			$redirect = t3lib_div::sanitizeLocalUrl($redirect);
 			$lines[] = '
 					<tr>
 						<td colspan="2" align="center"><br />'.

@@ -30,7 +30,7 @@
  * The script configures constants, includes libraries and does a little logic here and there in order to instantiate the right classes to create the webpage.
  * All the real data processing goes on in the "tslib/" classes which this script will include and use as needed.
  *
- * $Id: index_ts.php 6461 2009-11-17 19:13:35Z rupi $
+ * $Id: index_ts.php 7268 2010-04-09 10:16:16Z stucki $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -77,6 +77,11 @@ if (!defined('PATH_tslib')) {
 }
 
 if (!@is_dir(PATH_typo3conf))	die('Cannot find configuration. This file is probably executed from the wrong location.');
+
+// *********************
+// Unset variable(s) in global scope (fixes #13959)
+// *********************
+unset($error);
 
 // *********************
 // Timetracking started
@@ -599,7 +604,7 @@ if (is_object($BE_USER)
 // *************
 // Debugging Output
 // *************
-if(@is_callable(array($error,'debugOutput'))) {
+if(is_object($error) && @is_callable(array($error,'debugOutput'))) {
 	$error->debugOutput();
 }
 if (TYPO3_DLOG) {

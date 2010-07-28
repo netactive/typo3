@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 5698 2009-07-08 07:53:50Z ohader $
+ * $Id: class.tslib_content.php 8418 2010-07-28 09:15:36Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1919,6 +1919,15 @@ class tslib_cObj {
 					break;
 					case 'hidden':
 						$value = trim($parts[2]);
+
+							// If this form includes an auto responder message, include a HMAC checksum field
+							// in order to verify potential abuse of this feature.
+						if (strlen($value) && t3lib_div::inList($confData['fieldname'], 'auto_respond_msg')) {
+							$hmacChecksum = t3lib_div::hmac($value);
+							$hiddenfields .= sprintf('<input type="hidden" name="auto_respond_checksum" id="%sauto_respond_checksum" value="%s" />',
+												$prefix, $hmacChecksum);
+						}
+
 						if (strlen($value) && t3lib_div::inList('recipient_copy,recipient',$confData['fieldname']) && $GLOBALS['TYPO3_CONF_VARS']['FE']['secureFormmail'])	{
 							break;
 						}
@@ -3978,7 +3987,9 @@ class tslib_cObj {
 			while(list(,$v)=each($mimeTypes))	{
 				$parts = explode('=',$v,2);
 				if (strtolower($fI['extension']) == strtolower(trim($parts[0])))	{
-					$mimetype = '&mimeType='.rawurlencode(trim($parts[1]));
+					$mimetypeValue = trim($parts[1]);
+					$mimetype = '&mimeType=' . rawurlencode($mimetypeValue);
+					break;
 				}
 			}
 		}
@@ -3987,6 +3998,7 @@ class tslib_cObj {
 		$hArr = array(
 			$jumpUrl,
 			$locationData,
+			$mimetypeValue,
 			$GLOBALS['TSFE']->TYPO3_CONF_VARS['SYS']['encryptionKey']
 		);
 		$juHash='&juHash='.t3lib_div::shortMD5(serialize($hArr));
@@ -5302,8 +5314,12 @@ class tslib_cObj {
 						if (substr($addQueryParams,0,1)!='&')		{
 							$addQueryParams = '';
 						} elseif ($conf['useCacheHash']) {	// cache hashing:
-							$pA = t3lib_div::cHashParams($addQueryParams.$GLOBALS['TSFE']->linkVars);	// Added '.$this->linkVars' dec 2003: The need for adding the linkVars is that they will be included in the link, but not the cHash. Thus the linkVars will always be the problem that prevents the cHash from working. I cannot see what negative implications in terms of incompatibilities this could bring, but for now I hope there are none. So here we go... (- kasper)
-							$addQueryParams.= '&cHash='.t3lib_div::shortMD5(serialize($pA));
+								// Mind the order below! See http://bugs.typo3.org/view.php?id=5117
+							$params = $GLOBALS['TSFE']->linkVars . $addQueryParams;
+							if ($params) {
+								$pA = t3lib_div::cHashParams($params);
+								$addQueryParams.= '&cHash='.t3lib_div::shortMD5(serialize($pA));
+							}
 						}
 
 						$tCR_domain = '';

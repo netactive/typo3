@@ -27,7 +27,7 @@
 /**
  * Web>File: Editing documents
  *
- * $Id: file_edit.php 3775 2008-06-10 12:05:31Z patrick $
+ * $Id: file_edit.php 8427 2010-07-28 09:17:45Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant (except textarea field)
  *
@@ -107,7 +107,7 @@ class SC_file_edit {
 
 			// Setting target, which must be a file reference to a file within the mounts.
 		$this->target = $this->origTarget = t3lib_div::_GP('target');
-		$this->returnUrl = t3lib_div::_GP('returnUrl');
+		$this->returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 
 			// Creating file management object:
 		$this->basicff = t3lib_div::makeInstance('t3lib_basicFileFunctions');

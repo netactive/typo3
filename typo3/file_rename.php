@@ -27,7 +27,7 @@
 /**
  * Web>File: Renaming files and folders
  *
- * $Id: file_rename.php 7010 2010-02-23 10:26:39Z ohader $
+ * $Id: file_rename.php 8427 2010-07-28 09:17:45Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -109,7 +109,7 @@ class SC_file_rename {
 
 			// Initialize GPvars:
 		$this->target = t3lib_div::_GP('target');
-		$this->returnUrl = t3lib_div::_GP('returnUrl');
+		$this->returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 
 			// Init basic-file-functions object:
 		$this->basicff = t3lib_div::makeInstance('t3lib_basicFileFunctions');

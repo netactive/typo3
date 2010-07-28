@@ -27,7 +27,7 @@
 /**
  * Contains TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: class.t3lib_tceforms.php 6495 2009-11-23 09:59:59Z ohader $
+ * $Id: class.t3lib_tceforms.php 8400 2010-07-28 09:12:21Z ohader $
  * Revised for TYPO3 3.6 August/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2080,7 +2080,9 @@ class t3lib_TCEforms	{
 
 				if(!$disabled && !(isset($config['disable_controls']) && t3lib_div::inList($config['disable_controls'], 'upload'))) {
 						// Adding the upload field:
-					if ($this->edit_docModuleUpload)	$item.='<input type="file" name="'.$PA['itemFormElName_file'].'"'.$this->formWidth().' size="60" />';
+					if ($this->edit_docModuleUpload) {
+						$item.='<input type="file" name="'.$PA['itemFormElName_file'].'"'.$this->formWidth().' size="60" onchange="' . implode('', $PA['fieldChangeFunc']) . '" />';
+					}
 				}
 			break;
 			case 'folder':	// If the element is of the internal type "folder":
@@ -3687,6 +3689,7 @@ class t3lib_TCEforms	{
 									$params['formName'] = $this->formName;
 									$params['itemName'] = $itemName;
 									$params['fieldChangeFunc'] = $fieldChangeFunc;
+									$params['fieldChangeFuncHash'] = t3lib_div::hmac(serialize($fieldChangeFunc));
 
 									switch((string)$wConf['type'])	{
 										case 'popup':
@@ -4656,10 +4659,10 @@ class t3lib_TCEforms	{
 			#t3lib_BEfunc::fixVersioningPid($table,$rec);	// Kasper: Should not be used here because NEW records are not offline workspace versions...
 			$truePid = t3lib_BEfunc::getTSconfig_pidValue($table,$rec['uid'],$rec['pid']);
 			$prec = t3lib_BEfunc::getRecordWSOL('pages',$truePid,'title');
-			$rLabel = '<em>[PID: '.$truePid.'] '.htmlspecialchars(trim(t3lib_div::fixed_lgd_cs(t3lib_BEfunc::getRecordTitle('pages',$prec),40))).'</em>';
+			$rLabel = '<em>[PID: '.$truePid.'] ' . t3lib_BEfunc::getRecordTitle('pages', $prec, TRUE, FALSE) . '</em>';
 		} else {
 			$newLabel = ' <span class="typo3-TCEforms-recUid">['.$rec['uid'].']</span>';
-			$rLabel  = htmlspecialchars(trim(t3lib_div::fixed_lgd_cs(t3lib_BEfunc::getRecordTitle($table,$rec),40)));
+			$rLabel   = t3lib_BEfunc::getRecordTitle($table, $rec, TRUE, FALSE);
 		}
 
 		foreach ($arr as $k => $v)	{

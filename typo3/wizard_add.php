@@ -27,7 +27,7 @@
 /**
  * Wizard to add new records to a group/select TCEform formfield
  *
- * $Id: wizard_add.php 3439 2008-03-16 19:16:51Z flyguide $
+ * $Id: wizard_add.php 8427 2010-07-28 09:17:45Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -123,7 +123,7 @@ class SC_wizard_add {
 
 			// Return if new record as parent (not possibly/allowed)
 		if (!strcmp($this->pid,''))	{
-			header('Location: '.t3lib_div::locationHeaderUrl($this->P['returnUrl']));
+			header('Location: '.t3lib_div::locationHeaderUrl(t3lib_div::sanitizeLocalUrl($this->P['returnUrl'])));
 			exit;
 		}
 
@@ -192,7 +192,7 @@ class SC_wizard_add {
 				}
 			}
 				// Return to the parent alt_doc.php record editing session:
-			header('Location: '.t3lib_div::locationHeaderUrl($this->P['returnUrl']));
+			header('Location: '.t3lib_div::locationHeaderUrl(t3lib_div::sanitizeLocalUrl($this->P['returnUrl'])));
 		} else {
 				// Redirecting to alt_doc.php with instructions to create a new record AND when closing to return back with information about that records ID etc.
 			header('Location: '.t3lib_div::locationHeaderUrl('alt_doc.php?returnUrl='.rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')).'&returnEditConf=1&edit['.$this->P['params']['table'].']['.$this->pid.']=new'));

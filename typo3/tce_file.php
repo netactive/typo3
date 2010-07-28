@@ -31,7 +31,7 @@
  *
  * For syntax and API information, see the document 'TYPO3 Core APIs'
  *
- * $Id: tce_file.php 3439 2008-03-16 19:16:51Z flyguide $
+ * $Id: tce_file.php 8427 2010-07-28 09:17:45Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -98,7 +98,7 @@ class SC_tce_file {
 
 			// GPvars:
 		$this->file = t3lib_div::_GP('file');
-		$this->redirect = t3lib_div::_GP('redirect');
+		$this->redirect = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('redirect'));
 		$this->CB = t3lib_div::_GP('CB');
 		$this->overwriteExistingFiles = t3lib_div::_GP('overwriteExistingFiles');
 		$this->vC = t3lib_div::_GP('vC');

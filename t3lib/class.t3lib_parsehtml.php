@@ -27,7 +27,7 @@
 /**
  * Contains class with functions for parsing HTML code.
  *
- * $Id: class.t3lib_parsehtml.php 3770 2008-06-09 14:24:15Z baschny $
+ * $Id: class.t3lib_parsehtml.php 7562 2010-05-07 16:27:42Z benni $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -991,10 +991,11 @@ class t3lib_parsehtml	{
 	 * @return	string		Output path, prefixed if no scheme in input string
 	 * @access private
 	 */
-	function prefixRelPath($prefix,$srcVal,$suffix='')	{
+	function prefixRelPath($prefix, $srcVal, $suffix = '')	{
 		$pU = parse_url($srcVal);
-		if (!$pU['scheme'] && substr($srcVal, 0, 1)!='/')	{ // If not an absolute URL.
-			$srcVal = $prefix.$srcVal.$suffix;
+			// If not an absolute URL.
+		if (!$pU['scheme'] && substr($srcVal, 0, 1) != '/' && substr($srcVal, 0, 1) != '#')	{
+			$srcVal = $prefix . $srcVal . $suffix;
 		}
 		return $srcVal;
 	}

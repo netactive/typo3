@@ -28,7 +28,7 @@
  * Include file extending t3lib_recordList
  * Shared between Web>List (db_list.php) and Web>Page (sysext/cms/layout/db_layout.php)
  *
- * $Id: class.db_list.inc 4723 2009-01-15 20:40:54Z steffenk $
+ * $Id: class.db_list.inc 8427 2010-07-28 09:17:45Z ohader $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -653,7 +653,7 @@ class recordList extends t3lib_recordList {
 			'?id='.(strcmp($altId,'')?$altId:$this->id).
 			'&table='.rawurlencode($table==-1?$this->table:$table).
 			($this->thumbs?'&imagemode='.$this->thumbs:'').
-			($this->returnUrl?'&returnUrl='.rawurlencode($this->returnUrl):'').
+			($this->returnUrl?'&returnUrl='.rawurlencode(t3lib_div::sanitizeLocalUrl($this->returnUrl)):'').
 			($this->searchString?'&search_field='.rawurlencode($this->searchString):'').
 			($this->searchLevels?'&search_levels='.rawurlencode($this->searchLevels):'').
 			($this->showLimit?'&showLimit='.rawurlencode($this->showLimit):'').

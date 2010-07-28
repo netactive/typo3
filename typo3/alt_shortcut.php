@@ -30,7 +30,7 @@
  * Provides links to registered shortcuts
  * If the 'cms' extension is loaded you will also have a field for entering page id/alias which will be found/edited
  *
- * $Id: alt_shortcut.php 4623 2008-12-29 13:53:48Z steffenk $
+ * $Id: alt_shortcut.php 8377 2010-07-28 09:05:47Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant output
  *
@@ -166,6 +166,7 @@ class SC_alt_shortcut {
 		global $BE_USER;
 		$description = '';	// Default description
 		$url = urldecode($this->URL);
+		$queryParts = parse_url($url);
 
 			// Lookup the title of this page and use it as default description
 		$page_id = $this->getLinkedPageId($url);         
@@ -189,8 +190,9 @@ class SC_alt_shortcut {
 		}
 
 
-			// Adding a shortcut being set from another frame
-		if ($this->modName && $this->URL)	{
+			// Adding a shortcut being set from another frame,
+			// but only if it's a relative URL (i.e. scheme part is not defined)
+		if ($this->modName && $this->URL && empty($queryParts['scheme'])) {
 			$fields_values = array(
 				'userid' => $BE_USER->user['uid'],
 				'module_name' => $this->modName.'|'.$this->M_modName,

@@ -28,7 +28,7 @@
 /**
  * Module: Extension manager
  *
- * $Id: class.em_index.php 6131 2009-10-10 09:40:14Z rupi $
+ * $Id: class.em_index.php 8427 2010-07-28 09:17:45Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Karsten Dambekalns <karsten@typo3.org>
@@ -1974,7 +1974,7 @@ EXTENSION KEYS:
 
 			// Function menu here:
 		if(!$this->CMD['standAlone'] && !t3lib_div::_GP('standAlone')) {
-			$content = 'Extension:&nbsp;<strong>' . $this->extensionTitleIconHeader($extKey, $list[$extKey]) . '</strong> (' . $extKey . ')';
+			$content = 'Extension:&nbsp;<strong>' . $this->extensionTitleIconHeader($extKey, $list[$extKey]) . '</strong> (' . htmlspecialchars($extKey) . ')';
 			$this->content.= $this->doc->section('', $content);
 		}
 
@@ -2077,7 +2077,7 @@ EXTENSION KEYS:
 
 				// Editing extension file:
 				$editFile = $this->CMD['editFile'];
-				if (t3lib_div::isFirstPartOfStr($editFile,PATH_site) && t3lib_div::isFirstPartOfStr($editFile,$absPath))	{	// Paranoia...
+				if (t3lib_div::isAllowedAbsPath($editFile) && t3lib_div::isFirstPartOfStr($editFile, $absPath)) {
 
 					$fI = t3lib_div::split_fileref($editFile);
 					if (@is_file($editFile) && t3lib_div::inList($this->editTextExtensions,($fI['fileext']?$fI['fileext']:$fI['filebody'])))	{
@@ -2133,7 +2133,7 @@ EXTENSION KEYS:
 							$theOutput.=$this->doc->section('Filesize exceeded '.$this->kbMax.' Kbytes','Files larger than '.$this->kbMax.' KBytes are not allowed to be edited.');
 						}
 					}
-				} else die('Fatal Edit error: File "'.$editFile.'" was not inside the correct path of the TYPO3 Extension!');
+				} else die('Fatal Edit error: File "' . htmlspecialchars($editFile) . '" was not inside the correct path of the TYPO3 Extension!');
 			} else {
 
 				// MAIN:
@@ -2250,7 +2250,7 @@ EXTENSION KEYS:
 	function requestInstallExtensions($extList)	{
 
 			// Return URL:
-		$returnUrl = t3lib_div::_GP('returnUrl');
+		$returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 		$installOrImportExtension = t3lib_div::_POST('installOrImportExtension');
 
 			// Extension List:
@@ -3008,7 +3008,7 @@ EXTENSION KEYS:
 		if (is_array($imgInfo))	{
 			$out.= '<img src="'.$GLOBALS['BACK_PATH'].$this->typeRelPaths[$extInfo['type']].$extKey.'/ext_icon.gif" '.$imgInfo[3].' align="'.$align.'" alt="" />';
 		}
-		$out.= $extInfo['EM_CONF']['title'] ? htmlspecialchars(t3lib_div::fixed_lgd($extInfo['EM_CONF']['title'],40)) : '<em>'.$extKey.'</em>';
+		$out.= $extInfo['EM_CONF']['title'] ? htmlspecialchars(t3lib_div::fixed_lgd($extInfo['EM_CONF']['title'], 40)) : '<em>' . htmlspecialchars($extKey) . '</em>';
 		return $out;
 	}
 
@@ -5326,6 +5326,7 @@ $EM_CONF[$_EXTKEY] = '.$this->arrayToCode($EM_CONF, 0).';
 
 			$v = $this->xmlhandler->extensionsXML[$name][versions];
 			$versions = array_keys($v);
+			natsort($versions);
 			$lastversion = end($versions);
 
 			if ((t3lib_extMgm::isLoaded($name) || $this->MOD_SETTINGS['display_installed']) &&

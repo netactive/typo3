@@ -32,7 +32,7 @@
  *
  * Adapted for htmlArea RTE by Stanislas Rolland
  *
- * $Id: class.tx_rtehtmlarea_browse_links.php 5668 2009-07-02 03:15:15Z stan $
+ * $Id: class.tx_rtehtmlarea_browse_links.php 8400 2010-07-28 09:12:21Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
@@ -120,6 +120,8 @@ class tx_rtehtmlarea_folderTree extends rteFolderTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v)	{
+		$title = htmlspecialchars($title);
+		
 		if ($this->ext_isLinkable($v))	{
 			$aOnClick = 'return jumpToUrl(\''.$this->thisScript.'?act='.$GLOBALS['SOBE']->browser->act.'&editorNo='.$GLOBALS['SOBE']->browser->editorNo.'&contentTypo3Language='.$GLOBALS['SOBE']->browser->contentTypo3Language.'&contentTypo3Charset='.$GLOBALS['SOBE']->browser->contentTypo3Charset.'&mode='.$GLOBALS['SOBE']->browser->mode.'&expandFolder='.rawurlencode($v['path']).'\');';
 			return '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.$title.'</a>';
@@ -497,6 +499,9 @@ class tx_rtehtmlarea_browse_links extends browse_links {
 ';
 
 		if ($this->mode=='wizard')	{	// Functions used, if the link selector is in wizard mode (= TCEforms fields)
+			if (!$this->areFieldChangeFunctionsValid()) {
+				$this->P['fieldChangeFunc'] = array();
+			}
 			unset($this->P['fieldChangeFunc']['alert']);
 			reset($this->P['fieldChangeFunc']);
 			$update='';

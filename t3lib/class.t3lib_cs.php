@@ -24,7 +24,7 @@
 /**
  * Class for conversion between charsets.
  *
- * $Id: class.t3lib_cs.php 5266 2009-04-03 15:15:29Z flyguide $
+ * $Id: class.t3lib_cs.php 7696 2010-05-27 13:30:58Z xperseguers $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Martin Kutschker <martin.t.kutschker@blackbox.net>
@@ -1388,7 +1388,9 @@ class t3lib_cs {
 	 * @author	Martin Kutschker <martin.t.kutschker@blackbox.net>
 	 */
 	function substr($charset,$string,$start,$len=null)	{
-		if ($len===0)	return '';
+		if ($len === 0 || $string === '') {
+			return '';
+		}
 
 		if ($GLOBALS['TYPO3_CONF_VARS']['SYS']['t3lib_cs_utils'] == 'mbstring')	{
 				// cannot omit $len, when specifying charset

@@ -27,7 +27,7 @@
 /**
  * Login-screen of TYPO3.
  *
- * $Id: index.php 3633 2008-04-23 11:47:26Z flyguide $
+ * $Id: index.php 8427 2010-07-28 09:17:45Z ohader $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -122,7 +122,7 @@ class SC_index {
 		global $BE_USER,$TYPO3_CONF_VARS;
 
 			// GPvars:
-		$this->redirect_url = t3lib_div::_GP('redirect_url');
+		$this->redirect_url = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('redirect_url'));
 		$this->GPinterface = t3lib_div::_GP('interface');
 
 		if(t3lib_div::getIndpEnv('TYPO3_SSL'))	{	// For security reasons this feature only works if SSL is used

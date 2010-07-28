@@ -27,7 +27,7 @@
 /**
  * Web>File: Upload of files
  *
- * $Id: file_upload.php 7010 2010-02-23 10:26:39Z ohader $
+ * $Id: file_upload.php 8427 2010-07-28 09:17:45Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -117,7 +117,7 @@ class SC_file_upload {
 			// Initialize GPvars:
 		$this->number = t3lib_div::_GP('number');
 		$this->target = t3lib_div::_GP('target');
-		$this->returnUrl = t3lib_div::_GP('returnUrl');
+		$this->returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 		$this->returnUrl = $this->returnUrl ? $this->returnUrl : t3lib_div::getIndpEnv('TYPO3_SITE_URL').TYPO3_mainDir.'file_list.php?id='.rawurlencode($this->target);
 
 		if (empty($this->number))	{

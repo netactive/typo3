@@ -31,7 +31,7 @@
  * Call ALL methods without making an object!
  * Eg. to get a page-record 51 do this: 't3lib_BEfunc::getRecord('pages',51)'
  *
- * $Id: class.t3lib_befunc.php 5827 2009-08-26 13:58:20Z stucki $
+ * $Id: class.t3lib_befunc.php 8413 2010-07-28 09:14:52Z ohader $
  * Usage counts are based on search 22/2 2003 through whole backend source of typo3/
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
@@ -834,7 +834,11 @@ final class t3lib_BEfunc {
 			// Traverse languages
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,title,flag', 'sys_language', 'pid=0'.t3lib_BEfunc::deleteClause('sys_language'));
 		while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-			$sysLanguages[] = array($row['title'].' ['.$row['uid'].']', $row['uid'], ($row['flag'] ? 'flags/'.$row['flag'] : ''));
+			$sysLanguages[] = array(
+				htmlspecialchars($row['title']) . ' [' . $row['uid'] . ']',
+				$row['uid'],
+				($row['flag'] ? 'flags/' . $row['flag'] : '')
+			);
 		}
 		$GLOBALS['TYPO3_DB']->sql_free_result($res);
 
@@ -2545,6 +2549,17 @@ final class t3lib_BEfunc {
 				}
 			}
 			$preUrl = $preUrl_temp ? (t3lib_div::getIndpEnv('TYPO3_SSL') ? 'https://' : 'http://').$preUrl_temp : $backPath.'..';
+
+				// check if we need to preview a mount point
+			t3lib_div::requireOnce(PATH_t3lib . 'class.t3lib_page.php');
+			$sys_page = t3lib_div::makeInstance('t3lib_pageSelect');
+			$sys_page->init(FALSE);
+			$mountPointInfo = $sys_page->getMountPointInfo($id);
+			if ($mountPointInfo && $mountPointInfo['overlay']) {
+				$id = $mountPointInfo['mount_pid'];
+				$addGetVars .= '&MP=' . $mountPointInfo['MPvar'];
+			}
+
 			$url = $preUrl.$viewScript.$id.$addGetVars.$anchor;
 		}
 
@@ -2981,7 +2996,11 @@ final class t3lib_BEfunc {
 			while(list($kk, $vv) = each($fTWHERE_parts)) {
 				if ($kk) {
 					$fTWHERE_subpart = explode('###', $vv, 2);
-					$fTWHERE_parts[$kk] = $TSconfig['_THIS_ROW'][$fTWHERE_subpart[0]].$fTWHERE_subpart[1];
+					if (substr($fTWHERE_parts[0], -1) === '\'' && $fTWHERE_subpart[1]{0} === '\'') {
+						$fTWHERE_parts[$kk] = $GLOBALS['TYPO3_DB']->quoteStr($TSconfig['_THIS_ROW'][$fTWHERE_subpart[0]], $foreign_table) . $fTWHERE_subpart[1];
+					} else {
+						$fTWHERE_parts[$kk] = $GLOBALS['TYPO3_DB']->fullQuoteStr($TSconfig['_THIS_ROW'][$fTWHERE_subpart[0]], $foreign_table) . $fTWHERE_subpart[1];
+					}
 				}
 			}
 			$fTWHERE = implode('', $fTWHERE_parts);

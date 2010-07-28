@@ -8,7 +8,7 @@
  * 'IM' is short for 'ImageMagick', which is an external image manipulation package available from www.imagemagick.org. Version is ABSOLUTELY preferred to be 4.2.9, but may be 5+. See the install notes for TYPO3!!
  * 'GD' is short for 'GDLib/FreeType', which are libraries that should be compiled into PHP4. GDLib <=1.3 supports GIF, while the latest version 1.8.x and 2.x supports only PNG. GDLib is available from www.boutell.com/gd/. Freetype has a link from there.
  *
- * $Id: config_default.php 7011 2010-02-23 10:45:16Z ohader $
+ * $Id: config_default.php 8437 2010-07-28 09:50:54Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -17,10 +17,10 @@
 if (!defined ('PATH_typo3conf')) 	die ('The configuration path was not properly defined!');
 
 //Security related constant: Default value of fileDenyPattern
-define('FILE_DENY_PATTERN_DEFAULT', '\.php[3-6]?(\..*)?$|^\.htaccess$');
+define('FILE_DENY_PATTERN_DEFAULT', '\.(php[3-6]?|phpsh|phtml)(\..*)?$|^\.htaccess$');
 
 //Security related constant: Comma separated list of file extensions that should be registered as php script file extensions
-define('PHP_EXTENSIONS_DEFAULT', 'php,php3,php4,php5,php6,phpsh,inc');
+define('PHP_EXTENSIONS_DEFAULT', 'php,php3,php4,php5,php6,phpsh,inc,phtml');
 
 $TYPO3_CONF_VARS = Array(
 	'GFX' => array(		// Configuration of the image processing features in TYPO3. 'IM' and 'GD' are short for ImageMagick and  GD library respectively.
@@ -29,7 +29,7 @@ $TYPO3_CONF_VARS = Array(
 		'thumbnails_png' => 0,					// Bits. Bit0: If set, thumbnails from non-jpegs will be 'png', otherwise 'gif' (0=gif/1=png). Bit1: Even JPG's will be converted to png or gif (2=gif/3=png)
 		'noIconProc' => 1,						// Boolean. If true, icons are never processed with overlays for hidden, starttime, endtime etc. They must be available pre-processed. If this is disabled, do so only if you have full image processing capabilities on the server for TYPO3.
 		'gif_compress' => 1,					// Boolean. Enables the use of the t3lib_div::gif_compress() workaround function for compressing giffiles made with GD or IM, which probably use only RLE or no compression at all.
-		'imagefile_ext' => 'gif,jpg,jpeg,tif,bmp,pcx,tga,png,pdf,ai',	// Commalist of file extensions perceived as images by TYPO3. List should be set to 'gif,png,jpeg,jpg' if IM is not available. Lowercase and no spaces between!
+		'imagefile_ext' => 'gif,jpg,jpeg,tif,tiff,bmp,pcx,tga,png,pdf,ai',	// Commalist of file extensions perceived as images by TYPO3. List should be set to 'gif,png,jpeg,jpg' if IM is not available. Lowercase and no spaces between!
 
 		'gdlib' => 1,							// Boolean. Enables the use of GD.
 		'gdlib_png' => 0,						// Boolean. Enables the use of GD, with PNG only. This means that all items normally generated as gif-files will be png-files instead!
@@ -292,7 +292,7 @@ $TYPO3_CONF_VARS = Array(
 $T3_VAR = array();	// Initialize.
 
 	// TYPO3 version
-$TYPO_VERSION = '4.2.12';	// deprecated: use the constants defined below
+$TYPO_VERSION = '4.2.13';	// deprecated: use the constants defined below
 define('TYPO3_version', $TYPO_VERSION);
 define('TYPO3_branch', '4.2');
 define('TYPO3_copyright_year', '1998-2009');
@@ -385,7 +385,7 @@ function debug($variable='', $name='*variable*', $line='*line*', $file='*file*',
 		// If you wish to use the debug()-function, and it does not output something, please edit the IP mask in TYPO3_CONF_VARS
 	if (!t3lib_div::cmpIP(t3lib_div::getIndpEnv('REMOTE_ADDR'), $GLOBALS['TYPO3_CONF_VARS']['SYS']['devIPmask']))	return;
 
-	if(@is_callable(array($GLOBALS['error'],'debug'))) {
+	if(is_object($GLOBALS['error']) && @is_callable(array($GLOBALS['error'],'debug'))) {
 		$GLOBALS['error']->debug($variable, $name, $line, $file, $recursiveDepth, $debugLevel);
 	} else {
 		$br = ($name == '*variable*') ? 0 : $name;
@@ -393,12 +393,12 @@ function debug($variable='', $name='*variable*', $line='*line*', $file='*file*',
 	}
 }
 function debugBegin() {
-	if(@is_callable(array($GLOBALS['error'],'debugBegin'))) {
+	if(is_object($GLOBALS['error']) && @is_callable(array($GLOBALS['error'],'debugBegin'))) {
 		$GLOBALS['error']->debugBegin();
 	}
 }
 function debugEnd() {
-	if(@is_callable(array($GLOBALS['error'],'debugEnd'))) {
+	if(is_object($GLOBALS['error']) && @is_callable(array($GLOBALS['error'],'debugEnd'))) {
 		$GLOBALS['error']->debugEnd();
 	}
 }
