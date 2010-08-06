@@ -45,7 +45,7 @@ require_once('../../init.php');
 /**
  * This class is the OpenID return script for the TYPO3 Backend.
  *
- * $Id: class.tx_openid_return.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.tx_openid_return.php 8447 2010-07-29 13:23:39Z dmitry $
  *
  * @author	Dmitry Dulepov <dmitry@typo3.org>
  */
@@ -57,9 +57,7 @@ class tx_openid_return {
 	*/
 	public function main() {
 		if ($GLOBALS['BE_USER']->user['uid']) {
-			while (ob_get_level()>0) {
-				@ob_end_clean();
-			}
+			t3lib_div::cleanOutputBuffers();
 			$backendURL = t3lib_div::getIndpEnv('TYPO3_SITE_URL') . TYPO3_mainDir . 'backend.php';
 			t3lib_utility_Http::redirect($backendURL);
 		}

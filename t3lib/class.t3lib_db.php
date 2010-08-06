@@ -30,7 +30,7 @@
  * interaction.
  * This class is instantiated globally as $TYPO3_DB in TYPO3 scripts.
  *
- * $Id: class.t3lib_db.php 7074 2010-03-03 09:44:16Z xperseguers $
+ * $Id: class.t3lib_db.php 8482 2010-08-05 15:54:11Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -1012,7 +1012,7 @@ class t3lib_DB {
 		} else {
 			if ($GLOBALS['TYPO3_CONF_VARS']['SYS']['dbClientCompress'] && !$isLocalhost) {
 					// See comment about 4th parameter in block above
-				$this->link = @mysql_pconnect($TYPO3_db_host, $TYPO3_db_username, $TYPO3_db_password, false, MYSQL_CLIENT_COMPRESS);
+				$this->link = @mysql_pconnect($TYPO3_db_host, $TYPO3_db_username, $TYPO3_db_password, MYSQL_CLIENT_COMPRESS);
 			} else {
 				$this->link = @mysql_pconnect($TYPO3_db_host, $TYPO3_db_username, $TYPO3_db_password);
 			}

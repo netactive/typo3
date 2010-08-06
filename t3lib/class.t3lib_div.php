@@ -27,7 +27,7 @@
 /**
  * Contains the reknown class "t3lib_div" with general purpose functions
  *
- * $Id: class.t3lib_div.php 8401 2010-07-28 09:12:31Z ohader $
+ * $Id: class.t3lib_div.php 8447 2010-07-29 13:23:39Z dmitry $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  * Usage counts are based on search 22/2 2003 through whole source including tslib/
@@ -5763,9 +5763,7 @@ final class t3lib_div {
 	 * @return	void
 	 */
 	public static function cleanOutputBuffers() {
-		while (ob_get_level()) {
-			ob_end_clean();
-		}
+		while (ob_end_clean());
 		header('Content-Encoding: None', TRUE);
 	}
 
@@ -5778,9 +5776,7 @@ final class t3lib_div {
 	public static function flushOutputBuffers() {
 		$obContent = '';
 
-		while (ob_get_level()) {
-			$obContent .= ob_get_clean();
-		}
+		while ($obContent .= ob_get_clean());
 
 			// if previously a "Content-Encoding: whatever" has been set, we have to unset it
 		if (!headers_sent()) {

@@ -29,7 +29,7 @@
  * Used from TCEFORMS an other elements
  * In other words: This is the ELEMENT BROWSER!
  *
- * $Id: class.browse_links.php 8401 2010-07-28 09:12:31Z ohader $
+ * $Id: class.browse_links.php 8492 2010-08-05 18:44:29Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -423,8 +423,6 @@ class TBE_PageTree extends localPageTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v,$ext_pArrPages)	{
-		$title = htmlspecialchars($title);
-
 		if ($ext_pArrPages)	{
 			$ficon=t3lib_iconWorks::getIcon('pages',$v);
 			$onClick = "return insertElement('pages', '".$v['uid']."', 'db', ".t3lib_div::quoteJSvalue($v['title']).", '', '', '".$ficon."','',1);";
@@ -472,8 +470,6 @@ class localFolderTree extends t3lib_folderTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v)	{
-		$title = htmlspecialchars($title);
-
 		if ($this->ext_isLinkable($v))	{
 			$aOnClick = 'return jumpToUrl(\''.$this->thisScript.'?act='.$GLOBALS['SOBE']->browser->act.'&mode='.$GLOBALS['SOBE']->browser->mode.'&expandFolder='.rawurlencode($v['path']).'\');';
 			return '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.$title.'</a>';
@@ -557,7 +553,7 @@ class localFolderTree extends t3lib_folderTree {
 				// Put table row with folder together:
 			$out.='
 				<tr class="'.$bgColorClass.'">
-					<td nowrap="nowrap">'.$v['HTML'].$this->wrapTitle(t3lib_div::fixed_lgd_cs($v['row']['title'],$titleLen),$v['row']).'</td>
+					<td nowrap="nowrap">' . $v['HTML'] . $this->wrapTitle(htmlspecialchars(t3lib_div::fixed_lgd_cs($v['row']['title'], $titleLen)), $v['row']) . '</td>
 					'.$arrCol.'
 					<td>'.$cEbullet.'</td>
 				</tr>';
@@ -626,8 +622,6 @@ class TBE_FolderTree extends localFolderTree {
 	 * @return	string		Wrapping title string.
 	 */
 	function wrapTitle($title,$v)	{
-		$title = htmlspecialchars($title);
-
 		if ($this->ext_isLinkable($v))	{
 			$aOnClick = 'return jumpToUrl(\''.$this->thisScript.'?act='.$GLOBALS['SOBE']->browser->act.'&mode='.$GLOBALS['SOBE']->browser->mode.'&expandFolder='.rawurlencode($v['path']).'\');';
 			return '<a href="#" onclick="'.htmlspecialchars($aOnClick).'">'.$title.'</a>';
@@ -922,7 +916,7 @@ class browse_links {
 		';
 
 		if ($this->mode == 'wizard')	{	// Functions used, if the link selector is in wizard mode (= TCEforms fields)
-			if (!$this->areFieldChangeFunctionsValid()) {
+			if (!$this->areFieldChangeFunctionsValid() && !$this->areFieldChangeFunctionsValid(TRUE)) {
 				$this->P['fieldChangeFunc'] = array();
 			}
 			unset($this->P['fieldChangeFunc']['alert']);
@@ -937,6 +931,7 @@ class browse_links {
 			$P2['itemName']=$this->P['itemName'];
 			$P2['formName']=$this->P['formName'];
 			$P2['fieldChangeFunc']=$this->P['fieldChangeFunc'];
+			$P2['fieldChangeFuncHash'] = t3lib_div::hmac(serialize($this->P['fieldChangeFunc']));
 			$P2['params']['allowedExtensions']=$this->P['params']['allowedExtensions'];
 			$P2['params']['blindLinkOptions']=$this->P['params']['blindLinkOptions'];
 			$addPassOnParams.=t3lib_div::implodeArrayForUrl('P',$P2);
@@ -2787,13 +2782,33 @@ class browse_links {
 	 * Determines whether submitted field change functions are valid
 	 * and are coming from the system and not from an external abuse.
 	 *
+	 * @param boolean $allowFlexformSections Whether to handle flexform sections differently
 	 * @return boolean Whether the submitted field change functions are valid
 	 */
-	protected function areFieldChangeFunctionsValid() {
-		return (
-			isset($this->P['fieldChangeFunc']) && is_array($this->P['fieldChangeFunc']) && isset($this->P['fieldChangeFuncHash'])
-			&& $this->P['fieldChangeFuncHash'] == t3lib_div::hmac(serialize($this->P['fieldChangeFunc']))
-		);
+	protected function areFieldChangeFunctionsValid($handleFlexformSections = FALSE) {
+		$result = FALSE;
+
+		if (isset($this->P['fieldChangeFunc']) && is_array($this->P['fieldChangeFunc']) && isset($this->P['fieldChangeFuncHash'])) {
+			$matches = array();
+			$pattern = '#\[el\]\[(([^]-]+-[^]-]+-)(idx\d+-)([^]]+))\]#i';
+
+			$fieldChangeFunctions = $this->P['fieldChangeFunc'];
+
+				// Special handling of flexform sections:
+				// Field change functions are modified in JavaScript, thus the hash is always invalid
+			if ($handleFlexformSections && preg_match($pattern, $this->P['itemName'], $matches)) {
+				$originalName = $matches[1];
+				$cleanedName = $matches[2] . $matches[4];
+
+				foreach ($fieldChangeFunctions as &$value) {
+					$value = str_replace($originalName, $cleanedName, $value);
+				}
+			}
+
+			$result = ($this->P['fieldChangeFuncHash'] === t3lib_div::hmac(serialize($fieldChangeFunctions)));
+		}
+
+		return $result;
 	}
 }
 
