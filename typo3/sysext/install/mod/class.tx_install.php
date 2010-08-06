@@ -27,7 +27,7 @@
 /**
  * Contains the class for the Install Tool
  *
- * $Id: class.tx_install.php 8426 2010-07-28 09:17:12Z ohader $
+ * $Id: class.tx_install.php 8473 2010-08-03 15:37:14Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Ingmar Schlecht <ingmar@typo3.org>
@@ -301,6 +301,10 @@ class tx_install extends t3lib_install {
 		}
 
 		$this->session = t3lib_div::makeInstance('tx_install_session');
+		$sessionCreationError = $this->session->getErrorCreationMessage();
+		if ($sessionCreationError !== NULL) {
+			$this->outputErrorAndExit('<p>' . $sessionCreationError . '</p>');
+		}
 
 			// *******************
 			// Check authorization
@@ -4868,6 +4872,23 @@ a:hover {color: #006; text-decoration:underline;}
 	</body>
 </html>';
 		return $out;
+	}
+
+  	/**
+	 * Outputs an error and dies.
+	 * Should be used by all errors that occur before even starting the install tool process.
+	 *
+	 * @param string The content of the error
+	 * @return void
+	 */
+	function outputErrorAndExit($content, $title = 'Install Tool error') {
+			// Output the warning message and exit
+		header('Content-Type: text/html; charset=utf-8');
+		header('Cache-Control: no-cache, must-revalidate');
+		header('Pragma: no-cache');
+		echo '<h1>' . $title . '</h1>';
+		echo $content;
+		exit();
 	}
 
 	/**

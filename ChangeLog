@@ -1,3 +1,29 @@
+2010-08-06  Oliver Hader  <oliver@typo3.org>
+
+	* Release of TYPO3 4.1.15
+
+2010-08-05  Oliver Hader  <oliver@typo3.org>
+
+	* Fixed bug #15282: It is impossible to set links to files any more with the link wizard
+
+2010-08-03  Oliver Hader  <oliver@typo3.org>
+
+	* Fixed bug #15311: t3lib_div::sanitizeLocalUrl() leads to fatal error on PHP4 systems
+	* Fixed bug #15265: InstallTool-login not possible after Update to 4.4.1 due to session_start() in extensions (thanks to Ernesto Baschny and Helmut Hummel)
+
+2010-08-02  Oliver Hader  <oliver@typo3.org>
+
+	* Fixed bug #15289: Element-Browser page tree has HSC'ed <span> elements
+
+2010-07-30  Oliver Hader  <oliver@typo3.org>
+
+	* Reverted fix for bug #15260
+	* Fixed bug #15263: Clearing caches in backend only displays empty frame
+
+2010-07-28  Oliver Hader  <oliver@typo3.org>
+
+	* Fixed bug #15260: Use of undefined method t3lib_div::sanitizeLocalUrl()
+
 2010-07-28  Oliver Hader  <oliver@typo3.org>
 
 	* Release of TYPO3 4.1.14
