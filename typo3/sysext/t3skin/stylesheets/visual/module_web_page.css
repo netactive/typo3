@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Web > Page
 
-$Id: module_web_page.css 8262 2010-07-24 10:52:53Z steffenk $
+$Id: module_web_page.css 8451 2010-07-30 11:45:08Z steffenk $
 - - - - - - - - - - - - - - - - - - - - - */
 
 .t3-page-colHeader {
@@ -24,6 +24,10 @@ $Id: module_web_page.css 8262 2010-07-24 10:52:53Z steffenk $
 	border: 1px solid #e2e2e2;
 	border-top: none;
 	font-size: 10px;
+}
+
+.t3-page-ce.active .t3-page-ce-body {
+	border-color: #5b5b5b;
 }
 
 .t3-page-ce-hidden .t3-page-ce-body,

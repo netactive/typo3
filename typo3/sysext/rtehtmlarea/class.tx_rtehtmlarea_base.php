@@ -32,7 +32,7 @@
  * @author	Philipp Borgmann <philipp.borgmann@gmx.de>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_base.php 8306 2010-07-27 22:37:36Z stan $  *
+ * $Id: class.tx_rtehtmlarea_base.php 8504 2010-08-06 00:38:25Z stan $  *
  */
 
 class tx_rtehtmlarea_base extends t3lib_rteapi {
@@ -1146,7 +1146,10 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		} else {
 			if ($compress) {
 				$compressor = t3lib_div::makeInstance('t3lib_Compressor');
-				$filename = $compressor->compressJsFile(($this->isFrontendEditActive() ? '' : ($this->backPath . '../')) . $relativeFilename);
+				$filename = $compressor->compressJsFile(($this->isFrontendEditActive() ? '' : $this->backPath) . '../' . $relativeFilename);
+				if ($this->isFrontendEditActive()) {
+					$filename = preg_replace('/^..\//', '', $filename);
+				}
 			} else {
 				$filename = t3lib_div::createVersionNumberedFilename(($this->isFrontendEditActive() ? '' : ($this->backPath . '../')) . $relativeFilename);
 			}

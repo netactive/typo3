@@ -27,7 +27,7 @@
 /**
  * Contains the class for the Install Tool
  *
- * $Id: class.tx_install.php 8429 2010-07-28 09:19:00Z ohader $
+ * $Id: class.tx_install.php 8476 2010-08-03 15:39:49Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Ingmar Schlecht <ingmar@typo3.org>
@@ -317,7 +317,11 @@ class tx_install extends t3lib_install {
 			die('Install Tool needs to write to typo3temp/. Make sure this directory is writeable by your webserver: '. $this->typo3temp_path);
 		}
 
-		$this->session = t3lib_div::makeInstance('tx_install_session');
+		try {
+			$this->session = t3lib_div::makeInstance('tx_install_session');
+		} catch (Exception $exception) {
+			$this->outputErrorAndExit($exception->getMessage());
+		}
 
 			// *******************
 			// Check authorization
@@ -7735,6 +7739,47 @@ $out="
 	}
 
 	/**
+	 * Outputs an error and dies.
+	 * Should be used by all errors that occur before even starting the install tool process.
+	 *
+	 * @param string The content of the error
+	 * @return void
+	 */
+	protected function outputErrorAndExit($content, $title = 'Install Tool error') {
+			// Define the stylesheet
+		$stylesheet = '<link rel="stylesheet" type="text/css" href="' .
+			'../stylesheets/install/install.css" />';
+		$javascript = '<script type="text/javascript" src="' .
+			'../contrib/prototype/prototype.js"></script>' . LF;
+		$javascript .= '<script type="text/javascript" src="' .
+			'../sysext/install/Resources/Public/Javascript/install.js"></script>';
+
+			// Get the template file
+		$template = @file_get_contents(PATH_site . '/typo3/templates/install.html');
+			// Define the markers content
+		$markers = array(
+			'styleSheet' => $stylesheet,
+			'javascript' => $javascript,
+			'title' => $title,
+			'content' => $content,
+		);
+			// Fill the markers
+		$content = t3lib_parsehtml::substituteMarkerArray(
+			$template,
+			$markers,
+			'###|###',
+			1,
+			1
+		);
+			// Output the warning message and exit
+		header('Content-Type: text/html; charset=utf-8');
+		header('Cache-Control: no-cache, must-revalidate');
+		header('Pragma: no-cache');
+		echo $content;
+		exit();
+	}
+
+	/**
 	 * Sends the page to the client.
 	 *
 	 * @param string $content The HTML page
@@ -8132,6 +8177,7 @@ $out="
 			if (count($warnings)) {
 					// Get the subpart for warnings
 				$warningsSubpart = t3lib_parsehtml::getSubpart($content, '###WARNINGS###');
+				$warningItems = array();
 
 				foreach ($warnings as $warning) {
 						// Get the subpart for single warning items
@@ -8139,7 +8185,7 @@ $out="
 						// Define the markers content
 					$warningItemMarker['warning'] = $warning;
 						// Fill the markers in the subpart
-					$warningItem[] = t3lib_parsehtml::substituteMarkerArray(
+					$warningItems[] = t3lib_parsehtml::substituteMarkerArray(
 						$warningItemSubpart,
 						$warningItemMarker,
 						'###|###',

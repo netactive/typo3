@@ -27,7 +27,7 @@
 /**
  * Generate a page-tree, browsable.
  *
- * $Id: class.t3lib_browsetree.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_browsetree.php 8469 2010-08-02 14:25:02Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -162,7 +162,7 @@ class t3lib_browseTree extends t3lib_treeView {
 			$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('domainName,sorting', 'sys_domain',
 						'pid=' . $GLOBALS['TYPO3_DB']->quoteStr($row['uid'], 'sys_domain'), '', 'sorting', 1);
 			if (is_array($rows) && count($rows) > 0) {
-				$title = sprintf('%s [%s]', $title, $rows[0]['domainName']);
+				$title = sprintf('%s [%s]', $title, htmlspecialchars($rows[0]['domainName']));
 			}
 		}
 		return $title;

@@ -20,7 +20,7 @@
 *
 *  This copyright notice MUST APPEAR in all copies of this script
 *
-*  TYPO3 SVN ID: $Id: tree.js 7905 2010-06-13 14:42:33Z ohader $
+*  TYPO3 SVN ID: $Id: tree.js 8448 2010-07-30 11:23:30Z steffenk $
 *
 ***************************************************************/
 
@@ -149,16 +149,16 @@ var Tree = {
 		} else {
 			obj.style.cursor = 'wait';
 		}
-
+		
 		var call = new Ajax.Request(this.thisScript, {
 			method: 'get',
 			parameters: 'ajaxID=' + this.ajaxID + '&PM=' + params,
 			onComplete: function(xhr) {
 				// the parent node needs to be overwritten, not the object
 				$(obj.parentNode.parentNode).replace(xhr.responseText);
+				TYPO3PageTreeFilter.filter();
 				this.registerDragDropHandlers();
 				this.reSelectActiveItem();
-				filter($('_livesearch').value);
 			}.bind(this),
 			onT3Error: function(xhr) {
 				// if this is not a valid ajax response, the whole page gets refreshed

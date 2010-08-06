@@ -35,7 +35,7 @@ $BE_USER->modAccess($MCONF, 1);
  * @package		TYPO3
  * @subpackage	tx_reports
  *
- * $Id: index.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: index.php 8500 2010-08-05 22:37:20Z steffenk $
  */
 class tx_reports_Module extends t3lib_SCbase {
 
@@ -113,8 +113,12 @@ class tx_reports_Module extends t3lib_SCbase {
 				}
 				var state;
 				Event.observe(document, "dom:loaded", function(){
-					$$(".section-header").invoke("observe", "click", function(event){
+					$$("h2.section-header").invoke("observe", "click", function(event){
 						var item = Event.element(event);
+							// possible icon inside h2
+						if (item.hasClassName("t3-icon")) {
+							item = item.up("h2");
+						}
 						if (item.hasClassName("expanded")) {
 							item.removeClassName("expanded").addClassName("collapsed");
 							Effect.BlindUp(item.next("div"), {duration : 0.5});
@@ -124,6 +128,7 @@ class tx_reports_Module extends t3lib_SCbase {
 							Effect.BlindDown(item.next("div"), {duration : 0.5});
 							state = 0;
 						}
+						event.stop();
 						new Ajax.Request("ajax.php", {
 							parameters : "ajaxID=Reports::saveCollapseState&item=" + item.id + "&state=" + state
 						});
