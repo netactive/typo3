@@ -27,7 +27,7 @@
 /**
  * Contains TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: class.t3lib_tceforms.php 8400 2010-07-28 09:12:21Z ohader $
+ * $Id: class.t3lib_tceforms.php 8491 2010-08-05 18:43:58Z ohader $
  * Revised for TYPO3 3.6 August/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2549,8 +2549,8 @@ class t3lib_TCEforms	{
 
 									// Makes a "Add new" link:
 								$var = uniqid('idvar');
-								$replace = 'replace(/' . $idTagPrefix . '-/g,"' . $idTagPrefix . '"+' . $var . '+"-")';
-								$onClickInsert = 'var ' . $var . ' = "' . $idTagPrefix . '-idx"+(new Date()).getTime();';
+								$replace = 'replace(/' . $idTagPrefix . '-/g,"' . $idTagPrefix . '-"+' . $var . '+"-")';
+								$onClickInsert = 'var ' . $var . ' = "' . 'idx"+(new Date()).getTime();';
 									// Do not replace $isTagPrefix in setActionStatus() because it needs section id!
 								$onClickInsert .= 'new Insertion.Bottom($("'.$idTagPrefix.'"), unescape("'.rawurlencode($newElementTemplate).'").' . $replace . '); setActionStatus("'.$idTagPrefix.'");';
 								$onClickInsert .= 'eval(unescape("' . rawurlencode(implode(';', $this->additionalJS_post)) . '").' . $replace . ');';
