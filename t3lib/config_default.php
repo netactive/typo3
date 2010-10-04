@@ -8,7 +8,7 @@
  * 'IM' is short for 'ImageMagick', which is an external image manipulation package available from www.imagemagick.org. Version is ABSOLUTELY preferred to be 4.2.9, but may be 5+. See the install notes for TYPO3!!
  * 'GD' is short for 'GDLib/FreeType', which are libraries that should be compiled into PHP4. GDLib <=1.3 supports GIF, while the latest version 1.8.x and 2.x supports only PNG. GDLib is available from www.boutell.com/gd/. Freetype has a link from there.
  *
- * $Id: config_default.php 8507 2010-08-06 10:14:08Z ohader $
+ * $Id: config_default.php 8925 2010-09-28 14:46:30Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -113,12 +113,13 @@ $TYPO3_CONF_VARS = array(
 				't3lib_cache_frontend_StringFrontend'   => 't3lib/cache/frontend/class.t3lib_cache_frontend_stringfrontend.php:t3lib_cache_frontend_StringFrontend'
 			),
 			'cacheBackends' => array(
-				't3lib_cache_backend_DbBackend'        => 't3lib/cache/backend/class.t3lib_cache_backend_dbbackend.php:t3lib_cache_backend_DbBackend',
-				't3lib_cache_backend_FileBackend'      => 't3lib/cache/backend/class.t3lib_cache_backend_filebackend.php:t3lib_cache_backend_FileBackend',
-				't3lib_cache_backend_GlobalsBackend'   => 't3lib/cache/backend/class.t3lib_cache_backend_globalsbackend.php:t3lib_cache_backend_GlobalsBackend',
-				't3lib_cache_backend_MemcachedBackend' => 't3lib/cache/backend/class.t3lib_cache_backend_memcachedbackend.php:t3lib_cache_backend_MemcachedBackend',
-				't3lib_cache_backend_ApcBackend'       => 't3lib/cache/backend/class.t3lib_cache_backend_apcbackend.php:t3lib_cache_backend_ApcBackend',
-				't3lib_cache_backend_NullBackend'      => 't3lib/cache/backend/class.t3lib_cache_backend_nullbackend.php:t3lib_cache_backend_NullBackend'
+				't3lib_cache_backend_DbBackend'              => 't3lib/cache/backend/class.t3lib_cache_backend_dbbackend.php:t3lib_cache_backend_DbBackend',
+				't3lib_cache_backend_FileBackend'            => 't3lib/cache/backend/class.t3lib_cache_backend_filebackend.php:t3lib_cache_backend_FileBackend',
+				't3lib_cache_backend_GlobalsBackend'         => 't3lib/cache/backend/class.t3lib_cache_backend_globalsbackend.php:t3lib_cache_backend_GlobalsBackend',
+				't3lib_cache_backend_MemcachedBackend'       => 't3lib/cache/backend/class.t3lib_cache_backend_memcachedbackend.php:t3lib_cache_backend_MemcachedBackend',
+				't3lib_cache_backend_ApcBackend'             => 't3lib/cache/backend/class.t3lib_cache_backend_apcbackend.php:t3lib_cache_backend_ApcBackend',
+				't3lib_cache_backend_NullBackend'            => 't3lib/cache/backend/class.t3lib_cache_backend_nullbackend.php:t3lib_cache_backend_NullBackend',
+				't3lib_cache_backend_TransientMemoryBackend' => 't3lib/cache/backend/class.t3lib_cache_backend_transientmemorybackend.php:t3lib_cache_backend_TransientMemoryBackend',
 			),
 			'cacheConfigurations' => array(
 				'cache_hash' => array(
@@ -377,7 +378,7 @@ $TYPO3_CONF_VARS = array(
 $T3_VAR = array();	// Initialize.
 
 	// TYPO3 version
-$TYPO_VERSION = '4.3.5';	// deprecated: use the constants defined below
+$TYPO_VERSION = '4.3.6';	// deprecated: use the constants defined below
 define('TYPO3_version', $TYPO_VERSION);
 define('TYPO3_branch', '4.3');
 define('TYPO3_copyright_year', '1998-2009');

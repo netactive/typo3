@@ -28,7 +28,7 @@
  * Class used in module tools/dbint (advanced search) and which may hold code specific for that module
  * However the class has a general principle in it which may be used in the web/export module.
  *
- * $Id: class.t3lib_fullsearch.php 7219 2010-03-29 11:42:52Z lolli $
+ * $Id: class.t3lib_fullsearch.php 8588 2010-08-12 20:41:55Z steffenk $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Jo Hasenau <info@cybercraft.de>
@@ -576,7 +576,7 @@ class t3lib_fullsearch {
 					// Get fields list
 				t3lib_div::loadTCA($table);
 				$conf=$TCA[$table];
-				
+
 					// avoid querying tables with no columns
 				if (empty($conf['columns'])) {
 					continue;
@@ -833,7 +833,7 @@ class t3lib_fullsearch {
 	function makeValueList($fN, $fV, $conf, $table, $splitString) {
 		$fieldSetup = $conf;
 		if ($fieldSetup['type'] == 'files') {
-			$d = dir(t3lib_div::getIndpEnv(TYPO3_DOCUMENT_ROOT).'/'.$fieldSetup['uploadfolder']);
+			$d = dir(PATH_site . $fieldSetup['uploadfolder']);
 			while (false !== ($entry = $d->read())) {
 				if ($entry == '.' || $entry == '..') {
 					continue;

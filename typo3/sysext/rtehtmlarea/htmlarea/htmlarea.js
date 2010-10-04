@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 7672 2010-05-25 13:55:00Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 8720 2010-08-29 00:38:43Z stan $
  */
 
 /***************************************************
@@ -1892,7 +1892,21 @@ HTMLArea._editorEvent = function(ev) {
 							if (editor._checkInsertP()) {
 								HTMLArea._stopEvent(ev);
 							}
-						}
+						} else if (HTMLArea.is_safari && !HTMLArea.is_chrome) {
+							var brNode = editor._doc.createElement('br');
+							editor.insertNodeAtSelection(brNode);
+							brNode.parentNode.normalize();
+								// Selection issue when an URL was detected
+							if (editor._unlinkOnUndo) {
+								brNode = brNode.parentNode.parentNode.insertBefore(brNode, brNode.parentNode.nextSibling);
+							}
+							if (!brNode.nextSibling || !/\S+/i.test(brNode.nextSibling.textContent)) {
+								var secondBrNode = editor._doc.createElement('br');
+								secondBrNode = brNode.parentNode.appendChild(secondBrNode);
+							}
+							editor.selectNode(brNode, false);
+							HTMLArea._stopEvent(ev);
+ 						}
 							// update the toolbar state after some time
 						if (editor._timerToolbar) window.clearTimeout(editor._timerToolbar);
 						editor._timerToolbar = window.setTimeout("HTMLArea.updateToolbar(\'" + editor._editorNumber + "\');", 200);

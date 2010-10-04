@@ -29,7 +29,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /*
- * TYPO3 SVN ID: $Id: htmlarea-gecko.js 7867 2010-06-10 15:22:23Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea-gecko.js 8912 2010-09-28 06:07:06Z stan $
  */
 
 /***************************************************
@@ -379,15 +379,20 @@ HTMLArea.prototype.getBookmarkNode = function(bookmark, endPoint) {
 HTMLArea.prototype.moveToBookmark = function (bookmark) {
 	var startSpan  = this.getBookmarkNode(bookmark, true);
 	var endSpan    = this.getBookmarkNode(bookmark, false);
-
+	var parent;
 	var range = this._createRange();
-		// If the previous sibling is a text node, let the anchorNode have it as parent
-	if (startSpan.previousSibling && startSpan.previousSibling.nodeType == 3) {
-		range.setStart(startSpan.previousSibling, startSpan.previousSibling.data.length);
+	if (startSpan) {
+			// If the previous sibling is a text node, let the anchorNode have it as parent
+		if (startSpan.previousSibling && startSpan.previousSibling.nodeType == 3) {
+			range.setStart(startSpan.previousSibling, startSpan.previousSibling.data.length);
+		} else {
+			range.setStartBefore(startSpan);
+		}
+		HTMLArea.removeFromParent(startSpan);
 	} else {
-		range.setStartBefore(startSpan);
+			// For some reason, the startSpan was removed or its id attribute was removed so that it cannot be retrieved
+		range.setStart(this._doc.body, 0);
 	}
-	HTMLArea.removeFromParent(startSpan);
 		// If the bookmarked range was collapsed, the end span will not be available
 	if (endSpan) {
 			// If the next sibling is a text node, let the focusNode have it as parent
@@ -718,7 +723,7 @@ HTMLArea.prototype._checkInsertP = function() {
 		}
 		p = df.firstChild;
 		if (p) {
-			if (!/\S/.test(p.innerHTML) || (p.childNodes.length == 1 && /^br$/i.test(p.firstChild.nodeName))) {
+			if (!/\S/.test(p.innerHTML) || (!/\S/.test(p.textContent) && !/<(img|hr|table)/i.test(p.innerHTML))) {
  				if (/^h[1-6]$/i.test(p.nodeName)) {
 					p = this.convertNode(p, "p");
 				}
@@ -728,7 +733,7 @@ HTMLArea.prototype._checkInsertP = function() {
 				if (!HTMLArea.is_opera) {
 					p.innerHTML = "<br />";
 				}
-				if(/^li$/i.test(p.nodeName) && left_empty && !block.nextSibling) {
+				if (/^li$/i.test(p.nodeName) && left_empty && (!block.nextSibling || !/^li$/i.test(block.nextSibling.nodeName))) {
 					left = block.parentNode;
 					left.removeChild(block);
 					range.setEndAfter(left);
@@ -737,7 +742,6 @@ HTMLArea.prototype._checkInsertP = function() {
 				}
 			}
 			range.insertNode(df);
-				// Remove any anchor created empty
 				// Remove any anchor created empty on both sides of the selection
 			if (p.previousSibling) {
 				var a = p.previousSibling.lastChild;
@@ -749,8 +753,15 @@ HTMLArea.prototype._checkInsertP = function() {
 			if (a && /^a$/i.test(a.nodeName) && !/\S/.test(a.innerHTML)) {
 				this.convertNode(a, 'br');
 			}
+				// Walk inside the deepest child element (presumably inline element)
+			while (p.firstChild && p.firstChild.nodeType == 1 && !/^(br|img|hr|table)$/i.test(p.firstChild.nodeName)) {
+				p = p.firstChild;
+			}
 			if (/^br$/i.test(p.nodeName)) {
-				p = p.parentNode.insertBefore(this._doc.createTextNode("\x20"), p);
+				p = p.parentNode.insertBefore(doc.createTextNode('\x20'), p);
+			} else if (!/\S/.test(p.innerHTML)) {
+					// Need some element inside the deepest element
+				p.appendChild(doc.createElement('br'));
 			}
 			this.selectNodeContents(p, true);
 		} else {

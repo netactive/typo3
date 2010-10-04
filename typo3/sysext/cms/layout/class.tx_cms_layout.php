@@ -27,7 +27,7 @@
 /**
  * Include file extending db_list.inc for use with the web_layout module
  *
- * $Id: class.tx_cms_layout.php 6192 2009-10-20 19:36:40Z rupi $
+ * $Id: class.tx_cms_layout.php 8703 2010-08-27 08:03:14Z baschny $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1161,7 +1161,7 @@ class tx_cms_layout extends recordList {
 		if ($dbCount)	{
 
 				// Set fields
-			$this->fieldArray = explode(',','__cmds__,'.$fList);
+			$this->fieldArray = t3lib_div::trimExplode(',', '__cmds__,' . $fList, TRUE);
 
 				// Header line is drawn
 			$theData = array();

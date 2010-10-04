@@ -31,7 +31,7 @@
  * Call ALL methods without making an object!
  * Eg. to get a page-record 51 do this: 't3lib_BEfunc::getRecord('pages',51)'
  *
- * $Id: class.t3lib_befunc.php 8414 2010-07-28 09:14:59Z ohader $
+ * $Id: class.t3lib_befunc.php 8877 2010-09-24 15:46:16Z stephenking $
  * Usage counts are based on search 22/2 2003 through whole backend source of typo3/
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
@@ -2187,36 +2187,40 @@ final class t3lib_BEfunc {
 				break;
 				case 'select':
 					if ($theColConf['MM']) {
-						// Display the title of MM related records in lists
-						if ($noRecordLookup) {
-							$MMfield = $theColConf['foreign_table'].'.uid';
-						} else	{
-							$MMfields = array($theColConf['foreign_table'].'.'.$TCA[$theColConf['foreign_table']]['ctrl']['label']);
-							foreach (t3lib_div::trimExplode(',', $TCA[$theColConf['foreign_table']]['ctrl']['label_alt'], 1) as $f)	{
-								$MMfields[] = $theColConf['foreign_table'].'.'.$f;
+						if ($uid) {
+							// Display the title of MM related records in lists
+							if ($noRecordLookup) {
+								$MMfield = $theColConf['foreign_table'].'.uid';
+							} else	{
+								$MMfields = array($theColConf['foreign_table'].'.'.$TCA[$theColConf['foreign_table']]['ctrl']['label']);
+								foreach (t3lib_div::trimExplode(',', $TCA[$theColConf['foreign_table']]['ctrl']['label_alt'], 1) as $f)	{
+									$MMfields[] = $theColConf['foreign_table'].'.'.$f;
+								}
+								$MMfield = join(',',$MMfields);
 							}
-							$MMfield = join(',',$MMfields);
-						}
 
-						$dbGroup = t3lib_div::makeInstance('t3lib_loadDBGroup');
-						$dbGroup->start($value, $theColConf['foreign_table'], $theColConf['MM'], $uid, $table, $theColConf);
-						$selectUids = $dbGroup->tableArray[$theColConf['foreign_table']];
+							$dbGroup = t3lib_div::makeInstance('t3lib_loadDBGroup');
+							$dbGroup->start($value, $theColConf['foreign_table'], $theColConf['MM'], $uid, $table, $theColConf);
+							$selectUids = $dbGroup->tableArray[$theColConf['foreign_table']];
 
-						if (is_array($selectUids) && count($selectUids)>0) {
-							$MMres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-								'uid, '.$MMfield,
-								$theColConf['foreign_table'],
-								'uid IN ('.implode(',', $selectUids).')'
-							);
-							while($MMrow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($MMres)) {
-								$mmlA[] = ($noRecordLookup?$MMrow['uid']:t3lib_BEfunc::getRecordTitle($theColConf['foreign_table'], $MMrow, FALSE, $forceResult));
-							}
-							$GLOBALS['TYPO3_DB']->sql_free_result($MMres);
+							if (is_array($selectUids) && count($selectUids)>0) {
+								$MMres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+									'uid, '.$MMfield,
+									$theColConf['foreign_table'],
+									'uid IN ('.implode(',', $selectUids).')'
+								);
+								while($MMrow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($MMres)) {
+									$mmlA[] = ($noRecordLookup?$MMrow['uid']:t3lib_BEfunc::getRecordTitle($theColConf['foreign_table'], $MMrow, FALSE, $forceResult));
+								}
+								$GLOBALS['TYPO3_DB']->sql_free_result($MMres);
 
-							if (is_array($mmlA)) {
-								$l = implode('; ', $mmlA);
+								if (is_array($mmlA)) {
+									$l = implode('; ', $mmlA);
+								} else {
+									$l = '';
+								}
 							} else {
-								$l = '';
+								$l = 'N/A';
 							}
 						} else {
 							$l = 'N/A';
@@ -3155,8 +3159,8 @@ final class t3lib_BEfunc {
 	public static function exec_foreign_table_where_query($fieldValue, $field = '', $TSconfig = array(), $prefix = '') {
 		global $TCA;
 
+		$foreign_table = $fieldValue['config'][$prefix . 'foreign_table'];
 		t3lib_div::loadTCA($foreign_table);
-		$foreign_table = $fieldValue['config'][$prefix.'foreign_table'];
 		$rootLevel = $TCA[$foreign_table]['ctrl']['rootLevel'];
 
 		$fTWHERE = $fieldValue['config'][$prefix.'foreign_table_where'];

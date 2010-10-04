@@ -32,7 +32,7 @@
  * @package TYPO3
  * @subpackage t3lib_error
  * @author Rupert Germann <rupi@gmx.li>
- * @version $Id: class.t3lib_error_errorhandler.php 6536 2009-11-25 14:07:18Z stucki $
+ * @version $Id: class.t3lib_error_errorhandler.php 8751 2010-09-03 21:14:00Z steffenk $
  */
 class t3lib_error_ErrorHandler implements t3lib_error_ErrorHandlerInterface {
 
@@ -98,6 +98,11 @@ class t3lib_error_ErrorHandler implements t3lib_error_ErrorHandlerInterface {
 		$message = 'PHP ' .$errorLevels[$errorLevel] . ': ' . $errorMessage . ' in ' . $errorFile . ' line ' . $errorLine;
 
 		if ($errorLevel & $this->exceptionalErrors) {
+			if (!class_exists('t3lib_error_Exception', FALSE)) {
+				require_once(PATH_t3lib . 'class.t3lib_exception.php');
+				require_once(PATH_t3lib . 'error/class.t3lib_error_exception.php');
+			}
+
 			throw new t3lib_error_Exception($message, 1);
 		} else {
 

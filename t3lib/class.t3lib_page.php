@@ -27,7 +27,7 @@
 /**
  * Contains a class with "Page functions" mainly for the frontend
  *
- * $Id: class.t3lib_page.php 8248 2010-07-21 14:35:33Z flyguide $
+ * $Id: class.t3lib_page.php 8574 2010-08-11 20:30:07Z lolli $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -1017,7 +1017,7 @@ class t3lib_pageSelect {
 					$hash,
 					$data,
 					array('ident_' . $ident),
-					$lifetime
+					intval($lifetime)
 				);
 			}
 		} else {

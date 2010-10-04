@@ -30,15 +30,9 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
- * @version $Id: class.t3lib_cache_manager.php 5595 2009-06-15 21:40:01Z flyguide $
+ * @version $Id: class.t3lib_cache_manager.php 8520 2010-08-07 10:55:15Z lolli $
  */
 class t3lib_cache_Manager implements t3lib_Singleton {
-
-	/**
-	 * @const Cache Entry depends on the PHP code of the packages
-	 */
-	const TAG_PACKAGES_CODE = '%PACKAGES_CODE%';
-
 	/**
 	 * @var t3lib_cache_Factory
 	 */

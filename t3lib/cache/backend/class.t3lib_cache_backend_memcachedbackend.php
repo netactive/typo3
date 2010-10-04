@@ -35,8 +35,7 @@
  *   xxx is identifier, value is array of associated tags. This is "reverse" tag
  *   index. It provides quick access for all tags associated with this identifier
  *   and used when removing the identifier
- * - tagIndex
- *   Value is a List of all tags (array)
+ *
  * Each key is prepended with a prefix. By default prefix consists from two parts
  * separated by underscore character and ends in yet another underscore character:
  * - "TYPO3"
@@ -51,7 +50,7 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
- * @version $Id: class.t3lib_cache_backend_memcachedbackend.php 7824 2010-06-06 13:44:59Z lolli $
+ * @version $Id: class.t3lib_cache_backend_memcachedbackend.php 8800 2010-09-16 16:17:08Z lolli $
  */
 class t3lib_cache_backend_MemcachedBackend extends t3lib_cache_backend_AbstractBackend {
 
@@ -262,7 +261,6 @@ class t3lib_cache_backend_MemcachedBackend extends t3lib_cache_backend_AbstractB
 
 			if ($success === TRUE) {
 				$this->removeIdentifierFromAllTags($entryIdentifier);
-				$this->addTagsToTagIndex($tags);
 				$this->addIdentifierToTags($entryIdentifier, $tags);
 			} else {
 				throw new t3lib_cache_Exception(
@@ -417,57 +415,6 @@ class t3lib_cache_backend_MemcachedBackend extends t3lib_cache_backend_AbstractB
 	}
 
 	/**
-	 * Returns an array with all known tags
-	 *
-	 * @return array
-	 * @author Karsten Dambekalns <karsten@typo3.org>
-	 * @internal
-	 */
-	protected function getTagIndex() {
-		$tagIndex = $this->memcache->get($this->identifierPrefix . 'tagIndex');
-		return ($tagIndex == false ? array() : (array)$tagIndex);
-	}
-
-	/**
-	 * Saves the tags known to the backend
-	 *
-	 * @param array Array of tags
-	 * @author Karsten Dambekalns <karsten@typo3.org>
-	 * @internal
-	 */
-	protected function setTagIndex(array $tags) {
-		$this->memcache->set($this->identifierPrefix . 'tagIndex', array_unique($tags), 0, 0);
-	}
-
-	/**
-	 * Adds the given tags to the tag index
-	 *
-	 * @param array Array of tags
-	 * @return void
-	 * @author Karsten Dambekalns <karsten@typo3.org>
-	 * @internal
-	 */
-	protected function addTagsToTagIndex(array $tags) {
-		if(count($tags)) {
-			$this->setTagIndex(array_merge($tags, $this->getTagIndex()));
-		}
-	}
-
-	/**
-	 * Removes the given tags from the tag index
-	 *
-	 * @param array $tags
-	 * @return void
-	 * @author Karsten Dambekalns <karsten@typo3.org>
-	 * @internal
-	 */
-	protected function removeTagsFromTagIndex(array $tags) {
-		if(count($tags)) {
-			$this->setTagIndex(array_diff($this->getTagIndex(), $tags));
-		}
-	}
-
-	/**
 	 * Associates the identifier with the given tags
 	 *
 	 * @param string $entryIdentifier
@@ -527,7 +474,6 @@ class t3lib_cache_backend_MemcachedBackend extends t3lib_cache_backend_AbstractB
 							$identifiers
 						);
 					} else {
-						$this->removeTagsFromTagIndex(array($tag));
 						$this->memcache->delete($this->identifierPrefix . 'tag_' . $tag);
 					}
 				}

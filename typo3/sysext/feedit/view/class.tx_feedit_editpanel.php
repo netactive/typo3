@@ -28,7 +28,7 @@
 /**
  * View class for the edit panels in frontend editing.
  *
- * $Id: class.tx_feedit_editpanel.php 5761 2009-08-05 10:05:29Z rupi $
+ * $Id: class.tx_feedit_editpanel.php 8821 2010-09-19 14:26:26Z benni $
  *
  * @author	Jeff Segars <jeff@webempoweredchurch.org>
  * @author	David Slayback <dave@webempoweredchurch.org>
@@ -110,9 +110,9 @@ class tx_feedit_editpanel {
 				}
 				if (isset($allow['new'])) {
 					if ($table == 'pages') {
-						$panel .= $this->editPanelLinkWrap('<img src="' . TYPO3_mainDir . 'gfx/new_page.gif" width="13" height="12" vspace="1" hspace="2" border="0" title="' . $GLOBALS['BE_USER']->extGetLL('p_newSubpage') . '" align="top" alt="" />', $formName, 'new', $currentRecord, '', $nPid);
+						$panel .= $this->editPanelLinkWrap('<img src="' . TYPO3_mainDir . 'gfx/new_page.gif" width="13" height="12" vspace="1" hspace="2" border="0" title="' . $GLOBALS['BE_USER']->extGetLL('p_newSubpage') . '" align="top" alt="" />', $formName, 'new', $currentRecord, '');
 					} else {
-						$panel .= $this->editPanelLinkWrap('<img src="' . TYPO3_mainDir . 'gfx/new_record.gif" width="16" height="12" vspace="1" hspace="2" border="0" title="' . $GLOBALS['BE_USER']->extGetLL('p_newRecordAfter') . '" align="top" alt="" />', $formName, 'new', $currentRecord, '', $nPid);
+						$panel .= $this->editPanelLinkWrap('<img src="' . TYPO3_mainDir . 'gfx/new_record.gif" width="16" height="12" vspace="1" hspace="2" border="0" title="' . $GLOBALS['BE_USER']->extGetLL('p_newRecordAfter') . '" align="top" alt="" />', $formName, 'new', $currentRecord, '', $newUID);
 					}
 				}
 					// Hiding in workspaces because implementation is incomplete, Hiding for localizations because it is unknown what should be the function in that case

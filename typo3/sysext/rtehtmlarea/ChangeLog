@@ -1,3 +1,18 @@
+2010-09-27  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #15730: htmlArea RTE: Problem editing a new list entry in list of items with inline markup
+
+2010-09-25  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #15430: htmlArea RTE: Text not editable after pasting with server-based cleaning
+	* Follow-up to bug #15430: htmlArea RTE: Text not editable after pasting with server-based cleaning
+	* Fixed bug #15749: htmlArea RTE: Firefox shows &amp; in external links with query string
+
+2010-08-28  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #15482: htmlArea RTE: Entering line breaks with Safari not possible in TYPO3 3.4.5
+	* Updated htmlArea RTE version to 1.8.12
+
 2010-07-27  Stanislas Rolland  <typo3@sjbr.ca>
 
 	* Fixed bug #15121: htmlArea RTE: Javascript Error in IE7 prevent Link dialogue from opening
