@@ -28,7 +28,7 @@ Ext.ns('TYPO3', 'TYPO3.configuration');
 /**
  * class to handle the workspace menu
  *
- * $Id: workspacemenu.js 8296 2010-07-27 21:28:17Z steffenk $
+ * $Id: workspacemenu.js 8827 2010-09-20 14:08:46Z francois $
  */
 var WorkspaceMenu = Class.create({
 
@@ -110,6 +110,8 @@ var WorkspaceMenu = Class.create({
 	 * toggles the workspace frontend preview
 	 */
 	toggleFrontendPreview: function(event) {
+		var clickedElement = Event.element(event);
+
 		var toggle = new Ajax.Request('ajax.php', {
 			parameters: 'ajaxID=WorkspaceMenu::toggleWorkspacePreview',
 			onSuccess: function(transport, response) {
@@ -118,11 +120,11 @@ var WorkspaceMenu = Class.create({
 
 				if (response.newWorkspacePreviewState === '1') {
 					TYPO3.configuration.workspaceFrontendPreviewEnabled = 1;
-					Event.element(event).previous().removeClassName(stateInactiveClass).addClassName(stateActiveClass);
+					clickedElement.previous().removeClassName(stateInactiveClass).addClassName(stateActiveClass);
 					top.WorkspaceFrontendPreviewEnabled = true;
 				} else {
 					TYPO3.configuration.workspaceFrontendPreviewEnabled = 0;
-					Event.element(event).previous().removeClassName(stateActiveClass).addClassName(stateInactiveClass);
+					clickedElement.previous().removeClassName(stateActiveClass).addClassName(stateInactiveClass);
 					top.WorkspaceFrontendPreviewEnabled = false;
 				}
 			}
@@ -144,12 +146,16 @@ var WorkspaceMenu = Class.create({
 	 * switches the workspace, reloads the module menu, and the content frame
 	 */
 	switchWorkspace: function(event) {
-		var workspaceId = Event.element(event).identify().substring(3);
+		var clickedElement = Event.element(event);
+		var workspaceId = clickedElement.identify().substring(3);
 
 		var switchRequest = new Ajax.Request('ajax.php', {
 			parameters: 'ajaxID=WorkspaceMenu::setWorkspace&workspaceId=' + workspaceId,
 			onSuccess: function(transport, response) {
-				TYPO3.configuration.inWorkspace = response.setWorkspaceId === 0 ? 0 : 1;
+				if (!response.setWorkspaceId) {
+					response.setWorkspaceId = 0;
+				}
+				top.TYPO3.configuration.inWorkspace = response.setWorkspaceId === 0 ? 0 : 1;
 
 					// first remove all checks, then set the check in front of the selected workspace
 				var stateActiveClass = 't3-icon t3-icon-status t3-icon-status-status t3-icon-status-checked';
@@ -160,8 +166,8 @@ var WorkspaceMenu = Class.create({
 				$$('#workspace-selector-menu li.selected')[0].removeClassName('selected');
 
 					// add "selected" class and checkmark
-				Event.element(event).previous().removeClassName(stateInactiveClass).addClassName(stateActiveClass);
-				Event.element(event).up().addClassName('selected');
+				clickedElement.previous().removeClassName(stateInactiveClass).addClassName(stateActiveClass);
+				clickedElement.up().addClassName('selected');
 
 					// when in web module reload, otherwise send the user to the web module
 				if (currentModuleLoaded.startsWith('web_')) {

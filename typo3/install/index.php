@@ -27,7 +27,7 @@
 /**
  * Starter-script for install screen
  *
- * $Id: index.php 8157 2010-07-11 12:45:16Z psychomieze $
+ * $Id: index.php 8610 2010-08-19 10:02:02Z francois $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @package TYPO3
@@ -46,7 +46,12 @@ if (defined('E_DEPRECATED')) {
 	error_reporting(E_ALL ^ E_NOTICE);
 }
 
-$PATH_thisScript = str_replace('//','/', str_replace('\\','/', (PHP_SAPI=='cgi'||PHP_SAPI=='isapi' ||PHP_SAPI=='cgi-fcgi')&&($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED'])? ($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED']):($_SERVER['ORIG_SCRIPT_FILENAME']?$_SERVER['ORIG_SCRIPT_FILENAME']:$_SERVER['SCRIPT_FILENAME'])));
+$PATH_thisScript = str_replace('//', '/', str_replace('\\', '/',
+	(PHP_SAPI == 'fpm-fcgi' || PHP_SAPI == 'cgi' || PHP_SAPI == 'isapi' || PHP_SAPI == 'cgi-fcgi') &&
+	($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) ?
+	($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) :
+	($_SERVER['ORIG_SCRIPT_FILENAME'] ? $_SERVER['ORIG_SCRIPT_FILENAME'] : $_SERVER['SCRIPT_FILENAME'])));
+
 $PATH_site = dirname(dirname(dirname($PATH_thisScript)));
 
 $quickstartFile = $PATH_site . '/typo3conf/FIRST_INSTALL';

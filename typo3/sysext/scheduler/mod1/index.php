@@ -36,7 +36,7 @@ $BE_USER->modAccess($MCONF, 1); // This checks permissions and exits if the user
  * @author		Ingo Renner <ingo@typo3.org>
  * @package		TYPO3
  * @subpackage	tx_scheduler
- * @version		$Id: index.php 8177 2010-07-13 18:40:31Z francois $
+ * @version		$Id: index.php 8576 2010-08-12 11:48:21Z xperseguers $
  */
 class tx_scheduler_Module extends t3lib_SCbase {
 
@@ -975,6 +975,7 @@ class tx_scheduler_Module extends t3lib_SCbase {
 		$query = array(
 			'SELECT'  => '*',
 			'FROM'    => 'tx_scheduler_task',
+			'WHERE'   => '1=1',
 			'ORDERBY' => 'nextexecution'
 		);
 

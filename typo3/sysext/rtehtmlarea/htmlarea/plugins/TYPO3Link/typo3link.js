@@ -27,7 +27,7 @@
 /*
  * TYPO3Link plugin for htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: typo3link.js 8291 2010-07-27 20:58:25Z stan $
+ * TYPO3 SVN ID: $Id: typo3link.js 8735 2010-08-29 20:09:59Z stan $
  */
 HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {
@@ -131,7 +131,7 @@ HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 			});
 		} else {
 			if (buttonId === "UnLink") {
-				this.unLink();
+				this.unLink(true);
 				return false;
 			}
 			var additionalParameter;
@@ -248,12 +248,19 @@ HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 	},
 	
 	/*
-	* Unlink the selection.
-	* This function is called from the TYPO3 link popup and from the context menu.
-	*/
-	unLink : function() {
+	 * Unlink the selection.
+	 * This function is called from the TYPO3 link popup and from unlink button pressed in toolbar or context menu.
+	 *
+	 * @param	string	buttonPressd: true if the unlink button was pressed
+	 *
+	 * @return void
+	 */
+	unLink: function (buttonPressed) {
 		this.editor.focus();
-		this.restoreSelection();
+			// If no dialogue window was opened, the selection should not be restored
+		if (!buttonPressed) {
+			this.restoreSelection();
+		}
 		var node = this.editor.getParentElement();
 		var el = HTMLArea.getElementObject(node, "a");
 		if (el != null && /^a$/i.test(el.nodeName)) node = el;
@@ -412,19 +419,37 @@ HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 	 * This function gets called when the toolbar is updated
 	 */
 	onUpdateToolbar: function (button, mode, selectionEmpty, ancestors) {
-		if (mode === 'wysiwyg' && this.editor.isEditable() && button.itemId === 'CreateLink') {
-			button.setDisabled(selectionEmpty && !button.isInContext(mode, selectionEmpty, ancestors));
-			if (!button.disabled) {
-				var node = this.editor.getParentElement();
-				var el = HTMLArea.getElementObject(node, 'a');
-				if (el != null && /^a$/i.test(el.nodeName)) {
-					node = el;
-				}
-				if (node != null && /^a$/i.test(node.nodeName)) {
-					button.setTooltip({ title: this.localize('Modify link') });
-				} else {
-					button.setTooltip({ title: this.localize('Insert link') });
-				}
+		if (mode === 'wysiwyg' && this.editor.isEditable()) {
+			switch (button.itemId) {
+				case 'CreateLink':
+					button.setDisabled(selectionEmpty && !button.isInContext(mode, selectionEmpty, ancestors));
+					if (!button.disabled) {
+						var node = this.editor.getParentElement();
+						var el = HTMLArea.getElementObject(node, 'a');
+						if (el != null && /^a$/i.test(el.nodeName)) {
+							node = el;
+						}
+						if (node != null && /^a$/i.test(node.nodeName)) {
+							button.setTooltip({ title: this.localize('Modify link') });
+						} else {
+							button.setTooltip({ title: this.localize('Insert link') });
+						}
+					}
+					break;
+				case 'UnLink':
+					var link = false;
+						// Let's see if a link was double-clicked in Firefox
+					if (Ext.isGecko && !selectionEmpty) {
+						var range = this.editor._createRange(this.editor._getSelection());
+						if (range.startContainer.nodeType == 1 && range.startContainer == range.endContainer && (range.endOffset - range.startOffset == 1)) {
+							var node = range.startContainer.childNodes[range.startOffset];
+							if (node && /^a$/i.test(node.nodeName) && node.textContent == range.toString()) {
+								link = true;
+							}
+						}
+					}
+					button.setDisabled(!link && !button.isInContext(mode, selectionEmpty, ancestors));
+					break;
 			}
 		}
 	}

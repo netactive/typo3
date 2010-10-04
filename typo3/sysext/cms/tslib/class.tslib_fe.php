@@ -32,7 +32,7 @@
  * The class is instantiated as $GLOBALS['TSFE'] in index_ts.php.
  * The use of this class should be inspired by the order of function calls as found in index_ts.php.
  *
- * $Id: class.tslib_fe.php 8429 2010-07-28 09:19:00Z ohader $
+ * $Id: class.tslib_fe.php 8825 2010-09-20 13:31:50Z francois $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -253,7 +253,7 @@
 	 * @var t3lib_TStemplate
 	 */
 	var $tmpl='';
-	var $cacheTimeOutDefault='';		// Is set to the time-to-live time of cached pages. If false, default is 60*60*24, which is 24 hours.
+	var $cacheTimeOutDefault = FALSE;		// Is set to the time-to-live time of cached pages. If false, default is 60*60*24, which is 24 hours.
 	var $cacheContentFlag = 0;			// Set internally if cached content is fetched from the database
 	var $cacheExpires=0;				// Set to the expire time of cached content
 	var $isClientCachable=FALSE;		// Set if cache headers allowing caching are sent.
@@ -2418,7 +2418,13 @@
 			# so we set all except LC_NUMERIC
 			$locale = setlocale(LC_COLLATE, $this->config['config']['locale_all']);
 			if ($locale) {
-				setlocale(LC_CTYPE, $this->config['config']['locale_all']);
+
+					// PHP fatals with uppercase I characters in method names with turkish locale LC_CTYPE
+					// @see http://bugs.php.net/bug.php?id=35050
+				if (substr($this->config['config']['locale_all'], 0, 2) != 'tr') {
+					setlocale(LC_CTYPE, $this->config['config']['locale_all']);
+				}
+
 				setlocale(LC_MONETARY, $this->config['config']['locale_all']);
 				setlocale(LC_TIME, $this->config['config']['locale_all']);
 
@@ -2637,7 +2643,7 @@
 				$hArr = array(
 					$this->jumpurl,
 					t3lib_div::_GP('locationData'),
-					t3lib_div::_GP('mimeType'),
+					(string)t3lib_div::_GP('mimeType'), // Need a type cast here because mimeType is optional!
 					$this->TYPO3_CONF_VARS['SYS']['encryptionKey']
 				);
 				$calcJuHash=t3lib_div::shortMD5(serialize($hArr));
@@ -2651,7 +2657,7 @@
 								$mimeType = $mimeType ? $mimeType : 'application/octet-stream';
 								header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 								header('Content-Type: '.$mimeType);
-								header('Content-Disposition: attachment; filename='.basename($this->jumpurl));
+								header('Content-Disposition: attachment; filename="'.basename($this->jumpurl) . '"');
 								readfile($this->jumpurl);
 								exit;
 							} else die('jumpurl Secure: "'.$this->jumpurl.'" was not a valid file!');
@@ -4216,6 +4222,7 @@ if (version == "n3") {
 			$this->content = str_replace('"' . TYPO3_mainDir . 'ext/', '"' . $this->absRefPrefix . TYPO3_mainDir . 'ext/', $this->content);
 			$this->content = str_replace('"' . TYPO3_mainDir . 'sysext/' , '"' . $this->absRefPrefix . TYPO3_mainDir . 'sysext/', $this->content);
 			$this->content = str_replace('"'.$GLOBALS['TYPO3_CONF_VARS']['BE']['fileadminDir'], '"'.$this->absRefPrefix.$GLOBALS['TYPO3_CONF_VARS']['BE']['fileadminDir'], $this->content);
+			$this->content = str_replace('"' . $GLOBALS['TYPO3_CONF_VARS']['BE']['RTE_imageStorageDir'], '"' . $this->absRefPrefix . $GLOBALS['TYPO3_CONF_VARS']['BE']['RTE_imageStorageDir'], $this->content);
 			// Process additional directories
 			$directories = t3lib_div::trimExplode(',', $GLOBALS['TYPO3_CONF_VARS']['FE']['additionalAbsRefPrefixDirectories'], true);
 			foreach ($directories as $directory) {
@@ -4630,7 +4637,7 @@ if (version == "n3") {
 	function get_cache_timeout() {
 			// Cache period was set for the page:
 		if ($this->page['cache_timeout']) {
-			$cacheTimeout = $this->page['cache_timeout'];
+			$cacheTimeout = intval($this->page['cache_timeout']);
 			// Cache period was set for the whole site:
 		} elseif ($this->cacheTimeOutDefault) {
 			$cacheTimeout = $this->cacheTimeOutDefault;

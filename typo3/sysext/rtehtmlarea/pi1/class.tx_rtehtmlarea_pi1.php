@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_pi1.php 7307 2010-04-12 16:17:20Z benni $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_pi1.php 8688 2010-08-24 23:02:56Z stan $
  *
  */
 
@@ -226,7 +226,7 @@ class tx_rtehtmlarea_pi1 {
 				// Parsing the input HTML
 			$parser = xml_parser_create(strtoupper($this->parserCharset));
 			xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
-			xml_set_object($parser, &$this);
+			xml_set_object($parser, $this);
 			if (!xml_set_element_handler($parser, 'startHandler', 'endHandler')) echo('Bad xml handler setting');
 			if (!xml_set_character_data_handler($parser, 'collectDataHandler')) echo('Bad xml handler setting');
 			if (!xml_set_default_handler($parser, 'defaultHandler')) echo('Bad xml handler setting');

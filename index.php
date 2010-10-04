@@ -28,7 +28,7 @@
  * This is the MAIN DOCUMENT of the TypoScript driven standard front-end (from the "cms" extension)
  * Basically this is the "index.php" script which all requests for TYPO3 delivered pages goes to in the frontend (the website)
  *
- * $Id: index.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: index.php 8610 2010-08-19 10:02:02Z francois $
  *
  * @author	René Fritz <r.fritz@colorcube.de>
  * @package TYPO3
@@ -50,7 +50,11 @@ if (defined('E_DEPRECATED')) {
 // Constants defined
 // ******************
 
-define('PATH_thisScript',str_replace('//','/', str_replace('\\','/', (PHP_SAPI=='cgi'||PHP_SAPI=='isapi' ||PHP_SAPI=='cgi-fcgi')&&($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED'])? ($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED']):($_SERVER['ORIG_SCRIPT_FILENAME']?$_SERVER['ORIG_SCRIPT_FILENAME']:$_SERVER['SCRIPT_FILENAME']))));
+define('PATH_thisScript', str_replace('//', '/', str_replace('\\', '/',
+	(PHP_SAPI == 'fpm-fcgi' || PHP_SAPI == 'cgi' || PHP_SAPI == 'isapi' || PHP_SAPI == 'cgi-fcgi') &&
+	($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) ?
+	($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) :
+	($_SERVER['ORIG_SCRIPT_FILENAME'] ? $_SERVER['ORIG_SCRIPT_FILENAME'] : $_SERVER['SCRIPT_FILENAME']))));
 
 define('PATH_site', dirname(PATH_thisScript).'/');
 

@@ -31,7 +31,7 @@
  * The main class, tslib_menu, is also extended by other external PHP scripts such as the GMENU_LAYERS and GMENU_FOLDOUT scripts which creates pop-up menus.
  * Notice that extension classes (like "tslib_tmenu") must have their suffix (here "tmenu") listed in $this->tmpl->menuclasses - otherwise they cannot be instantiated.
  *
- * $Id: class.tslib_menu.php 8157 2010-07-11 12:45:16Z psychomieze $
+ * $Id: class.tslib_menu.php 8850 2010-09-22 08:29:44Z steffenk $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -221,6 +221,7 @@ class tslib_menu {
 			case 'xhtml_strict':
 			case 'xhtml_11':
 			case 'xhtml_2':
+            case 'html_5':
 				$this->nameAttribute = 'id';
 				break;
 			default:
@@ -1375,7 +1376,9 @@ class tslib_menu {
 
 			if ($submenu->start($this->tmpl, $this->sys_page, $uid, $this->conf, $this->menuNumber+1, $objSuffix))	{
 				$submenu->makeMenu();
-				return $submenu->writeMenu();
+				$content = $submenu->writeMenu();
+				$GLOBALS['TSFE']->register['count_menuItems'] = count($this->menuArr);
+				return $content;
 			}
 		}
 	}

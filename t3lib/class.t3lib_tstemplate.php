@@ -27,7 +27,7 @@
 /**
  * Class with template object that is responsible for generating the template
  *
- * $Id: class.t3lib_tstemplate.php 8157 2010-07-11 12:45:16Z psychomieze $
+ * $Id: class.t3lib_tstemplate.php 8772 2010-09-09 09:19:45Z dmitry $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -279,6 +279,7 @@ class t3lib_TStemplate	{
 			if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
 				$currentPageData = unserialize($row['content']);
 			}
+			$GLOBALS['TYPO3_DB']->sql_free_result($res);
 		}
 
 		return $currentPageData;

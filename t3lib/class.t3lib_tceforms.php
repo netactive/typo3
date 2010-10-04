@@ -27,7 +27,7 @@
 /**
  * Contains TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: class.t3lib_tceforms.php 8493 2010-08-05 18:45:15Z ohader $
+ * $Id: class.t3lib_tceforms.php 8898 2010-09-25 22:31:45Z stan $
  * Revised for TYPO3 3.6 August/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2542,6 +2542,11 @@ class t3lib_TCEforms	{
 						$PA['_lang'] = $lang;
 						$PA['_cshFile'] = ((isset($dataStruct['ROOT']['TCEforms']) && isset($dataStruct['ROOT']['TCEforms']['cshFile'])) ? $dataStruct['ROOT']['TCEforms']['cshFile'] : '');
 
+							// Push the sheet level tab to DynNestedStack
+						if (is_array($dataStructArray['sheets'])) {
+							$tabIdentString = $GLOBALS['TBE_TEMPLATE']->getDynTabMenuId('TCEFORMS:flexform:' . $PA['itemFormElName'] . $PA['_lang']);
+							$this->pushToDynNestedStack('tab', $tabIdentString . '-' . (count($tabParts)+1));
+						}
 							// Render flexform:
 						$tRows = $this->getSingleField_typeFlex_draw(
 									$dataStruct['ROOT']['el'],
@@ -2557,6 +2562,11 @@ class t3lib_TCEforms	{
 
 			#			$item = '<div style=" position:absolute;">'.$item.'</div>';
 						//visibility:hidden;
+
+							// Pop the sheet level tab from DynNestedStack
+						if (is_array($dataStructArray['sheets'])) {
+							$this->popFromDynNestedStack('tab', $tabIdentString . '-' . (count($tabParts)+1));
+						}
 					} else $sheetContent='Data Structure ERROR: No ROOT element found for sheet "'.$sheet.'".';
 
 						// Add to tab:
@@ -2797,6 +2807,9 @@ class t3lib_TCEforms	{
 							$s = t3lib_div::revExplode('[]',$formPrefix,2);
 							$actionFieldName = '_ACTION_FLEX_FORM'.$PA['itemFormElName'].$s[0].'][_ACTION]['.$s[1];
 
+								// Push the container to DynNestedStack as it may be toggled							
+							$this->pushToDynNestedStack('flex' , $idTagPrefix);
+
 								// Putting together the container:
 							$this->additionalJS_delete = array();
 							$output.= '
@@ -2821,6 +2834,9 @@ class t3lib_TCEforms	{
 								</div>';
 							$output = str_replace('/*###REMOVE###*/', t3lib_div::slashJS(htmlspecialchars(implode('', $this->additionalJS_delete))), $output);
 									// NOTICE: We are saving the toggle-state directly in the flexForm XML and "unauthorized" according to the data structure. It means that flexform XML will report unclean and a cleaning operation will remove the recorded togglestates. This is not a fatal problem. Ideally we should save the toggle states in meta-data but it is much harder to do that. And this implementation was easy to make and with no really harmful impact.
+
+								// Pop the container from DynNestedStack
+							$this->popFromDynNestedStack('flex' , $idTagPrefix);
 						}
 
 						// If it's a "single form element":
@@ -5090,6 +5106,7 @@ class t3lib_TCEforms	{
 		$out = '<fieldset class="t3-form-palette-fieldset">';
 		for ($i = 0; $i <= $row; $i++) {
 			$out .= implode($iRow[$i]);
+			$out .= ($i < $row ? '<br />' : '');
 		}
 		$out .= '</fieldset>';
 		return $out;
@@ -6073,12 +6090,28 @@ class t3lib_TCEforms	{
 				$output = $GLOBALS['BE_USER']->isAdmin() ? TRUE : FALSE;
 			break;
 			case 'VERSION':
-				switch((string)$parts[1])	{
+				switch((string)$parts[1]) {
 					case 'IS':
-						if (strtolower($parts[2])=='true')	{
-							$output = intval($row['pid'])==-1 ? TRUE : FALSE;
-						} elseif (strtolower($parts[2])=='false') {
-							$output = !(intval($row['pid'])==-1) ? TRUE : FALSE;
+						$isNewRecord = (intval($row['uid']) > 0 ? FALSE : TRUE);
+
+							// detection of version can be done be detecting the workspace of the user
+						$isUserInWorkspace = ($GLOBALS['BE_USER']->workspace > 0 ? TRUE : FALSE);
+						if (intval($row['pid']) == -1 || intval($row['_ORIG_pid']) == -1) {
+							$isRecordDetectedAsVersion = TRUE;
+						} else {
+							$isRecordDetectedAsVersion = FALSE;
+						}
+
+							// New records in a workspace are not handled as a version record
+							// if it's no new version, we detect versions like this: 
+							// -- if user is in workspace: always true
+							// -- if editor is in live ws: only true if pid == -1
+						$isVersion = ($isUserInWorkspace || $isRecordDetectedAsVersion) && !$isNewRecord;
+
+						if (strtolower($parts[2]) == 'true') {
+							$output = $isVersion;
+						} else if (strtolower($parts[2]) == 'false') {
+							$output = !$isVersion;
 						}
 					break;
 				}

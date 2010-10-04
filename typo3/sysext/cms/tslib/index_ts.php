@@ -30,7 +30,7 @@
  * The script configures constants, includes libraries and does a little logic here and there in order to instantiate the right classes to create the webpage.
  * All the real data processing goes on in the "tslib/" classes which this script will include and use as needed.
  *
- * $Id: index_ts.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: index_ts.php 8610 2010-08-19 10:02:02Z francois $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -60,7 +60,14 @@ $TYPO3_MISC['microtime_start'] = microtime(true);
 define('TYPO3_OS', stristr(PHP_OS,'win')&&!stristr(PHP_OS,'darwin')?'WIN':'');
 define('TYPO3_MODE','FE');
 
-if (!defined('PATH_thisScript')) 	define('PATH_thisScript',str_replace('//','/', str_replace('\\','/', (PHP_SAPI=='cgi'||PHP_SAPI=='isapi' ||PHP_SAPI=='cgi-fcgi')&&($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED'])? ($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED']):($_SERVER['ORIG_SCRIPT_FILENAME']?$_SERVER['ORIG_SCRIPT_FILENAME']:$_SERVER['SCRIPT_FILENAME']))));
+if(!defined('PATH_thisScript')) {
+	define('PATH_thisScript', str_replace('//', '/', str_replace('\\', '/',
+		(PHP_SAPI == 'fpm-fcgi' || PHP_SAPI == 'cgi' || PHP_SAPI == 'isapi' || PHP_SAPI == 'cgi-fcgi') &&
+		($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) ?
+		($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) :
+		($_SERVER['ORIG_SCRIPT_FILENAME'] ? $_SERVER['ORIG_SCRIPT_FILENAME'] : $_SERVER['SCRIPT_FILENAME']))));
+}
+
 if (!defined('PATH_site')) 			define('PATH_site', dirname(PATH_thisScript).'/');
 if (!defined('PATH_t3lib')) 		define('PATH_t3lib', PATH_site.'t3lib/');
 

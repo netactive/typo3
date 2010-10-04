@@ -27,7 +27,7 @@
 /**
  * The Inline-Relational-Record-Editing (IRRE) functions as part of the TCEforms.
  *
- * $Id: class.t3lib_tceforms_inline.php 8157 2010-07-11 12:45:16Z psychomieze $
+ * $Id: class.t3lib_tceforms_inline.php 8790 2010-09-14 22:29:50Z stan $
  *
  * @author	Oliver Hader <oh@inpublica.de>
  */
@@ -387,8 +387,6 @@ class t3lib_TCEforms_inline {
 		$nameObject = $this->inlineNames['object'];
 		$appendFormFieldNames = '['.$foreign_table.']['.$rec['uid'].']';
 		$objectId = $nameObject . self::Structure_Separator . $foreign_table . self::Structure_Separator . $rec['uid'];
-			// Put the current level also to the dynNestedStack of TCEforms:
-		$this->fObj->pushToDynNestedStack('inline', $objectId);
 
 		if (!$isVirtualRecord) {
 				// Get configuration:
@@ -436,7 +434,9 @@ class t3lib_TCEforms_inline {
 		if ($config['renderFieldsOnly']) {
 			$out = $fields . $combination;
 		} else {
-			// set the record container with data for output
+				// Put the current level also to the dynNestedStack of TCEforms:
+			$this->fObj->pushToDynNestedStack('inline', $objectId);
+				// set the record container with data for output
 			$out = '<div class="t3-form-field-record-inline" id="' . $objectId . '_fields"' . $appearanceStyleFields . '>' . $fields . $combination . '</div>';
 			$header = $this->renderForeignRecordHeader($parentUid, $foreign_table, $rec, $config, $isVirtualRecord);
 			$out = '<div class="t3-form-field-header-inline" id="' . $objectId . '_header">' . $header . '</div>' . $out;
@@ -444,10 +444,9 @@ class t3lib_TCEforms_inline {
 			$classMSIE = ($this->fObj->clientInfo['BROWSER']=='msie' && $this->fObj->clientInfo['VERSION'] < 8 ? 'MSIE' : '');
 			$class = 'inlineDiv' . $classMSIE . ($isNewRecord ? ' inlineIsNewRecord' : '');
 			$out = '<div id="' . $objectId . '_div" class="t3-form-field-container-inline '.$class.'">' . $out . '</div>';
+				// Remove the current level also from the dynNestedStack of TCEforms:
+			$this->fObj->popFromDynNestedStack();
 		}
-			// Remove the current level also from the dynNestedStack of TCEforms:
-		$this->fObj->popFromDynNestedStack();
-
 		return $out;
 	}
 
@@ -1201,9 +1200,6 @@ class t3lib_TCEforms_inline {
 			return $this->getErrorMessageForAJAX('Access denied');
 		}
 
-			// Encode TCEforms AJAX response with utf-8:
-		$item = $GLOBALS['LANG']->csConvObj->utf8_encode($item, $GLOBALS['LANG']->charSet);
-
 		if (!$current['uid']) {
 			$jsonArray = array(
 				'data'	=> $item,
@@ -1311,9 +1307,6 @@ class t3lib_TCEforms_inline {
 		if($item === false) {
 			return $this->getErrorMessageForAJAX('Access denied');
 		}
-
-			// Encode TCEforms AJAX response with utf-8:
-		$item = $GLOBALS['LANG']->csConvObj->utf8_encode($item, $GLOBALS['LANG']->charSet);
 
 		$jsonArray = array(
 			'data'	=> $item,

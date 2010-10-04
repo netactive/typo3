@@ -8,7 +8,7 @@
  * 'IM' is short for 'ImageMagick', which is an external image manipulation package available from www.imagemagick.org. Version is ABSOLUTELY preferred to be 4.2.9, but may be 5+. See the install notes for TYPO3!!
  * 'GD' is short for 'GDLib/FreeType', which are libraries that should be compiled into PHP4. GDLib <=1.3 supports GIF, while the latest version 1.8.x and 2.x supports only PNG. GDLib is available from www.boutell.com/gd/. Freetype has a link from there.
  *
- * $Id: config_default.php 8505 2010-08-06 09:08:04Z benni $
+ * $Id: config_default.php 8922 2010-09-28 14:37:20Z benni $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -106,24 +106,24 @@ $TYPO3_CONF_VARS = array(
 		'reverseProxySSL' => '',				// String: '*' or list of IP addresses of proxies that use SSL (https) for the connection to the client, but an unencrypted connection (http) to the server. If '*' all proxies defined in SYS[reverseProxyIP] use SSL.
 		'reverseProxyPrefixSSL' => '',				// String: prefix to be added to the internal URL (SCRIPT_NAME and REQUEST_URI) when accessing the server via an SSL proxy. This setting overrides SYS[reverseProxyPrefix].
 		'caching' => array(
-			'defaultFrontend' => 't3lib_cache_frontend_VariableFrontend',
-			'defaultBackend'  => 't3lib_cache_backend_FileBackend',
 			'cacheFrontends' => array(
 				't3lib_cache_frontend_VariableFrontend' => 't3lib/cache/frontend/class.t3lib_cache_frontend_variablefrontend.php:t3lib_cache_frontend_VariableFrontend',
 				't3lib_cache_frontend_StringFrontend'   => 't3lib/cache/frontend/class.t3lib_cache_frontend_stringfrontend.php:t3lib_cache_frontend_StringFrontend',
 				't3lib_cache_frontend_PhpFrontend'      => 't3lib/cache/frontend/class.t3lib_cache_frontend_phpfrontend.php:t3lib_cache_frontend_PhpFrontend',
 			),
 			'cacheBackends' => array(
-				't3lib_cache_backend_DbBackend'        => 't3lib/cache/backend/class.t3lib_cache_backend_dbbackend.php:t3lib_cache_backend_DbBackend',
-				't3lib_cache_backend_FileBackend'      => 't3lib/cache/backend/class.t3lib_cache_backend_filebackend.php:t3lib_cache_backend_FileBackend',
-				't3lib_cache_backend_GlobalsBackend'   => 't3lib/cache/backend/class.t3lib_cache_backend_globalsbackend.php:t3lib_cache_backend_GlobalsBackend',
-				't3lib_cache_backend_MemcachedBackend' => 't3lib/cache/backend/class.t3lib_cache_backend_memcachedbackend.php:t3lib_cache_backend_MemcachedBackend',
-				't3lib_cache_backend_PdoBackend'       => 't3lib/cache/backend/class.t3lib_cache_backend_pdobackend.php:t3lib_cache_backend_PdoBackend',
-				't3lib_cache_backend_ApcBackend'       => 't3lib/cache/backend/class.t3lib_cache_backend_apcbackend.php:t3lib_cache_backend_ApcBackend',
-				't3lib_cache_backend_NullBackend'      => 't3lib/cache/backend/class.t3lib_cache_backend_nullbackend.php:t3lib_cache_backend_NullBackend'
+				't3lib_cache_backend_DbBackend'              => 't3lib/cache/backend/class.t3lib_cache_backend_dbbackend.php:t3lib_cache_backend_DbBackend',
+				't3lib_cache_backend_FileBackend'            => 't3lib/cache/backend/class.t3lib_cache_backend_filebackend.php:t3lib_cache_backend_FileBackend',
+				't3lib_cache_backend_GlobalsBackend'         => 't3lib/cache/backend/class.t3lib_cache_backend_globalsbackend.php:t3lib_cache_backend_GlobalsBackend',
+				't3lib_cache_backend_MemcachedBackend'       => 't3lib/cache/backend/class.t3lib_cache_backend_memcachedbackend.php:t3lib_cache_backend_MemcachedBackend',
+				't3lib_cache_backend_PdoBackend'             => 't3lib/cache/backend/class.t3lib_cache_backend_pdobackend.php:t3lib_cache_backend_PdoBackend',
+				't3lib_cache_backend_ApcBackend'             => 't3lib/cache/backend/class.t3lib_cache_backend_apcbackend.php:t3lib_cache_backend_ApcBackend',
+				't3lib_cache_backend_NullBackend'            => 't3lib/cache/backend/class.t3lib_cache_backend_nullbackend.php:t3lib_cache_backend_NullBackend',
+				't3lib_cache_backend_TransientMemoryBackend' => 't3lib/cache/backend/class.t3lib_cache_backend_transientmemorybackend.php:t3lib_cache_backend_TransientMemoryBackend',
 			),
 			'cacheConfigurations' => array(
 				'cache_hash' => array(
+					'frontend' => 't3lib_cache_frontend_VariableFrontend',
 					'backend' => 't3lib_cache_backend_DbBackend',
 					'options' => array(
 						'cacheTable' => 'cachingframework_cache_hash',
@@ -131,6 +131,7 @@ $TYPO3_CONF_VARS = array(
 					)
 				),
 				'cache_pages' => array(
+					'frontend' => 't3lib_cache_frontend_VariableFrontend',
 					'backend' => 't3lib_cache_backend_DbBackend',
 					'options' => array(
 						'cacheTable' => 'cachingframework_cache_pages',
@@ -138,6 +139,7 @@ $TYPO3_CONF_VARS = array(
 					)
 				),
 				'cache_pagesection' => array(
+					'frontend' => 't3lib_cache_frontend_VariableFrontend',
 					'backend' => 't3lib_cache_backend_DbBackend',
 					'options' => array(
 						'cacheTable' => 'cachingframework_cache_pagesection',
@@ -388,7 +390,7 @@ $TYPO3_CONF_VARS = array(
 $T3_VAR = array();	// Initialize.
 
 	// TYPO3 version
-$TYPO_VERSION = '4.4.2';	// deprecated: use the constants defined below
+$TYPO_VERSION = '4.4.3';	// deprecated: use the constants defined below
 define('TYPO3_version', $TYPO_VERSION);
 define('TYPO3_branch', '4.4');
 define('TYPO3_copyright_year', '1998-2010');

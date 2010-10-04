@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 8420 2010-07-28 09:15:53Z ohader $
+ * $Id: class.tslib_content.php 8741 2010-08-30 13:53:27Z stan $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2831,6 +2831,10 @@ class tslib_cObj {
 				}
 		}
 
+		if ($conf['stdWrap.']) {
+			$content = $this->stdWrap($content, $conf['stdWrap.']);
+		}
+
 		return $content;
 	}
 
@@ -3122,13 +3126,16 @@ class tslib_cObj {
 			$info[3] = t3lib_div::png_to_gif_by_imagemagick($info[3]);
 			$GLOBALS['TSFE']->imagesOnPage[]=$info[3];		// This array is used to collect the image-refs on the page...
 
-			if (!strlen($conf['altText']) && !is_array($conf['altText.']))	{	// Backwards compatible:
-				if ($conf['altText'] || $conf['altText.']) {
-					$GLOBALS['TSFE']->logDeprecatedTyposcript('IMAGE.alttext');
+				// Backwards compatibility if altText is not set and alttext is set
+				// @deprecated since TYPO3 4.3, will be removed in TYPO3 4.6
+			if (strlen($conf['alttext']) || is_array($conf['alttext.'])) {
+				$GLOBALS['TSFE']->logDeprecatedTyposcript('Usage of deprecated IMAGE.alttext, use IMAGE.altText instead - src: ' . $info[3] . ' - original image: ' . $info['origFile']);
+				if (!strlen($conf['altText']) && !is_array($conf['altText.'])) {
+					$conf['altText'] = $conf['alttext'];
+					$conf['altText.'] = $conf['alttext.'];
 				}
-				$conf['altText'] = $conf['alttext'];
-				$conf['altText.'] = $conf['alttext.'];
 			}
+			
 			$altParam = $this->getAltParam($conf);
 			$theValue = '<img src="'.htmlspecialchars($GLOBALS['TSFE']->absRefPrefix.t3lib_div::rawUrlEncodeFP($info[3])).'" width="'.$info[0].'" height="'.$info[1].'"'.$this->getBorderAttr(' border="'.intval($conf['border']).'"').(($conf['params'] || is_array($conf['params.']))?' '.$this->stdWrap($conf['params'],$conf['params.']):'').($altParam).' />';
 			if ($conf['linkWrap'])	{
@@ -3179,21 +3186,33 @@ class tslib_cObj {
 				if ($conf['sample']) {$params.='&sample=1';}
 				if ($conf['alternativeTempPath']) {$params.='&alternativeTempPath='.rawurlencode($conf['alternativeTempPath']);}
 
-				if ($conf['bodyTag']) {$params.='&bodyTag='.rawurlencode($conf['bodyTag']);}
-				if ($conf['title']) {$params.='&title='.rawurlencode($conf['title']);}
-				if ($conf['wrap']) {$params.='&wrap='.rawurlencode($conf['wrap']);}
+				// includes lines above in cache
+				$showPicContent = '
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>' . htmlspecialchars($conf['title'] ? $conf['title'] : 'Image') . '</title>
+	' . ($conf['title'] ? '' : '<meta name="robots" content="noindex,follow" />') . '
+</head>
+		' . ($conf['bodyTag'] ? $conf['bodyTag'] : '<body>');
+
+				$wrapParts = explode('|', $conf['wrap']);
+				$showPicContent .= trim($wrapParts[0]) . '###IMAGE###' . trim($wrapParts[1]);
+				$showPicContent .= '
+		</body>
+		</html>';
+				$contentHash = md5('showpic' . $showPicContent);
+				t3lib_pageSelect::storeHash($contentHash, $showPicContent, 'showpic');
 
 				$md5_value = md5(
-						$imageFile.'|'.
-						$conf['width'].'|'.
-						$conf['height'].'|'.
-						$conf['effects'].'|'.
-						$conf['bodyTag'].'|'.
-						$conf['title'].'|'.
-						$conf['wrap'].'|'.
-						$GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'].'|');
+						$imageFile . '|' .
+						$conf['width'] . '|' .
+						$conf['height'] . '|' .
+						$conf['effects'] . '||||' .
+						$GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'] . '|');
 
-				$params.= '&md5='.$md5_value;
+				$params .= '&md5=' . $md5_value . '&contentHash=' . $contentHash;
 				$url = $GLOBALS['TSFE']->absRefPrefix.'index.php?eID=tx_cms_showpic&file='.rawurlencode($imageFile).$params;
 				if ($conf['JSwindow.']['altUrl'] || $conf['JSwindow.']['altUrl.'])	{
 					$altUrl = $this->stdWrap($conf['JSwindow.']['altUrl'], $conf['JSwindow.']['altUrl.']);

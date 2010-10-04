@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 8287 2010-07-27 17:47:19Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 8915 2010-09-28 07:23:19Z stan $
  */
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
 if (typeof(HTMLArea) == 'undefined') {
@@ -118,10 +118,10 @@ HTMLArea.Config = function (editorId) {
 	this.htmlRemoveComments = false;
 		// custom tags (these have to be a regexp, or null if this functionality is not desired)
 	this.customTags = null;
-		// BaseURL included in the iframe document
+		// BaseURL to be included in the iframe document
 	this.baseURL = document.baseURI || document.URL;
-	if (this.baseURL && this.baseURL.match(/(.*)\/([^\/]+)/)) {
-		this.baseURL = RegExp.$1 + "/";
+	if (this.baseURL && this.baseURL.match(/(.*\:\/\/.*\/)[^\/]*/)) {
+		this.baseURL = RegExp.$1;
 	}
 		// URL-s
 	this.popupURL = "popups/";
@@ -147,7 +147,9 @@ HTMLArea.Config = function (editorId) {
 		},
 		htmlareabutton: {
 			cls: 'button',
-			overCls: 'buttonHover'
+			overCls: 'buttonHover',
+				// Erratic behaviour of click event in WebKit and IE browsers
+			clickEvent: (Ext.isWebKit || Ext.isIE) ? 'mousedown' : 'click'
 		},
 		htmlareacombo: {
 			cls: 'select',
@@ -285,13 +287,11 @@ Ext.ux.HTMLAreaButton = Ext.extend(Ext.Button, {
 	 */
 	initEventListeners: function () {
 		this.addListener({
-			click: {
-				fn: this.onButtonClick
-			},
 			hotkey: {
 				fn: this.onHotKey
 			}
 		});
+		this.setHandler(this.onButtonClick, this);
 			// Monitor toolbar updates in order to refresh the state of the button
 		this.mon(this.getToolbar(), 'update', this.onUpdateToolbar, this);
 	},
@@ -499,17 +499,17 @@ Ext.ux.form.HTMLAreaCombo = Ext.extend(Ext.form.ComboBox, {
 				// In IE, reclaim lost focus on the editor iframe and restore the bookmarked selection
 			if (Ext.isIE) {
 				editor.focus();
-				if (!Ext.isEmpty(this.bookmark)) {
-					editor.selectRange(editor.moveToBookmark(this.bookmark));
-					this.bookmark = null;
-				}
+				if (!Ext.isEmpty(this.savedRange)) {
+					editor.selectRange(this.savedRange);
+					this.savedRange = null;
+ 				}
 			}
 				// Invoke the plugin onChange handler
 			this.plugins[this.action](editor, combo, record, index);
 				// In IE, bookmark the updated selection as the editor will be loosing focus
 			if (Ext.isIE) { 
 				editor.focus();
-				this.bookmark = editor.getBookmark(editor._createRange(editor._getSelection()));
+				this.savedRange = editor._createRange(editor._getSelection());
 				this.triggered = true;
 			}
 			if (Ext.isOpera) {
@@ -544,27 +544,15 @@ Ext.ux.form.HTMLAreaCombo = Ext.extend(Ext.form.ComboBox, {
 	saveSelection: function (event) {
 		var editor = this.getEditor();
 		if (editor.document.hasFocus()) {
-			var selection = editor._getSelection();
-			switch (selection.type.toLowerCase()) {
-				case 'none':
-				case 'text':
-					this.bookmark = editor.getBookmark(editor._createRange(selection));
-					this.controlRange = null;
-					break;
-				case 'control':
-					this.controlRange = editor._createRange(selection);
-					this.bookmark = null;
-					break;
-			}
+			this.savedRange = editor._createRange(editor._getSelection());
 		}
 	},
 	/*
 	 * Handler invoked in IE when the editor gets the focus back
 	 */
 	restoreSelection: function (event) {
-		if (!Ext.isEmpty(this.bookmark) && this.triggered) {
-			var editor = this.getEditor();
-			editor.selectRange(this.bookmark ? editor.moveToBookmark(this.bookmark) : this.controlRange);
+		if (!Ext.isEmpty(this.savedRange) && this.triggered) {
+			this.getEditor().selectRange(this.savedRange);
 			this.triggered = false;
 		}
 	},
@@ -619,8 +607,7 @@ Ext.ux.form.HTMLAreaCombo = Ext.extend(Ext.form.ComboBox, {
 	 * Cleanup
 	 */
 	onBeforeDestroy: function () {
-		this.controlRange = null;
-		this.bookmark = null;
+		this.savedRange = null;
 		this.getStore().removeAll();
 		this.getStore().destroy();
 	}
@@ -816,7 +803,6 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 	initStyleChangeEventListener: function () {
 		if (this.isNested  && !Ext.isWebKit) {
 			var options = {
-				single: true,
 				stopEvent: true
 			};
 			if (Ext.isGecko) {
@@ -925,35 +911,37 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 				base.href = this.config.baseURL;
 				head.appendChild(base);
 			}
-			HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Iframe baseURL set to: ' + this.config.baseURL);
+			HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Iframe baseURL set to: ' + base.href);
 		}
 		var link0 = this.document.getElementsByTagName('link')[0];
 		if (!link0) {
 			link0 = this.document.createElement('link');
 			link0.rel = 'stylesheet';
-			link0.href = this.config.editedContentStyle;
+				// Firefox 3.0.1 does not apply the base URL while Firefox 3.6.8 does so. Do not know in what version this was fixed.
+				// Therefore, for versions before 3.6.8, we prepend the url with the base, if the url is not absolute
+			link0.href = ((Ext.isGecko && navigator.productSub < 2010072200 && !/^http(s?):\/{2}/.test(this.config.editedContentStyle)) ? this.config.baseURL : '') + this.config.editedContentStyle;
 			head.appendChild(link0);
-			HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Skin CSS set to: ' + this.config.editedContentStyle);
+			HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Skin CSS set to: ' + link0.href);
 		}
 		if (this.config.defaultPageStyle) {
 			var link = this.document.getElementsByTagName('link')[1];
 			if (!link) {
 				link = this.document.createElement('link');
 				link.rel = 'stylesheet';
-				link.href = this.config.defaultPageStyle;
+				link.href = ((Ext.isGecko && navigator.productSub < 2010072200 && !/^https?:\/{2}/.test(this.config.defaultPageStyle)) ? this.config.baseURL : '') + this.config.defaultPageStyle;
 				head.appendChild(link);
 			}
-			HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Override CSS set to: ' + this.config.defaultPageStyle);
+			HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Override CSS set to: ' + link.href);
 		}
 		if (this.config.pageStyle) {
 			var link = this.document.getElementsByTagName('link')[2];
 			if (!link) {
 				link = this.document.createElement('link');
 				link.rel = 'stylesheet';
-				link.href = this.config.pageStyle;
+				link.href = ((Ext.isGecko && navigator.productSub < 2010072200 && !/^https?:\/{2}/.test(this.config.pageStyle)) ? this.config.baseURL : '') + this.config.pageStyle;
 				head.appendChild(link);
 			}
-			HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Content CSS set to: ' + this.config.pageStyle);
+			HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Content CSS set to: ' + link.href);
 		}
 		HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Editor iframe document head successfully built.');
 	},
@@ -991,6 +979,9 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		if (!stylesAreLoaded) {
 			this.getStyleSheets.defer(100, this);
 			HTMLArea._appendToLog('[HTMLArea.Iframe::getStyleSheets]: Stylesheets not yet loaded (' + errorText + '). Retrying...');
+			if (/Security/i.test(errorText)) {
+				HTMLArea._appendToLog('ERROR [HTMLArea.Iframe::getStyleSheets]: A security error occurred. Make sure all stylesheets are accessed from the same domain/subdomain and using the same protocol as the current script.');
+			}
 		} else {
 			HTMLArea._appendToLog('[HTMLArea.Iframe::getStyleSheets]: Stylesheets successfully accessed.');
 				// Style the document body
@@ -1095,7 +1086,7 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 	onNestedShow: function (event, target) {
 		var styleEvent = true;
 			// In older versions of Gecko attrName is not set and refering to it causes a non-catchable crash
-		if ((Ext.isGecko && navigator.productSub > 20071127) || Ext.isOpera) {
+		if ((Ext.isGecko && navigator.productSub > 2007112700) || Ext.isOpera) {
 			styleEvent = (event.browserEvent.attrName == 'style');
 		} else if (Ext.isIE) {
 			styleEvent = (event.browserEvent.propertyName == 'style.display');
@@ -1112,9 +1103,9 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 					this.ownerCt.textAreaContainer.fireEvent('show');
 				}
 				this.getToolbar().update();
+				return false;
 			}
 		}
-		this.initStyleChangeEventListener();
 	},
 	/*
 	 * Get the HTML content of the iframe
@@ -2525,7 +2516,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 		this.iframe = this.htmlArea.getComponent('iframe');
 		this.textAreaContainer = this.htmlArea.getComponent('textAreaContainer');
 			// Get triggered when the framework becomes ready
-		this.relayEvents(this.htmlArea, 'frameworkready');
+		this.relayEvents(this.htmlArea, ['frameworkready']);
 		this.on('frameworkready', this.onFrameworkReady, this, {single: true});
 	},
 	/*
@@ -2795,7 +2786,12 @@ HTMLArea.util.TYPO3 = function () {
 		 * @author	Oliver Hader <oh@inpublica.de>
 		 */
 		simplifyNested: function(nested) {
-			var i, type, level, max, simplifiedNested=[];
+			var i, type, level, elementId, max, simplifiedNested=[],
+				elementIdSuffix = {
+					tab: '-DIV',
+					inline: '_fields',
+					flex: '-content'
+				};
 			if (nested && nested.length) {
 				if (nested[0][0]=='inline') {
 					nested = inline.findContinuedNestedLevel(nested, nested[0][1]);
@@ -2803,10 +2799,9 @@ HTMLArea.util.TYPO3 = function () {
 				for (i=0, max=nested.length; i<max; i++) {
 					type = nested[i][0];
 					level = nested[i][1];
-					if (type=='tab') {
-						simplifiedNested.push(level+'-DIV');
-					} else if (type=='inline') {
-						simplifiedNested.push(level+'_fields');
+					elementId = level + elementIdSuffix[type];
+					if (Ext.get(elementId)) {
+						simplifiedNested.push(elementId);
 					}
 				}
 			}
@@ -4639,18 +4634,7 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	saveSelection: function () {
 			// If IE, save the current selection
 		if (Ext.isIE) {
-			var selection = this.editor._getSelection();
-			switch (selection.type.toLowerCase()) {
-				case 'none':
-				case 'text':
-					this.bookmark = this.editor.getBookmark(this.editor._createRange(selection));
-					this.controlRange = null;
-					break;
-				case 'control':
-					this.controlRange = this.editor._createRange(selection);
-					this.bookmark = null;
-					break;
-			}
+			this.savedRange = this.editor._createRange(this.editor._getSelection());
 		}
 	},
 	/*
@@ -4659,10 +4643,10 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	 */
 	restoreSelection: function () {
 			// If IE, restore the selection saved when the window was shown
-		if (Ext.isIE) {
+		if (Ext.isIE && this.savedRange) {
 				// Restoring the selection will not work if the inner html was replaced by the plugin
 			try {
-				this.editor.selectRange(this.bookmark ? this.editor.moveToBookmark(this.bookmark) : this.controlRange);
+				this.editor.selectRange(this.savedRange);
 			} catch (e) {}
 		}
 	},

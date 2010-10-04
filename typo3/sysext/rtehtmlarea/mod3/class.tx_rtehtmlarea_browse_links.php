@@ -32,7 +32,7 @@
  *
  * Adapted for htmlArea RTE by Stanislas Rolland
  *
- * $Id: class.tx_rtehtmlarea_browse_links.php 8317 2010-07-28 08:51:33Z ohader $
+ * $Id: class.tx_rtehtmlarea_browse_links.php 8895 2010-09-25 21:55:36Z stan $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
@@ -245,7 +245,8 @@ class tx_rtehtmlarea_browse_links extends browse_links {
 			// CurrentUrl - the current link url must be passed around if it exists
 		$this->curUrlArray = t3lib_div::_GP('curUrl');
 		if ($this->curUrlArray['all'])	{
-			$this->curUrlArray=t3lib_div::get_tag_attributes($this->curUrlArray['all']);
+			$this->curUrlArray = t3lib_div::get_tag_attributes($this->curUrlArray['all']);
+			$this->curUrlArray['href'] = htmlspecialchars_decode($this->curUrlArray['href']);
 		}
 			// Note: parseCurUrl will invoke the hooks
 		$this->curUrlInfo = $this->parseCurUrl($this->curUrlArray['href'],$this->siteURL);

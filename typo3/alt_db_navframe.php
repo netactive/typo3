@@ -27,7 +27,7 @@
 /**
  * Page navigation tree for the Web module
  *
- * $Id: alt_db_navframe.php 8157 2010-07-11 12:45:16Z psychomieze $
+ * $Id: alt_db_navframe.php 8725 2010-08-29 10:41:49Z stephenking $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -161,7 +161,9 @@ class SC_alt_db_navframe {
 		$this->doc->getPageRenderer()->loadScriptaculous('effects');
 		$this->doc->getPageRenderer()->loadExtJS();
 
-		$this->doc->getPageRenderer()->addJsFile('js/pagetreefiltermenu.js');
+		if ($this->hasFilterBox) {
+			$this->doc->getPageRenderer()->addJsFile('js/pagetreefiltermenu.js');
+		}
 
 		$this->doc->JScode .= $this->doc->wrapScriptTags(
 		($this->currentSubScript?'top.currentSubScript=unescape("'.rawurlencode($this->currentSubScript).'");':'').'

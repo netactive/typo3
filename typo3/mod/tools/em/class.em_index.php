@@ -28,7 +28,7 @@
 /**
  * Module: Extension manager
  *
- * $Id: class.em_index.php 8429 2010-07-28 09:19:00Z ohader $
+ * $Id: class.em_index.php 8867 2010-09-24 08:50:45Z baschny $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Karsten Dambekalns <karsten@typo3.org>
@@ -6156,7 +6156,7 @@ $EM_CONF[$_EXTKEY] = '.$this->arrayToCode($EM_CONF, 0).';
 				$comment = '<table cellpadding="0" cellspacing="0" width="100%">';
 				foreach ($versions as $vk) {
 					$va = & $v[$vk];
-					if (t3lib_div::int_from_ver($vk) < t3lib_div::int_from_ver($data['EM_CONF']['version']))	{
+					if (t3lib_div::int_from_ver($vk) <= t3lib_div::int_from_ver($data['EM_CONF']['version']))	{
 						continue;
 					}
 					$comment .= '<tr><td valign="top" style="padding-right:2px;border-bottom:1px dotted gray">'.$vk.'</td>'.'<td valign="top" style="border-bottom:1px dotted gray">'.nl2br($va[uploadcomment]).'</td></tr>';

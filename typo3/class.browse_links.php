@@ -29,7 +29,7 @@
  * Used from TCEFORMS an other elements
  * In other words: This is the ELEMENT BROWSER!
  *
- * $Id: class.browse_links.php 8493 2010-08-05 18:45:15Z ohader $
+ * $Id: class.browse_links.php 8770 2010-09-08 10:47:38Z stephenking $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1424,6 +1424,8 @@ class browse_links {
 				$pagetree = t3lib_div::makeInstance('rtePageTree');
 				$pagetree->thisScript = $this->thisScript;
 				$pagetree->ext_showPageId = $GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.showPageIdWithTitle');
+				$pagetree->ext_showNavTitle = $GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.showNavTitle');
+				$pagetree->addField('nav_title');
 				$tree=$pagetree->getBrowsableTree();
 				$cElements = $this->expandPage();
 
@@ -1911,11 +1913,10 @@ class browse_links {
 			if (is_array($mainPageRec)) {
 				$picon = t3lib_iconWorks::getSpriteIconForRecord('pages', $mainPageRec);
 				if (in_array('pages', $tablesArr)) {
-					$ficon = $picon;
 					$ATag = "<a href=\"#\" onclick=\"return insertElement('pages', '" . $mainPageRec['uid'] .
-						"', 'db', " . t3lib_div::quoteJSvalue($mainPageRec['title']) . ", '', '', '" . $ficon . "','',1);\">";
+						"', 'db', " . t3lib_div::quoteJSvalue($mainPageRec['title']) . ", '', '', '','',1);\">";
 					$ATag2 = "<a href=\"#\" onclick=\"return insertElement('pages', '" . $mainPageRec['uid'] .
-						"', 'db', " . t3lib_div::quoteJSvalue($mainPageRec['title']) . ", '', '', '" . $ficon . "','',0);\">";
+						"', 'db', " . t3lib_div::quoteJSvalue($mainPageRec['title']) . ", '', '', '','',0);\">";
 					$ATag_alt = substr($ATag, 0, -4) . ",'',1);\">";
 					$ATag_e = '</a>';
 				}

@@ -27,7 +27,7 @@
 /**
  * Contains a class with functions for page related overview of translations.
  *
- * $Id: class.tx_cms_webinfo_lang.php 7974 2010-06-20 08:05:51Z benni $
+ * $Id: class.tx_cms_webinfo_lang.php 8604 2010-08-15 20:59:57Z steffenk $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -71,7 +71,8 @@ class tx_cms_webinfo_lang extends t3lib_extobjbase {
 				0 => $LANG->getLL('depth_0'),
 				1 => $LANG->getLL('depth_1'),
 				2 => $LANG->getLL('depth_2'),
-				3 => $LANG->getLL('depth_3')
+				3 => $LANG->getLL('depth_3'),
+				999 => $LANG->sL('LLL:EXT:lang/locallang_core.xml:labels.depth_infi'),
 			),
 		);
 

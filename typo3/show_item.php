@@ -27,7 +27,7 @@
 /**
  * Shows information about a database or file item
  *
- * $Id: show_item.php 8429 2010-07-28 09:19:00Z ohader $
+ * $Id: show_item.php 8839 2010-09-21 19:55:51Z benni $
  * Revised for TYPO3 3.7 May/2004 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -179,7 +179,7 @@ class SC_show_item {
 					$this->access = is_array($this->pageinfo) ? 1 : 0;
 					$this->row = $this->pageinfo;
 				} else {
-					$this->row = t3lib_BEfunc::getRecord($this->table,$this->uid);
+					$this->row = t3lib_BEfunc::getRecordWSOL($this->table, $this->uid);
 					if ($this->row)	{
 						$this->pageinfo = t3lib_BEfunc::readPageAccess($this->row['pid'],$this->perms_clause);
 						$this->access = is_array($this->pageinfo) ? 1 : 0;
@@ -287,7 +287,7 @@ class SC_show_item {
 					$tableRows[] = '
 						<tr>
 							<td class="t3-col-header">' . $GLOBALS['LANG']->sL(t3lib_BEfunc::getItemLabel($this->table, $name), 1) . '</td>
-							<td>' . htmlspecialchars(t3lib_BEfunc::getProcessedValue($this->table, $name, $this->row[$name])) . '</td>
+							<td>' . htmlspecialchars(t3lib_BEfunc::getProcessedValue($this->table, $name, $this->row[$name], 0, 0, FALSE, $this->row['uid'])) . '</td>
 						</tr>';
 				}
 			}

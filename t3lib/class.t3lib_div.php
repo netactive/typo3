@@ -27,7 +27,7 @@
 /**
  * Contains the reknown class "t3lib_div" with general purpose functions
  *
- * $Id: class.t3lib_div.php 8446 2010-07-29 13:20:05Z dmitry $
+ * $Id: class.t3lib_div.php 8859 2010-09-22 09:22:33Z baschny $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  * Usage counts are based on search 22/2 2003 through whole source including tslib/
@@ -582,7 +582,7 @@ final class t3lib_div {
 	 * @param	string		string to truncate
 	 * @param	integer		must be an integer of at least 4
 	 * @return	string		new string
-	 * @deprecated since TYPO3 4.1 - Use either fixed_lgd() or fixed_lgd_cs() (with negative input value for $chars)
+	 * @deprecated since TYPO3 4.1 - Use t3lib_div::fixed_lgd_cs() instead (with negative input value for $chars)
 	 * @see fixed_lgd()
 	 */
 	public static function fixed_lgd_pre($string,$chars)	{
@@ -713,9 +713,9 @@ final class t3lib_div {
 						// "192.168.3.0/24"
 					$lnet = ip2long($test);
 					$lip = ip2long($baseIP);
-					$binnet = str_pad( decbin($lnet),32,'0','STR_PAD_LEFT');
+					$binnet = str_pad(decbin($lnet), 32, '0', STR_PAD_LEFT);
 					$firstpart = substr($binnet,0,$mask);
-					$binip = str_pad( decbin($lip),32,'0','STR_PAD_LEFT');
+					$binip = str_pad(decbin($lip), 32, '0', STR_PAD_LEFT);
 					$firstip = substr($binip,0,$mask);
 					$yes = (strcmp($firstpart,$firstip)==0);
 				} else {
@@ -1263,8 +1263,11 @@ final class t3lib_div {
 	 * @param	mixed		Any input variable to test.
 	 * @return	boolean		Returns true if string is an integer
 	 */
-	public static function testInt($var)	{
-		return !strcmp($var,intval($var));
+	public static function testInt($var) {
+		if ($var === '') {
+			return FALSE;
+		}
+		return (string)intval($var) === (string)$var;
 	}
 
 	/**
@@ -1275,12 +1278,8 @@ final class t3lib_div {
 	 * @param	string		Reference string which must be found as the "first part" of the full string
 	 * @return	boolean		True if $partStr was found to be equal to the first part of $str
 	 */
-	public static function isFirstPartOfStr($str,$partStr)	{
-		// Returns true, if the first part of a $str equals $partStr and $partStr is not ''
-		$psLen = strlen($partStr);
-		if ($psLen)	{
-			return substr($str,0,$psLen)==(string)$partStr;
-		} else return false;
+	public static function isFirstPartOfStr($str,$partStr) {
+		return $partStr != '' && strpos((string) $str, (string) $partStr, 0) === 0;
 	}
 
 	/**
@@ -3952,7 +3951,10 @@ final class t3lib_div {
 
 		switch ((string)$getEnvName)	{
 			case 'SCRIPT_NAME':
-				$retVal = (PHP_SAPI=='cgi'||PHP_SAPI=='cgi-fcgi')&&($_SERVER['ORIG_PATH_INFO']?$_SERVER['ORIG_PATH_INFO']:$_SERVER['PATH_INFO']) ? ($_SERVER['ORIG_PATH_INFO']?$_SERVER['ORIG_PATH_INFO']:$_SERVER['PATH_INFO']) : ($_SERVER['ORIG_SCRIPT_NAME']?$_SERVER['ORIG_SCRIPT_NAME']:$_SERVER['SCRIPT_NAME']);
+				$retVal = (PHP_SAPI == 'fpm-fcgi' || PHP_SAPI == 'cgi' || PHP_SAPI == 'cgi-fcgi') &&
+					($_SERVER['ORIG_PATH_INFO'] ? $_SERVER['ORIG_PATH_INFO'] : $_SERVER['PATH_INFO']) ?
+					($_SERVER['ORIG_PATH_INFO'] ? $_SERVER['ORIG_PATH_INFO'] : $_SERVER['PATH_INFO']) :
+					($_SERVER['ORIG_SCRIPT_NAME'] ? $_SERVER['ORIG_SCRIPT_NAME'] : $_SERVER['SCRIPT_NAME']);
 					// add a prefix if TYPO3 is behind a proxy: ext-domain.com => int-server.com/prefix
 				if (self::cmpIP($_SERVER['REMOTE_ADDR'], $GLOBALS['TYPO3_CONF_VARS']['SYS']['reverseProxyIP'])) {
 					if (self::getIndpEnv('TYPO3_SSL') && $GLOBALS['TYPO3_CONF_VARS']['SYS']['reverseProxyPrefixSSL']) {
@@ -3963,8 +3965,13 @@ final class t3lib_div {
 				}
 			break;
 			case 'SCRIPT_FILENAME':
-				$retVal = str_replace('//','/', str_replace('\\','/', (PHP_SAPI=='cgi'||PHP_SAPI=='isapi' ||PHP_SAPI=='cgi-fcgi')&&($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED'])? ($_SERVER['ORIG_PATH_TRANSLATED']?$_SERVER['ORIG_PATH_TRANSLATED']:$_SERVER['PATH_TRANSLATED']):($_SERVER['ORIG_SCRIPT_FILENAME']?$_SERVER['ORIG_SCRIPT_FILENAME']:$_SERVER['SCRIPT_FILENAME'])));
-			break;
+				$retVal = str_replace('//', '/', str_replace('\\', '/',
+					(PHP_SAPI == 'fpm-fcgi' || PHP_SAPI == 'cgi' || PHP_SAPI == 'isapi' || PHP_SAPI == 'cgi-fcgi') &&
+					($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) ?
+					($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) :
+					($_SERVER['ORIG_SCRIPT_FILENAME'] ? $_SERVER['ORIG_SCRIPT_FILENAME'] : $_SERVER['SCRIPT_FILENAME'])));
+
+				break;
 			case 'REQUEST_URI':
 					// Typical application of REQUEST_URI is return urls, forms submitting to itself etc. Example: returnUrl='.rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI'))
 				if ($GLOBALS['TYPO3_CONF_VARS']['SYS']['requestURIvar'])	{	// This is for URL rewriters that store the original URI in a server variable (eg ISAPI_Rewriter for IIS: HTTP_X_REWRITE_URL)
@@ -3990,7 +3997,7 @@ final class t3lib_div {
 					// Further, there must be at least one '/' in the path - else the PATH_INFO value does not make sense.
 					// IF 'PATH_INFO' never works for our purpose in TYPO3 with CGI-servers, then 'PHP_SAPI=='cgi'' might be a better check. Right now strcmp($_SERVER['PATH_INFO'],t3lib_div::getIndpEnv('SCRIPT_NAME')) will always return false for CGI-versions, but that is only as long as SCRIPT_NAME is set equal to PATH_INFO because of PHP_SAPI=='cgi' (see above)
 //				if (strcmp($_SERVER['PATH_INFO'],self::getIndpEnv('SCRIPT_NAME')) && count(explode('/',$_SERVER['PATH_INFO']))>1)	{
-				if (PHP_SAPI!='cgi' && PHP_SAPI!='cgi-fcgi')	{
+				if (PHP_SAPI != 'cgi' && PHP_SAPI != 'cgi-fcgi' && PHP_SAPI != 'fpm-fcgi') {
 					$retVal = $_SERVER['PATH_INFO'];
 				}
 			break;
@@ -4055,6 +4062,8 @@ final class t3lib_div {
 				$retVal = $_SERVER[$getEnvName];
 			break;
 			case 'TYPO3_DOCUMENT_ROOT':
+				// Get the web root (it is not the root of the TYPO3 installation)
+				// The absolute path of the script can be calculated with TYPO3_DOCUMENT_ROOT + SCRIPT_FILENAME
 				// Some CGI-versions (LA13CGI) and mod-rewrite rules on MODULE versions will deliver a 'wrong' DOCUMENT_ROOT (according to our description). Further various aliases/mod_rewrite rules can disturb this as well.
 				// Therefore the DOCUMENT_ROOT is now always calculated as the SCRIPT_FILENAME minus the end part shared with SCRIPT_NAME.
 				$SFN = self::getIndpEnv('SCRIPT_FILENAME');

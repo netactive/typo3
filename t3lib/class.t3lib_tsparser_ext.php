@@ -27,7 +27,7 @@
 /**
  * TSParser extension class to t3lib_TStemplate
  *
- * $Id: class.t3lib_tsparser_ext.php 8298 2010-07-27 21:33:35Z steffenk $
+ * $Id: class.t3lib_tsparser_ext.php 8535 2010-08-08 17:13:32Z lolli $
  * Contains functions for the TS module in TYPO3 backend
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -609,7 +609,7 @@ class t3lib_tsparser_ext extends t3lib_TStemplate	{
 						: t3lib_iconWorks::getSpriteIcon('mimetypes-x-content-template-static', array('title' => $alttext))
 					);
 			if (in_array($row['templateID'], $this->clearList_const) || in_array($row['templateID'], $this->clearList_setup)) {
-				$A_B = '<a href="index.php?id=' . $GLOBALS['SOBE']->id . '&template=' . $row['templateID'] . '">';
+				$A_B = '<a href="index.php?id=' . htmlspecialchars($GLOBALS['SOBE']->id . '&template=' . $row['templateID']) . '">';
 				$A_E = '</a>';
 				if (t3lib_div::_GP('template') == $row['templateID']) {
 					$A_B = '<strong>' . $A_B;
@@ -619,12 +619,12 @@ class t3lib_tsparser_ext extends t3lib_TStemplate	{
 				$A_B = '';
 				$A_E = '';
 			}
-			$HTML .= ($first ? '' : '<img src="' . $GLOBALS['BACK_PATH'] . 'gfx/ol/' . $PM . $BTM . '.gif" width="18" height="16" align="top" border="0" />') .
+			$HTML .= ($first ? '' : '<img src="' . $GLOBALS['BACK_PATH'] . 'gfx/ol/' . $PM . $BTM . '.gif" width="18" height="16" align="top" border="0" alt="" />') .
 				 $icon .
 				$A_B . t3lib_div::fixed_lgd_cs($row['title'], $GLOBALS['BE_USER']->uc['titleLen']) . $A_E . '&nbsp;&nbsp;';
 			$RL = $this->ext_getRootlineNumber($row['pid']);
 			$keyArray[] = '<tr class="' . ($i++ % 2 == 0 ? 'bgColor4' : 'bgColor6') . '">
-							<td nowrap>' . $HTML . '</td>
+							<td nowrap="nowrap">' . $HTML . '</td>
 							<td align="center">' . ($row['root'] ? t3lib_iconWorks::getSpriteIcon('status-status-checked') : '') . '&nbsp;&nbsp;</td>
 							<td align="center">' . ($row['clConf'] ? t3lib_iconWorks::getSpriteIcon('status-status-checked') :'') . '&nbsp;&nbsp;' . '</td>
 							<td align="center">' . ($row['clConst'] ? t3lib_iconWorks::getSpriteIcon('status-status-checked') : '') . '&nbsp;&nbsp;' . '</td>
