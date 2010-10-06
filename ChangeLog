@@ -1,3 +1,31 @@
+2010-10-06  Benjamin Mack  <benni@typo3.org>
+
+	* Release of TYPO3 4.4.4
+
+2010-10-06  Oliver Hader  <oliver@typo3.org>
+
+	* Fixed bug #15461: RemoveXSS exposes XSS vulnerability for double encoded characters (thanks to Marcus Krause)
+	* Follow-up to bug #15461: Added unit tests (thanks to Marcus Krause)
+	* Fixed bug #15887: XSS in template analyzer (thanks to Georg Ringer)
+	* Fixed bug #15728: Extension Manager allows to download arbitrary files beyond PATH_site or rootpath (thanks to Marcus Krause)
+	* Fixed bug #15729: Sysext setup's user simulation is susceptible to XSS (thanks to Marcus Krause)
+	* Fixed bug #15860: Mitigate libpcre recursion crash in email address validation (thanks to Marcus Krause)
+	* Fixed bug #15733: Admin Panel is susceptible to XSS (thanks to Helmut Hummel)
+	* Fixed bug #15898: It is (still) possible to download arbitrary files through the jumpurl feature (thanks to Helmut Hummel and Marcus Krause)
+
+2010-10-04  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #15880: htmlArea RTE: Context menu not working in TYPO3 4.4.3 and 4.5-dev
+	* Updated htmlArea RTE version to 2.0.5
+
+2010-09-30  Francois Suter  <francois@typo3.org>
+
+	* Fixed bug #15639: Scheduler: Add missing classes and interface to autoload registry (Thanks to Marcus Krause)
+
+2010-09-30  Steffen Gebert  <steffen@steffen-gebert.de>
+
+	* Fixed bug #12889: fe_adminLib.inc usages deprecated function split() (Thanks to Steffen Kamper and Ismaël Bidau)
+
 2010-09-28  Benjamin Mack  <benni@typo3.org>
 
 	* Release of TYPO3 4.4.3
@@ -12968,4 +12996,4 @@ Charsets:
 
 --------------------
 
-SVN ID: $Id: ChangeLog 8922 2010-09-28 14:37:20Z benni $
+SVN ID: $Id: ChangeLog 8986 2010-10-06 08:39:29Z benni $

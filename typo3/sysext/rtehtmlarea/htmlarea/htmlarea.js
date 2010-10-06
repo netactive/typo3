@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 8915 2010-09-28 07:23:19Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 8946 2010-10-04 13:30:15Z stan $
  */
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
 if (typeof(HTMLArea) == 'undefined') {
@@ -273,7 +273,12 @@ Ext.ux.HTMLAreaButton = Ext.extend(Ext.Button, {
 			 * @event hotkey
 			 * Fires when the button hotkey is pressed
 			 */
-			'hotkey'
+			'hotkey',
+			/*
+			 * @event context
+			 * Fires when the button is triggered from the context menu
+			 */
+			'context'
 		);
 		this.addListener({
 			afterrender: {
@@ -289,6 +294,9 @@ Ext.ux.HTMLAreaButton = Ext.extend(Ext.Button, {
 		this.addListener({
 			hotkey: {
 				fn: this.onHotKey
+			},
+			context: {
+				fn: this.onButtonClick
 			}
 		});
 		this.setHandler(this.onButtonClick, this);

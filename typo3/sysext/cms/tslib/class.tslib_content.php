@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 8741 2010-08-30 13:53:27Z stan $
+ * $Id: class.tslib_content.php 8981 2010-10-06 08:17:30Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -4718,6 +4718,7 @@ class tslib_cObj {
 	function locDataJU($jumpUrl,$conf)	{
 		$fI = pathinfo($jumpUrl);
 		$mimetype='';
+		$mimetypeValue = '';
 		if ($fI['extension'])	{
 			$mimeTypes = t3lib_div::trimExplode(',',$conf['mimeTypes'],1);
 			foreach ($mimeTypes as $v) {
@@ -4732,12 +4733,9 @@ class tslib_cObj {
 		$locationData = $GLOBALS['TSFE']->id.':'.$this->currentRecord;
 		$rec='&locationData='.rawurlencode($locationData);
 		$hArr = array(
-			$jumpUrl,
-			$locationData,
-			$mimetypeValue,
-			$GLOBALS['TSFE']->TYPO3_CONF_VARS['SYS']['encryptionKey']
+			$jumpUrl, $locationData, $mimetypeValue
 		);
-		$juHash='&juHash='.t3lib_div::shortMD5(serialize($hArr));
+		$juHash = '&juHash=' . t3lib_div::hmac(serialize($hArr));
 		return '&juSecure=1'.$mimetype.$rec.$juHash;
 	}
 
