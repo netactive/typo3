@@ -28,7 +28,7 @@
 /**
  * Module: Extension manager
  *
- * $Id: class.em_index.php 8868 2010-09-24 08:51:50Z baschny $
+ * $Id: class.em_index.php 8963 2010-10-06 08:13:10Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Karsten Dambekalns <karsten@typo3.org>
@@ -2317,7 +2317,7 @@ EXTENSION KEYS:
 
 				// Link for downloading extension has been clicked - deliver content stream:
 				$dlFile = $this->CMD['downloadFile'];
-				if (t3lib_div::isFirstPartOfStr($dlFile,PATH_site) && t3lib_div::isFirstPartOfStr($dlFile,$absPath) && @is_file($dlFile))	{
+				if (t3lib_div::isAllowedAbsPath($dlFile) && t3lib_div::isFirstPartOfStr($dlFile, PATH_site) && t3lib_div::isFirstPartOfStr($dlFile, $absPath) && @is_file($dlFile)) {
 					$mimeType = 'application/octet-stream';
 					Header('Content-Type: '.$mimeType);
 					Header('Content-Disposition: attachment; filename='.basename($dlFile));

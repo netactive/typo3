@@ -1,3 +1,26 @@
+2010-10-06  Oliver Hader  <oliver@typo3.org>
+
+	* Release of TYPO3 4.3.7
+
+2010-10-06  Oliver Hader  <oliver@typo3.org>
+
+	* Fixed bug #13650: Information disclosure in sys_actions (DB mount, usergroups) (thanks to Georg Ringer)
+	* Fixed bug #15461: RemoveXSS exposes XSS vulnerability for double encoded characters (thanks to Marcus Krause)
+	* Follow-up to bug #15461: Added unit tests (thanks to Marcus Krause)
+	* Fixed bug #15728: Extension Manager allows to download arbitrary files beyond PATH_site or rootpath (thanks to Marcus Krause)
+	* Fixed bug #15729: Sysext setup's user simulation is susceptible to XSS (thanks to Marcus Krause)
+	* Fixed bug #15860: Mitigate libpcre recursion crash in email address validation (thanks to Marcus Krause)
+	* Fixed bug #15733: Admin Panel is susceptible to XSS (thanks to Helmut Hummel)
+	* Fixed bug #15898: It is (still) possible to download arbitrary files through the jumpurl feature (thanks to Helmut Hummel and Marcus Krause)
+
+2010-09-30  Francois Suter  <francois@typo3.org>
+
+	* Fixed bug #15639: Scheduler: Add missing classes and interface to autoload registry (Thanks to Marcus Krause)
+
+2010-09-30  Steffen Gebert  <steffen@steffen-gebert.de>
+
+	* Fixed bug #12889: fe_adminLib.inc usages deprecated function split() (Thanks to Steffen Kamper)
+
 2010-09-28  Oliver Hader  <oliver@typo3.org>
 
 	* Release of TYPO3 4.3.6
@@ -11570,4 +11593,4 @@ Charsets:
 
 --------------------
 
-SVN ID: $Id: ChangeLog 8925 2010-09-28 14:46:30Z ohader $
+SVN ID: $Id: ChangeLog 8989 2010-10-06 08:46:42Z ohader $

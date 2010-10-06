@@ -27,7 +27,7 @@
 /**
  * Contains the reknown class "t3lib_div" with general purpose functions
  *
- * $Id: class.t3lib_div.php 8588 2010-08-12 20:41:55Z steffenk $
+ * $Id: class.t3lib_div.php 8970 2010-10-06 08:14:42Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  * Usage counts are based on search 22/2 2003 through whole source including tslib/
@@ -1458,7 +1458,12 @@ final class t3lib_div {
 	 * @return	boolean		Returns true if the $email address (input string) is valid
 	 */
 	public static function validEmail($email)	{
-		return (filter_var($email, FILTER_VALIDATE_EMAIL) !== false);
+			// enforce maximum length to prevent libpcre recursion crash bug #52929 in PHP
+			// fixed in PHP 5.2+ later than Sept 2010; length restriction per SMTP RFC 2821
+		if (strlen($email) > 320) {
+			return FALSE;
+		}
+		return (filter_var($email, FILTER_VALIDATE_EMAIL) !== FALSE);
 	}
 
 	/**
