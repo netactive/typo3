@@ -27,7 +27,7 @@
 /**
  * Class for TYPO3 backend user authentication in the TSFE frontend
  *
- * $Id: class.t3lib_tsfebeuserauth.php 6230 2009-10-22 07:48:32Z baschny $
+ * $Id: class.t3lib_tsfebeuserauth.php 8973 2010-10-06 08:15:45Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -185,7 +185,7 @@ class t3lib_tsfeBeUserAuth extends t3lib_beUserAuth {
 				if (is_array($v)) {
 					$query.= $this->extPrintFeAdminDialogHiddenFields($k,$v);
 				} else {
-					$query.= '<input type="hidden" name="'.$k.'" value="'.htmlspecialchars($v).'">'.chr(10);
+					$query .= '<input type="hidden" name="' . htmlspecialchars($k) . '" value="' . htmlspecialchars($v) . '">' . chr(10);
 				}
 			}
 		}
@@ -253,7 +253,7 @@ $query.'
 			if (is_array($v))	{
 				$out.= $this->extPrintFeAdminDialogHiddenFields($key.'['.$k.']',$v);
 			} else {
-				$out.= '<input type="hidden" name="'.$key.'['.$k.']" value="'.htmlspecialchars($v).'">'.chr(10);
+				$out.= '<input type="hidden" name="' . htmlspecialchars($key) . '[' . htmlspecialchars($k) . ']" value="' . htmlspecialchars($v) . '">' . chr(10);
 			}
 		}
 		return $out;

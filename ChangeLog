@@ -1,3 +1,36 @@
+2010-10-06  Oliver Hader  <oliver@typo3.org>
+
+	* Release of TYPO3 4.2.15
+
+2010-10-06  Oliver Hader  <oliver@typo3.org>
+
+	* Fixed bug #13650: Information disclosure in sys_actions (DB mount, usergroups) (thanks to Georg Ringer)
+	* Fixed bug #15461: RemoveXSS exposes XSS vulnerability for double encoded characters (thanks to Marcus Krause)
+	* Fixed bug #15728: Extension Manager allows to download arbitrary files beyond PATH_site or rootpath (thanks to Marcus Krause)
+	* Fixed bug #15729: Sysext setup's user simulation is susceptible to XSS (thanks to Marcus Krause)
+	* Fixed bug #15733: Admin Panel is susceptible to XSS (thanks to Helmut Hummel)
+	* Fixed bug #15898: It is (still) possible to download arbitrary files through the jumpurl feature (thanks to Helmut Hummel and Marcus Krause)
+
+2010-09-24  Steffen Gebert  <steffen@steffen-gebert.de>
+
+	* Fixed bug #5983: Undefined variable is used in t3lib_BEfunc::exec_foreign_table_where_query
+
+2010-09-24  Ernesto Baschny  <ernst@cron-it.de>
+
+	* Fixed bug #15653: Only show upload comments that are newer than installed version in update function of EM
+
+2010-09-19  Oliver Hader  <oliver@typo3.org>
+
+	* Fixed bug #8260: Update Wizard in install tool force temp-configuration files and load configuration twice
+
+2010-09-19  Benjamin Mack  <benni@typo3.org>
+
+	* Fixed bug #3908: DisplayCond => VERSION:IS:false always returns true (Thanks to Daniel Poetzinger)
+
+2010-08-12  Steffen Kamper  <steffen@typo3.org>
+
+	* Fixed bug #3819: t3lib_div::getIndpEnv('TYPO3_DOCUMENT_ROOT') delivers wrong value in Backend
+
 2010-08-06  Ingo Renner  <ingo@typo3.org>
 
 	* Release of TYPO3 4.2.14
@@ -3652,7 +3685,7 @@
   * (feature) Added feature #6359: IRRE - Add config of parent record for label_userFunc used on a child record
   * (minor) Fixed bug: Page TSconfig isn't parsed correctly anymore after cleanup in Trunk
 
-2007-09-24 Andreas Otto  <andreas.otto@dkd.de>
+2007-09-24  Andreas Otto  <andreas.otto@dkd.de>
 
   * Fixed bug #1471: Check if exif functions are available before using them.
 
@@ -7894,4 +7927,4 @@ Charsets:
 
 --------------------
 
-SVN ID: $Id: ChangeLog 8510 2010-08-06 10:28:55Z flyguide $
+SVN ID: $Id: ChangeLog 8983 2010-10-06 08:27:19Z ohader $

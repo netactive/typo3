@@ -31,7 +31,7 @@
  * Call ALL methods without making an object!
  * Eg. to get a page-record 51 do this: 't3lib_BEfunc::getRecord('pages',51)'
  *
- * $Id: class.t3lib_befunc.php 8413 2010-07-28 09:14:52Z ohader $
+ * $Id: class.t3lib_befunc.php 8878 2010-09-24 15:49:10Z stephenking $
  * Usage counts are based on search 22/2 2003 through whole backend source of typo3/
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
@@ -2986,8 +2986,8 @@ final class t3lib_BEfunc {
 	public static function exec_foreign_table_where_query($fieldValue, $field = '', $TSconfig = array(), $prefix = '') {
 		global $TCA;
 
+		$foreign_table = $fieldValue['config'][$prefix . 'foreign_table'];
 		t3lib_div::loadTCA($foreign_table);
-		$foreign_table = $fieldValue['config'][$prefix.'foreign_table'];
 		$rootLevel = $TCA[$foreign_table]['ctrl']['rootLevel'];
 
 		$fTWHERE = $fieldValue['config'][$prefix.'foreign_table_where'];

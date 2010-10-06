@@ -27,7 +27,7 @@
 /**
  * Class for generating front end for building queries
  *
- * $Id: class.t3lib_querygenerator.php 7007 2010-02-23 10:26:04Z ohader $
+ * $Id: class.t3lib_querygenerator.php 8587 2010-08-12 20:39:53Z steffenk $
  *
  * @author	Christian Jul Jensen <christian@typo3.com>
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -757,7 +757,7 @@ class t3lib_queryGenerator	{
 					}
 				}
 			}
-			$d = dir(t3lib_div::getIndpEnv(TYPO3_DOCUMENT_ROOT).'/'.$fieldSetup['uploadfolder']);
+			$d = dir(PATH_site . $fieldSetup['uploadfolder']);
 			while (false !== ($entry=$d->read()))	{
 				if ($entry=='.' || $entry=='..')	{
 					continue;
