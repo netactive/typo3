@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,9 +28,9 @@
  * Class used in module tools/dbint (advanced search) and which may hold code specific for that module
  * However the class has a general principle in it which may be used in the web/export module.
  *
- * $Id: class.t3lib_fullsearch.php 8589 2010-08-12 20:42:12Z steffenk $
+ * $Id: class.t3lib_fullsearch.php 8763 2010-09-06 11:57:16Z steffenk $
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @coauthor	Jo Hasenau <info@cybercraft.de>
  */
 /**
@@ -81,7 +81,7 @@
  * Class used in module tools/dbint (advanced search) and which may hold code specific for that module
  * However the class has a general principle in it which may be used in the web/export module.
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage t3lib
  */
@@ -542,7 +542,7 @@ class t3lib_fullsearch {
 			case 'explain':
 			default:
 				while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-					$out.='<BR>'.t3lib_div::view_array($row);
+					$out .= '<br />' . t3lib_utility_Debug::viewArray($row);
 				}
 				$cPR['header']='Explain SQL query';
 				$cPR['content']=$out;

@@ -1,5 +1,5 @@
 <?php
-/* $Id: ext_localconf.php 8157 2010-07-11 12:45:16Z psychomieze $ */
+/* $Id: ext_localconf.php 8156 2010-07-11 12:42:05Z psychomieze $ */
 
 if (!defined ('TYPO3_MODE')) {
 	die ('Access denied.');

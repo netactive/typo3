@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,11 +27,11 @@
 /**
  * Page navigation tree for the Web module
  *
- * $Id: alt_db_navframe.php 8725 2010-08-29 10:41:49Z stephenking $
- * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
+ * $Id: alt_db_navframe.php 8842 2010-09-21 21:02:40Z steffenk $
+ * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -61,7 +61,7 @@ require_once('class.webpagetree.php');
 /**
  * Main script class for the page tree navigation frame
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  */
@@ -179,12 +179,7 @@ class SC_alt_db_navframe {
 				theUrl += "?id=" + id
 			}
 			top.fsMod.currentBank = bank;
-
-			if (top.TYPO3.configuration.condensedMode) {
-				top.content.location.href = theUrl;
-			} else {
-				parent.list_frame.location.href=theUrl;
-			}
+			top.TYPO3.Backend.ContentContainer.setUrl(theUrl);
 
 			'.($this->doHighlight ? 'Tree.highlightActiveItem("web", highlightID + "_" + bank);' : '').'
 			'.(!$GLOBALS['CLIENT']['FORMSTYLE'] ? '' : 'if (linkObj) linkObj.blur(); ').'

@@ -27,7 +27,7 @@
 /*
  * SelectFont Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: select-font.js 8064 2010-06-26 14:39:18Z stan $
+ * TYPO3 SVN ID: $Id: select-font.js 8063 2010-06-26 14:37:29Z stan $
  */
 HTMLArea.SelectFont = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {

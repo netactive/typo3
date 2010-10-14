@@ -20,7 +20,7 @@
 *
 *  This copyright notice MUST APPEAR in all copies of this script
 *
-*  TYPO3 SVN ID: $Id: tree.js 8448 2010-07-30 11:23:30Z steffenk $
+*  TYPO3 SVN ID: $Id: tree.js 8449 2010-07-30 11:23:52Z steffenk $
 *
 ***************************************************************/
 

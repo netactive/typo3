@@ -30,7 +30,7 @@
 /*
  * Context Menu Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: context-menu.js 8946 2010-10-04 13:30:15Z stan $
+ * TYPO3 SVN ID: $Id: context-menu.js 8252 2010-07-23 15:52:18Z stan $
  */
 HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 	constructor : function(editor, pluginName) {
@@ -241,7 +241,7 @@ HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 	onItemClick: function (item, event) {
 		var button = this.getButton(item.getItemId());
 		if (button) {
-			button.fireEvent('context', button, event);
+			button.fireEvent('click', button, event);
 		} else if (item.getItemId() === 'DeleteTarget') {
 				// Do not leave a non-ie table cell empty
 			var parent = this.deleteTarget.parent().dom;

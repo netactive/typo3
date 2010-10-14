@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,10 +27,10 @@
 /**
  * Contains class for TYPO3 backend user authentication
  *
- * $Id: class.t3lib_beuserauth.php 7905 2010-06-13 14:42:33Z ohader $
- * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
+ * $Id: class.t3lib_beuserauth.php 8742 2010-08-30 18:55:32Z baschny $
+ * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @internal
  */
 /**
@@ -69,7 +69,7 @@
  * t3lib_userauthgroup contains most of the functions used for checking permissions, authenticating users, setting up the user etc. This class is most interesting in terms of an API for user from outside.
  * This class contains the configuration of the database fields used plus some functions for the authentication process of backend users.
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage t3lib
  */
@@ -231,7 +231,7 @@ class t3lib_beUserAuth extends t3lib_userAuthGroup {
 	 */
 	function checkCLIuser()	{
 			// First, check if cliMode is enabled:
-		if (defined('TYPO3_cliMode') && TYPO3_cliMode)	{
+		if (TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) {
 			if (!$this->user['uid'])	{
 				if (substr($GLOBALS['MCONF']['name'],0,5)=='_CLI_')	{
 					$userName = strtolower($GLOBALS['MCONF']['name']);
@@ -376,7 +376,7 @@ class t3lib_beUserAuth extends t3lib_userAuthGroup {
 	 *	+ backend user is a regular user and adminOnly is not defined
 	 *	+ backend user is an admin user
 	 *	+ backend user is used in CLI context and adminOnly is explicitely set to "2"
-	 * 
+	 *
 	 * @return	boolean		Whether a backend user is allowed to access the backend
 	 */
 	protected function isUserAllowedToLogin() {
@@ -387,7 +387,7 @@ class t3lib_beUserAuth extends t3lib_userAuthGroup {
 		if (!$adminOnlyMode || $this->isAdmin()) {
 			$isUserAllowedToLogin = TRUE;
 			// Backend user is allowed if adminOnly is set to 2 (CLI) and a CLI process is running:
-		} elseif ($adminOnlyMode == 2 && defined('TYPO3_cliMode') && TYPO3_cliMode) {
+		} elseif ($adminOnlyMode == 2 && (TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI)) {
 			$isUserAllowedToLogin = TRUE;
 		}
 

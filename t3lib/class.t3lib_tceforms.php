@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,11 +27,11 @@
 /**
  * Contains TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: class.t3lib_tceforms.php 8898 2010-09-25 22:31:45Z stan $
- * Revised for TYPO3 3.6 August/2003 by Kasper Skaarhoj
+ * $Id: class.t3lib_tceforms.php 8811 2010-09-19 11:51:24Z benni $
+ * Revised for TYPO3 3.6 August/2003 by Kasper Skårhøj
  * XHTML compliant
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -186,8 +186,8 @@
 /**
  * 'TCEforms' - Class for creating the backend editing forms.
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
- * @coauthor	Rene Fritz <r.fritz@colorcube.de>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
+ * @coauthor	René Fritz <r.fritz@colorcube.de>
  * @package TYPO3
  * @subpackage t3lib
  */
@@ -2542,11 +2542,6 @@ class t3lib_TCEforms	{
 						$PA['_lang'] = $lang;
 						$PA['_cshFile'] = ((isset($dataStruct['ROOT']['TCEforms']) && isset($dataStruct['ROOT']['TCEforms']['cshFile'])) ? $dataStruct['ROOT']['TCEforms']['cshFile'] : '');
 
-							// Push the sheet level tab to DynNestedStack
-						if (is_array($dataStructArray['sheets'])) {
-							$tabIdentString = $GLOBALS['TBE_TEMPLATE']->getDynTabMenuId('TCEFORMS:flexform:' . $PA['itemFormElName'] . $PA['_lang']);
-							$this->pushToDynNestedStack('tab', $tabIdentString . '-' . (count($tabParts)+1));
-						}
 							// Render flexform:
 						$tRows = $this->getSingleField_typeFlex_draw(
 									$dataStruct['ROOT']['el'],
@@ -2562,11 +2557,6 @@ class t3lib_TCEforms	{
 
 			#			$item = '<div style=" position:absolute;">'.$item.'</div>';
 						//visibility:hidden;
-
-							// Pop the sheet level tab from DynNestedStack
-						if (is_array($dataStructArray['sheets'])) {
-							$this->popFromDynNestedStack('tab', $tabIdentString . '-' . (count($tabParts)+1));
-						}
 					} else $sheetContent='Data Structure ERROR: No ROOT element found for sheet "'.$sheet.'".';
 
 						// Add to tab:
@@ -2807,9 +2797,6 @@ class t3lib_TCEforms	{
 							$s = t3lib_div::revExplode('[]',$formPrefix,2);
 							$actionFieldName = '_ACTION_FLEX_FORM'.$PA['itemFormElName'].$s[0].'][_ACTION]['.$s[1];
 
-								// Push the container to DynNestedStack as it may be toggled							
-							$this->pushToDynNestedStack('flex' , $idTagPrefix);
-
 								// Putting together the container:
 							$this->additionalJS_delete = array();
 							$output.= '
@@ -2834,9 +2821,6 @@ class t3lib_TCEforms	{
 								</div>';
 							$output = str_replace('/*###REMOVE###*/', t3lib_div::slashJS(htmlspecialchars(implode('', $this->additionalJS_delete))), $output);
 									// NOTICE: We are saving the toggle-state directly in the flexForm XML and "unauthorized" according to the data structure. It means that flexform XML will report unclean and a cleaning operation will remove the recorded togglestates. This is not a fatal problem. Ideally we should save the toggle states in meta-data but it is much harder to do that. And this implementation was easy to make and with no really harmful impact.
-
-								// Pop the container from DynNestedStack
-							$this->popFromDynNestedStack('flex' , $idTagPrefix);
 						}
 
 						// If it's a "single form element":

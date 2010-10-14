@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,10 +27,10 @@
 /**
  * Generate a page-tree, browsable.
  *
- * $Id: class.t3lib_browsetree.php 8570 2010-08-11 19:46:36Z stephenking $
- * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
+ * $Id: class.t3lib_browsetree.php 8742 2010-08-30 18:55:32Z baschny $
+ * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @coauthor	René Fritz <r.fritz@colorcube.de>
  */
 /**
@@ -64,8 +64,8 @@
 /**
  * Extension class for the t3lib_treeView class, specially made for browsing pages
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
- * @coauthor	Ren� Fritz <r.fritz@colorcube.de>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
+ * @coauthor	René Fritz <r.fritz@colorcube.de>
  * @see t3lib_treeView, t3lib_pageTree
  * @package TYPO3
  * @subpackage t3lib
@@ -183,7 +183,7 @@ class t3lib_browseTree extends t3lib_treeView {
 							</span>';
 		}
 		return $str;
-	}		
+	}
 }
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['t3lib/class.t3lib_browsetree.php'])	{

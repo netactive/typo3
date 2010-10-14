@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -27,10 +27,10 @@
 /**
  * Parent class for "Services" classes
  *
- * $Id: class.t3lib_svbase.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_svbase.php 8742 2010-08-30 18:55:32Z baschny $
  * TODO: temp files are not removed
  *
- * @author	Rene Fritz <r.fritz@colorcube.de>
+ * @author	René Fritz <r.fritz@colorcube.de>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -117,7 +117,7 @@ define ('T3_ERR_SV_PROG_FAILED', -41); // passed subtype is not possible with th
 /**
  * Parent class for "Services" classes
  *
- * @author	Rene Fritz <r.fritz@colorcube.de>
+ * @author	René Fritz <r.fritz@colorcube.de>
  * @package TYPO3
  * @subpackage t3lib
  */

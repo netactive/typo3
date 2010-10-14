@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -41,10 +41,10 @@
  * Thus you preserve backwards compatibility.
  *
  *
- * $Id: tables.php 8269 2010-07-25 18:16:39Z psychomieze $
- * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
+ * $Id: tables.php 8832 2010-09-20 16:53:05Z steffenk $
+ * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @see tslib_fe::includeTCA(), typo3/init.php, t3lib/stddb/load_ext_tables.php
  * @link http://typo3.org/doc.0.html?&tx_extrepmgm_pi1[extUid]=262&cHash=4f12caa011
  */
@@ -620,6 +620,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'actions-system-help-open',
 	'actions-system-list-open',
 	'actions-system-options-view',
+	'actions-system-pagemodule-open',
 	'actions-system-refresh',
 	'actions-system-shortcut-new',
 	'actions-system-tree-search-open',
@@ -630,6 +631,8 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'actions-version-page-open',
 	'actions-version-swap-version',
 	'actions-version-swap-workspace',
+	'actions-version-workspace-preview',
+	'actions-version-workspace-sendtostage',
 	'actions-view-go-back',
 	'actions-view-go-down',
 	'actions-view-go-forward',
@@ -655,6 +658,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'apps-filetree-folder-locked',
 	'apps-filetree-folder-media',
 	'apps-filetree-folder-news',
+	'apps-filetree-folder-recycler',
 	'apps-filetree-folder-temp',
 	'apps-filetree-folder-user',
 	'apps-filetree-mount',
@@ -781,6 +785,14 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'status-user-group-backend',
 	'status-user-group-frontend',
 	'status-version-1',
+	'status-version-2',
+	'status-version-3',
+	'status-version-4',
+	'status-version-5',
+	'status-version-6',
+	'status-version-7',
+	'status-version-8',
+	'status-version-9',
 	'status-version-10',
 	'status-version-11',
 	'status-version-12',
@@ -791,7 +803,6 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'status-version-17',
 	'status-version-18',
 	'status-version-19',
-	'status-version-2',
 	'status-version-20',
 	'status-version-21',
 	'status-version-22',
@@ -802,7 +813,6 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'status-version-27',
 	'status-version-28',
 	'status-version-29',
-	'status-version-3',
 	'status-version-30',
 	'status-version-31',
 	'status-version-32',
@@ -813,7 +823,6 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'status-version-37',
 	'status-version-38',
 	'status-version-39',
-	'status-version-4',
 	'status-version-40',
 	'status-version-41',
 	'status-version-42',
@@ -824,16 +833,12 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'status-version-47',
 	'status-version-48',
 	'status-version-49',
-	'status-version-5',
 	'status-version-50',
-	'status-version-6',
-	'status-version-7',
-	'status-version-8',
-	'status-version-9',
 	'status-version-no-version',
 	'status-warning-in-use',
 	'status-warning-lock'
 );
+
 
 $GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayPriorities'] = array('hidden', 'starttime', 'endtime', 'futureendtime', 'fe_group', 'protectedSection');
 $GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayNames'] = array(

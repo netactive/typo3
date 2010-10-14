@@ -30,7 +30,7 @@
 /*
  * Spell Checker Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: spell-checker.js 8088 2010-07-04 20:24:20Z stan $
+ * TYPO3 SVN ID: $Id: spell-checker.js 8087 2010-07-04 20:18:10Z stan $
  */
 HTMLArea.SpellChecker = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {

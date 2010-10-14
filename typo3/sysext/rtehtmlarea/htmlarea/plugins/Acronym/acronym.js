@@ -27,7 +27,7 @@
 /*
  * Acronym plugin for htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: acronym.js 8088 2010-07-04 20:24:20Z stan $
+ * TYPO3 SVN ID: $Id: acronym.js 8087 2010-07-04 20:18:10Z stan $
  */
 HTMLArea.Acronym = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {

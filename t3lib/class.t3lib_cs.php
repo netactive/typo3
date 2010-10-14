@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2003-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 2003-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -24,9 +24,9 @@
 /**
  * Class for conversion between charsets.
  *
- * $Id: class.t3lib_cs.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.t3lib_cs.php 8742 2010-08-30 18:55:32Z baschny $
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Martin Kutschker <martin.t.kutschker@blackbox.net>
  */
 /**
@@ -127,7 +127,7 @@
 /**
  * Class for conversion between charsets
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Martin Kutschker <martin.t.kutschker@blackbox.net>
  * @package TYPO3
  * @subpackage t3lib
@@ -1580,7 +1580,7 @@ class t3lib_cs {
 	 * Translates all characters of a string into their respective case values.
 	 * Unlike strtolower() and strtoupper() this method is locale independent.
 	 * Note that the string length may change!
-	 * eg. lower case German �(sharp S) becomes upper case "SS"
+	 * eg. lower case German "ß" (sharp S) becomes upper case "SS"
 	 * Unit-tested by Kasper
 	 * Real case folding is language dependent, this method ignores this fact.
 	 *
@@ -1611,7 +1611,7 @@ class t3lib_cs {
 	}
 
 	/**
-	 * Converts special chars (like ���, umlauts etc) to ascii equivalents (usually double-bytes, like �=> ae etc.)
+	 * Converts special chars (like æøåÆØÅ, umlauts etc) to ascii equivalents (usually double-bytes, like æ => ae etc.)
 	 *
 	 * @param	string		Character set of string
 	 * @param	string		Input string to convert

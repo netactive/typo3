@@ -149,7 +149,7 @@ class t3lib_SpriteManager {
 	 *
 	 * @return void
 	 */
-	protected function compatibilityCalls() {
+	private function compatibilityCalls() {
 			// Fallback for $TYPE_ICONS "contains-module" icons
 		foreach ((array) $GLOBALS['ICON_TYPES'] as $module => $icon) {
 			$iconFile = $icon['icon'];
@@ -246,5 +246,4 @@ class t3lib_SpriteManager {
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['t3lib/class.t3lib_spritemanager.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['t3lib/class.t3lib_spritemanager.php']);
 }
-
 ?>

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,10 +27,10 @@
 /**
  * Contains a class with Extension Management functions
  *
- * $Id: class.t3lib_extmgm.php 8817 2010-09-19 14:04:48Z ohader $
- * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
+ * $Id: class.t3lib_extmgm.php 8818 2010-09-19 14:05:16Z ohader $
+ * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -107,7 +107,7 @@
  * This class is never instantiated, rather the methods inside is called as functions like
  * 		t3lib_extMgm::isLoaded('my_extension');
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage t3lib
  */
@@ -812,7 +812,7 @@ final class t3lib_extMgm {
 	 *
 	 *	 Adding SERVICES features
 	 *
-	 *   @author	Rene Fritz <r.fritz@colorcube.de>
+	 *   @author	René Fritz <r.fritz@colorcube.de>
 	 *
 	 ***************************************/
 
@@ -824,7 +824,7 @@ final class t3lib_extMgm {
 	 * @param	string		Service key, must be prefixed "tx_" or "user_"
 	 * @param	array		Service description array
 	 * @return	void
-	 * @author	Rene Fritz <r.fritz@colorcube.de>
+	 * @author	René Fritz <r.fritz@colorcube.de>
 	 */
 	public static function addService($extKey, $serviceType, $serviceKey, $info) {
 		global $T3_SERVICES, $TYPO3_CONF_VARS;
@@ -892,7 +892,7 @@ final class t3lib_extMgm {
 	 * @param	string		Service sub type
 	 * @param	mixed		Service keys that should be excluded in the search for a service. Array or comma list.
 	 * @return	mixed		Service info array if a service was found, FLASE otherwise
-	 * @author	Rene Fritz <r.fritz@colorcube.de>
+	 * @author	René Fritz <r.fritz@colorcube.de>
 	 */
 	public static function findService($serviceType, $serviceSubType = '', $excludeServiceKeys = array()) {
 		global $T3_SERVICES, $TYPO3_CONF_VARS;
@@ -961,7 +961,7 @@ final class t3lib_extMgm {
 	 * @param	string		Service type
 	 * @param	string		Service key
 	 * @return	void
-	 * @author	Rene Fritz <r.fritz@colorcube.de>
+	 * @author	René Fritz <r.fritz@colorcube.de>
 	 */
 	public static function deactivateService($serviceType, $serviceKey) {
 		global $T3_SERVICES;
@@ -1499,6 +1499,32 @@ $TYPO3_LOADED_EXT = unserialize(stripslashes(\''.addslashes(serialize($extension
 			}
 		}
 		return $out;
+	}
+
+	/**
+	 * Static function for create a link to list view
+	 *
+	 * @param string $id page id / resource id
+	 * @param string $additionalParams eg "&returnUrl=..."
+	 * @param string $linkTitle title for the link tag
+	 * @param string $linkText optional link text after the icon
+	 * @param boolean $linkOnly if true only the href will be returned
+	 * @return string link / href
+	 */
+	public function createListViewLink($id, $additionalParams = '', $linkTitle = '', $linkText = '', $linkOnly = FALSE) {
+		if (!self::isLoaded('list') || !$GLOBALS['BE_USER']->check('modules', 'web_list')) {
+			return '';
+		}
+		$href = $GLOBALS['BACK_PATH'] . self::extRelPath('list') . 'mod1/db_list.php?id=' .
+			$id . $additionalParams;
+		if ($linkOnly) {
+			return $href;
+		} else {
+			return '<a href="' . htmlspecialchars($href) . '" title="' . htmlspecialchars($linkTitle) . '">' .
+				t3lib_iconWorks::getSpriteIcon('actions-system-list-open') .
+				$linkText .
+				'</a>';
+		}
 	}
 
 	/**

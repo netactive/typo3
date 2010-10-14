@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2004-2010 Kasper Skaarhoj (kasper@typo3.com)
+*  (c) 2004-2010 Kasper Skårhøj (kasper@typo3.com)
 *  (c) 2004-2010 Philipp Borgmann <philipp.borgmann@gmx.de>
 *  (c) 2004-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
@@ -32,7 +32,7 @@
  * @author	Philipp Borgmann <philipp.borgmann@gmx.de>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_base.php 8779 2010-09-13 01:03:25Z stan $  *
+ * $Id: class.tx_rtehtmlarea_base.php 8778 2010-09-13 01:01:42Z stan $  *
  */
 
 class tx_rtehtmlarea_base extends t3lib_rteapi {

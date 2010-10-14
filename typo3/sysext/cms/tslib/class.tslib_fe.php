@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -32,11 +32,11 @@
  * The class is instantiated as $GLOBALS['TSFE'] in index_ts.php.
  * The use of this class should be inspired by the order of function calls as found in index_ts.php.
  *
- * $Id: class.tslib_fe.php 8981 2010-10-06 08:17:30Z ohader $
- * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
+ * $Id: class.tslib_fe.php 8826 2010-09-20 13:34:18Z francois $
+ * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 
 /**
@@ -186,7 +186,7 @@
 /**
  * Main frontend class, instantiated in the index_ts.php script as the global object TSFE
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage tslib
  */
@@ -1118,7 +1118,7 @@
 	 * Get page shortcut; Finds the records pointed to by input value $SC (the shortcut value)
 	 *
 	 * @param	integer		The value of the "shortcut" field from the pages record
-	 * @param	integer		The shortcut mode: 1 and 2 will select either first subpage or random subpage; the default is the page pointed to by $SC
+	 * @param	integer		The shortcut mode: 1 will select first subpage, 2 a random subpage, 3 the parent page; default is the page pointed to by $SC
 	 * @param	integer		The current page UID of the page which is a shortcut
 	 * @param	integer		Safety feature which makes sure that the function is calling itself recursively max 20 times (since this function can find shortcuts to other shortcuts to other shortcuts...)
 	 * @param	array		An array filled with previous page uids tested by the function - new page uids are evaluated against this to avoid going in circles.
@@ -1147,6 +1147,10 @@
 					}
 					$c++;
 				}
+			break;
+			case 3:
+				$parent = $this->sys_page->getPage($thisUid);
+				$page = $this->sys_page->getPage($parent['pid']);
 			break;
 			default:
 				$page = $this->sys_page->getPage($idArray[0]);
@@ -1422,9 +1426,9 @@
 	 *
 	 * @return	boolean		True/false whether the pageUnavailable_handler should be used.
 	 */
-	function checkPageUnavailableHandler() {
-		if ($this->TYPO3_CONF_VARS['FE']['pageUnavailable_handling'] &&
-			!t3lib_div::cmpIP(t3lib_div::getIndpEnv('REMOTE_ADDR'), $this->TYPO3_CONF_VARS['SYS']['devIPmask'])) {
+	function checkPageUnavailableHandler()	{
+		if($this->TYPO3_CONF_VARS['FE']['pageUnavailable_handling'] &&
+		   !t3lib_div::cmpIP(t3lib_div::getIndpEnv('REMOTE_ADDR'), $this->TYPO3_CONF_VARS['SYS']['devIPmask'])) {
 			$checkPageUnavailableHandler = TRUE;
 		} else {
 			$checkPageUnavailableHandler = FALSE;
@@ -1689,7 +1693,7 @@
 				} else {
 					$message = 'You logged out from Workspace preview mode. Click this link to <a href="%1$s">go back to the website</a>';
 				}
-				
+
 				$returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GET('returnUrl'));
 				die(sprintf($message,
 					htmlspecialchars(preg_replace('/\&?ADMCMD_prev=[[:alnum:]]+/', '', $returnUrl))
@@ -2409,7 +2413,7 @@
 
 			// Setting locale
 		if ($this->config['config']['locale_all'])	{
-			# Change by Rene Fritz, 22/10 2002
+			# Change by René Fritz, 22/10 2002
 			# there's a problem that PHP parses float values in scripts wrong if the locale LC_NUMERIC is set to something with a comma as decimal point
 			# this does not work in php 4.2.3
 			#setlocale('LC_ALL',$this->config['config']['locale_all']);
@@ -2637,31 +2641,31 @@
 	function jumpUrl()	{
 		if ($this->jumpurl)	{
 			if (t3lib_div::_GP('juSecure'))	{
-				$locationData = (string)t3lib_div::_GP('locationData');
-				$mimeType = (string)t3lib_div::_GP('mimeType');  // Need a type cast here because mimeType is optional!
+				$locationData = t3lib_div::_GP('locationData');
+				$mimeType = t3lib_div::_GP('mimeType');
 
 				$hArr = array(
 					$this->jumpurl,
-					$locationData,
-					$mimeType
+					t3lib_div::_GP('locationData'),
+					(string)t3lib_div::_GP('mimeType'), // Need a type cast here because mimeType is optional!
+					$this->TYPO3_CONF_VARS['SYS']['encryptionKey']
 				);
-				$calcJuHash = t3lib_div::hmac(serialize($hArr));
-				$juHash = (string)t3lib_div::_GP('juHash');
-				if ($juHash === $calcJuHash)	{
+				$calcJuHash=t3lib_div::shortMD5(serialize($hArr));
+				$juHash = t3lib_div::_GP('juHash');
+				if ($juHash == $calcJuHash)	{
 					if ($this->locDataCheck($locationData))	{
 						$this->jumpurl = rawurldecode($this->jumpurl);	// 211002 - goes with cObj->filelink() rawurlencode() of filenames so spaces can be allowed.
 							// Deny access to files that match TYPO3_CONF_VARS[SYS][fileDenyPattern] and whose parent directory is typo3conf/ (there could be a backup file in typo3conf/ which does not match against the fileDenyPattern)
-						$absoluteFileName = t3lib_div::getFileAbsFileName(t3lib_div::resolveBackPath($this->jumpurl), FALSE);
-						if (t3lib_div::isAllowedAbsPath($absoluteFileName) && t3lib_div::verifyFilenameAgainstDenyPattern($absoluteFileName) && !t3lib_div::isFirstPartOfStr($absoluteFileName, PATH_site . 'typo3conf')) {
-							if (@is_file($absoluteFileName)) {
+						if (t3lib_div::verifyFilenameAgainstDenyPattern($this->jumpurl) && basename(dirname($this->jumpurl)) !== 'typo3conf') {
+							if (@is_file($this->jumpurl)) {
 								$mimeType = $mimeType ? $mimeType : 'application/octet-stream';
 								header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 								header('Content-Type: '.$mimeType);
-								header('Content-Disposition: attachment; filename="'.basename($absoluteFileName) . '"');
-								readfile($absoluteFileName);
+								header('Content-Disposition: attachment; filename="'.basename($this->jumpurl) . '"');
+								readfile($this->jumpurl);
 								exit;
 							} else die('jumpurl Secure: "'.$this->jumpurl.'" was not a valid file!');
-						} else die('jumpurl Secure: The requested file was not allowed to be accessed through jumpUrl (path or file not allowed)!');
+						} else die('jumpurl Secure: The requested file type was not allowed to be accessed through jumpUrl (fileDenyPattern)!');
 					} else die('jumpurl Secure: locationData, '.$locationData.', was not accessible.');
 				} else die('jumpurl Secure: Calculated juHash did not match the submitted juHash.');
 			} else {
@@ -3628,16 +3632,16 @@ if (version == "n3") {
 	 * @return	void
 	 * @access private
 	 */
-	function setParseTime() {
-		// Compensates for the time consumed with Back end user initialization.
-		$microtime_start            = (isset($GLOBALS['TYPO3_MISC']['microtime_start'])) ? $GLOBALS['TYPO3_MISC']['microtime_start'] : NULL;
-		$microtime_end              = (isset($GLOBALS['TYPO3_MISC']['microtime_end'])) ? $GLOBALS['TYPO3_MISC']['microtime_end'] : NULL;
-		$microtime_BE_USER_start    = (isset($GLOBALS['TYPO3_MISC']['microtime_BE_USER_start'])) ? $GLOBALS['TYPO3_MISC']['microtime_BE_USER_start'] : NULL;
-		$microtime_BE_USER_end      = (isset($GLOBALS['TYPO3_MISC']['microtime_BE_USER_end'])) ? $GLOBALS['TYPO3_MISC']['microtime_BE_USER_end'] : NULL;
+	function setParseTime()	{
+        // Compensates for the time consumed with Back end user initialization.
+        $microtime_start            = (isset($GLOBALS['TYPO3_MISC']['microtime_start'])) ? $GLOBALS['TYPO3_MISC']['microtime_start'] : NULL;
+        $microtime_end              = (isset($GLOBALS['TYPO3_MISC']['microtime_end'])) ? $GLOBALS['TYPO3_MISC']['microtime_end'] : NULL;
+        $microtime_BE_USER_start    = (isset($GLOBALS['TYPO3_MISC']['microtime_BE_USER_start'])) ? $GLOBALS['TYPO3_MISC']['microtime_BE_USER_start'] : NULL;
+        $microtime_BE_USER_end      = (isset($GLOBALS['TYPO3_MISC']['microtime_BE_USER_end'])) ? $GLOBALS['TYPO3_MISC']['microtime_BE_USER_end'] : NULL;
 
-		$this->scriptParseTime = $GLOBALS['TT']->getMilliseconds($microtime_end) - $GLOBALS['TT']->getMilliseconds($microtime_start)
-			- ($GLOBALS['TT']->getMilliseconds($microtime_BE_USER_end) - $GLOBALS['TT']->getMilliseconds($microtime_BE_USER_start));
-	}
+        $this->scriptParseTime = $GLOBALS['TT']->getMilliseconds($microtime_end) - $GLOBALS['TT']->getMilliseconds($microtime_start)
+                                - ($GLOBALS['TT']->getMilliseconds($microtime_BE_USER_end) - $GLOBALS['TT']->getMilliseconds($microtime_BE_USER_start));
+    }
 
 	/**
 	 * Initialize file-based statistics handling: Check filename and permissions, and create the logfile if it does not exist yet.
@@ -3799,7 +3803,7 @@ if (version == "n3") {
 
 						// Hook for preprocessing the list of fields to insert into sys_stat:
 					if (isset($this->TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['sys_stat-PreProcClass']) && is_array($this->TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['sys_stat-PreProcClass'])) {
-						foreach ($this->TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['sys_stat-PreProcClass'] as $_classRef) {
+						foreach($this->TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['sys_stat-PreProcClass'] as $_classRef)    {
 							$_procObj = t3lib_div::getUserObj($_classRef);
 							$insertFields = $_procObj->sysstat_preProcessFields($insertFields,$this);
 						}
@@ -4263,15 +4267,19 @@ if (version == "n3") {
 
 	/**
 	 * Logs access to deprecated TypoScript objects and properties.
-	 * Dumps message to the TypoScript message log (admin panel) and the TYPO3 deprecation log.
 	 *
-	 * @param	string		Message string
+	 * Dumps message to the TypoScript message log (admin panel) and the TYPO3 deprecation log.
+	 * Note: The second parameter was introduced in TYPO3 4.5 and is not available in older versions
+	 *
+	 * @param	string		Deprecated object or property
+	 * @param	string		Message or additional information
 	 * @return	void
 	 * @see t3lib_div::deprecationLog(), t3lib_timeTrack::setTSlogMessage()
 	 */
-	function logDeprecatedTyposcript($msg) {
-		$GLOBALS['TT']->setTSlogMessage($msg . ' is deprecated.', 2);
-		t3lib_div::deprecationLog('TypoScript ' . $msg);
+	function logDeprecatedTyposcript($typoScriptProperty, $explanation = '') {
+		$explanationText = (strlen($explanation) ? ' - ' . $explanation : '');
+		$GLOBALS['TT']->setTSlogMessage($typoScriptProperty . ' is deprecated.' . $explanationText, 2);
+		t3lib_div::deprecationLog('TypoScript ' . $typoScriptProperty . ' is deprecated' . $explanationText);
 	}
 
 	/**

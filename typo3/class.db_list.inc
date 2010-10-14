@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,11 +28,11 @@
  * Include file extending t3lib_recordList
  * Shared between Web>List (db_list.php) and Web>Page (sysext/cms/layout/db_layout.php)
  *
- * $Id: class.db_list.inc 8429 2010-07-28 09:19:00Z ohader $
- * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
+ * $Id: class.db_list.inc 8742 2010-08-30 18:55:32Z baschny $
+ * Revised for TYPO3 3.6 December/2003 by Kasper Skårhøj
  * XHTML compliant
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -78,7 +78,7 @@
 /**
  * Child class for rendering of Web > List (not the final class. see class.db_list_extra)
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  * @see localRecordList
@@ -701,18 +701,24 @@ class recordList extends t3lib_recordList {
 	 * @return	string		URL
 	 */
 	function listURL($altId='',$table=-1,$exclList='')	{
-		return $GLOBALS['BACK_PATH'] . $this->script.
-			'?id='.(strcmp($altId,'')?$altId:$this->id).
-			'&table='.rawurlencode($table==-1?$this->table:$table).
-			($this->thumbs?'&imagemode='.$this->thumbs:'').
-			($this->returnUrl?'&returnUrl='.rawurlencode($this->returnUrl):'').
-			($this->searchString?'&search_field='.rawurlencode($this->searchString):'').
-			($this->searchLevels?'&search_levels='.rawurlencode($this->searchLevels):'').
-			($this->showLimit?'&showLimit='.rawurlencode($this->showLimit):'').
-			($this->firstElementNumber?'&pointer='.rawurlencode($this->firstElementNumber):'').
-			((!$exclList || !t3lib_div::inList($exclList,'sortField')) && $this->sortField?'&sortField='.rawurlencode($this->sortField):'').
-			((!$exclList || !t3lib_div::inList($exclList,'sortRev')) && $this->sortRev?'&sortRev='.rawurlencode($this->sortRev):'')
-			;
+		$id = strcmp($altId, '') ? $altId : $this->id;
+		$additionalParams = '&table=' . rawurlencode($table == -1 ? $this->table : $table) .
+			($this->thumbs ? '&imagemode=' . $this->thumbs : '') .
+			($this->returnUrl ? '&returnUrl=' . rawurlencode($this->returnUrl) : '') .
+			($this->searchString ? '&search_field=' . rawurlencode($this->searchString) : '') .
+			($this->searchLevels ? '&search_levels=' . rawurlencode($this->searchLevels) : '') .
+			($this->showLimit ? '&showLimit=' . rawurlencode($this->showLimit) : '') .
+			($this->firstElementNumber? ' &pointer=' . rawurlencode($this->firstElementNumber) : '') .
+			((!$exclList || !t3lib_div::inList($exclList, 'sortField')) && $this->sortField ? '&sortField=' . rawurlencode($this->sortField) : '') .
+			((!$exclList || !t3lib_div::inList($exclList, 'sortRev')) && $this->sortRev ? '&sortRev=' . rawurlencode($this->sortRev) : '');
+
+		return t3lib_extMgm::createListViewLink(
+			$id,
+			$additionalParams,
+			'',
+			'',
+			TRUE
+		);
 	}
 
 	/**
@@ -822,8 +828,9 @@ class recordList extends t3lib_recordList {
 
 			if (is_array($localizedRecord))	{
 					// Create parameters and finally run the classic page module for creating a new page translation
+				$url = substr($this->listURL(), strlen($this->backPath));
 				$params = '&edit['.$table.']['.$localizedRecord['uid'].']=edit';
-				$returnUrl = '&returnUrl='.rawurlencode($this->listURL());
+				$returnUrl = '&returnUrl='.rawurlencode($url);
 				$location = $GLOBALS['BACK_PATH'].'alt_doc.php?'.$params.$returnUrl;
 
 				t3lib_utility_Http::redirect($location);

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasper@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasper@typo3.com)
 *  (c) 2004-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
@@ -28,16 +28,16 @@
 /**
  * Displays image selector for the RTE
  *
- * @author	Kasper Skaarhoj <kasper@typo3.com>
+ * @author	Kasper Skårhøj <kasper@typo3.com>
  *
- * $Id: class.tx_rtehtmlarea_dam_browse_media.php 7905 2010-06-13 14:42:33Z ohader $  *
+ * $Id: class.tx_rtehtmlarea_dam_browse_media.php 8742 2010-08-30 18:55:32Z baschny $  *
  */
 require_once(t3lib_extMgm::extPath('dam').'class.tx_dam_browse_media.php');
 
 /**
  * Script Class
  *
- * @author	Kasper Skaarhoj <kasper@typo3.com>
+ * @author	Kasper Skårhøj <kasper@typo3.com>
  * @package TYPO3
  * @subpackage tx_rte
  */

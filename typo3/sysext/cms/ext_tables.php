@@ -1,5 +1,5 @@
 <?php
-# TYPO3 SVN ID: $Id: ext_tables.php 8269 2010-07-25 18:16:39Z psychomieze $
+# TYPO3 SVN ID: $Id: ext_tables.php 8762 2010-09-05 14:55:39Z stephenking $
 if (!defined ('TYPO3_MODE'))	die ('Access denied.');
 
 
@@ -326,6 +326,7 @@ if (TYPO3_MODE == 'BE') {
 					array('', 0),
 					array('LLL:EXT:cms/locallang_tca.xml:pages.shortcut_mode.I.1', 1),
 					array('LLL:EXT:cms/locallang_tca.xml:pages.shortcut_mode.I.2', 2),
+					array('LLL:EXT:cms/locallang_tca.xml:pages.shortcut_mode.I.3', 3),
 				),
 				'default' => '0'
 			)

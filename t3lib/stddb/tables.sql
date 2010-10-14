@@ -1,5 +1,5 @@
 #
-# TYPO3 SVN ID: $Id: tables.sql 7401 2010-04-20 11:30:28Z lolli $
+# TYPO3 SVN ID: $Id: tables.sql 8551 2010-08-10 11:38:55Z lolli $
 #
 
 #
@@ -140,7 +140,7 @@ CREATE TABLE cachingframework_cache_hash (
   id int(11) unsigned NOT NULL auto_increment,
   identifier varchar(128) DEFAULT '' NOT NULL,
   crdate int(11) unsigned DEFAULT '0' NOT NULL,
-  content mediumtext,
+  content mediumblob,
   lifetime int(11) unsigned DEFAULT '0' NOT NULL,
   PRIMARY KEY (id),
   KEY cache_id (identifier)

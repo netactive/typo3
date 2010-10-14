@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,10 +27,10 @@
 /**
  * extending class to class t3lib_basicFileFunctions
  *
- * $Id: class.t3lib_extfilefunc.php 8157 2010-07-11 12:45:16Z psychomieze $
- * Revised for TYPO3 3.6 May/2004 by Kasper Skaarhoj
+ * $Id: class.t3lib_extfilefunc.php 8742 2010-08-30 18:55:32Z baschny $
+ * Revised for TYPO3 3.6 May/2004 by Kasper Skårhøj
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -98,7 +98,7 @@
  * You should never mount a ftp_space 'below' the webspace so that it reaches into the webspace. This is because if somebody unzips a zip-file in the ftp-space so that it reaches out into the webspace this will be a violation of the safety
  * For example this is a bad idea: you have an ftp-space that is '/www/' and a web-space that is '/www/htdocs/'
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage t3lib
  */
@@ -275,6 +275,19 @@ class t3lib_extFileFunctions extends t3lib_basicFileFunctions	{
 							case 'unzip':
 								$result[$action][] = $this->func_unzip($cmdArr);
 							break;
+						}
+
+							// Hook for post-processing the action
+						if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_extfilefunc.php']['processData'])) {
+							foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_extfilefunc.php']['processData'] as $classRef) {
+								$hookObject = t3lib_div::getUserObj($classRef);
+				
+								if (!($hookObject instanceof t3lib_extFileFunctions_processDataHook)) {
+									throw new UnexpectedValueException('$hookObject must implement interface t3lib_extFileFunctions_processDataHook', 1279719168);
+								}
+				
+								$hookObject->processData_postProcessAction($action, $cmdArr, $result[$action], $this);
+							}
 						}
 					}
 				}

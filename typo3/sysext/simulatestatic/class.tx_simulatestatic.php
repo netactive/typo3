@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj <kasperYYYY@typo3.com>
+*  (c) 1999-2010 Kasper Skårhøj <kasperYYYY@typo3.com>
 *  (c) 2008-2010 Benjamin Mack <benni . typo3 . o)rg>
 *  All rights reserved
 *
@@ -29,9 +29,9 @@
  * Class that does the simulatestatic feature (Speaking URLs)
  * Was extracted for TYPO3 4.3 from the core
  *
- * $Id: class.tx_simulatestatic.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tx_simulatestatic.php 8742 2010-08-30 18:55:32Z baschny $
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Benjamin Mack <benni . typo3 . o)rg>
  */
 class tx_simulatestatic {

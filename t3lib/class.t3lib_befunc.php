@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -31,12 +31,12 @@
  * Call ALL methods without making an object!
  * Eg. to get a page-record 51 do this: 't3lib_BEfunc::getRecord('pages',51)'
  *
- * $Id: class.t3lib_befunc.php 8827 2010-09-20 14:08:46Z francois $
+ * $Id: class.t3lib_befunc.php 8842 2010-09-21 21:02:40Z steffenk $
  * Usage counts are based on search 22/2 2003 through whole backend source of typo3/
- * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
+ * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -177,7 +177,7 @@
  * Standard functions available for the TYPO3 backend.
  * Don't instantiate - call functions with "t3lib_BEfunc::" prefixed the function name.
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage t3lib
  */
@@ -2178,7 +2178,7 @@ final class t3lib_BEfunc {
 				case 'select':
 					if ($theColConf['MM']) {
 						if ($uid) {
-							// Display the title of MM related records in lists
+								// Display the title of MM related records in lists
 							if ($noRecordLookup) {
 								$MMfield = $theColConf['foreign_table'] . '.uid';
 							} else	{
@@ -2197,7 +2197,7 @@ final class t3lib_BEfunc {
 								$MMres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 									'uid, ' . $MMfield,
 									$theColConf['foreign_table'],
-									'uid IN ('.implode(',', $selectUids) . ')'
+									'uid IN (' . implode(',', $selectUids) . ')'
 								);
 								while ($MMrow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($MMres)) {
 									$mmlA[] = ($noRecordLookup ? $MMrow['uid'] : self::getRecordTitle($theColConf['foreign_table'], $MMrow, FALSE, $forceResult));
@@ -2334,7 +2334,7 @@ final class t3lib_BEfunc {
 	 */
 	public static function getProcessedValueExtra($table, $fN, $fV, $fixed_lgd_chars = 0, $uid = 0, $forceResult = TRUE) {
 		global $TCA;
-		$fVnew = self::getProcessedValue($table, $fN, $fV, $fixed_lgd_chars, 0, 0, $uid, $forceResult);
+		$fVnew = self::getProcessedValue($table, $fN, $fV, $fixed_lgd_chars, 1, 0, $uid, $forceResult);
 		if (!isset($fVnew)) {
 			if (is_array($TCA[$table])) {
 				if ($fN==$TCA[$table]['ctrl']['tstamp'] || $fN==$TCA[$table]['ctrl']['crdate']) {
@@ -2623,7 +2623,11 @@ final class t3lib_BEfunc {
 	 */
 	public static function viewOnClick($id, $backPath = '', $rootLine = '', $anchor = '', $altUrl = '', $addGetVars = '', $switchFocus = TRUE) {
 
-		$viewScriptPreviewDisabled = '/' . TYPO3_mainDir . 'mod/user/ws/wsol_preview.php?id=';
+		$viewScriptPreviewDisabled = t3lib_extMgm::isLoaded('version') ?
+			'/' . TYPO3_mainDir . t3lib_extMgm::extRelPath('version') . 'ws/wsol_preview.php?id='
+			:
+			'/index.php?id='
+		;
 		$viewScriptPreviewEnabled = '/index.php?id=';
 		if ($altUrl) {
 			$viewScriptPreviewEnabled = $viewScriptPreviewDisabled = $altUrl;
@@ -2929,8 +2933,8 @@ final class t3lib_BEfunc {
 				$signals[] = $params['JScode'];
 			} else if ($set == 'updatePageTree' || $set == 'updateFolderTree') {
 				$signals[] = '
-					if (top && top.content && top.content.nav_frame && top.content.nav_frame.Tree) {
-						top.content.nav_frame.Tree.refresh();
+					if (top && top.TYPO3.Backend.NavigationContainer) {
+						top.TYPO3.Backend.NavigationContainer.refresh();
 					}';
 			}
 		}

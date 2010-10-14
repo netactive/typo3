@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -49,10 +49,10 @@
  * For a detailed description of this script, the scope of constants and variables in it,
  * please refer to the document "Inside TYPO3"
  *
- * $Id: init.php 8610 2010-08-19 10:02:02Z francois $
- * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
+ * $Id: init.php 8742 2010-08-30 18:55:32Z baschny $
+ * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  */
@@ -245,7 +245,7 @@ if (TYPO3_UseCachingFramework) {
 // *************************
 // CLI dispatch processing
 // *************************
-if (defined('TYPO3_cliMode') && TYPO3_cliMode && basename(PATH_thisScript)=='cli_dispatch.phpsh')	{
+if ((TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) && basename(PATH_thisScript) == 'cli_dispatch.phpsh') {
 		// First, take out the first argument (cli-key)
 	$temp_cliScriptPath = array_shift($_SERVER['argv']);
 	$temp_cliKey = array_shift($_SERVER['argv']);
@@ -278,7 +278,7 @@ if ($TYPO3_CONF_VARS['BE']['adminOnly'] < 0)	{
 	t3lib_BEfunc::typo3printError('Backend locked', 'Backend and Install Tool are locked for maintenance. [BE][adminOnly] is set to "' . intval($TYPO3_CONF_VARS['BE']['adminOnly']) . '".');
 	exit;
 }
-if (!(defined('TYPO3_cliMode') && TYPO3_cliMode) && @is_file(PATH_typo3conf.'LOCK_BACKEND'))	{
+if (!(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) && @is_file(PATH_typo3conf . 'LOCK_BACKEND')) {
 	if (TYPO3_PROCEED_IF_NO_USER == 2) {
 		// ajax poll for login, let him pass
 	} else {
@@ -296,7 +296,7 @@ if (!(defined('TYPO3_cliMode') && TYPO3_cliMode) && @is_file(PATH_typo3conf.'LOC
 // **********************
 // Check IP
 // **********************
-if (trim($TYPO3_CONF_VARS['BE']['IPmaskList']) && !(defined('TYPO3_cliMode') && TYPO3_cliMode))	{
+if (trim($TYPO3_CONF_VARS['BE']['IPmaskList']) && !(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI)) {
 	if (!t3lib_div::cmpIP(t3lib_div::getIndpEnv('REMOTE_ADDR'), $TYPO3_CONF_VARS['BE']['IPmaskList']))	{
 		header('Status: 404 Not Found');	// Send Not Found header - if the webserver can make use of it...
 		header('Location: http://');	// Just point us away from here...
@@ -308,7 +308,7 @@ if (trim($TYPO3_CONF_VARS['BE']['IPmaskList']) && !(defined('TYPO3_cliMode') && 
 // **********************
 // Check SSL (https)
 // **********************
-if (intval($TYPO3_CONF_VARS['BE']['lockSSL']) && !(defined('TYPO3_cliMode') && TYPO3_cliMode))	{
+if (intval($TYPO3_CONF_VARS['BE']['lockSSL']) && !(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI)) {
 	if(intval($TYPO3_CONF_VARS['BE']['lockSSLPort'])) {
 		$sslPortSuffix = ':'.intval($TYPO3_CONF_VARS['BE']['lockSSLPort']);
 	} else {
@@ -351,7 +351,7 @@ if (!get_magic_quotes_gpc())	{
 // ********************************************
 // Check if the install script should be run:
 // ********************************************
-if (defined('TYPO3_enterInstallScript') && TYPO3_enterInstallScript)	{
+if (TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_INSTALL) {
 	if(!t3lib_extMgm::isLoaded('install')) {
 		die('Install Tool is not loaded as an extension.<br />You must add the key "install" to the list of installed extensions in typo3conf/localconf.php, $TYPO3_CONF_VARS[\'EXT\'][\'extList\'].');
 	}
@@ -384,7 +384,7 @@ if ($TYPO3_DB->sql_pconnect(TYPO3_db_host, TYPO3_db_username, TYPO3_db_password)
 // *******************************
 // Checks for proper browser
 // *******************************
-if (!$CLIENT['BROWSER'] && !(defined('TYPO3_cliMode') && TYPO3_cliMode))	{
+if (!$CLIENT['BROWSER'] && !(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI)) {
 	t3lib_BEfunc::typo3PrintError ('Browser error','Your browser version looks incompatible with this TYPO3 version!',0);
 	exit;
 }
@@ -440,7 +440,7 @@ $GLOBALS['LANG']->init($BE_USER->uc['lang']);
 // ****************
 // CLI processing
 // ****************
-if (defined('TYPO3_cliMode') && TYPO3_cliMode)	{
+if (TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) {
 		// Status output:
 	if (!strcmp($_SERVER['argv'][1],'status'))	{
 		echo "Status of TYPO3 CLI script:\n\n";

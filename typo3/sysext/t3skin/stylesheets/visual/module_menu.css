@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Module menu
 
-$Id: module_menu.css 7937 2010-06-16 17:32:00Z psychomieze $
+$Id: module_menu.css 8842 2010-09-21 21:02:40Z steffenk $
 - - - - - - - - - - - - - - - - - - - - - */
 
 #typo3-module-menu {
@@ -53,7 +53,7 @@ $Id: module_menu.css 7937 2010-06-16 17:32:00Z psychomieze $
 	font-weight: bold;
 }
 
-#typo3-menu li div {
+#typo3-menu li div.modgroup {
 	color: #252524;
 	cursor: pointer;
 	font-weight: bold;

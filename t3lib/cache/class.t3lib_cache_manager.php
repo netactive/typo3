@@ -31,7 +31,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_manager.php 8556 2010-08-10 15:19:41Z lolli $
+ * @version $Id: class.t3lib_cache_manager.php 8555 2010-08-10 15:18:07Z lolli $
  */
 class t3lib_cache_Manager implements t3lib_Singleton {
 	/**

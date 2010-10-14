@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  (c) 2005-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
@@ -32,9 +32,9 @@
  *
  * Adapted for htmlArea RTE by Stanislas Rolland
  *
- * $Id: class.tx_rtehtmlarea_browse_links.php 8895 2010-09-25 21:55:36Z stan $
+ * $Id: class.tx_rtehtmlarea_browse_links.php 8742 2010-08-30 18:55:32Z baschny $
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  */
 
@@ -44,7 +44,7 @@ require_once (PATH_typo3.'class.browse_links.php');
 /**
  * Class which generates the page tree
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  */
@@ -105,7 +105,7 @@ class tx_rtehtmlarea_pageTree extends rtePageTree {
  * Base extension class which generates the folder tree.
  * Used directly by the RTE.
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  */
@@ -194,7 +194,7 @@ class tx_rtehtmlarea_folderTree extends rteFolderTree {
 /**
  * Script class for the Element Browser window.
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  */
@@ -245,8 +245,7 @@ class tx_rtehtmlarea_browse_links extends browse_links {
 			// CurrentUrl - the current link url must be passed around if it exists
 		$this->curUrlArray = t3lib_div::_GP('curUrl');
 		if ($this->curUrlArray['all'])	{
-			$this->curUrlArray = t3lib_div::get_tag_attributes($this->curUrlArray['all']);
-			$this->curUrlArray['href'] = htmlspecialchars_decode($this->curUrlArray['href']);
+			$this->curUrlArray=t3lib_div::get_tag_attributes($this->curUrlArray['all']);
 		}
 			// Note: parseCurUrl will invoke the hooks
 		$this->curUrlInfo = $this->parseCurUrl($this->curUrlArray['href'],$this->siteURL);
@@ -838,7 +837,7 @@ class tx_rtehtmlarea_browse_links extends browse_links {
 					);
 					$dbmount = $flashMessage->render();
 				}
-				
+
 				$content .= '
 			<!--
 				Wrapper table for page tree / record list:

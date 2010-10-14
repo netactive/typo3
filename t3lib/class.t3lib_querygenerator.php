@@ -27,10 +27,10 @@
 /**
  * Class for generating front end for building queries
  *
- * $Id: class.t3lib_querygenerator.php 8589 2010-08-12 20:42:12Z steffenk $
+ * $Id: class.t3lib_querygenerator.php 8742 2010-08-30 18:55:32Z baschny $
  *
  * @author	Christian Jul Jensen <christian@typo3.com>
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @coauthor	Jo Hasenau <info@cybercraft.de>
  */
 /**
@@ -91,7 +91,7 @@
  * Class for generating front end for building queries
  *
  * @author	Christian Jul Jensen <christian@typo3.com>
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage t3lib
  */

@@ -1,5 +1,5 @@
 #
-# TYPO3 SVN ID: $Id: ext_tables.sql 7308 2010-04-12 17:10:48Z lolli $
+# TYPO3 SVN ID: $Id: ext_tables.sql 8551 2010-08-10 11:38:55Z lolli $
 #
 
 
@@ -43,7 +43,7 @@ CREATE TABLE cachingframework_cache_pages (
   id int(11) unsigned NOT NULL auto_increment,
   identifier varchar(128) DEFAULT '' NOT NULL,
   crdate int(11) unsigned DEFAULT '0' NOT NULL,
-  content mediumtext,
+  content mediumblob,
   lifetime int(11) unsigned DEFAULT '0' NOT NULL,
   PRIMARY KEY (id),
   KEY cache_id (identifier)
@@ -70,7 +70,7 @@ CREATE TABLE cachingframework_cache_pagesection (
   id int(11) unsigned NOT NULL auto_increment,
   identifier varchar(128) DEFAULT '' NOT NULL,
   crdate int(11) unsigned DEFAULT '0' NOT NULL,
-  content mediumtext,
+  content mediumblob,
   lifetime int(11) unsigned DEFAULT '0' NOT NULL,
   PRIMARY KEY (id),
   KEY cache_id (identifier)

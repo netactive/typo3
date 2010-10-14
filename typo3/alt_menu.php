@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,12 +27,12 @@
 /**
  * Displays the vertical menu in the left most frame of TYPO3s backend
  *
- * $Id: alt_menu.php 7905 2010-06-13 14:42:33Z ohader $
- * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
+ * $Id: alt_menu.php 8742 2010-08-30 18:55:32Z baschny $
+ * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML-trans compliant
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
- * @co-author Sebastian Kurfuerst <sebastian@garbage-group.de>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
+ * @co-author Sebastian Kurfürst <sebastian@garbage-group.de>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -70,8 +70,8 @@ require_once ('class.alt_menu_functions.inc');
 /**
  * Script Class for rendering the vertical menu in the left side of the backend frameset
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
- * @co-author Sebastian Kurfuerst <sebastian@garbage-group.de>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
+ * @co-author Sebastian Kurfürst <sebastian@garbage-group.de>
  * @package TYPO3
  * @subpackage core
  */

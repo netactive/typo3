@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
  *
- * $Id: class.tx_tstemplateobjbrowser.php 8535 2010-08-08 17:13:32Z lolli $
+ * $Id: class.tx_tstemplateobjbrowser.php 8742 2010-08-30 18:55:32Z baschny $
  */
 
 $GLOBALS['LANG']->includeLLFile('EXT:tstemplate_objbrowser/locallang.xml');
@@ -35,7 +35,7 @@ $GLOBALS['LANG']->includeLLFile('EXT:tstemplate_objbrowser/locallang.xml');
 /**
  * This class displays the submodule "TypoScript Object Browser" inside the Web > Template module
  *
- * @author		Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author		Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package		TYPO3
  * @subpackage	tx_tstemplateobjbrowser
  */

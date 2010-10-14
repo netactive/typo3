@@ -27,7 +27,7 @@
 /**
  * class to handle the clear cache menu
  *
- * $Id: clearcachemenu.js 8303 2010-07-27 22:23:41Z steffenk $
+ * $Id: clearcachemenu.js 8304 2010-07-27 22:24:08Z steffenk $
  */
 var ClearCacheMenu = Class.create({
 

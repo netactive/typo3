@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,11 +27,11 @@
 /**
 * Contains class with time tracking functions
 *
-* $Id: class.t3lib_timetrack.php 7905 2010-06-13 14:42:33Z ohader $
-* Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
+* $Id: class.t3lib_timetrack.php 8763 2010-09-06 11:57:16Z steffenk $
+* Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
 * XHTML compliant
 *
-* @author  Kasper Skaarhoj <kasperYYYY@typo3.com>
+* @author  Kasper Skårhøj <kasperYYYY@typo3.com>
 */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -80,7 +80,7 @@
  * Is used to register how much time is used with operations in TypoScript
  * Used by index_ts
  *
- * @author  Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author  Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage t3lib
  * @see t3lib_tsfeBeUserAuth, tslib_fe, tslib_cObj, TSpagegen
@@ -442,7 +442,7 @@ class t3lib_timeTrack {
 				}
 			}
 			if ($flag_queries && is_array($data['selectQuery'])) {
-				$msgArr[] = t3lib_div::view_array($data['selectQuery']);
+				$msgArr[] = t3lib_utility_Debug::viewArray($data['selectQuery']);
 			}
 			if ($flag_content && strcmp($data['content'],'')) {
 				$maxlen = 120;

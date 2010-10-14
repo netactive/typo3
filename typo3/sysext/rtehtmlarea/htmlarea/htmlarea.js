@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 8946 2010-10-04 13:30:15Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 8745 2010-08-31 17:27:23Z stan $
  */
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
 if (typeof(HTMLArea) == 'undefined') {
@@ -147,9 +147,7 @@ HTMLArea.Config = function (editorId) {
 		},
 		htmlareabutton: {
 			cls: 'button',
-			overCls: 'buttonHover',
-				// Erratic behaviour of click event in WebKit and IE browsers
-			clickEvent: (Ext.isWebKit || Ext.isIE) ? 'mousedown' : 'click'
+			overCls: 'buttonHover'
 		},
 		htmlareacombo: {
 			cls: 'select',
@@ -273,12 +271,7 @@ Ext.ux.HTMLAreaButton = Ext.extend(Ext.Button, {
 			 * @event hotkey
 			 * Fires when the button hotkey is pressed
 			 */
-			'hotkey',
-			/*
-			 * @event context
-			 * Fires when the button is triggered from the context menu
-			 */
-			'context'
+			'hotkey'
 		);
 		this.addListener({
 			afterrender: {
@@ -292,14 +285,13 @@ Ext.ux.HTMLAreaButton = Ext.extend(Ext.Button, {
 	 */
 	initEventListeners: function () {
 		this.addListener({
+			click: {
+				fn: this.onButtonClick
+			},
 			hotkey: {
 				fn: this.onHotKey
-			},
-			context: {
-				fn: this.onButtonClick
 			}
 		});
-		this.setHandler(this.onButtonClick, this);
 			// Monitor toolbar updates in order to refresh the state of the button
 		this.mon(this.getToolbar(), 'update', this.onUpdateToolbar, this);
 	},
@@ -510,7 +502,7 @@ Ext.ux.form.HTMLAreaCombo = Ext.extend(Ext.form.ComboBox, {
 				if (!Ext.isEmpty(this.savedRange)) {
 					editor.selectRange(this.savedRange);
 					this.savedRange = null;
- 				}
+				}
 			}
 				// Invoke the plugin onChange handler
 			this.plugins[this.action](editor, combo, record, index);
@@ -2307,6 +2299,12 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 		}
 	},
 	/*
+	 * Calculate the height available for the editing iframe
+	 */
+	getInnerHeight: function () {
+		return this.getSize().height - this.toolbar.getHeight() - this.statusBar.getHeight() -  5;
+	},
+	/*
 	 * Fire the editor when all components of the framework are rendered and ready
 	 */
 	onIframeReady: function () {
@@ -2794,12 +2792,7 @@ HTMLArea.util.TYPO3 = function () {
 		 * @author	Oliver Hader <oh@inpublica.de>
 		 */
 		simplifyNested: function(nested) {
-			var i, type, level, elementId, max, simplifiedNested=[],
-				elementIdSuffix = {
-					tab: '-DIV',
-					inline: '_fields',
-					flex: '-content'
-				};
+			var i, type, level, max, simplifiedNested=[];
 			if (nested && nested.length) {
 				if (nested[0][0]=='inline') {
 					nested = inline.findContinuedNestedLevel(nested, nested[0][1]);
@@ -2807,9 +2800,10 @@ HTMLArea.util.TYPO3 = function () {
 				for (i=0, max=nested.length; i<max; i++) {
 					type = nested[i][0];
 					level = nested[i][1];
-					elementId = level + elementIdSuffix[type];
-					if (Ext.get(elementId)) {
-						simplifiedNested.push(elementId);
+					if (type=='tab') {
+						simplifiedNested.push(level+'-DIV');
+					} else if (type=='inline') {
+						simplifiedNested.push(level+'_fields');
 					}
 				}
 			}
@@ -3192,38 +3186,20 @@ HTMLArea.Editor.prototype.getFullySelectedNode = function (selection, range, anc
 		if (!range) {
 			var range = this._createRange(selection);
 		}
-		if (!Ext.isIE) {
-				// Testing boundaries
-			if (range.startContainer.nodeType === 3
-					&& range.startOffset == range.startContainer.textContent.length
-					&& range.startContainer.nextSibling.textContent == range.toString()) {
-				fullNodeSelected = true;
-				node = range.startContainer.nextSibling;
-			}
-			if (!fullNodeSelected
-					&& range.endContainer.nodeType === 3
-					&& range.endOffset == 0
-					&& range.endContainer.previousSibling.textContent == range.toString()) {
-				fullNodeSelected = true;
-				node = range.endContainer.previousSibling;
-			}
+		if (!ancestors) {
+			var ancestors = this.getAllAncestors();
 		}
-		if (!fullNodeSelected) {
-			if (!ancestors) {
-				var ancestors = this.getAllAncestors();
+		Ext.each(ancestors, function (ancestor) {
+			if (Ext.isIE) {
+				fullNodeSelected = (selection.type !== 'Control' && ancestor.innerText == range.text) || (selection.type === 'Control' && ancestor.innerText == range.item(0).text);
+			} else {
+				fullNodeSelected = (ancestor.textContent == range.toString());
 			}
-			Ext.each(ancestors, function (ancestor) {
-				if (Ext.isIE) {
-					fullNodeSelected = (selection.type !== 'Control' && ancestor.innerText == range.text) || (selection.type === 'Control' && ancestor.innerText == range.item(0).text);
-				} else {
-					fullNodeSelected = (ancestor.textContent == range.toString());
-				}
-				if (fullNodeSelected) {
-					node = ancestor;
-					return false;
-				}
-			});
-		}
+			if (fullNodeSelected) {
+				node = ancestor;
+				return false;
+			}
+		});
 			// Working around bug with WebKit selection
 		if (Ext.isWebKit && !fullNodeSelected) {
 			var statusBarSelection = this.statusBar ? this.statusBar.getSelection() : null;

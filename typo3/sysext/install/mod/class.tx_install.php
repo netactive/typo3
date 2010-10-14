@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,9 +27,9 @@
 /**
  * Contains the class for the Install Tool
  *
- * $Id: class.tx_install.php 8817 2010-09-19 14:04:48Z ohader $
+ * $Id: class.tx_install.php 8818 2010-09-19 14:05:16Z ohader $
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Ingmar Schlecht <ingmar@typo3.org>
  */
 /**
@@ -159,7 +159,7 @@ require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_co
 /**
  * Install Tool module
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Ingmar Schlecht <ingmar@typo3.org>
  * @package TYPO3
  * @subpackage tx_install
@@ -1964,8 +1964,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$textLineSubpart = '';
 
 						$description = trim($commentArr[1][$k][$vk]);
-						$isTextarea = preg_match('/^string \(textarea\)/i',$description) ? TRUE : FALSE;
-						$doNotRender = preg_match('/^string \(exclude\)/i', $description) ? TRUE : FALSE;
+						$isTextarea = preg_match('/^(<.*?>)?string \(textarea\)/i', $description) ? TRUE : FALSE;
+						$doNotRender = preg_match('/^(<.*?>)?string \(exclude\)/i', $description) ? TRUE : FALSE;
 
 						if (!is_array($value) && !$doNotRender && ($this->checkForBadString($value) || $isTextarea)) {
 							$k2 = '['.$vk.']';
@@ -1988,7 +1988,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									TRUE,
 									FALSE
 								);
-							} elseif (preg_match('/^boolean/i',$description)) {
+							} elseif (preg_match('/^(<.*?>)?boolean/i', $description)) {
 									// Get the subpart for a checkbox
 								$booleanSubpart = t3lib_parsehtml::getSubpart($template, '###BOOLEAN###');
 									// Define the markers content
@@ -2044,7 +2044,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							);
 								// Define the markers content
 							$markers = array(
-								'description' => htmlspecialchars($description),
+								'description' => $description,
 								'key' => '[' . $k . '][' . $vk . ']',
 								'label' => htmlspecialchars(t3lib_div::fixed_lgd_cs($value, 40))
 							);
@@ -7895,7 +7895,7 @@ $out="
 					Change the Install Tool password.
 				</li>
 				<li>
-					Delete the ENABLE_INSTALL_TOOL file in the /typo3conf folder. This can be done 
+					Delete the ENABLE_INSTALL_TOOL file in the /typo3conf folder. This can be done
 					manually or through User tools &gt; User settings in the backend.
 				</li>
 				<li>
@@ -7969,7 +7969,7 @@ $out="
 	function messageBasicFinished() {
 		return '
 			<p>
-				You have completed the basic setup of the TYPO3 Content Management System. 
+				You have completed the basic setup of the TYPO3 Content Management System.
 				Choose between these options to continue:
 			</p>
 			<ul>

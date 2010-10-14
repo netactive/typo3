@@ -21,7 +21,7 @@
  * 2005-12-09  Peter Niederlag  <peter@niederlag.de>
  *	- Fixed bug #1976: PHP5 type-conversion of string 'true' and boolean
  *
- * $Id: class.gzip_encode.php 7307 2010-04-12 16:17:20Z benni $
+ * $Id: class.gzip_encode.php 8742 2010-08-30 18:55:32Z baschny $
  *
  * @author	Sandy McArthur, Jr. <leknor@leknor.com>
  * @deprecated since TYPO3 4.3, this function will be removed in TYPO3 4.5, we're using the "ob_gzhandler" for compression now.
@@ -223,12 +223,12 @@ class gzip_encode {
 
 		$gzdata = "\x1f\x8b\x08\x00\x00\x00\x00\x00"; // gzip header
 
-			// By Kasper Skaarhoj, start
+			// By Kasper Skårhøj, start
 		if ($outputCompressedSizes)	{
 			$contents.=LF."<!-- Compressed, level ".$level.", original size was ".strlen($contents)." bytes. New size is ".strlen(gzcompress($contents, $level))." bytes -->";
 			$size = strlen($contents);	// Must set again!
 		}
-			// By Kasper Skaarhoj, end
+			// By Kasper Skårhøj, end
 
 		$size = strlen($contents);
 		$crc = crc32($contents);

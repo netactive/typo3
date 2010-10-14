@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,10 +27,10 @@
 /**
  * Shows information about a database or file item
  *
- * $Id: show_item.php 8839 2010-09-21 19:55:51Z benni $
- * Revised for TYPO3 3.7 May/2004 by Kasper Skaarhoj
+ * $Id: show_item.php 8838 2010-09-21 19:52:52Z benni $
+ * Revised for TYPO3 3.7 May/2004 by Kasper Skårhøj
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -74,7 +74,7 @@ require($BACK_PATH.'template.php');
 /**
  * Extension of transfer data class
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  */
@@ -125,7 +125,7 @@ class transferData extends t3lib_transferData	{
 /**
  * Script Class for showing information about an item.
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  */
@@ -278,11 +278,11 @@ class SC_show_item {
 		$i = 0;
 
 			// Traverse the list of fields to display for the record:
-		$fieldList = t3lib_div::trimExplode(',',$TCA[$this->table]['interface']['showRecordFieldList'],1);
-		foreach($fieldList as $name)	{
+		$fieldList = t3lib_div::trimExplode(',', $TCA[$this->table]['interface']['showRecordFieldList'], 1);
+		foreach ($fieldList as $name) {
 			$name = trim($name);
 			if ($TCA[$this->table]['columns'][$name])	{
-				if (!$TCA[$this->table]['columns'][$name]['exclude'] || $GLOBALS['BE_USER']->check('non_exclude_fields',$this->table.':'.$name))	{
+				if (!$TCA[$this->table]['columns'][$name]['exclude'] || $GLOBALS['BE_USER']->check('non_exclude_fields', $this->table . ':' . $name)) {
 					$i++;
 					$tableRows[] = '
 						<tr>

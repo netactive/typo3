@@ -3,7 +3,7 @@
 *  Copyright notice
 *
 *  (c) 2007-2010 Steffen Kamper <info@sk-typo3.de>
-*  Based on Newloginbox (c) 2002-2004 Kasper Skaarhoj <kasper@typo3.com>
+*  Based on Newloginbox (c) 2002-2004 Kasper Skårhøj <kasper@typo3.com>
 *
 *  All rights reserved
 *
@@ -127,7 +127,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 				$content .= $this->showLogin();
 			}
 		}
-		
+
 			// Process the redirect
 		if (($this->logintype === 'login' || $this->logintype === 'logout') && $this->redirectUrl && !$this->noRedirect) {
 			if (!$GLOBALS['TSFE']->fe_user->cookieId) {
@@ -443,7 +443,11 @@ class tx_felogin_pi1 extends tslib_pibase {
 						}
 					}
 				}
-
+					// show logout form directly
+				if ($this->conf['showLogoutFormAfterLogin']) {
+					$this->redirectUrl = '';
+					return $this->showLogout();
+				}
 			} else {
 					// login error
 				$markerArray['###STATUS_HEADER###'] = $this->getDisplayText('error_header',$this->conf['errorHeader_stdWrap.']);
@@ -684,6 +688,10 @@ class tx_felogin_pi1 extends tslib_pibase {
 
 		if ($this->flexFormValue('showPermaLogin', 'sDEF')) {
 			$flex['showPermaLogin'] = $this->flexFormValue('showPermaLogin', 'sDEF');
+		}
+
+		if ($this->flexFormValue('showLogoutFormAfterLogin', 'sDEF')) {
+			$flex['showLogoutFormAfterLogin'] = $this->flexFormValue('showLogoutFormAfterLogin', 'sDEF');
 		}
 
 		if ($this->flexFormValue('pages', 'sDEF')) {

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper SkÃ¥rhÃ¸j (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,10 +27,10 @@
 /**
  * Web > Functions module plugin for cleaning up.
  *
- * $Id: class.tx_lowlevel_cleaner.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tx_lowlevel_cleaner.php 8763 2010-09-06 11:57:16Z steffenk $
  *
  * XHTML compliant
- * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
+ * @author	Kasper SkÃ¥rhÃ¸j <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -59,7 +59,7 @@ die('Not developed...');
 /**
  * Web > Functions module plugin for cleaning up.
  *
- * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
+ * @author	Kasper SkÃ¥rhÃ¸j <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage tx_lowlevel
  */
@@ -211,7 +211,7 @@ debug($contentTreeData);
 					} else {
 						$output.='<input type="submit" name="_EDIT" value="EDIT" />';
 						$output.='<input type="submit" name="_DELETE" value="DELETE" onclick="return confirm(\'Are you sure you wish to delete?\');" />';
-						$output.=t3lib_div::view_array($rec);
+						$output.= t3lib_utility_Debug::viewArray($rec);
 						$output.=md5(implode($rec));
 					}
 				} else {

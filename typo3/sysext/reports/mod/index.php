@@ -35,7 +35,7 @@ $BE_USER->modAccess($MCONF, 1);
  * @package		TYPO3
  * @subpackage	tx_reports
  *
- * $Id: index.php 8500 2010-08-05 22:37:20Z steffenk $
+ * $Id: index.php 8501 2010-08-05 22:37:58Z steffenk $
  */
 class tx_reports_Module extends t3lib_SCbase {
 

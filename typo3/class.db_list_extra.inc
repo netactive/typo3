@@ -2,7 +2,7 @@
 /*************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,11 +28,11 @@
  * Include file extending recordList which extended t3lib_recordList
  * Used specifically for the Web>List module (db_list.php)
  *
- * $Id: class.db_list_extra.inc 8871 2010-09-24 11:59:00Z stephenking $
- * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
+ * $Id: class.db_list_extra.inc 8742 2010-08-30 18:55:32Z baschny $
+ * Revised for TYPO3 3.6 December/2003 by Kasper Skårhøj
  * XHTML compliant
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -83,7 +83,7 @@
 /**
  * Class for rendering of Web>List module
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  */
@@ -593,7 +593,8 @@ class localRecordList extends recordList {
 
 					// Record navigation is added to the beginning and end of the table if in single table mode
 				if ($this->table) {
-					$iOut = $this->renderListNavigation('top') . $iOut . $this->renderListNavigation('bottom');
+					$pageNavigation = $this->renderListNavigation();
+					$iOut = $pageNavigation . $iOut . $pageNavigation;
 				} else {
 						// show that there are more records than shown
 					if ($this->totalItems > $this->itemsLimitPerTable) {
@@ -731,7 +732,9 @@ class localRecordList extends recordList {
 				} else {
 					$tmpProc = t3lib_BEfunc::getProcessedValueExtra($table, $fCol, $row[$fCol], 100, $row['uid']);
 					$theData[$fCol] = $this->linkUrlMail(htmlspecialchars($tmpProc), $row[$fCol]);
-					$row[$fCol] = $tmpProc;
+					if ($this->csvOutput) {
+						$row[$fCol] = t3lib_BEfunc::getProcessedValueExtra($table, $fCol, $row[$fCol], 0, $row['uid']);
+					}
 				}
 			}
 
@@ -999,11 +1002,10 @@ class localRecordList extends recordList {
 	/**
 	 * Creates a page browser for tables with many records
 	 *
-	 * @param	string		Distinguish between 'top' and 'bottom' part of the navigation (above or below the records)
 	 * @return	string	Navigation HTML
 	 *
 	 */
-	protected function renderListNavigation($renderPart = 'top') {
+	protected function renderListNavigation() {
 		$totalPages = ceil($this->totalItems / $this->iLimit);
 
 		$content = '';
@@ -1059,17 +1061,18 @@ class localRecordList extends recordList {
 			}
 
 			$reload = '<a href="#" onclick="document.dblistForm.action=\''
-				. $listURL . '&pointer=\'+calculatePointer(document.getElementById(\'jumpPage-' . $renderPart .'\').value); document.dblistForm.submit(); return true;" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_common.xml:reload', TRUE) . '">' .
+				. $listURL . '&pointer=\'+calculatePointer(); document.dblistForm.submit(); return true;" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_common.xml:reload', TRUE) . '">' .
 					t3lib_iconWorks::getSpriteIcon('actions-system-refresh') .
 				'</a>';
 
-			if ($renderPart === 'top') {
-					// Add js to traverse a page select input to a pointer value
-				$content = '
+			// Add js to traverse a page select input to a pointer value
+			$content = '
 <script type="text/JavaScript">
 /*<![CDATA[*/
 
-	function calculatePointer(page) {
+	function calculatePointer(){
+		page = document.getElementById(\'jumpPage\').value;
+
 		if (page > ' . $totalPages . ') {
 			page = ' . $totalPages . ';
 		}
@@ -1086,10 +1089,10 @@ class localRecordList extends recordList {
 /*]]>*/
 </script>
 ';
-			}
+
 			$pageNumberInput = '<span>
 				<input type="text" value="' . $currentPage
-				. '" size="3" id="jumpPage-' . $renderPart . '" name="jumpPage-' . $renderPart . '" onkeyup="if (event.keyCode == Event.KEY_RETURN) { document.dblistForm.action=\'' . $listURL . '&pointer=\'+calculatePointer(this.value); document.dblistForm.submit(); } return true;" />
+				. '" size="3" id="jumpPage" name="jumpPage" onkeyup="if (event.keyCode == Event.KEY_RETURN) { document.dblistForm.action=\'' . $listURL . '&pointer=\'+calculatePointer(); document.dblistForm.submit(); } return true;" />
 				</span>';
 			$pageIndicator = '<span class="pageIndicator">'
 				. sprintf($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_web_list.xml:pageIndicator'), $pageNumberInput, $totalPages)
@@ -1344,7 +1347,7 @@ class localRecordList extends recordList {
 		/**
 		 * @hook			recStatInfoHooks: Allows to insert HTML before record icons on various places
 		 * @date			2007-09-22
-		 * @request		Kasper Skaarhoj  <kasper2007@typo3.com>
+		 * @request		Kasper Skårhøj  <kasper2007@typo3.com>
 		 */
 		if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['GLOBAL']['recStatInfoHooks']))	{
 			$stat='';
@@ -1567,9 +1570,10 @@ class localRecordList extends recordList {
 			$lNew = '';
 			foreach($this->pageOverlays as $lUid_OnPage => $lsysRec)	{
 				if (!isset($translations['translations'][$lUid_OnPage]) && $GLOBALS['BE_USER']->checkLanguageAccess($lUid_OnPage))	{
-					$href = $this->backPath . $GLOBALS['TBE_TEMPLATE']->issueCommand(
-						'&cmd['.$table.']['.$row['uid'].'][localize]='.$lUid_OnPage,
-						$this->listURL().'&justLocalized='.rawurlencode($table.':'.$row['uid'].':'.$lUid_OnPage)
+					$url = substr($this->listURL(), strlen($this->backPath));
+					$href = $GLOBALS['SOBE']->doc->issueCommand(
+						'&cmd[' . $table . '][' . $row['uid'] . '][localize]=' . $lUid_OnPage,
+						$url . '&justLocalized=' . rawurlencode($table . ':' . $row['uid'] . ':' . $lUid_OnPage)
 					);
 					$language = t3lib_BEfunc::getRecord('sys_language', $lUid_OnPage, 'title');
 					$lC = ($this->languageIconTitles[$lUid_OnPage]['flagIcon'] ? '<img src="'.$this->languageIconTitles[$lUid_OnPage]['flagIcon'].'" class="absmiddle" alt="" />' : $this->languageIconTitles[$lUid_OnPage]['title']);

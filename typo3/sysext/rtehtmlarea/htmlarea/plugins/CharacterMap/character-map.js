@@ -31,7 +31,7 @@
 /*
  * Character Map Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: character-map.js 8904 2010-09-27 00:58:08Z stan $
+ * TYPO3 SVN ID: $Id: character-map.js 7300 2010-04-12 05:49:17Z stan $
  */
 HTMLArea.CharacterMap = HTMLArea.Plugin.extend({
 	constructor : function(editor, pluginName) {
@@ -444,8 +444,7 @@ HTMLArea.CharacterMap = HTMLArea.Plugin.extend({
 			this.editor.insertHTML(entity);
 			this.saveSelection();
 		} else {
-				// Firefox and WebKit convert '&nbsp;' to '&amp;nbsp;'
-			this.editor.insertNodeAtSelection(this.editor.document.createTextNode(((Ext.isGecko || Ext.isWebKit) && entity == '&nbsp;') ? '\xA0' : entity));
+			this.editor.insertNodeAtSelection(this.editor.document.createTextNode(entity));
 		}
 	},
 	/*

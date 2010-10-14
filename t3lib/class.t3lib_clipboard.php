@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,11 +27,11 @@
 /**
  * Contains class for TYPO3 clipboard for records and files
  *
- * $Id: class.t3lib_clipboard.php 8157 2010-07-11 12:45:16Z psychomieze $
- * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
+ * $Id: class.t3lib_clipboard.php 8742 2010-08-30 18:55:32Z baschny $
+ * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -90,7 +90,7 @@
 /**
  * TYPO3 clipboard for records and files
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage t3lib
  */
@@ -149,6 +149,8 @@ class t3lib_clipboard {
 	 */
 	function initializeClipboard()	{
 		global $BE_USER;
+
+		$this->backPath = $GLOBALS['BACK_PATH'];
 
 			// Get data
 		$clipData = $BE_USER->getModuleData('clipboard',$BE_USER->getTSConfigVal('options.saveClipboard')?'':'ses');
@@ -332,7 +334,7 @@ class t3lib_clipboard {
 		$opt[]='<option value="" selected="selected">'.$this->clLabel('menu','rm').'</option>';
 				// Import / Export link:
 		if ($elCount && t3lib_extMgm::isLoaded('impexp'))	{
-			$opt[] = '<option value="'.htmlspecialchars("window.location.href='".$this->backPath.'mod.php?M=xMOD_tximpexp'.$this->exportClipElementParameters().'\';').'">'.$this->clLabel('export','rm').'</option>';
+			$opt[] = '<option value="'.htmlspecialchars("window.location.href='".$this->backPath.t3lib_extMgm::extRelPath('impexp').'app/index.php'.$this->exportClipElementParameters().'\';').'">'.$this->clLabel('export','rm').'</option>';
 		}
 				// Edit:
 		if (!$this->fileMode && $elCount)	{
@@ -570,13 +572,21 @@ class t3lib_clipboard {
 			if ($this->fileMode)	{
 				$str=$GLOBALS['TBE_TEMPLATE']->dfw($str);
 			} else {
-				$str='<a href="'.htmlspecialchars($this->backPath.'db_list.php?id='.$rec['pid']).'">'.$str.'</a>';
+				if (t3lib_extMgm::isLoaded('list')) {
+					$str = '<a href="' . htmlspecialchars(
+						$this->backPath . t3lib_extMgm::extRelPath('list') . 'mod1/db_list.php?id=' . $rec['pid']
+					) . '">' . $str . '</a>';
+				}
 			}
 		} elseif (file_exists($rec))	{
 			if (!$this->fileMode)	{
 				$str=$GLOBALS['TBE_TEMPLATE']->dfw($str);
 			} else {
-				$str='<a href="'.htmlspecialchars($this->backPath.'file_list.php?id='.dirname($rec)).'">'.$str.'</a>';
+				if (t3lib_extMgm::isLoaded('filelist')) {
+					$str = '<a href="' . htmlspecialchars(
+						$this->backPath . t3lib_extMgm::extRelPath('filelist') . 'mod1/file_list.php?id=' . dirname($rec)
+					) . '">' . $str . '</a>';
+				}
 			}
 		}
 		return $str;
@@ -776,7 +786,7 @@ class t3lib_clipboard {
 			}
 		}
 
-		return '&'.implode('&', $params);
+		return '?'.implode('&', $params);
 	}
 
 

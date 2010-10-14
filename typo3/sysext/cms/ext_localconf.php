@@ -1,5 +1,5 @@
 <?php
-# TYPO3 SVN ID: $Id: ext_localconf.php 8157 2010-07-11 12:45:16Z psychomieze $
+# TYPO3 SVN ID: $Id: ext_localconf.php 8845 2010-09-21 22:13:24Z steffenk $
 if (!defined ('TYPO3_MODE')) 	die ('Access denied.');
 
 t3lib_extMgm::addUserTSConfig('
@@ -193,5 +193,9 @@ $TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapC
 $TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][]  = 'EXT:cms/tslib/hooks/class.tx_cms_treelistcacheupdate.php:&tx_cms_treelistCacheUpdate';
 $TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['moveRecordClass'][]     = 'EXT:cms/tslib/hooks/class.tx_cms_treelistcacheupdate.php:&tx_cms_treelistCacheUpdate';
 
+	// Register the core media wizard provider
+tslib_mediaWizardManager::registerMediaWizardProvider('tslib_mediaWizardCoreProvider');
+	// register eID provider for ExtDirect for the frontend
+$GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['ExtDirect'] = PATH_tslib . 'extdirecteid.php';
 
 ?>

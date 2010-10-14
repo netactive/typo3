@@ -28,7 +28,7 @@
 /**
  * Contains authentication service class for salted hashed passwords.
  *
- * $Id: class.tx_saltedpasswords_sv1.php 6979 2010-02-23 10:02:38Z ohader $
+ * $Id: class.tx_saltedpasswords_sv1.php 8145 2010-07-09 07:34:38Z steffenk $
  */
 
 
@@ -196,7 +196,7 @@ class tx_saltedpasswords_sv1 extends tx_sv_authbase {
 					// instanciate default method class
 				$this->objInstanceSaltedPW = tx_saltedpasswords_salts_factory::getSaltingInstance(NULL);
 				$this->updatePassword(
-					intval($user['uid']), 
+					intval($user['uid']),
 					array('password' => $this->objInstanceSaltedPW->getHashedPassword($password))
 				);
 			}

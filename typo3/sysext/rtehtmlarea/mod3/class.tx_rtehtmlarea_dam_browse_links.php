@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  (c) 2005-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
@@ -32,9 +32,9 @@
  *
  * Adapted for htmlArea RTE by Stanislas Rolland
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_dam_browse_links.php 7905 2010-06-13 14:42:33Z ohader $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_dam_browse_links.php 8742 2010-08-30 18:55:32Z baschny $
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  */
 
@@ -43,7 +43,7 @@ require_once(t3lib_extMgm::extPath('dam').'class.tx_dam_browse_media.php');
 /**
  * Script class for the Element Browser window.
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  */

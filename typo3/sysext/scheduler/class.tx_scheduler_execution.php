@@ -26,14 +26,14 @@
 /**
  * This class manages the logic of a particular execution of a task
  *
- * @author	Francois Suter <francois@typo3.org>
+ * @author	François Suter <francois@typo3.org>
  * @author	Christian Jul Jensen <julle@typo3.org>
  * @author	Markus Friedrich <markus.friedrich@dkd.de>
  *
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_execution.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id: class.tx_scheduler_execution.php 8742 2010-08-30 18:55:32Z baschny $
  */
 class tx_scheduler_Execution {
 

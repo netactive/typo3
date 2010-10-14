@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,11 +30,11 @@
  * Provides links to registered shortcuts
  * If the 'cms' extension is loaded you will also have a field for entering page id/alias which will be found/edited
  *
- * $Id: alt_shortcut.php 8379 2010-07-28 09:06:11Z ohader $
- * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
+ * $Id: alt_shortcut.php 8742 2010-08-30 18:55:32Z baschny $
+ * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant output
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -77,7 +77,7 @@ $LANG->includeLLFile('EXT:lang/locallang_misc.xml');
 /**
  * Script Class for the shortcut frame, bottom frame of the backend frameset
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  */
@@ -463,7 +463,9 @@ class SC_alt_shortcut {
 			// Load search for something.
 		if ($this->searchFor)	{
 			$firstMP = intval($GLOBALS['WEBMOUNTS'][0]);
-			$this->content.= $this->doc->wrapScriptTags('jump(unescape("'.rawurlencode('db_list.php?id='.$firstMP.'&search_field='.rawurlencode($this->searchFor).'&search_levels=4').'"),"web_list","web");');
+			$this->content .= $this->doc->wrapScriptTags('jump(unescape("' .
+				rawurlencode(t3lib_extMgm::extRelPath('list') . 'mod1/db_list.php?id=' . $firstMP . '&search_field=' . rawurlencode($this->searchFor) . '&search_levels=4') .
+			'"), "web_list", "web");');
 		}
 	}
 

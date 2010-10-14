@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,10 +27,10 @@
 /**
  * Standard graphical functions
  *
- * $Id: class.t3lib_stdgraphic.php 7939 2010-06-16 19:33:38Z psychomieze $
- * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
+ * $Id: class.t3lib_stdgraphic.php 8742 2010-08-30 18:55:32Z baschny $
+ * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -146,11 +146,11 @@
 /**
  * Class contains a bunch of cool functions for manipulating graphics with GDlib/Freetype and ImageMagick
  * VERY OFTEN used with gifbuilder that extends this class and provides a TypoScript API to using these functions
- * 
+ *
  * With TYPO3 4.4 GDlib 1.x support was dropped, also an option from config_default.php:
  * $TYPO3_CONF_VARS['GFX']['gdlib_2'] = 0,	// String/Boolean. Set this if you are using the new GDlib 2.0.1+. If you don't set this flag and still use GDlib2, you might encounter strange behaviours like black images etc. This feature might take effect only if ImageMagick is installed and working as well! You can also use the value "no_imagecopyresized_fix" - in that case it will NOT try to fix a known issue where "imagecopyresized" does not work correctly.
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage t3lib
  * @see tslib_gifBuilder
@@ -259,7 +259,7 @@ class t3lib_stdGraphic	{
 			$this->im_version_4 = true;
 		}
 
-			// When GIFBUILDER gets used in truecolor mode 
+			// When GIFBUILDER gets used in truecolor mode
 			// No colors parameter if we generate truecolor images.
 		if ($this->png_truecolor) {
 			$this->cmds['png'] = '';
@@ -932,7 +932,7 @@ class t3lib_stdGraphic	{
 	 * @param	array		The TypoScript properties of the TEXT GIFBUILDER object
 	 * @return	integer		The new fontSize
 	 * @access private
-	 * @author Rene Fritz <r.fritz@colorcube.de>
+	 * @author René Fritz <r.fritz@colorcube.de>
 	 * @see tslib_gifBuilder::start()
 	 */
 	function fontResize($conf) {
@@ -1620,6 +1620,39 @@ class t3lib_stdGraphic	{
 
 		$tmpColor = ImageColorAllocateAlpha($im, $cols[0],$cols[1],$cols[2], $opacity);
 		imagefilledrectangle($im, $cords[0], $cords[1], $cords[0]+$cords[2]-1, $cords[1]+$cords[3]-1, $tmpColor);
+	}
+
+	/**
+	 * Implements the "Ellipse" GIFBUILDER object
+	 * Example Typoscript:
+	 * file  =  GIFBUILDER
+	 * file  {
+	 * XY  =  200,200
+	 * format  =  jpg
+     	 * quality  =  100
+	 * 10  =  ELLIPSE
+     	 * 10.dimensions  =  100,100,50,50
+	 * 10.color  =  red
+     	 *
+	 * $workArea = X,Y
+	 * $conf['dimensions'] = offset x, offset y, width of ellipse, height of ellipse
+	 *
+	 * @param	pointer	GDlib image pointer
+	 * @param	array $conf TypoScript array with configuration for the GIFBUILDER object.
+	 * @param	array $workArea The current working area coordinates.
+	 * @return	void
+	 * @see tslib_gifBuilder::make()
+	 */
+	public function makeEllipse(&$im, array $conf, array $workArea) {
+		$ellipseConfiguration = t3lib_div::intExplode(',', $conf['dimensions'] . ',,,');
+		$conf['offset'] = $ellipseConfiguration[0] . ',' . $ellipseConfiguration[1]; // ellipse offset inside workArea (x/y)
+
+		// @see objPosition
+		$imageCoordinates = $this->objPosition($conf, $workArea, array($ellipseConfiguration[2], $ellipseConfiguration[3]));
+
+		$color = $this->convertColor($conf['color']);
+		$fillingColor = imagecolorallocate($im, $color[0], $color[1], $color[2]);
+		imagefilledellipse($im, $imageCoordinates[0], $imageCoordinates[1], $imageCoordinates[2], $imageCoordinates[3], $fillingColor);
 	}
 
 	/**
@@ -3010,7 +3043,7 @@ class t3lib_stdGraphic	{
 
 
 	/**
-	 * Creates a new GD image resource. 
+	 * Creates a new GD image resource.
 	 * Wrapper for imagecreate(truecolor) depended if GD2 is used.
 	 * This function however got obsolete, as PHP now recommends to use
 	 * imagecreatetruecolor() only.
@@ -3022,7 +3055,7 @@ class t3lib_stdGraphic	{
 	 */
 	function imagecreate($w, $h) {
 		t3lib_div::logDeprecatedFunction();
-		
+
 		return imagecreatetruecolor($w, $h);
 	}
 

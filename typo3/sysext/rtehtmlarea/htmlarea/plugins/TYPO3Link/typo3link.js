@@ -27,7 +27,7 @@
 /*
  * TYPO3Link plugin for htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: typo3link.js 8735 2010-08-29 20:09:59Z stan $
+ * TYPO3 SVN ID: $Id: typo3link.js 8734 2010-08-29 20:01:06Z stan $
  */
 HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {

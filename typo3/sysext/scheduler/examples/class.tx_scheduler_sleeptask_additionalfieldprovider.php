@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009-2010 Francois Suter <francois@typo3.org>
+*  (c) 2009-2010 François Suter <francois@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -25,11 +25,11 @@
 /**
  * Aditional fields provider class for usage with the Scheduler's sleep task
  *
- * @author		Francois Suter <francois@typo3.org>
+ * @author		François Suter <francois@typo3.org>
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_sleeptask_additionalfieldprovider.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tx_scheduler_sleeptask_additionalfieldprovider.php 8742 2010-08-30 18:55:32Z baschny $
  */
 class tx_scheduler_SleepTask_AdditionalFieldProvider implements tx_scheduler_AdditionalFieldProvider {
 

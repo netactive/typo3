@@ -3,7 +3,7 @@
 // This file was generated on 2009-11-25 23:05
 
 
-return array(
+$t3libClasses = array(
 	'gzip_encode' => PATH_t3lib . 'class.gzip_encode.php',
 	't3lib_admin' => PATH_t3lib . 'class.t3lib_admin.php',
 	't3lib_ajax' => PATH_t3lib . 'class.t3lib_ajax.php',
@@ -20,6 +20,7 @@ return array(
 	't3lib_compressor' => PATH_t3lib . 'class.t3lib_compressor.php',
 	't3lib_cs' => PATH_t3lib . 'class.t3lib_cs.php',
 	't3lib_db' => PATH_t3lib . 'class.t3lib_db.php',
+	't3lib_db_preparedstatement' => PATH_t3lib . 'db/class.t3lib_db_preparedstatement.php',
 	't3lib_diff' => PATH_t3lib . 'class.t3lib_diff.php',
 	't3lib_div' => PATH_t3lib . 'class.t3lib_div.php',
 	't3lib_exception' => PATH_t3lib . 'class.t3lib_exception.php',
@@ -114,6 +115,7 @@ return array(
 	't3lib_error_errorhandlerinterface' => PATH_t3lib . 'error/interface.t3lib_error_errorhandlerinterface.php',
 	't3lib_error_exceptionhandlerinterface' => PATH_t3lib . 'error/interface.t3lib_error_exceptionhandlerinterface.php',
 	't3lib_browselinkshook' => PATH_t3lib . 'interfaces/interface.t3lib_browselinkshook.php',
+	't3lib_extfilefunctions_processdatahook' => PATH_t3lib . 'interfaces/interface.t3lib_extfilefunctions_processdatahook.php',
 	't3lib_localrecordlistgettablehook' => PATH_t3lib . 'interfaces/interface.t3lib_localrecordlistgettablehook.php',
 	't3lib_pageselect_getpagehook' => PATH_t3lib . 'interfaces/interface.t3lib_pageselect_getpagehook.php',
 	't3lib_pageselect_getrecordoverlayhook' => PATH_t3lib . 'interfaces/interface.t3lib_pageselect_getrecordoverlayhook.php',
@@ -121,6 +123,7 @@ return array(
 	't3lib_singleton' => PATH_t3lib . 'interfaces/interface.t3lib_singleton.php',
 	't3lib_tceformsinlinehook' => PATH_t3lib . 'interfaces/interface.t3lib_tceformsinlinehook.php',
 	't3lib_tcemain_checkmodifyaccesslisthook' => PATH_t3lib . 'interfaces/interface.t3lib_tcemain_checkmodifyaccesslisthook.php',
+	't3lib_tcemain_processuploadhook' => PATH_t3lib . 'interfaces/interface.t3lib_tcemain_processuploadhook.php',
 	't3lib_matchcondition_abstract' => PATH_t3lib . 'matchcondition/class.t3lib_matchcondition_abstract.php',
 	't3lib_matchcondition_backend' => PATH_t3lib . 'matchcondition/class.t3lib_matchcondition_backend.php',
 	't3lib_matchcondition_frontend' => PATH_t3lib . 'matchcondition/class.t3lib_matchcondition_frontend.php',
@@ -130,41 +133,15 @@ return array(
 	't3lib_utility_client' => PATH_t3lib . 'utility/class.t3lib_utility_client.php',
 	't3lib_utility_http' => PATH_t3lib . 'utility/class.t3lib_utility_http.php',
 	't3lib_utility_mail' => PATH_t3lib . 'utility/class.t3lib_utility_mail.php',
+	't3lib_utility_debug' => PATH_t3lib . 'utility/class.t3lib_utility_debug.php',
 	't3lib_spritemanager' => PATH_t3lib . 'class.t3lib_spritemanager.php',
+	't3lib_spritemanager_spritegenerator' => PATH_t3lib . 'spritemanager/class.t3lib_spritemanager_spritegenerator.php',
 	't3lib_spritemanager_spriteicongenerator' => PATH_t3lib . 'interfaces/interface.t3lib_spritemanager_spriteicongenerator.php',
 	't3lib_spritemanager_simplehandler' => PATH_t3lib . 'spritemanager/class.t3lib_spritemanager_simplehandler.php',
-	'tslib_adminpanel' => PATH_tslib . 'class.tslib_adminpanel.php',
-	'tslib_cobj' => PATH_tslib . 'class.tslib_content.php',
-	'tslib_frameset' => PATH_tslib . 'class.tslib_content.php',
-	'tslib_tableoffset' => PATH_tslib . 'class.tslib_content.php',
-	'tslib_controltable' => PATH_tslib . 'class.tslib_content.php',
-	'tslib_eidtools' => PATH_tslib . 'class.tslib_eidtools.php',
-	'tslib_fe' => PATH_tslib . 'class.tslib_fe.php',
-	'tslib_fecompression' => PATH_tslib . 'class.tslib_fecompression.php',
-	'tslib_fetce' => PATH_tslib . 'class.tslib_fetce.php',
-	'tslib_feuserauth' => PATH_tslib . 'class.tslib_feuserauth.php',
-	'tslib_gifbuilder' => PATH_tslib . 'class.tslib_gifbuilder.php',
-	'tslib_menu' => PATH_tslib . 'class.tslib_menu.php',
-	'tslib_tmenu' => PATH_tslib . 'class.tslib_menu.php',
-	'tslib_gmenu' => PATH_tslib . 'class.tslib_menu.php',
-	'tslib_imgmenu' => PATH_tslib . 'class.tslib_menu.php',
-	'tslib_jsmenu' => PATH_tslib . 'class.tslib_menu.php',
-	'tspagegen' => PATH_tslib . 'class.tslib_pagegen.php',
-	'fe_loaddbgroup' => PATH_tslib . 'class.tslib_pagegen.php',
-	'tslib_pibase' => PATH_tslib . 'class.tslib_pibase.php',
-	'tslib_search' => PATH_tslib . 'class.tslib_search.php',
-	'sc_tslib_showpic' => PATH_tslib . 'showpic.php',
-	'tx_cms_mediaitems' => PATH_tslib . 'hooks/class.tx_cms_mediaitems.php',
-	'tx_cms_treelistcacheupdate' => PATH_tslib . 'hooks/class.tx_cms_treelistcacheupdate.php',
-	'tslib_content_cobjgetsinglehook' => PATH_tslib . 'interfaces/interface.tslib_content_cobjgetsinglehook.php',
-	'tslib_menu_filterMenuPagesHook' => PATH_tslib . 'interfaces/interface.tslib_menu_filterMenuPagesHook.php',
-	'tslib_content_getdatahook' => PATH_tslib . 'interfaces/interface.tslib_content_getdatahook.php',
-	'tslib_cobj_getimgresourcehook' => PATH_tslib . 'interfaces/interface.tslib_content_getimgresourcehook.php',
-	'tslib_content_postinithook' => PATH_tslib . 'interfaces/interface.tslib_content_postinithook.php',
-	'tslib_content_stdwraphook' => PATH_tslib . 'interfaces/interface.tslib_content_stdwraphook.php',
-	'user_various' => PATH_tslib . 'media/scripts/example_callfunction.php',
-	'tslib_gmenu_foldout' => PATH_tslib . 'media/scripts/gmenu_foldout.php',
-	'tslib_gmenu_layers' => PATH_tslib . 'media/scripts/gmenu_layers.php',
-	'tslib_tmenu_layers' => PATH_tslib . 'media/scripts/tmenu_layers.php',
+	't3lib_extjs_extdirectdebug' => PATH_t3lib . 'extjs/class.t3lib_extjs_extdirectdebug.php',
 );
+
+$tslibClasses = require(PATH_typo3 . 'sysext/cms/ext_autoload.php');
+
+return array_merge($t3libClasses, $tslibClasses);
 ?>

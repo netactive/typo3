@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,11 +28,11 @@
  * Front End session user. Login and session data
  * Included from index_ts.php
  *
- * $Id: class.tslib_feuserauth.php 7905 2010-06-13 14:42:33Z ohader $
- * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
+ * $Id: class.tslib_feuserauth.php 8742 2010-08-30 18:55:32Z baschny $
+ * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
- * @author	Ren� Fritz <r.fritz@colorcube.de>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
+ * @author	René Fritz <r.fritz@colorcube.de>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -71,8 +71,8 @@
 /**
  * Extension class for Front End User Authentication.
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
- * @author	Ren� Fritz <r.fritz@colorcube.de>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
+ * @author	René Fritz <r.fritz@colorcube.de>
  * @package TYPO3
  * @subpackage tslib
  */
@@ -370,12 +370,17 @@ class tslib_feUserAuth extends t3lib_userAuth {
 	function fetchSessionData()	{
 			// Gets SesData if any AND if not already selected by session fixation check in ->isExistingSessionRecord()
 		if ($this->id && !count($this->sesData)) {
-			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'fe_session_data', 'hash='.$GLOBALS['TYPO3_DB']->fullQuoteStr($this->id, 'fe_session_data'));
-			if ($sesDataRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres))	{
+			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery(
+				'*',
+				'fe_session_data',
+				'hash = :hash'
+			);
+			$statement->execute(array(':hash' => $this->id));
+			if (($sesDataRow = $statement->fetch()) !== FALSE) {
 				$this->sesData = unserialize($sesDataRow['content']);
 				$this->sessionDataTimestamp = $sesDataRow['tstamp'];
 			}
-			$GLOBALS['TYPO3_DB']->sql_free_result($dbres);
+			$statement->free();
 		}
 	}
 
@@ -491,7 +496,7 @@ class tslib_feUserAuth extends t3lib_userAuth {
 	 */
 	function record_registration($recs,$maxSizeOfSessionData=0)	{
 
-			// Storing value ONLY if there is a confirmed cookie set (->cookieID), 
+			// Storing value ONLY if there is a confirmed cookie set (->cookieID),
 			// otherwise a shellscript could easily be spamming the fe_sessions table
 			// with bogus content and thus bloat the database
 		if (!$maxSizeOfSessionData || $this->cookieId) {
@@ -531,17 +536,18 @@ class tslib_feUserAuth extends t3lib_userAuth {
 
 			// Check if there are any fe_session_data records for the session ID the client claims to have
 		if ($count == false) {
-			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-							'content',
-							'fe_session_data',
-							'hash=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($id, 'fe_session_data')
-						);
-			if ($dbres !== false) {
-				if ($sesDataRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
+			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery(
+				'content',
+				'fe_session_data',
+				'hash = :hash'
+			);
+			$res = $statement->execute(array(':hash' => $id));
+			if ($res !== FALSE) {
+				if ($sesDataRow = $statement->fetch()) {
 					$count = true;
 					$this->sesData = unserialize($sesDataRow['content']);
 				}
-				$GLOBALS['TYPO3_DB']->sql_free_result($dbres);
+				$statement->free();
 			}
 		}
 

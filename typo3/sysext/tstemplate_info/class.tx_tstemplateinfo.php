@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -46,9 +46,9 @@ $GLOBALS['LANG']->includeLLFile('EXT:tstemplate_info/locallang.xml');
 /**
  * This class displays the Info/Modify screen of the Web > Template module
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  *
- * $Id: class.tx_tstemplateinfo.php 8538 2010-08-09 10:20:28Z lolli $
+ * $Id: class.tx_tstemplateinfo.php 8742 2010-08-30 18:55:32Z baschny $
  */
 class tx_tstemplateinfo extends t3lib_extobjbase {
 
@@ -64,7 +64,7 @@ class tx_tstemplateinfo extends t3lib_extobjbase {
 	 */
 	function tableRow($label, $data, $field)	{
 		$ret = '<tr><td>';
-		$ret.= '<a href="index.php?id=' . $this->pObj->id . '&e[' . $field . ']=1">' . 
+		$ret.= '<a href="index.php?id=' . $this->pObj->id . '&e[' . $field . ']=1">' .
 			t3lib_iconWorks::getSpriteIcon('actions-document-open', array('title' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_common.xml:editField', true))) . '<strong>' . $label . '&nbsp;&nbsp;</strong></a>';
 		$ret .= '</td><td width="80%" class="bgColor4">' . $data . '&nbsp;</td></tr>';
 		return $ret;
@@ -498,7 +498,7 @@ class tx_tstemplateinfo extends t3lib_extobjbase {
 				// Edit all icon:
 			$outCode.= '<br /><a href="#" onClick="' . t3lib_BEfunc::editOnClick(rawurlencode('&createExtension=0') .
 				'&amp;edit[sys_template][' . $tplRow['uid'] . ']=edit', $BACK_PATH, '') . '"><strong>' .
-				t3lib_iconWorks::getSpriteIcon('actions-document-open', array('title'=> 
+				t3lib_iconWorks::getSpriteIcon('actions-document-open', array('title'=>
 				$GLOBALS['LANG']->getLL('editTemplateRecord') ))  . $GLOBALS['LANG']->getLL('editTemplateRecord') . '</strong></a>';
 			$theOutput.= $this->pObj->doc->section('', $outCode);
 

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2009 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2009 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,8 +28,8 @@
  * Date directory
  * Can be used with the HMENU cObject, special property set to "userdefined".
  *
- * $Id: makeMenu_datedirectory.inc 7601 2010-05-13 17:12:58Z baschny $
- * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
+ * $Id: makeMenu_datedirectory.inc 8742 2010-08-30 18:55:32Z baschny $
+ * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Olaf.Schuemann@erz.be.ch
  * @link http://typo3.org/doc.0.html?&tx_extrepmgm_pi1[extUid]=270&tx_extrepmgm_pi1[tocEl]=358&cHash=5400c1c06a

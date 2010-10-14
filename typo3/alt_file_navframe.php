@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,11 +27,11 @@
 /**
  * Folder tree in the File main module.
  *
- * $Id: alt_file_navframe.php 8157 2010-07-11 12:45:16Z psychomieze $
- * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
+ * $Id: alt_file_navframe.php 8842 2010-09-21 21:02:40Z steffenk $
+ * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -63,7 +63,7 @@ require_once('class.filelistfoldertree.php');
 /**
  * Main script class for rendering of the folder tree
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
  */
@@ -195,12 +195,7 @@ class SC_alt_file_navframe {
 				theUrl += "?id=" + id
 			}
 			top.fsMod.currentBank = bank;
-
-			if (top.TYPO3.configuration.condensedMode) {
-				top.content.location.href = theUrl;
-			} else {
-				parent.list_frame.location.href=theUrl;
-			}
+			top.TYPO3.Backend.ContentContainer.setUrl(theUrl);
 
 			'.($this->doHighlight ? 'Tree.highlightActiveItem("file", highlightID + "_" + bank);' : '').'
 			'.(!$CLIENT['FORMSTYLE'] ? '' : 'if (linkObj) linkObj.blur(); ').'

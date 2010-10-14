@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skaarhoj (kasperYYYY@typo3.com)
+*  (c) 1999-2010 Kasper Sk√•rh√∏j (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,12 +27,12 @@
 /**
  * Contains the reknown class "t3lib_div" with general purpose functions
  *
- * $Id: class.t3lib_div.php 8971 2010-10-06 08:14:50Z ohader $
- * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
+ * $Id: class.t3lib_div.php 8781 2010-09-13 07:25:04Z baschny $
+ * Revised for TYPO3 3.6 July/2003 by Kasper Sk√•rh√∏j
  * XHTML compliant
  * Usage counts are based on search 22/2 2003 through whole source including tslib/
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Sk√•rh√∏j <kasperYYYY@typo3.com>
  */
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
@@ -223,7 +223,7 @@ define('CRLF', CR . LF);
  * So: Don't instantiate - call functions with "t3lib_div::" prefixed the function name.
  * So use t3lib_div::[method-name] to refer to the functions, eg. 't3lib_div::milliseconds()'
  *
- * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
+ * @author	Kasper Sk√•rh√∏j <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage t3lib
  */
@@ -1235,14 +1235,30 @@ final class t3lib_div {
 		self::logDeprecatedFunction();
 
 		$value = strtoupper($string);
-		return strtr($value, '·È˙Ì‚Í˚ÙÓÊ¯Â‰ˆ¸', '¡…⁄ÕƒÀ‹÷œ∆ÿ≈ƒ÷‹');
+		return strtr($value, array(
+			chr(225) => chr(193),
+			chr(233) => chr(201),
+			chr(250) => chr(218),
+			chr(237) => chr(205),
+			chr(226) => chr(196),
+			chr(234) => chr(203),
+			chr(251) => chr(220),
+			chr(244) => chr(214),
+			chr(238) => chr(207),
+			chr(230) => chr(198),
+			chr(248) => chr(216),
+			chr(229) => chr(197),
+			chr(228) => chr(196),
+			chr(246) => chr(214),
+			chr(252) => chr(220),
+		));
 	}
 
 	/**
 	 * Change umlaut characters to plain ASCII with normally two character target
 	 * Only known characters will be converted, so don't expect a result for any character.
 	 *
-	 * ‰ => ae, ÷ => Oe
+	 * √§ => ae, √ñ => Oe
 	 *
 	 * @param	string		String to convert.
 	 * @deprecated since TYPO3 4.1 - Works only for western europe single-byte charsets! Use t3lib_cs::specCharsToASCII() instead!
@@ -1251,17 +1267,16 @@ final class t3lib_div {
 	public static function convUmlauts($str)	{
 		self::logDeprecatedFunction();
 
-		$pat  = array (	'/‰/',	'/ƒ/',	'/ˆ/',	'/÷/',	'/¸/',	'/‹/',	'/ﬂ/',	'/Â/',	'/≈/',	'/¯/',	'/ÿ/',	'/Ê/',	'/∆/'	);
-		$repl = array (	'ae',	'Ae',	'oe',	'Oe',	'ue',	'Ue',	'ss',	'aa',	'AA',	'oe',	'OE',	'ae',	'AE'	);
-		return preg_replace($pat,$repl,$str);
+		$pattern  = array (chr(228), chr(196), chr(246), chr(214), chr(252), chr(220), chr(223), chr(229), chr(197), chr(248), chr(216), chr(230), chr(198));
+		$replace = array ('ae', 'Ae', 'oe', 'Oe', 'ue', 'Ue', 'ss', 'aa', 'AA', 'oe', 'OE', 'ae', 'AE');
+		return str_replace($pattern, $replace, $str);
 	}
 
 	/**
-	 * Tests if the input is an integer.
-	 * Usage: 77
+	 * Tests if the input can be interpreted as integer.
 	 *
-	 * @param	mixed		Any input variable to test.
-	 * @return	boolean		Returns true if string is an integer
+	 * @param mixed Any input variable to test
+	 * @return boolean Returns true if string is an integer
 	 */
 	public static function testInt($var) {
 		if ($var === '') {
@@ -1494,12 +1509,7 @@ final class t3lib_div {
 	 * @return	boolean		Returns true if the $email address (input string) is valid
 	 */
 	public static function validEmail($email)	{
-			// enforce maximum length to prevent libpcre recursion crash bug #52929 in PHP
-			// fixed in PHP 5.2+ later than Sept 2010; length restriction per SMTP RFC 2821
-		if (strlen($email) > 320) {
-			return FALSE;
-		}
-		return (filter_var($email, FILTER_VALIDATE_EMAIL) !== FALSE);
+		return (filter_var($email, FILTER_VALIDATE_EMAIL) !== false);
 	}
 
 	/**
@@ -2311,7 +2321,7 @@ final class t3lib_div {
 	 * @param	boolean		Wrap script element in linebreaks? Default is TRUE.
 	 * @return	string		The wrapped JS code, ready to put into a XHTML page
 	 * @author	Ingmar Schlecht <ingmars@web.de>
-	 * @author	RenÈ Fritz <r.fritz@colorcube.de>
+	 * @author	Ren√© Fritz <r.fritz@colorcube.de>
 	 */
 	public static function wrapJS($string, $linebreak=TRUE) {
 		if(trim($string)) {
@@ -2853,6 +2863,7 @@ final class t3lib_div {
 			curl_setopt($ch, CURLOPT_HTTPGET, $includeHeader == 2 ? 'HEAD' : 'GET');
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, max(0, intval($GLOBALS['TYPO3_CONF_VARS']['SYS']['curlTimeout'])));
 
 				// may fail (PHP 5.2.0+ and 5.1.5+) when open_basedir or safe_mode are enabled
 			$followLocation = @curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
@@ -3563,10 +3574,12 @@ final class t3lib_div {
 						<td>';
 					if (is_array($val))	{
 						$result.=self::view_array($val);
-					} elseif (is_object($val))	{
-						$string = get_class($val);
-						if (method_exists($val, '__toString'))	{
-							$string .= ': '.(string)$val;
+					} elseif (is_object($val)) {
+						$string = '';
+						if (method_exists($val, '__toString')) {
+							$string .= get_class($val) . ': ' . (string) $val;
+						} else {
+							$string .= print_r($val, TRUE);
 						}
 						$result .= '<font face="Verdana,Arial" size="1" color="red">'.nl2br(htmlspecialchars($string)).'<br /></font>';
 					} else	{
@@ -4245,6 +4258,8 @@ final class t3lib_div {
 	 */
 	public static function getHostname($requestHost=TRUE)	{
 		$host = '';
+			// If not called from the command-line, resolve on getIndpEnv()
+			// Note that TYPO3_REQUESTTYPE is not used here as it may not yet be defined
 		if ($requestHost && (!defined('TYPO3_cliMode') || !TYPO3_cliMode))	{
 			$host = self::getIndpEnv('HTTP_HOST');
 		}
@@ -5296,7 +5311,7 @@ final class t3lib_div {
 	 * @param	string		Sub type like file extensions or similar. Defined by the service.
 	 * @param	mixed		List of service keys which should be exluded in the search for a service. Array or comma list.
 	 * @return	object		The service object or an array with error info's.
-	 * @author	RenÈ Fritz <r.fritz@colorcube.de>
+	 * @author	Ren√© Fritz <r.fritz@colorcube.de>
 	 */
 	public static function makeInstanceService($serviceType, $serviceSubType='', $excludeServiceKeys=array()) {
 		global $T3_SERVICES, $T3_VAR, $TYPO3_CONF_VARS;
@@ -5409,7 +5424,7 @@ final class t3lib_div {
 			$headers = implode(LF,$newHeaders);
 			unset($newHeaders);
 
-			$email = self::encodeHeader($email,$encoding,$charset);		// Email address must not be encoded, but it could be appended by a name which should be so (e.g. "Kasper SkÂrh¯j <kasperYYYY@typo3.com>")
+			$email = self::encodeHeader($email,$encoding,$charset);		// Email address must not be encoded, but it could be appended by a name which should be so (e.g. "Kasper Sk√•rh√∏j <kasperYYYY@typo3.com>")
 			$subject = self::encodeHeader($subject,$encoding,$charset);
 		}
 
@@ -5639,6 +5654,7 @@ final class t3lib_div {
 		global $TYPO3_CONF_VARS;
 
 			// for CLI logging name is <fqdn-hostname>:<TYPO3-path>
+			// Note that TYPO3_REQUESTTYPE is not used here as it may not yet be defined
 		if (defined('TYPO3_cliMode') && TYPO3_cliMode)	{
 			$TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_div.php']['systemLogHost'] = self::getHostname($requestHost=FALSE).':'.PATH_site;
 		}

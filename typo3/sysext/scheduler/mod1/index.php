@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009-2010 Francois Suter <francois@typo3.org>
+*  (c) 2009-2010 François Suter <francois@typo3.org>
 *  (c) 2005 Christian Jul Jensen <julle@typo3.org>
 *  All rights reserved
 *
@@ -31,12 +31,12 @@ $BE_USER->modAccess($MCONF, 1); // This checks permissions and exits if the user
 /**
  * Module 'TYPO3 Scheduler administration module' for the 'scheduler' extension.
  *
- * @author		Francois Suter <francois@typo3.org>
+ * @author		François Suter <francois@typo3.org>
  * @author		Christian Jul Jensen <julle@typo3.org>
  * @author		Ingo Renner <ingo@typo3.org>
  * @package		TYPO3
  * @subpackage	tx_scheduler
- * @version		$Id: index.php 8576 2010-08-12 11:48:21Z xperseguers $
+ * @version		$Id: index.php 8742 2010-08-30 18:55:32Z baschny $
  */
 class tx_scheduler_Module extends t3lib_SCbase {
 

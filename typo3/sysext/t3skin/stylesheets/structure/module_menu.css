@@ -1,11 +1,15 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Module menu
 
-$Id: module_menu.css 8021 2010-06-21 21:24:51Z steffenk $
+$Id: module_menu.css 8842 2010-09-21 21:02:40Z steffenk $
 - - - - - - - - - - - - - - - - - - - - - */
 
 #typo3-menu {
 	padding-top: 22px;
+}
+
+#typo3-module-menu .x-panel-body {
+    overflow-x: hidden !important;
 }
 
 #typo3-menu ul {
@@ -27,7 +31,6 @@ $Id: module_menu.css 8021 2010-06-21 21:24:51Z steffenk $
 }
 
 #typo3-menu li div {
-	margin: 4px 0px 2px 4px;
 	overflow: hidden;
 	padding: 2px 0px 4px 16px;
 	vertical-align: middle;

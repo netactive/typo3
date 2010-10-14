@@ -31,7 +31,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_frontend_abstractfrontend.php 7905 2010-06-13 14:42:33Z ohader $
+ * @version $Id: class.t3lib_cache_frontend_abstractfrontend.php 8742 2010-08-30 18:55:32Z baschny $
  */
 abstract class t3lib_cache_frontend_AbstractFrontend implements t3lib_cache_frontend_Frontend {
 
@@ -108,7 +108,7 @@ abstract class t3lib_cache_frontend_AbstractFrontend implements t3lib_cache_fron
 	 *
 	 * @param string $entryIdentifier An identifier specifying the cache entry
 	 * @return boolean TRUE if such an entry exists, FALSE if not
-	 * @author Sebastian Kurfuerst <sebastian@typo3.org>
+	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 */
 	public function remove($entryIdentifier) {
