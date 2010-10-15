@@ -30,7 +30,7 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
- * @version $Id: class.t3lib_cache_frontend_stringfrontend.php 6536 2009-11-25 14:07:18Z stucki $
+ * @version $Id: class.t3lib_cache_frontend_stringfrontend.php 9022 2010-10-10 10:26:31Z steffenk $
  */
 class t3lib_cache_frontend_StringFrontend extends t3lib_cache_frontend_AbstractFrontend {
 
@@ -55,7 +55,7 @@ class t3lib_cache_frontend_StringFrontend extends t3lib_cache_frontend_AbstractF
 
 		if (!is_string($string)) {
 			throw new t3lib_cache_exception_InvalidData(
-				'Only strings can be digested by the StringCache. Thanks.',
+				'Given data is of type "' . gettype($string) . '", but a string is expected for string cache.',
 				1222808333
 			);
 		}

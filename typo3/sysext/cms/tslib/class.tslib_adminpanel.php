@@ -28,7 +28,7 @@
 /**
  * View class for the admin panel in frontend editing.
  *
- * $Id: class.tslib_adminpanel.php 8974 2010-10-06 08:15:55Z ohader $
+ * $Id: class.tslib_adminpanel.php 8992 2010-10-06 16:18:49Z steffenk $
  *
  * @author	Jeff Segars <jeff@webempoweredchurch.org>
  * @author	David Slayback <dave@webempoweredchurch.org>
@@ -399,7 +399,7 @@ $query . '
 			if (is_array($v)) {
 				$out .= $this->getHiddenFields($key . '[' . $k . ']', $v);
 			} else {
-				$out .= '<input type="hidden" name="' . hmtlspecialchars($key) . '[' . htmlspecialchars($k) . ']" value="' . htmlspecialchars($v) . '">' . chr(10);
+				$out .= '<input type="hidden" name="' . htmlspecialchars($key) . '[' . htmlspecialchars($k) . ']" value="' . htmlspecialchars($v) . '">' . chr(10);
 			}
 		}
 		return $out;

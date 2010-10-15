@@ -29,7 +29,7 @@
  *
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_acronym_mod.php 5557 2009-06-05 07:45:33Z patrick $  *
+ * $Id: class.tx_rtehtmlarea_acronym_mod.php 9003 2010-10-07 02:47:25Z stan $  *
  */
 
 class tx_rtehtmlarea_acronym_mod {
@@ -166,6 +166,8 @@ class tx_rtehtmlarea_acronym_mod {
 						abbr.title = title;
 						if(document.content.acronymSelector.options.length != 1 && document.content.termSelector.selectedIndex > 0 && document.content.termSelector.options[document.content.termSelector.selectedIndex].value == title) {
 							html = document.content.acronymSelector.options[document.content.acronymSelector.selectedIndex].value;
+						} else {
+							html = editor.getSelectedHTML();
 						}
 						abbr.innerHTML = html;
 						if (languageObject && plugin.isButtonInToolbar("Language")) {
