@@ -35,12 +35,14 @@ Ext.ns('TYPO3.EM', 'TYPO3.EM.ExtDirect');
 Ext.onReady(function() {
 		//save states in BE_USER->uc
 	Ext.state.Manager.setProvider(new TYPO3.state.ExtDirectProvider({
-		key: 'moduleData.tools_em.States'
+		key: 'moduleData.tools_em.States',
+		autoRead: false
 	}));
 
 	if (Ext.isObject(TYPO3.settings.EM.States)) {
 		Ext.state.Manager.getProvider().initState(TYPO3.settings.EM.States);
 	}
+
 	Ext.QuickTips.init();
 	TYPO3.EM.ImportWindow = null;
 
@@ -48,6 +50,7 @@ Ext.onReady(function() {
 	var EM = new TYPO3.EM.App.init();
 });
 
+TYPO3.EM.AdditionalApplicationItems = [];
 
 TYPO3.EM.App = {
 	refreshLocalList: false,
@@ -79,6 +82,10 @@ TYPO3.EM.App = {
 			items.push(TYPO3.EM.UserTab)
 		}
 
+		if (TYPO3.EM.AdditionalApplicationItems.length) {
+			items.push(TYPO3.EM.AdditionalApplicationItems);
+		}
+
 		this.appPanel = new Ext.TabPanel( {
 			renderTo : 'em-app',
 			id: 'em-main',
@@ -89,6 +96,9 @@ TYPO3.EM.App = {
 			stateId: 'mainTab',
 			stateEvents:['tabchange'],
 			autoScroll: true,
+			tabPosition: 'top',
+			enableTabScroll: true,
+			autoWidth: true,
 			defaults: {
 				layout: 'fit'
 			},

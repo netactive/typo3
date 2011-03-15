@@ -27,7 +27,7 @@
 /**
  * Core functions for cleaning and analysing
  *
- * $Id: class.tx_lowlevel_cleaner_core.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id: class.tx_lowlevel_cleaner_core.php 10477 2011-02-17 11:06:57Z ohader $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
@@ -77,6 +77,8 @@ class tx_lowlevel_cleaner_core extends t3lib_cli {
 	var $cleanerModules = array();
 
 	var $performanceStatistics = array();
+
+	protected $workspaceIndex = array();
 
 
 	/**
@@ -332,7 +334,9 @@ class tx_lowlevel_cleaner_core extends t3lib_cli {
 		$pt = t3lib_div::milliseconds();$this->performanceStatistics['genTree()']='';
 
 			// Initialize:
-		$this->workspaceIndex = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid,title','sys_workspace','1=1'.t3lib_BEfunc::deleteClause('sys_workspace'),'','','','uid');
+		if (t3lib_extMgm::isLoaded('workspaces')) {
+			$this->workspaceIndex = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid,title','sys_workspace','1=1'.t3lib_BEfunc::deleteClause('sys_workspace'),'','','','uid');
+		}
 		$this->workspaceIndex[-1] = TRUE;
 		$this->workspaceIndex[0] = TRUE;
 

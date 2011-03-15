@@ -27,7 +27,7 @@
 /**
  * Contains a class with Extension Management functions
  *
- * $Id: class.t3lib_extmgm.php 10289 2011-01-25 00:38:28Z baschny $
+ * $Id: class.t3lib_extmgm.php 10484 2011-02-17 20:51:05Z steffenk $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -844,15 +844,13 @@ final class t3lib_extMgm {
 	 *
 	 * @param string $module
 	 * @param string $componentId
-	 * @param array $extDirectNamespaces
 	 * @return void
 	 */
-	public static function addNavigationComponent($module, $componentId, $extDirectNamespaces = array()) {
+	public static function addNavigationComponent($module, $componentId) {
 		$GLOBALS['TBE_MODULES']['_navigationComponents'][$module] = array(
 			'componentId' => $componentId,
 			'extKey' => $GLOBALS['_EXTKEY'],
 			'isCoreComponent' => FALSE,
-			'extDirectNamespaces' => $extDirectNamespaces
 		);
 	}
 
@@ -861,11 +859,10 @@ final class t3lib_extMgm {
 	 *
 	 * @param string $module
 	 * @param string $componentId
-	 * @param array $extDirectNamespaces
 	 * @return void
 	 */
-	public static function addCoreNavigationComponent($module, $componentId, $extDirectNamespaces = array()) {
-		self::addNavigationComponent($module, $componentId, $extDirectNamespaces);
+	public static function addCoreNavigationComponent($module, $componentId) {
+		self::addNavigationComponent($module, $componentId);
 		$GLOBALS['TBE_MODULES']['_navigationComponents'][$module]['isCoreComponent'] = TRUE;
 	}
 
@@ -1589,9 +1586,45 @@ $TYPO3_LOADED_EXT = unserialize(stripslashes(\'' . addslashes(serialize($extensi
 			$extLoadInContext = $GLOBALS['TYPO3_CONF_VARS']['EXT']['extList'];
 		}
 
-		$extensionList = $GLOBALS['TYPO3_CONF_VARS']['EXT']['requiredExt'] . ',' . $extLoadInContext;
+		$extensionList = self::getRequiredExtensionList() . ',' . $extLoadInContext;
+		$ignoredExtensionList = self::getIgnoredExtensionList();
+
+			// Remove the extensions to be ignored:
+		if ($ignoredExtensionList && (defined('TYPO3_enterInstallScript') && TYPO3_enterInstallScript) === FALSE) {
+			$extensions = array_diff(
+				explode(',', $extensionList),
+				explode(',', $ignoredExtensionList)
+			);
+			$extensionList = implode(',', $extensions);
+		}
 
 		return $extensionList;
+	}
+
+	/**
+	 * Gets the list of required extensions.
+	 *
+	 * @return string
+	 */
+	public static function getRequiredExtensionList() {
+		$requiredExtensionList = t3lib_div::uniqueList(
+			REQUIRED_EXTENSIONS . ',' . $GLOBALS['TYPO3_CONF_VARS']['EXT']['requiredExt']
+		);
+
+		return $requiredExtensionList;
+	}
+
+	/**
+	 * Gets the list of extensions to be ignored (not to be loaded).
+	 *
+	 * @return string
+	 */
+	public static function getIgnoredExtensionList() {
+		$ignoredExtensionList = t3lib_div::uniqueList(
+			$GLOBALS['TYPO3_CONF_VARS']['EXT']['ignoredExt']
+		);
+
+		return $ignoredExtensionList;
 	}
 }
 

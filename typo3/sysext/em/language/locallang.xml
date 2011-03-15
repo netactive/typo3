@@ -157,7 +157,7 @@
 			<label index="enter_repository_url">Enter repository URL:</label>
 			<label index="repository_url_hint">If you set a repository URL, this overrides the use of a mirror. Use this to select a specific (private) repository.</label>
 			<label index="repository_settings">Repository settings</label>
-			<label index="repository_edit">Edit repository "[0]"</label>
+			<label index="repository_edit">Edit repository "{0}"</label>
 			<label index="repository_create">Create new repository</label>
 			<label index="repository_delete">Delete repository</label>
 			<label index="repository_deleting">Deleting repository</label>
@@ -654,6 +654,7 @@
 			<label index="msg_unknownError">Unknow error occured.</label>
 			<label index="msg_startTyping">Start typing here and press &lt;return&gt;</label>
 			<label index="configurationSaved">Configuration was saved.</label>
+			<label index="settingsSaved">Settings were saved.</label>
 			<label index="action_loading_extlist">Loading Extension List ...</label>
 			<label index="action_loadingRepositoryExtlist">Loading Repository Extension List ...</label>
 			<label index="action_loading">Loading ...</label>
@@ -699,14 +700,25 @@
 			<label index="msg_item">Item</label>
 			<label index="cmd_ClearAllFilters">Clear all Filters</label>
 			<label index="cmd_RetrieveUpdate">Retrieve / Update</label>
-			<label index="help_localFilter">Enter something to search for and press Enter. Title, description, and extension key are searched.</label>
-			<label index="help_remoteFilter">Enter something to search for and press Enter. To list all extensions, use "*"</label>
+			<label index="help_localFilter">Enter something to search for. Title and extension key are used for search.</label>
+			<label index="help_remoteFilter">Enter something to search for and press Enter. For complete extension list use "*"</label>
 			<label index="help_loadFileInEditor">Click on a file to load in editor</label>
 			<label index="extTemplate_showOldModules">Show old modules: Enable this option to have old modules like "Loaded Extensions, Installed extensions ..." available in upper left select box of the Extension Manager</label>
 			<label index="extTemplate_selectedLanguages">Language selection: The language setting is saved here as a global setting. You should not change it at this place but instead use the Extension Manager tab for "Translation handling" to add and remove languages for your installation</label>
 			<label index="extTemplate_inlineToWindow">Use windows instead of inline display: On small screens the inline display of rows might take too much space. This switch moves the inline info to windows.</label>
 			<label index="extTemplate_displayMyExtensions">Display "My Extensions" Tab: In this tab you can manage your own extensions.</label>
 			<label index="soap_error">Unexpected result from SOAP</label>
+			<label index="fileEditFileChanged">File content changed</label>
+			<label index="fileEditFileChangedSavePrompt">Do you want to save this file before loading another file?</label>
+			<label index="fileEditNewFilePrompt">Please enter complete filename</label>
+			<label index="fileEditRename">Rename</label>
+			<label index="fileEditCreateFileFolder">Create new file or folder</label>
+			<label index="fileEditCreateFolder">Make Folder</label>
+			<label index="fileEditReloadFiletree">Reload file tree</label>
+			<label index="fileEditOperation">File Operation</label>
+			<label index="fileEditMoveConfirmation">Are you sure to move "{0}" into "{1}"?</label>
+			<label index="fileEditCopyConfirmation">Are you sure to copy "{0}" into "{1}"?</label>
+			<label index="fileEditCopyConfirmation">Are you sure to copy "{0}" into "{1}"?</label>
 
 		</languageKey>
 	</data>

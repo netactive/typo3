@@ -28,7 +28,7 @@
  * Module: About
  * This document shows some standard-information for TYPO3 CMS: About-text, version number and so on.
  *
- * $Id: index.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id: index.php 10592 2011-02-23 13:18:22Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -107,6 +107,15 @@ class SC_mod_help_about_index {
 				<div class="typo3-mod-help-about-index-php-inner">
 					<h2>' . $LANG->getLL('welcome', TRUE) . '</h2>
 					<p>'.$minorText.'</p>
+				</div>
+
+				<div class="typo3-mod-help-about-index-php-inner">
+					<h2>' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:donation_header', TRUE) . '</h2>
+					<p id="donation-description">' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:donation_message') . '</p>
+					<div class="donation-button">
+						<input type="button" id="donation-button" value="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:donation_button') . '"
+						onclick="window.open(\'' . TYPO3_URL_DONATE . '\');" />
+					</div>
 				</div>
 
 				<div class="typo3-mod-help-about-index-php-inner">

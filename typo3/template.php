@@ -27,7 +27,7 @@
 /**
  * Contains class with layout/output function for TYPO3 Backend Scripts
  *
- * $Id: template.php 10317 2011-01-26 00:56:49Z baschny $
+ * $Id: template.php 10510 2011-02-21 00:30:42Z steffenk $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML-trans compliant
  *
@@ -821,11 +821,6 @@ class template {
 		$this->docStyle();
 
 	   if ($this->extDirectStateProvider) {
-			$this->pageRenderer->addJsFile(
-				$this->backPath . 'ajax.php?ajaxID=ExtDirect::getAPI&namespace=TYPO3.ExtDirectStateProvider&' . TYPO3_version,
-				NULL,
-				FALSE
-			);
 			$this->pageRenderer->addJsFile($this->backPath . '../t3lib/js/extjs/ExtDirect.StateProvider.js');
 		}
 
@@ -1637,7 +1632,6 @@ $str.=$this->docBodyTagBegin().
 	protected function loadCshJavascript() {
 		$this->pageRenderer->loadExtJS();
 		$this->pageRenderer->addJsFile($this->backPath .'../t3lib/js/extjs/contexthelp.js');
-		$this->pageRenderer->addJsFile($this->backPath . 'ajax.php?ajaxID=ExtDirect::getAPI&namespace=TYPO3.CSH&' . TYPO3_version, NULL, FALSE);
 		$this->pageRenderer->addExtDirectCode();
 	}
 

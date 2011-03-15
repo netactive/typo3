@@ -30,7 +30,7 @@
  *
  * @author	Kasper Skårhøj <kasper@typo3.com>
  *
- * $Id: class.tx_rtehtmlarea_dam_browse_media.php 10120 2011-01-18 20:03:36Z ohader $  *
+ * $Id: class.tx_rtehtmlarea_dam_browse_media.php 10366 2011-02-01 21:21:55Z stan $  *
  */
 require_once(t3lib_extMgm::extPath('dam').'class.tx_dam_browse_media.php');
 
@@ -397,7 +397,7 @@ class tx_rtehtmlarea_dam_browse_media extends tx_dam_browse_media {
 				var floatSelector=\'<select id="iFloat" name="iFloat"><option value="">' . $LANG->getLL('notSet') . '</option><option value="none">' . $LANG->getLL('nonFloating') . '</option><option value="left">' . $LANG->getLL('left') . '</option><option value="right">' . $LANG->getLL('right') . '</option></select>\';
 				var bgColor=\' class="bgColor4"\';
 				var sz="";
-				sz+=\'<table border=0 cellpadding=1 cellspacing=1><form action="" name="imageData">\';
+				sz+=\'<table border="0" cellpadding="1" cellspacing="1"><form action="" name="imageData">\';
 				'.(in_array('class', $this->removedProperties)?'':'
 				if(classesImage) {
 					sz+=\'<tr><td\'+bgColor+\'><label for="iClass">'.$LANG->getLL('class').': </label></td><td>\'+styleSelector+\'</td></tr>\';

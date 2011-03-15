@@ -1,12 +1,21 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Help > About
 
-$Id: module_help_about.css 7974 2010-06-20 08:05:51Z benni $
+$Id: module_help_about.css 10592 2011-02-23 13:18:22Z ohader $
 - - - - - - - - - - - - - - - - - - - - - */
 
 #typo3-mod-help-about-index-php-outer {
 	margin: 0px auto;
 	width: 500px;
+}
+
+#typo3-mod-help-about-index-php-outer #donation-description {
+	padding-left: 60px;
+	margin: 10px 0;
+}
+
+#typo3-mod-help-about-index-php-outer .donation-button input {
+	padding-left: 20px;
 }
 
 #typo3-mod-help-about-index-php-outer .typo3-mod-help-about-index-php-inner {

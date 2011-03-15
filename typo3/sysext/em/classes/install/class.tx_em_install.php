@@ -663,6 +663,7 @@ class tx_em_Install {
 	 * @return	string		Returns message string about the status of the operation
 	 */
 	function extDelete($extKey, $extInfo, $command) {
+		$content = '';
 		$absPath = tx_em_Tools::getExtPath($extKey, $extInfo['type']);
 		if (t3lib_extMgm::isLoaded($extKey)) {
 			return $GLOBALS['LANG']->getLL('extDelete_ext_active');
@@ -1309,7 +1310,9 @@ class tx_em_Install {
 						t3lib_BEfunc::getFuncMenu(0, 'SET[constant_editor_cat]', $MOD_SETTINGS['constant_editor_cat'], $MOD_MENU['constant_editor_cat'], '', '&CMD[showExt]=' . $extKey);
 					// add class to select
 				$menu = str_replace('<select', '<select class="mod-menu-template-select"', $menu);
-				$menu = str_replace('jumpToUrl', 'abc', $menu);
+				if ($this->silentMode) {
+					$menu = str_replace('jumpToUrl', 'abc', $menu);
+				}
 
 				if ($this->parentObject instanceof SC_mod_tools_em_index) {
 					$this->parentObject->content .= $this->parentObject->doc->section('', '<span class="nobr">' . $menu . '</span>');
@@ -1323,7 +1326,14 @@ class tx_em_Install {
 			$form .= '
 				<table border="0" cellpadding="0" cellspacing="0" width="600">
 					<tr>
-						<td>' . $tsStyleConfig->ext_getForm($MOD_SETTINGS['constant_editor_cat'], $theConstants, $script, $addFields, $extKey, !$this->silentMode) . '</form></td>
+						<td>' . $tsStyleConfig->ext_getForm(
+							$MOD_SETTINGS['constant_editor_cat'],
+							$theConstants,
+							$script,
+							$addFields,
+							$extKey,
+							!$this->silentMode
+						) . ($this->silentMode ? '' : '</form>') .'</td>
 					</tr>
 				</table>';
 		} else {
@@ -1440,6 +1450,7 @@ class tx_em_Install {
 	 * @return	string		HTML output (if form is shown)
 	 */
 	function checkClearCache($extInfo) {
+		$content = '';
 		if ($extInfo['EM_CONF']['clearCacheOnLoad']) {
 			if (t3lib_div::_POST('_clear_all_cache')) { // Action: Clearing the cache
 				$tce = t3lib_div::makeInstance('t3lib_TCEmain');

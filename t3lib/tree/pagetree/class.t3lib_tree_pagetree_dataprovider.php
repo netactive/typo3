@@ -253,7 +253,6 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 		}
 
 		$showRootlineAboveMounts = $GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.showPathAboveMounts');
-		$class = (count($mountPoints) <= 1 ? 'typo3-pagetree-node-notExpandable' : '');
 		foreach ($mountPoints as $mountPoint) {
 			if ($mountPoint === 0) {
 				$sitename = 'TYPO3';
@@ -269,6 +268,10 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 				$subNode->setLabelIsEditable(FALSE);
 				$subNode->setType('pages_root');
 			} else {
+				if (in_array($mountPoint, $this->hiddenRecords)) {
+					continue;
+				}
+
 				$record = t3lib_BEfunc::getRecordWSOL('pages', $mountPoint, '*', '', TRUE);
 				if (!$record) {
 					continue;
@@ -281,11 +284,14 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 				}
 			}
 
+			if (count($mountPoints) <= 1) {
+				$subNode->setExpanded(TRUE);
+				$subNode->setCls('typo3-pagetree-node-notExpandable');
+			}
+
 			$subNode->setIsMountPoint(TRUE);
-			$subNode->setExpanded(TRUE);
 			$subNode->setDraggable(FALSE);
 			$subNode->setIsDropTarget(FALSE);
-			$subNode->setCls($class);
 
 			if ($searchFilter === '') {
 				$childNodes = $this->getNodes($subNode, $mountPoint);

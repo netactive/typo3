@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 10010 2011-01-08 03:47:02Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 10513 2011-02-21 02:13:33Z stan $
  */
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
 if (typeof(HTMLArea) == 'undefined') {
@@ -4764,30 +4764,26 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	 */
 	getWindowDimensions: function (dimensions, buttonId) {
 			// Apply default dimensions
-		var dialogueWindowDimensions = {
+		this.dialogueWindowDimensions = {
 			width: 250,
-			height: 250,
-			top: this.editorConfiguration.dialogueWindows.defaultPositionFromTop,
-			left: this.editorConfiguration.dialogueWindows.defaultPositionFromLeft
+			height: 250
 		};
+			// Apply default values as per PageTSConfig
+		if (this.editorConfiguration.dialogueWindows) {
+			Ext.apply(this.dialogueWindowDimensions, this.editorConfiguration.dialogueWindows);
+		}
 			// Apply dimensions as per button registration
 		if (this.editorConfiguration.buttonsConfig[buttonId]) {
-			Ext.apply(dialogueWindowDimensions, this.editorConfiguration.buttonsConfig[buttonId].dimensions);
+			Ext.apply(this.dialogueWindowDimensions, this.editorConfiguration.buttonsConfig[buttonId].dimensions);
 		}
 			// Apply dimensions as per call
-		Ext.apply(dialogueWindowDimensions, dimensions);
+		Ext.apply(this.dialogueWindowDimensions, dimensions);
 			// Overrride dimensions as per PageTSConfig
 		var buttonConfiguration = this.editorConfiguration.buttons[this.editorConfiguration.convertButtonId[buttonId]];
 		if (buttonConfiguration && buttonConfiguration.dialogueWindow) {
-			Ext.apply(dialogueWindowDimensions, buttonConfiguration.dialogueWindow);
-			if (buttonConfiguration.dialogueWindow.top) {
-				dialogueWindowDimensions.top = buttonConfiguration.dialogueWindow.positionFromTop;
-			}
-			if (buttonConfiguration.dialogueWindow.left) {
-				dialogueWindowDimensions.left = buttonConfiguration.dialogueWindow.positionFromLeft;
-			}
+			Ext.apply(this.dialogueWindowDimensions, buttonConfiguration.dialogueWindow);
 		}
-		return dialogueWindowDimensions;
+		return this.dialogueWindowDimensions;
 	},
 	/**
 	 ***********************************************
@@ -4855,6 +4851,9 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 			// Close the window if the editor changes mode
 		this.dialog.mon(this.editor, 'HTMLAreaEventModeChange', this.close, this, {single: true });
 		this.saveSelection();
+		if (typeof(this.dialogueWindowDimensions) !== 'undefined') {
+			this.dialog.setPosition(this.dialogueWindowDimensions.positionFromLeft, this.dialogueWindowDimensions.positionFromTop);
+		}
 		this.dialog.show();
 		this.restoreSelection();
 	},

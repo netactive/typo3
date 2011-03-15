@@ -27,7 +27,7 @@
 /**
  * Contains an extension class specifically for authentication/initialization of backend users in TYPO3
  *
- * $Id: class.t3lib_userauthgroup.php 10227 2011-01-21 21:32:43Z baschny $
+ * $Id: class.t3lib_userauthgroup.php 10477 2011-02-17 11:06:57Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -876,7 +876,7 @@ class t3lib_userAuthGroup extends t3lib_userAuth {
 			return TRUE;
 		}
 
-		if ($this->workspace > 0) {
+		if ($this->workspace > 0 && t3lib_extMgm::isLoaded('workspaces')) {
 			$stat = $this->checkWorkspaceCurrent();
 
 				// Check if custom staging is activated
@@ -1645,14 +1645,16 @@ class t3lib_userAuthGroup extends t3lib_userAuth {
 					$wsRec = array('uid' => $wsRec);
 				break;
 				default:
-					$wsRec = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow(
-						$fields,
-						'sys_workspace',
-						'pid=0 AND uid=' . intval($wsRec) .
-						t3lib_BEfunc::deleteClause('sys_workspace'),
-						'',
-						'title'
-					);
+					if (t3lib_extMgm::isLoaded('workspaces')) {
+						$wsRec = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow(
+							$fields,
+							'sys_workspace',
+							'pid=0 AND uid=' . intval($wsRec) .
+							t3lib_BEfunc::deleteClause('sys_workspace'),
+							'',
+							'title'
+						);
+					}
 				break;
 			}
 		}
@@ -1772,7 +1774,7 @@ class t3lib_userAuthGroup extends t3lib_userAuth {
 			return 0;
 		} elseif ($this->checkWorkspace(-1)) { // Check offline
 			return -1;
-		} else { // Traverse custom workspaces:
+		} elseif (t3lib_extMgm::isLoaded('workspaces')) { // Traverse custom workspaces:
 			$workspaces = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid,title,adminusers,members,reviewers', 'sys_workspace', 'pid=0' . t3lib_BEfunc::deleteClause('sys_workspace'), '', 'title');
 			foreach ($workspaces as $rec) {
 				if ($this->checkWorkspace($rec)) {

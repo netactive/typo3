@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 10317 2011-01-26 00:56:49Z baschny $
+ * $Id: class.tslib_content.php 10473 2011-02-16 20:42:34Z baschny $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -834,6 +834,7 @@ class tslib_cObj {
 			'SEARCHRESULT' => 'SearchResult',
 			'PHP_SCRIPT' => 'PhpScript',
 			'PHP_SCRIPT_INT' => 'PhpScriptInternal',
+			'PHP_SCRIPT_EXT' => 'PhpScriptExternal',
 			'TEMPLATE' => 'Template',
 			'FLUIDTEMPLATE' => 'FluidTemplate',
 			'MULTIMEDIA' => 'Multimedia',
@@ -1103,7 +1104,7 @@ class tslib_cObj {
 	 * @return	string		Output
 	 */
 	function FORM($conf, $formData = '') {
-		return $this->getContentObject('FORM')->render($conf);
+		return $this->getContentObject('FORM')->render($conf, $formData);
 	}
 
 	/**
@@ -2034,7 +2035,7 @@ class tslib_cObj {
 					}
 
 					// hand over the whole $conf array to the stdWrapHookObjects
-					if ($conf[$functionName] == 'stdWrapHookObject') {
+					if ($functionType === 'hook') {
 						$singleConf = $conf;
 					}
 					// check if key is still containing something, since it might have been changed by next level stdWrap before
@@ -2086,6 +2087,7 @@ class tslib_cObj {
 	 */
 	public function stdWrap_setContentToCurrent($content = '', $conf = array()) {
 		$this->data[$this->currentValKey] = $content;
+		return $content;
 	}
 
 	/**
@@ -2098,6 +2100,7 @@ class tslib_cObj {
 	 */
 	public function stdWrap_setCurrent($content = '', $conf = array()) {
 		$this->data[$this->currentValKey] = $conf['setCurrent'];
+		return $content;
 	}
 
 	/**
@@ -3591,15 +3594,20 @@ class tslib_cObj {
 		$afterstring = trim($options[1]);
 		$crop2space = trim($options[2]);
 		if ($chars) {
-			if (strlen($content) > abs($chars)) {
+			if ($GLOBALS['TSFE']->csConvObj->strlen($GLOBALS['TSFE']->renderCharset, $content) > abs($chars)) {
+				$truncatePosition = FALSE;
 				if ($chars < 0) {
 					$content = $GLOBALS['TSFE']->csConvObj->substr($GLOBALS['TSFE']->renderCharset, $content, $chars);
-					$trunc_at = strpos($content, ' ');
-					$content = ($trunc_at && $crop2space) ? $afterstring . substr($content, $trunc_at) : $afterstring . $content;
+					if ($crop2space) {
+						$truncatePosition = strpos($content, ' ');
+					}
+					$content = ($truncatePosition) ? $afterstring . substr($content, $truncatePosition) : $afterstring . $content;
 				} else {
 					$content = $GLOBALS['TSFE']->csConvObj->substr($GLOBALS['TSFE']->renderCharset, $content, 0, $chars);
-					$trunc_at = strrpos($content, ' ');
-					$content = ($trunc_at && $crop2space) ? substr($content, 0, $trunc_at) . $afterstring : $content . $afterstring;
+					if ($crop2space) {
+						$truncatePosition = strrpos($content, ' ');
+					}
+					$content = ($truncatePosition) ? substr($content, 0, $truncatePosition) . $afterstring : $content . $afterstring;
 				}
 			}
 		}
@@ -4687,6 +4695,8 @@ class tslib_cObj {
 				$uTagName = strtoupper($conf['remapTag.'][$uTagName] ? $conf['remapTag.'][$uTagName] : $uTagName);
 			} else {
 				$uTagName = strtoupper($nonWrappedTag);
+					// The line will be wrapped: $uTagName should not be an empty tag
+				$emptyTag = 0;
 				$str_content = $lParts[$k];
 				$nWrapped = 1;
 				$attrib = array();

@@ -27,7 +27,7 @@
 /**
  * Contains class for icon generation in the backend
  *
- * $Id: class.t3lib_iconworks.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id: class.t3lib_iconworks.php 10396 2011-02-05 23:28:36Z stephenking $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -119,11 +119,24 @@ final class t3lib_iconWorks {
 		'gz' => 'mimetypes-compressed',
 		'pdf' => 'mimetypes-pdf',
 		'doc' => 'mimetypes-word',
+		'dot' => 'mimetypes-word',
+		'docm' => 'mimetypes-word',
+		'docx' => 'mimetypes-word',
+		'dotm' => 'mimetypes-word',
+		'dotx' => 'mimetypes-word',
 		'sxw' => 'mimetypes-word',
 		'rtf' => 'mimetypes-word',
 		'xls' => 'mimetypes-excel',
+		'xlsm' => 'mimetypes-excel',
+		'xlsx' => 'mimetypes-excel',
+		'xltm' => 'mimetypes-excel',
+		'xltx' => 'mimetypes-excel',
 		'sxc' => 'mimetypes-excel',
 		'ppt' => 'mimetypes-powerpoint',
+		'pptm' => 'mimetypes-powerpoint',
+		'pptx' => 'mimetypes-powerpoint',
+		'potm' => 'mimetypes-powerpoint',
+		'potx' => 'mimetypes-powerpoint',
 		'mount' => 'apps-filetree-mount',
 		'folder' => 'apps-filetree-folder-default',
 		'default' => 'mimetypes-other-other'

@@ -27,7 +27,7 @@
 /**
  * Contains a class for formmail
  *
- * $Id: class.t3lib_formmail.php 10227 2011-01-21 21:32:43Z baschny $
+ * $Id: class.t3lib_formmail.php 10609 2011-02-23 14:19:45Z baschny $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -73,7 +73,6 @@ class t3lib_formmail {
 	/** @var t3lib_mail_Message */
 	protected $mailMessage;
 	protected $recipient;
-	protected $returnPath;
 	protected $plainContent = '';
 
 	/** @var array Files to clean up at the end (attachments) */
@@ -105,12 +104,6 @@ class t3lib_formmail {
 
 		$this->mailMessage = t3lib_div::makeInstance('t3lib_mail_Message');
 
-		if ($GLOBALS['TYPO3_CONF_VARS']['SYS']['forceReturnPath']) {
-			$this->returnPath = $GLOBALS['TYPO3_CONF_VARS']['SYS']['forceReturnPath'];
-			$this->mailMessage->setReturnPath($this->returnPath);
-		}
-		$this->mailMessage->getHeaders()->addTextHeader('X-Mailer', 'TYPO3');
-
 		if ($GLOBALS['TSFE']->config['config']['formMailCharset']) {
 				// Respect formMailCharset if it was set
 			$this->characterSet = $GLOBALS['TSFE']->csConvObj->parse_charset($GLOBALS['TSFE']->config['config']['formMailCharset']);
@@ -134,11 +127,9 @@ class t3lib_formmail {
 					? $valueList['from_name']
 					: (($valueList['name']) ? $valueList['name'] : '');
 			$this->fromName = $this->sanitizeHeaderString($this->fromName);
-			$this->fromName = preg_match('/\s|,/', $this->fromName) >= 1 ? '"' . $this->fromName . '"' : $this->fromName;
 
 			$this->replyToName = ($valueList['replyto_name']) ? $valueList['replyto_name'] : $this->fromName;
 			$this->replyToName = $this->sanitizeHeaderString($this->replyToName);
-			$this->replyToName = preg_match('/\s|,/', $this->replyToName) >= 1 ? '"' . $this->replyToName . '"' : $this->replyToName;
 
 			$this->organisation = ($valueList['organisation']) ? $valueList['organisation'] : '';
 			$this->organisation = $this->sanitizeHeaderString($this->organisation);
@@ -146,14 +137,12 @@ class t3lib_formmail {
 			$this->fromAddress = ($valueList['from_email']) ? $valueList['from_email'] : (
 				($valueList['email']) ? $valueList['email'] : ''
 			);
-			$this->fromAddress = t3lib_div::validEmail($this->fromAddress)
-					? $this->fromAddress
-					: t3lib_utility_Mail::getSystemFromAddress();
+			if (!t3lib_div::validEmail($this->fromAddress)) {
+				$this->fromAddress = t3lib_utility_Mail::getSystemFromAddress();
+				$this->fromName = t3lib_utility_Mail::getSystemFromName();
+			}
 
 			$this->replyToAddress = ($valueList['replyto_email']) ? $valueList['replyto_email'] : $this->fromAddress;
-			$this->replyToAddress = t3lib_div::validEmail($this->replyToAddress)
-					? $this->replyToAddress
-					: t3lib_utility_Mail::getSystemFromAddress();
 
 			$this->priority = ($valueList['priority']) ? t3lib_div::intInRange($valueList['priority'], 1, 5) : 3;
 
@@ -233,14 +222,17 @@ class t3lib_formmail {
 				$this->temporaryFiles[] = $theFile;
 			}
 
-			$this->recipient = $valueList['recipient'];
+			$from = $this->fromName ? array($this->fromAddress => $this->fromName) : array($this->fromAddress);
+			$this->recipient = $this->parseAddresses($valueList['recipient']);
 			$this->mailMessage->setSubject($this->subject)
-					->setFrom(array($this->fromAddress => $this->fromName))
+					->setFrom($from)
 					->setTo($this->recipient)
 					->setPriority($this->priority);
+			$replyTo = $this->replyToName ? array($this->replyToAddress => $this->replyToName) : array($this->replyToAddress);
+			$this->mailMessage->addReplyTo($replyTo);
 			$this->mailMessage->getHeaders()->addTextHeader('Organization', $this->organisation);
 			if ($valueList['recipient_copy']) {
-				$this->mailMessage->addCc(trim($valueList['recipient_copy']));
+				$this->mailMessage->addCc($this->parseAddresses($valueList['recipient_copy']));
 			}
 			if ($this->characterSet) {
 				$this->mailMessage->setCharset($this->characterSet);
@@ -274,6 +266,34 @@ class t3lib_formmail {
 	}
 	
 	/**
+	 * Parses mailbox headers and turns them into an array.
+	 *
+	 * Mailbox headers are a comma separated list of 'name <email@example.org' combinations or plain email addresses (or a mix
+	 * of these).
+	 * The resulting array has key-value pairs where the key is either a number (no display name in the mailbox header) and the
+	 * value is the email address, or the key is the email address and the value is the display name.
+	 *
+	 * @param string $rawAddresses Comma separated list of email addresses (optionally with display name)
+	 * @return array Parsed list of addresses.
+	 */
+	protected function parseAddresses($rawAddresses = '') {
+			/** @var $addressParser t3lib_mail_Rfc822AddressesParser */
+		$addressParser = t3lib_div::makeInstance('t3lib_mail_Rfc822AddressesParser', $rawAddresses);
+		$addresses = $addressParser->parseAddressList();
+		$addressList = array();
+		foreach ($addresses as $address) {
+			if ($address->personal) {
+				// item with name found ( name <email@example.org> )
+				$addressList[$address->mailbox . '@' . $address->host] = $address->personal;
+			} else {
+				// item without name found ( email@example.org )
+				$addressList[] = $address->mailbox . '@' . $address->host;
+			}
+		}
+		return $addressList;
+	}
+
+	/**
 	 * Sends the actual mail and handles autorespond message
 	 *
 	 * @return boolean
@@ -300,9 +320,6 @@ class t3lib_formmail {
 					->setSubject($theParts[0])
 					->setFrom($this->recipient)
 					->setBody($theParts[1]);
-			if ($this->returnPath) {
-				$autoRespondMail->setReturnPath($this->returnPath);
-			}
 			$autoRespondMail->send();
 		}
 		return $this->mailMessage->isSent();

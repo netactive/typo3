@@ -31,7 +31,7 @@
  * Call ALL methods without making an object!
  * Eg. to get a page-record 51 do this: 't3lib_BEfunc::getRecord('pages',51)'
  *
- * $Id: class.t3lib_befunc.php 10317 2011-01-26 00:56:49Z baschny $
+ * $Id: class.t3lib_befunc.php 10519 2011-02-21 19:09:26Z steffenk $
  * Usage counts are based on search 22/2 2003 through whole backend source of typo3/
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
@@ -3333,7 +3333,7 @@ final class t3lib_BEfunc {
 	 */
 	public static function getUrlToken($formName = 'securityToken', $tokenName = 'formToken') {
 		$formprotection = t3lib_formprotection_Factory::get();
-		return '&' . $tokenName . '=' . $formprotection->generateToken($formName);
+		return '&' . $tokenName . '=' . $formprotection->generateToken($formName) . '-' . $formName;
 	}
 
 	/*******************************************

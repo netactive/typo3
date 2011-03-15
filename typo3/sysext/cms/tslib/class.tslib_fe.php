@@ -32,7 +32,7 @@
  * The class is instantiated as $GLOBALS['TSFE'] in index_ts.php.
  * The use of this class should be inspired by the order of function calls as found in index_ts.php.
  *
- * $Id: class.tslib_fe.php 10317 2011-01-26 00:56:49Z baschny $
+ * $Id: class.tslib_fe.php 10477 2011-02-17 11:06:57Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -4370,7 +4370,7 @@ if (version == "n3") {
 		if ($returnTitle)	{
 			if ($ws===-1)	{
 				return 'Default Draft Workspace';
-			} else {
+			} elseif (t3lib_extMgm::isLoaded('workspaces')) {
 				$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('title', 'sys_workspace', 'uid='.intval($ws));
 				if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
 					return $row['title'];

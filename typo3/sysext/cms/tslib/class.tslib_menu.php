@@ -31,7 +31,7 @@
  * The main class, tslib_menu, is also extended by other external PHP scripts such as the GMENU_LAYERS and GMENU_FOLDOUT scripts which creates pop-up menus.
  * Notice that extension classes (like "tslib_tmenu") must have their suffix (here "tmenu") listed in $this->tmpl->menuclasses - otherwise they cannot be instantiated.
  *
- * $Id: class.tslib_menu.php 10317 2011-01-26 00:56:49Z baschny $
+ * $Id: class.tslib_menu.php 10383 2011-02-04 15:51:56Z francois $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -1927,10 +1927,14 @@ class tslib_tmenu extends tslib_menu {
 				$res=$this->I['A1'].$res.$this->I['A2'];
 			}
 		}
-		$pref = isset($this->I['val'][$pref.'.'])
-			? $this->WMcObj->stdWrap($this->I['val'][$pref], $this->I['val'][$pref.'.'])
+		$processedPref = isset($this->I['val'][$pref . '.'])
+			? $this->WMcObj->stdWrap($this->I['val'][$pref], $this->I['val'][$pref . '.'])
 			: $this->I['val'][$pref];
-		return $this->tmpl->wrap($res.$pref, $this->I['val'][$pref.'Wrap']);
+		if (isset($this->I['val'][$pref . 'Wrap'])) {
+			return $this->tmpl->wrap($res . $processedPref, $this->I['val'][$pref . 'Wrap']);
+		} else {
+			 return $res . $processedPref;
+		}
 	}
 
 	/**

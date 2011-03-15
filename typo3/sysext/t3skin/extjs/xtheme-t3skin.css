@@ -1317,7 +1317,7 @@ td.x-grid3-hd-over, td.x-grid3-hd-menu-open {
 }
 
 .x-tree-node-expanded .x-tree-node-icon{
-	background-image:url(images/tree/folder-open.gif);
+	background-image:url(../images/icons/apps/filetree-folder-opened.png);
 }
 
 .x-tree-node-leaf .x-tree-node-icon{
@@ -1325,7 +1325,7 @@ td.x-grid3-hd-over, td.x-grid3-hd-menu-open {
 }
 
 .x-tree-node-collapsed .x-tree-node-icon{
-	background-image:url(images/tree/folder.gif);
+	background-image:url(../images/icons/apps/filetree-folder-default.png);
 }
 
 .x-tree-node-loading .x-tree-node-icon{
@@ -1504,11 +1504,11 @@ td.x-grid3-hd-over, td.x-grid3-hd-menu-open {
 }
 
 .x-date-middle .x-btn .x-btn-text {
-	color:#fff;
+	color:#000;
 }
 
 .x-date-middle .x-btn-mc em.x-btn-arrow {
-	background-image:url(images/toolbar/btn-arrow-light.gif);
+	background-image:url(images/toolbar/btn-arrow.gif);
 }
 
 .x-date-right a {
@@ -2355,11 +2355,6 @@ body.x-body-masked .x-window-plain .x-window-mc {
 .t3-window .x-btn button {
 	padding-left: 3px;
 	padding-right: 3px;
-}
-
-#donateWindow.t3-window .x-window-body.x-window-body-noborder {
-	padding-left: 100px;
-	background: url(../images/general/donate_teaser.png) no-repeat 25px 10px !important;
 }
 
 .icon-collapse-all {

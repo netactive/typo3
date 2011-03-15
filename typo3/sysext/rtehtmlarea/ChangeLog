@@ -1,3 +1,35 @@
+2011-02-22  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #17695: htmlArea RTE: Removing format may remove content
+
+2011-02-20  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Follow-up to issue #17677: htmlArea RTE: Classes configuration is loaded twice
+	* Fixed bug #17669: htmlArea RTE: Dialogue window positioning properties not honoured
+
+2011-02-19  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #17676: htmlArea RTE: Some combo stores are loaded twice
+	* Fixed bug #17677: htmlArea RTE: Classes configuration is loaded twice
+
+2011-02-17  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #17616: htmlArea RTE: Link dialogue doesn't open when anchor class is set with double quotes
+
+2011-02-15  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #17587: htmlArea RTE: RTE should not be enabled on Android
+
+2011-02-07  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* htmlArea RTE: Updated Manual
+
+2011-02-01  Stanislas Rolland  <typo3@sjbr.ca>
+
+	* Fixed bug #17349: htmlArea RTE: JS error when using "Edit element"
+	* Updated htmlArea RTE version to 2.1.6
+	* Fixed bug #17438: htmlArea RTE: non-xhtml markup in image dialogue (Thanks to Georg Ringer)
+
 2011-01-21  Stanislas Rolland  <typo3@sjbr.ca>
 
 	* Fixed bug #16975: htmlArea RTE: Use parentNode rather than parentElement

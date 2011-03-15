@@ -33,7 +33,7 @@
  * @package TYPO3
  * @subpackage tx_install
  *
- * @version $Id: class.tx_install_session.php 10120 2011-01-18 20:03:36Z ohader $
+ * @version $Id: class.tx_install_session.php 10580 2011-02-23 09:53:46Z tolleiv $
  */
 class tx_install_session {
 
@@ -138,7 +138,7 @@ class tx_install_session {
 	 */
 	private function getSessionSavePath() {
 		return sprintf(
-			$this->typo3tempPath . '/' . $this->sessionPath,
+			$this->typo3tempPath . $this->sessionPath,
 			md5(
 				'session:' .
 					$GLOBALS['TYPO3_CONF_VARS']['BE']['installToolPassword']
@@ -344,13 +344,7 @@ class tx_install_session {
 	 */
 	public function write($id, $sessionData) {
 		$sessionFile = $this->getSessionFile($id);
-		if ($fp = @fopen($sessionFile, 'w')) {
-			$return = fwrite($fp, $sessionData);
-			fclose($fp);
-			return $return;
-		} else {
-			return FALSE;
-		}
+		return t3lib_div::writeFile($sessionFile, $sessionData);
 	}
 
 	/**

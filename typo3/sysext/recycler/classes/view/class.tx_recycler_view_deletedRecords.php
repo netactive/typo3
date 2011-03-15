@@ -31,7 +31,7 @@ require_once(t3lib_extMgm::extPath('recycler', 'classes/helper/class.tx_recycler
  * @author	Julian Kleinhans <typo3@kj187.de>
  * @package	TYPO3
  * @subpackage	tx_recycler
- * @version $Id: class.tx_recycler_view_deletedRecords.php 10120 2011-01-18 20:03:36Z ohader $
+ * @version $Id: class.tx_recycler_view_deletedRecords.php 10550 2011-02-22 22:02:54Z steffenk $
  **/
 class tx_recycler_view_deletedRecords {
 
@@ -55,14 +55,14 @@ class tx_recycler_view_deletedRecords {
 				$total += count($deletedRowsArray[$table]);
 
 				foreach($rows as $row) {
-					$feuser = t3lib_BEfunc::getRecord('be_users', $row[$GLOBALS['TCA'][$table]['ctrl']['cruser_id']], 'username', '', false);
+					$backendUser = t3lib_BEfunc::getRecord('be_users', $row[$GLOBALS['TCA'][$table]['ctrl']['cruser_id']], 'username', '', FALSE);
 					$jsonArray['rows'][] = array(
 						'uid'	=> $row['uid'],
 						'pid'	=> $row['pid'],
 						'table'	=> $table,
 						'crdate' => date($GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy'] . ' ' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['hhmm'], $row[$GLOBALS['TCA'][$table]['ctrl']['crdate']]),
 						'tstamp' => date($GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy'] . ' ' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['hhmm'], $row[$GLOBALS['TCA'][$table]['ctrl']['tstamp']]),
-						'owner' => $feuser['username'],
+						'owner' => $backendUser['username'],
 						'owner_uid' => $row[$GLOBALS['TCA'][$table]['ctrl']['cruser_id']],
 						'tableTitle' => tx_recycler_helper::getUtf8String(
 							$GLOBALS['LANG']->sL($GLOBALS['TCA'][$table]['ctrl']['title'])

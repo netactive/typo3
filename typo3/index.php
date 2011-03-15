@@ -27,7 +27,7 @@
 /**
  * Login-screen of TYPO3.
  *
- * $Id: index.php 10317 2011-01-26 00:56:49Z baschny $
+ * $Id: index.php 10567 2011-02-22 22:52:18Z steffenk $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -398,7 +398,8 @@ class SC_index {
 				t3lib_utility_Http::redirect($this->redirectToURL);
 			} else {
 				$formprotection = t3lib_formprotection_Factory::get();
-				$token = $formprotection->generateToken('extDirect');
+				$accessToken = $formprotection->generateToken('refreshTokens');
+				$formprotection->persistTokens();
 				$TBE_TEMPLATE->JScode.=$TBE_TEMPLATE->wrapScriptTags('
 					if (parent.opener && (parent.opener.busy || parent.opener.TYPO3.loginRefresh)) {
 						if (parent.opener.TYPO3.loginRefresh) {
@@ -406,7 +407,7 @@ class SC_index {
 						} else {
 							parent.opener.busy.loginRefreshed();
 						}
-						parent.opener.TYPO3.ExtDirectToken = "' . $token . '";
+						parent.opener.TYPO3.loginRefresh.refreshTokens("' . $accessToken . '");
 						parent.close();
 					}
 				');
@@ -460,8 +461,8 @@ class SC_index {
 						<select id="t3-interfaceselector" name="interface" class="c-interfaceselector" tabindex="3" onchange="window.location.href=this.options[this.selectedIndex].value;">'.$this->interfaceSelector_jump.'
 						</select>';
 
-			} else {	// If there is only ONE interface value set:
-
+			} elseif (!$this->redirect_url) {
+					// If there is only ONE interface value set and no redirect_url is present:
 				$this->interfaceSelector_hidden='<input type="hidden" name="interface" value="'.trim($TYPO3_CONF_VARS['BE']['interfaces']).'" />';
 			}
 		}

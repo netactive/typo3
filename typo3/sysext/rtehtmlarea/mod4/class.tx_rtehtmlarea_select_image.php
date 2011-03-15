@@ -31,7 +31,7 @@
  * @author	Kasper Skårhøj <kasper@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_select_image.php 10120 2011-01-18 20:03:36Z ohader $  *
+ * $Id: class.tx_rtehtmlarea_select_image.php 10366 2011-02-01 21:21:55Z stan $  *
  */
 require_once(PATH_typo3.'class.browse_links.php');
 
@@ -507,7 +507,7 @@ class tx_rtehtmlarea_select_image extends browse_links {
 				}
 				var bgColor=\' class="bgColor4"\';
 				var sz="";
-				sz+=\'<table border=0 cellpadding=1 cellspacing=1><form action="" name="imageData">\';
+				sz+=\'<table border="0" cellpadding="1" cellspacing="1"><form action="" name="imageData">\';
 				'.(in_array('class', $removedProperties)?'':'
 				if(classesImage) {
 					sz+=\'<tr><td\'+bgColor+\'><label for="iClass">'.$LANG->getLL('class').': </label></td><td>\'+styleSelector+\'</td></tr>\';
@@ -851,11 +851,11 @@ class tx_rtehtmlarea_select_image extends browse_links {
 				$tree = $foldertree->getBrowsableTree();
 				list(,,$specUid) = explode('_',t3lib_div::_GP('PM'));
 				$files = $this->expandFolder($foldertree->specUIDmap[$specUid],$this->act=='plain',$noThumbs?$noThumbs:!$_MOD_SETTINGS['displayThumbs']);
-				$this->content.= '<table border=0 cellpadding=0 cellspacing=0>
+				$this->content.= '<table border="0" cellpadding="0" cellspacing="0">
 				<tr>
-					<td valign=top>'.$this->barheader($LANG->getLL('folderTree').':').$tree.'</td>
+					<td style="vertical-align: top;">'.$this->barheader($LANG->getLL('folderTree').':').$tree.'</td>
 					<td>&nbsp;</td>
-					<td valign=top>'.$files.'</td>
+					<td style="vertical-align: top;">'.$files.'</td>
 				</tr>
 				</table>
 				<br />'.$thumbNailCheck;
@@ -872,11 +872,11 @@ class tx_rtehtmlarea_select_image extends browse_links {
 				$tree = $foldertree->getBrowsableTree();
 				list(,,$specUid) = explode('_',t3lib_div::_GP('PM'));
 				$files = $this->TBE_dragNDrop($foldertree->specUIDmap[$specUid], implode(',', $this->allowedFileTypes));
-				$this->content.= '<table border=0 cellpadding=0 cellspacing=0>
+				$this->content.= '<table border="0" cellpadding="0" cellspacing="0">
 				<tr>
-					<td valign=top>'.$this->barheader($LANG->getLL('folderTree').':').$tree.'</td>
+					<td style="vertical-align: top;">'.$this->barheader($LANG->getLL('folderTree').':').$tree.'</td>
 					<td>&nbsp;</td>
-					<td valign=top>'.$files.'</td>
+					<td style="vertical-align: top;">'.$files.'</td>
 				</tr>
 				</table>';
 				break;

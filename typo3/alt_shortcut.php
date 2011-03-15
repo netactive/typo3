@@ -30,7 +30,7 @@
  * Provides links to registered shortcuts
  * If the 'cms' extension is loaded you will also have a field for entering page id/alias which will be found/edited
  *
- * $Id: alt_shortcut.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id: alt_shortcut.php 10477 2011-02-17 11:06:57Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant output
  *
@@ -736,11 +736,13 @@ class SC_alt_shortcut {
 		}
 
 			// Add custom workspaces (selecting all, filtering by BE_USER check):
-		$workspaces = $TYPO3_DB->exec_SELECTgetRows('uid,title,adminusers,members,reviewers','sys_workspace','pid=0'.t3lib_BEfunc::deleteClause('sys_workspace'),'','title');
-		if (count($workspaces))	{
-			foreach ($workspaces as $rec)	{
-				if ($BE_USER->checkWorkspace($rec))	{
-					$options[$rec['uid']] = $rec['uid'].': '.$rec['title'];
+		if (t3lib_extMgm::isLoaded('workspaces')) {
+			$workspaces = $TYPO3_DB->exec_SELECTgetRows('uid,title,adminusers,members,reviewers','sys_workspace','pid=0'.t3lib_BEfunc::deleteClause('sys_workspace'),'','title');
+			if (count($workspaces))	{
+				foreach ($workspaces as $rec)	{
+					if ($BE_USER->checkWorkspace($rec))	{
+						$options[$rec['uid']] = $rec['uid'].': '.$rec['title'];
+					}
 				}
 			}
 		}

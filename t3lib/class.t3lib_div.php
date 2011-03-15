@@ -27,7 +27,7 @@
 /**
  * Contains the reknown class "t3lib_div" with general purpose functions
  *
- * $Id: class.t3lib_div.php 10229 2011-01-21 21:52:58Z baschny $
+ * $Id: class.t3lib_div.php 10437 2011-02-11 21:59:56Z lolli $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
  * Usage counts are based on search 22/2 2003 through whole source including tslib/
@@ -5308,7 +5308,13 @@ final class t3lib_div {
 	 * @return	string		Final class name to instantiate with "new [classname]"
 	 */
 	protected function getClassName($className) {
-		return (class_exists($className) && class_exists('ux_' . $className, FALSE) ? self::getClassName('ux_' . $className) : $className);
+		if (class_exists($className)) {
+			while (class_exists('ux_' . $className, FALSE)) {
+				$className = 'ux_' . $className;
+			}
+		}
+
+		return $className;
 	}
 
 	/**

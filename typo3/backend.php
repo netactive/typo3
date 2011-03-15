@@ -31,7 +31,6 @@ require_once('interfaces/interface.backend_toolbaritem.php');
 
 require('classes/class.typo3logo.php');
 require('classes/class.modulemenu.php');
-require_once('classes/class.donatewindow.php');
 
 	// core toolbar items
 require('classes/class.clearcachemenu.php');
@@ -102,14 +101,7 @@ class TYPO3backend {
 		$this->pageRenderer->loadExtJS();
 		$this->pageRenderer->enableExtJSQuickTips();
 
-		$this->pageRenderer->addExtOnReadyCode(
-			'TYPO3.Backend = new TYPO3.Viewport(TYPO3.Viewport.configuration);
-			if (typeof console === "undefined") {
-				console = TYPO3.Backend.DebugConsole;
-			}
-			TYPO3.ContextHelpWindow.init();',
-			TRUE
-		);
+
 		$this->pageRenderer->addJsInlineCode(
 			'consoleOverrideWithDebugPanel',
 			'//already done'
@@ -199,10 +191,6 @@ class TYPO3backend {
 	public function render()	{
 		$this->executeHook('renderPreProcess');
 
-		if (t3lib_div::makeInstance('DonateWindow')->isDonateWindowAllowed()) {
-			$this->pageRenderer->addJsFile('js/donate.js');
-		}
-
 			// prepare the scaffolding, at this point extension may still add javascript and css
 		$logo         = t3lib_div::makeInstance('TYPO3Logo');
 		$logo->setLogo('gfx/typo3logo_mini.png');
@@ -242,17 +230,6 @@ class TYPO3backend {
 		}
 
 
-			// TYPO3.Ajax.ExtDirec is used for BE toolbar items and may be later for general services
-		if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ExtDirect']) && is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ExtDirect'])) {
-			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ExtDirect'] as $key => $value) {
-				if (strpos($key, 'TYPO3.Ajax.ExtDirect') !== FALSE) {
-					$this->pageRenderer->addJsFile('ajax.php?ajaxID=ExtDirect::getAPI&namespace=TYPO3.Ajax.ExtDirect&' . TYPO3_version, NULL, FALSE);
-					break;
-				}
-			}
-		}
-		$this->pageRenderer->addJsFile('ajax.php?ajaxID=ExtDirect::getAPI&namespace=TYPO3.BackendUserSettings&' . TYPO3_version, NULL, FALSE);
-
 		$this->generateJavascript();
 		$this->pageRenderer->addJsInlineCode('BackendInlineJavascript', $this->js);
 
@@ -264,12 +241,19 @@ class TYPO3backend {
 			//save states in BE_USER->uc
 		$extOnReadyCode = '
 			Ext.state.Manager.setProvider(new TYPO3.state.ExtDirectProvider({
-				key: "BackendComponents.States"
+				key: "BackendComponents.States",
+				autoRead: false
 			}));
 		';
 		if ($states) {
-		    $extOnReadyCode .= 'Ext.state.Manager.getProvider().initState(' . $states . ');';
+			$extOnReadyCode .= 'Ext.state.Manager.getProvider().initState(' . json_encode($states) . ');';
 		}
+		$extOnReadyCode .= '
+			TYPO3.Backend = new TYPO3.Viewport(TYPO3.Viewport.configuration);
+			if (typeof console === "undefined") {
+				console = TYPO3.Backend.DebugConsole;
+			}
+			TYPO3.ContextHelpWindow.init();';
 		$this->pageRenderer->addExtOnReadyCode($extOnReadyCode);
 
 
@@ -341,16 +325,6 @@ class TYPO3backend {
 
 			foreach ($jsFiles as $jsFile) {
 				$this->pageRenderer->addJsFile($relativeComponentPath . 'javascript/' . $jsFile);
-			}
-
-			if (is_array($info['extDirectNamespaces']) && count($info['extDirectNamespaces'])) {
-				foreach ($info['extDirectNamespaces'] as $namespace) {
-					$this->pageRenderer->addJsFile(
-						'ajax.php?ajaxID=ExtDirect::getAPI&namespace=' . $namespace . '&' . TYPO3_version,
-						NULL,
-						FALSE
-					);
-				}
 			}
 		}
 	}
@@ -466,11 +440,6 @@ class TYPO3backend {
 			'tabs_closeOther' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:tabs.closeOther'),
 			'tabs_close' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:tabs.close'),
 			'tabs_openInBrowserWindow' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:tabs.openInBrowserWindow'),
-			'donateWindow_title' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:donateWindow.title'),
-			'donateWindow_message' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:donateWindow.message'),
-			'donateWindow_button_donate' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:donateWindow.button_donate'),
-			'donateWindow_button_disable' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:donateWindow.button_disable'),
-			'donateWindow_button_postpone' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:donateWindow.button_postpone'),
 			'csh_tooltip_loading' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:csh_tooltip_loading'),
 		);
 
@@ -517,10 +486,6 @@ class TYPO3backend {
 				'helpDescription',
 				'helpDescriptionPages',
 				'helpDescriptionContent',
-			),
-			'extDirect' => array(
-				'timeoutHeader',
-				'timeoutMessage',
 			),
 			'viewPort' => array(
 				'tooltipModuleMenuSplit',

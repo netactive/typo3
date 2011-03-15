@@ -8,7 +8,7 @@
  * 'IM' is short for 'ImageMagick', which is an external image manipulation package available from www.imagemagick.org. Version is ABSOLUTELY preferred to be 4.2.9, but may be 5+. See the install notes for TYPO3!!
  * 'GD' is short for 'GDLib/FreeType', which are libraries that should be compiled into PHP4. GDLib <=1.3 supports GIF, while the latest version 1.8.x and 2.x supports only PNG. GDLib is available from www.boutell.com/gd/. Freetype has a link from there.
  *
- * $Id: config_default.php 10345 2011-01-26 19:32:32Z baschny $
+ * $Id: config_default.php 10611 2011-02-23 14:55:24Z baschny $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -21,6 +21,9 @@ define('FILE_DENY_PATTERN_DEFAULT', '\.(php[3-6]?|phpsh|phtml)(\..*)?$|^\.htacce
 
 //Security related constant: Comma separated list of file extensions that should be registered as php script file extensions
 define('PHP_EXTENSIONS_DEFAULT', 'php,php3,php4,php5,php6,phpsh,inc,phtml');
+
+// Defines a list that are basically required by a TYPO3 system.
+define('REQUIRED_EXTENSIONS', 'cms,lang,sv,em,recordlist');
 
 $TYPO3_CONF_VARS = array(
 	'GFX' => array(		// Configuration of the image processing features in TYPO3. 'IM' and 'GD' are short for ImageMagick and GD library respectively.
@@ -171,7 +174,8 @@ $TYPO3_CONF_VARS = array(
 		'em_wsdlURL' => 'http://typo3.org/wsdl/tx_ter_wsdl.php',				// The SOAP URL for uploading extensions to the TER2. Usually doesn't need to be changed.
 		'em_mirrorListURL' => 'http://repositories.typo3.org/mirrors.xml.gz',				// Allows to preset the URL for fetching the extension repository mirror list from. Used in the Extension Manager.
 
-		'requiredExt' => 'cms,lang,sv,em,recordlist',		// String (exclude). List of extensions which are REQUIRED and cannot be unloaded by the Extension Manager!
+		'requiredExt' => '',		// String. List of additional extensions which are REQUIRED and cannot be unloaded by the Extension Manager!
+		'ignoredExt' => '',			// String. List of extensions to be ignored (not loaded), e.g. "em" can be disabled this way.
 		'excludeForPackaging' => '(CVS|\..*|.*~|.*\.bak)',		// String: List of directories and files which will not be packaged into extensions nor taken into account otherwise by the Extension Manager. Perl regular expression syntax!
 		'extCache' => 1,						// <p>Integer (0, 1, 2, 3)</p><dl><dt>0</dt><dd>ext-scripts (ext_localconf.php and ext_tables.php) are NOT cached, but included every time</dd><dt>1</dt><dd>scripts cached to typo3conf/temp_CACHED_[sitePathHash]* (saves some milliseconds even with PHP accelerators)</dd><dt>2</dt><dd>scripts cached and prefix includes a hash based on the 'extList' string</dd><dt>3</dt><dd>scripts cached to typo3conf/temp_CACHED_* (no hash included at all...)</dd></dl>
 		'extList' => 'filelist,version,tsconfig_help,context_help,extra_page_cm_options,impexp,belog,about,cshmanual,aboutmodules,setup,opendocs,install,t3editor,felogin,feedit,recycler',						// String (exclude) List of extensions which are enabled for this install. Use the Extension Manager (EM) to manage this!
@@ -484,7 +488,6 @@ $TYPO3_CONF_VARS = array(
 		'elementVersioningOnly' => TRUE,		// If true, only element versioning is allowed in the backend (see option newPagesVersioningType). Setting this flag is recommended for new installations of TYPO3 4.2+ since "page" and "branch" versioning types are known for the drawbacks of loosing ids and "element" type versions supports moving now. Please note that "page" and "branch" types are deprecated since TYPO3 4.2 and will be unsupported in TYPO3 4.6. Thus, this option will be removed in TYPO3 4.6.
 		'versionNumberInFilename' => FALSE,	// <p>Boolean: If true, included CSS and JS files will have the timestamp embedded in the filename, ie. filename.1269312081.js. This will make browsers and proxies reload the files if they change (thus avoiding caching issues). IMPORTANT: this feature requires extra .htaccess rules to work (please refer to _.htaccess or the _.htaccess file from the dummy package)</p><p>If false the filemtime will be appended as a query-string.</p>
 		'spriteIconGenerator_handler' => '',	// String: Used to register own/other spriteGenerating Handler, they have to implement the interface t3lib_spritemanager_SpriteIconGenerator. If set to "t3lib_spritemanager_SpriteBuildingHandler" icons from extensions will automatically merged into sprites.
-		'allowDonateWindow' => TRUE,			// Boolean: Defines whether to display a TYPO3 donate window to admin users that have been working with the system for more than three months.
 		'debug' => FALSE,			// Boolean: If set, the loginrefresh is disabled and pageRenderer is set to debug mode. Use this to debug the backend only!
 		'AJAX' => array(				// array of key-value pairs for a unified use of AJAX calls in the TYPO3 backend. Keys are the unique ajaxIDs where the value will be resolved to call a method in an object. See ajax.php and the classes/class.typo3ajax.php for more information.
 			'SC_alt_db_navframe::expandCollapse'                => 'typo3/alt_db_navframe.php:SC_alt_db_navframe->ajaxExpandCollapse',
@@ -507,8 +510,7 @@ $TYPO3_CONF_VARS = array(
 			'BackendLogin::refreshLogin'		=> 'typo3/classes/class.ajaxlogin.php:AjaxLogin->refreshLogin',
 			'BackendLogin::isTimedOut'		 	=> 'typo3/classes/class.ajaxlogin.php:AjaxLogin->isTimedOut',
 			'BackendLogin::getChallenge'	 	=> 'typo3/classes/class.ajaxlogin.php:AjaxLogin->getChallenge',
-			'DonateWindow::disable'				=> 'typo3/classes/class.donatewindow.php:DonateWindow->disable',
-			'DonateWindow::postpone'			=> 'typo3/classes/class.donatewindow.php:DonateWindow->postpone',
+			'BackendLogin::refreshTokens'	 	=> 'typo3/classes/class.ajaxlogin.php:AjaxLogin->refreshTokens',
 			'ExtDirect::getAPI' => 't3lib/extjs/class.t3lib_extjs_extdirectapi.php:t3lib_extjs_ExtDirectApi->getAPI',
 			'ExtDirect::route' => 't3lib/extjs/class.t3lib_extjs_extdirectrouter.php:t3lib_extjs_ExtDirectRouter->route',
 		),
@@ -631,7 +633,7 @@ $TYPO3_CONF_VARS = array(
 $T3_VAR = array();	// Initialize.
 
 	// TYPO3 version
-$TYPO_VERSION = '4.5.0';	// deprecated: use the constants defined below
+$TYPO_VERSION = '4.5.1';	// deprecated: use the constants defined below
 define('TYPO3_version', $TYPO_VERSION);
 define('TYPO3_branch', '4.5');
 define('TYPO3_copyright_year', '1998-2011');
@@ -660,6 +662,7 @@ define('TYPO3_URL_DONATE', 'http://typo3.com/Donations.1261.0.html');
 define('TYPO3_URL_SECURITY', 'http://typo3.org/teams/security/');
 define('TYPO3_URL_DOWNLOAD', 'http://typo3.org/download/packages/');
 define('TYPO3_URL_SYSTEMREQUIREMENTS', 'http://typo3.org/1275.0.html');
+define('TYPO3_URL_DONATE', 'http://typo3.org/donate/');
 
 	// Include localconf.php. Use this file to configure TYPO3 for your needs and database
 if (!@is_file(PATH_typo3conf . 'localconf.php')) {

@@ -27,7 +27,7 @@
 /**
  * Contains a class with "Page functions" mainly for the frontend
  *
- * $Id: class.t3lib_page.php 10201 2011-01-21 11:24:55Z flyguide $
+ * $Id: class.t3lib_page.php 10477 2011-02-17 11:06:57Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML-trans compliant
  *
@@ -1414,7 +1414,7 @@ class t3lib_pageSelect {
 	 * @return	boolean	<code>true</code> if has access
 	 */
 	function checkWorkspaceAccess($wsid) {
-		if (!$GLOBALS['BE_USER']) {
+		if (!$GLOBALS['BE_USER'] || !t3lib_extMgm::isLoaded('workspaces')) {
 			return FALSE;
 		}
 		if (isset($this->workspaceCache[$wsid])) {

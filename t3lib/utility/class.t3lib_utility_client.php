@@ -28,7 +28,7 @@
 /**
  * Class to handle and determine browser specific information.
  *
- * $Id: class.t3lib_utility_client.php 10220 2011-01-21 18:08:15Z baschny $
+ * $Id: class.t3lib_utility_client.php 10548 2011-02-22 21:56:57Z steffenk $
  *
  * @author	Oliver Hader <oliver@typo3.org>
  */
@@ -106,7 +106,7 @@ final class t3lib_utility_Client {
 			// Microsoft Documentation about Platform tokens: http://msdn.microsoft.com/en-us/library/ms537503(VS.85).aspx
 			// 'system' is deprecated, use 'all_systems' (array) in future!
 		$browserInfo['system'] = '';
-		$browserInfo['all_systems'] = '';
+		$browserInfo['all_systems'] = array();
 		if (strstr($userAgent, 'Win')) {
 				// windows
 			if (strstr($userAgent, 'Windows NT 6.1')) {
