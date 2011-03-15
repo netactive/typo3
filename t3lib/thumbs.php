@@ -27,7 +27,7 @@
 /**
  * Generates a thumbnail and returns an image stream, either GIF/PNG or JPG
  *
- * $Id: thumbs.php 6951 2010-02-21 19:46:37Z benni $
+ * $Id: thumbs.php 9863 2010-12-20 19:42:03Z tolleiv $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author		Kasper Skaarhoj	<kasperYYYY@typo3.com>
@@ -232,6 +232,8 @@ class SC_t3lib_thumbs {
 					exec($cmd);
 					if (!file_exists($this->output))	{
 						$this->errorGif('No thumb','generated!',basename($this->input));
+					} else {
+						t3lib_div::fixPermissions($this->output);
 					}
 				}
 					// The thumbnail is read and output to the browser

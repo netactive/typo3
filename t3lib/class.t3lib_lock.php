@@ -27,7 +27,7 @@
 /**
  * Class for providing locking features in TYPO3
  *
- * $Id: class.t3lib_lock.php 6207 2009-10-21 08:29:45Z steffenk $
+ * $Id: class.t3lib_lock.php 9863 2010-12-20 19:42:03Z tolleiv $
  *
  * @author	Michael Stucki <michael@typo3.org>
  */
@@ -169,6 +169,8 @@ class t3lib_lock {
 				if (($this->filepointer = touch($this->resource)) == FALSE) {
 					throw new Exception('Lock file could not be created');
 				}
+
+				t3lib_div::fixPermissions($this->resource);
 			break;
 			case 'flock':
 				if (($this->filepointer = fopen($this->resource, 'w+')) == FALSE) {

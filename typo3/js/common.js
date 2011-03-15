@@ -77,8 +77,7 @@ T3AJAX.showError = function(xhr, json) {
 }
 
 // common storage and global object, could later hold more information about the current user etc.
-var TYPO3 = TYPO3 || {};
-TYPO3 = Ext.apply(TYPO3, {
+var TYPO3 = {
 	// store instances that only should be running once
 	_instances: {},
 	getInstance: function(className) {
@@ -100,4 +99,4 @@ TYPO3 = Ext.apply(TYPO3, {
 			return res;
 		}
 	}
-});
+};

@@ -27,7 +27,7 @@
 /**
  * Contains the TYPO3 Backend Language class
  *
- * $Id: lang.php 6498 2009-11-23 15:46:10Z steffenk $
+ * $Id: lang.php 9886 2010-12-23 11:42:13Z jigal $
  * Revised for TYPO3 3.6.0
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -403,7 +403,7 @@ class language {
 			// Get default file:
 		$llang = $this->readLLfile($fileRef);
 
-		if (count($llang))	{
+		if (is_array($llang) && count($llang)) {
 
 			$LOCAL_LANG = t3lib_div::array_merge_recursive_overrule((array)$LOCAL_LANG,$llang);
 

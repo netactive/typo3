@@ -27,7 +27,7 @@
 /**
  * Contains the reknown class "t3lib_div" with general purpose functions
  *
- * $Id: class.t3lib_div.php 9796 2010-12-16 13:42:27Z ohader $
+ * $Id: class.t3lib_div.php 9863 2010-12-20 19:42:03Z tolleiv $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  * Usage counts are based on search 22/2 2003 through whole source including tslib/
@@ -439,11 +439,17 @@ final class t3lib_div {
 				exec($cmd);
 
 				$returnCode='IM';
+				if (@is_file($theFile)) {
+					self::fixPermissions($theFile);
+				}
 			} elseif (($type=='GD' || !$type) && $gfxConf['gdlib'] && !$gfxConf['gdlib_png'])	{	// GD
 				$tempImage = imageCreateFromGif($theFile);
 				imageGif($tempImage, $theFile);
 				imageDestroy($tempImage);
 				$returnCode='GD';
+				if (@is_file($theFile)) {
+					self::fixPermissions($theFile);
+				}
 			}
 		}
 		return $returnCode;
@@ -467,6 +473,9 @@ final class t3lib_div {
 				$cmd = self::imageMagickCommand('convert', '"'.$theFile.'" "'.$newFile.'"', $GLOBALS['TYPO3_CONF_VARS']['GFX']['im_path_lzw']);
 				exec($cmd);
 				$theFile = $newFile;
+				if (@is_file($newFile)) {
+					self::fixPermissions($newFile);
+				}
 					// unlink old file?? May be bad idea bacause TYPO3 would then recreate the file every time as TYPO3 thinks the file is not generated because it's missing!! So do not unlink $theFile here!!
 		}
 		return $theFile;
@@ -493,7 +502,10 @@ final class t3lib_div {
 				$newFile = PATH_site.'typo3temp/readPG_'.md5($theFile.'|'.filemtime($theFile)).($output_png?'.png':'.gif');
 				$cmd = self::imageMagickCommand('convert', '"'.$theFile.'" "'.$newFile.'"', $GLOBALS['TYPO3_CONF_VARS']['GFX']['im_path']);
 				exec($cmd);
-				if (@is_file($newFile))	return $newFile;
+				if (@is_file($newFile)) {
+					self::fixPermissions($newFile);
+					return $newFile;
+				}
 			}
 		}
 	}
@@ -5514,6 +5526,7 @@ final class t3lib_div {
 					fwrite($file, date($dateFormat.' '.$timeFormat).$msgLine.chr(10));
 					flock($file, LOCK_UN);    // release the lock
 					fclose($file);
+					self::fixPermissions($destination);
 				}
 			}
 				// send message per mail
@@ -5585,6 +5598,7 @@ final class t3lib_div {
 			@fwrite($file, $date.$msg.chr(10));
 			flock($file, LOCK_UN);    // release the lock
 			@fclose($file);
+			self::fixPermissions($destination);
 		}
 
 		// copy message also to the developer log

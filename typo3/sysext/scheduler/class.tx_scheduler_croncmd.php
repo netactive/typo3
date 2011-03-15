@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_croncmd.php 9658 2010-11-26 21:00:00Z lolli $
+ * $Id: class.tx_scheduler_croncmd.php 9826 2010-12-17 14:02:17Z francois $
  */
 class tx_scheduler_CronCmd {
 
@@ -139,8 +139,8 @@ class tx_scheduler_CronCmd {
 							if ($increased_value !== false) {
 								$this->values[$i] = $increased_value;
 
-									// Update day list if month was changed
-								if ($i == 3) {
+									// Update day list if month or year was changed
+								if ($i >= 3) {
 									$this->valid_values[2] = $this->getDayList($this->values[3], $this->values[4]);
 
 										// Check if day had already a valid start value, if not set a new one
@@ -152,11 +152,6 @@ class tx_scheduler_CronCmd {
 								break;
 							} else {
 								$this->values[$i] = $this->valid_values[$i][0];
-
-									// Update day list if month was changed
-								if ($i == 3) {
-									$this->valid_values[2] = $this->getDayList($this->values[3], $this->values[4]+1);
-								}
 							}
 						}
 					}
