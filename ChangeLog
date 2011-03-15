@@ -1,3 +1,15 @@
+2010-12-28  Oliver Hader  <oliver.hader@typo3.org>
+
+	* Release of TYPO3 4.2.17
+
+2010-12-23  Xavier Perseguers  <typo3@perseguers.ch>
+
+	* Fixed bug #16760: RTE transformation removes all span tags on save after upgrade TYPO3 4.2.16
+
+2010-12-23  Jigal van Hemert <jigal@xs4all.nl>
+
+	* Fixed bug #16825: Fatal error in lang.php (thanks to Georg Ringer)
+
 2010-12-16  Oliver Hader  <oliver.hader@typo3.org>
 
 	* Release of TYPO3 4.2.16
@@ -7957,4 +7969,4 @@ Charsets:
 
 --------------------
 
-SVN ID: $Id: ChangeLog 9802 2010-12-16 13:57:33Z ohader $
+SVN ID: $Id: ChangeLog 9942 2010-12-28 11:49:25Z ohader $
