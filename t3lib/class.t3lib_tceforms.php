@@ -27,7 +27,7 @@
 /**
  * Contains TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: class.t3lib_tceforms.php 8813 2010-09-19 11:53:33Z benni $
+ * $Id: class.t3lib_tceforms.php 9256 2010-11-03 17:34:30Z steffenk $
  * Revised for TYPO3 3.6 August/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1516,7 +1516,7 @@ class t3lib_TCEforms	{
 			}
 
 				// Removing doktypes with no access:
-			if ($table.'.'.$field == 'pages.doktype')	{
+			if (($table === 'pages' || $table === 'pages_language_overlay') && $field === 'doktype') {
 				if (!($GLOBALS['BE_USER']->isAdmin() || t3lib_div::inList($GLOBALS['BE_USER']->groupData['pagetypes_select'],$p[1])))	{
 					unset($selItems[$tk]);
 				}
@@ -3941,7 +3941,7 @@ class t3lib_TCEforms	{
 										<td>'.
 											$colorBoxLinks[0].'<img '.
 											t3lib_iconWorks::skinImg($this->backPath,
-																(strlen(trim($color))==0 || strcmp(trim($color),'0')==0) ? 'gfx/colorpicker_empty.png' : 'gfx/colorpicker.png', 
+																(strlen(trim($color))==0 || strcmp(trim($color),'0')==0) ? 'gfx/colorpicker_empty.png' : 'gfx/colorpicker.png',
 																'width="'.$dX.'" height="'.$dY.'"'.t3lib_BEfunc::titleAltAttrib(trim($iTitle.' '.$PA['itemFormElValue'])).' border="0"').
 											'>'.$colorBoxLinks[1].
 											'</td>
@@ -6000,7 +6000,7 @@ class t3lib_TCEforms	{
 						}
 
 							// New records in a workspace are not handled as a version record
-							// if it's no new version, we detect versions like this: 
+							// if it's no new version, we detect versions like this:
 							// -- if user is in workspace: always true
 							// -- if editor is in live ws: only true if pid == -1
 						$isVersion = ($isUserInWorkspace || $isRecordDetectedAsVersion) && !$isNewRecord;

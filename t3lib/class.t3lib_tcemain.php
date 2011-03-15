@@ -27,7 +27,7 @@
 /**
  * Contains the TYPO3 Core Engine
  *
- * $Id: class.t3lib_tcemain.php 8135 2010-07-08 15:07:40Z dmitry $
+ * $Id: class.t3lib_tcemain.php 9256 2010-11-03 17:34:30Z steffenk $
  * Revised for TYPO3 3.9 October 2005 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -1248,7 +1248,7 @@ class t3lib_TCEmain	{
 		$recFID = $table.':'.$id.':'.$field;
 
 			// Processing special case of field pages.doktype
-		if ($table=='pages' && $field=='doktype')	{
+		if (($table === 'pages' || $table === 'pages_language_overlay') && $field === 'doktype') {
 				// If the user may not use this specific doktype, we issue a warning
 			if (! ($this->admin || t3lib_div::inList($this->BE_USER->groupData['pagetypes_select'],$value)))	{
 				$propArr = $this->getRecordProperties($table,$id);

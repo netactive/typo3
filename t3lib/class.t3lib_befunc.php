@@ -31,7 +31,7 @@
  * Call ALL methods without making an object!
  * Eg. to get a page-record 51 do this: 't3lib_BEfunc::getRecord('pages',51)'
  *
- * $Id: class.t3lib_befunc.php 8877 2010-09-24 15:46:16Z stephenking $
+ * $Id: class.t3lib_befunc.php 9510 2010-11-23 09:50:32Z nxpthx $
  * Usage counts are based on search 22/2 2003 through whole backend source of typo3/
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
@@ -265,7 +265,7 @@ final class t3lib_BEfunc {
 				}
 			}
 		} else {
-			$row = t3lib_BEfunc::getRecord($table, $uid, $fields, $where);
+			$row = t3lib_BEfunc::getRecord($table, $uid, $fields, $where, $useDeleteClause);
 			t3lib_BEfunc::workspaceOL($table, $row);
 		}
 		return $row;
@@ -3961,13 +3961,22 @@ final class t3lib_BEfunc {
 
 	/**
 	 * Will return where clause de-selecting new(/deleted)-versions from other workspaces.
+	 * If in live-workspace, don't show "MOVE-TO-PLACEHOLDERS" records if versioningWS is 2 (allows moving)
 	 *
 	 * @param	string		Table name
 	 * @return	string		Where clause if applicable.
 	 */
 	public static function versioningPlaceholderClause($table) {
-		if ($GLOBALS['BE_USER']->workspace!==0 && $GLOBALS['TCA'][$table] && $GLOBALS['TCA'][$table]['ctrl']['versioningWS']) {
-			return ' AND ('.$table.'.t3ver_state<=0 OR '.$table.'.t3ver_wsid='.intval($GLOBALS['BE_USER']->workspace).')';
+		if ($GLOBALS['TCA'][$table] && $GLOBALS['TCA'][$table]['ctrl']['versioningWS']) {
+			$currentWorkspace = intval($GLOBALS['BE_USER']->workspace);
+			if ($currentWorkspace !== 0) {
+					// show only the items of the current workspace
+					// if in any workspace other than live
+				return ' AND (' . $table . '.t3ver_state <= 0 OR ' . $table . '.t3ver_wsid = ' . $currentWorkspace . ')';
+			} elseif ($GLOBALS['TCA'][$table]['ctrl']['versioningWS'] == 2) {
+					// if in live workspace, don't show "MOVE-TO-PLACEHOLDERS"
+				return ' AND (' . $table . '.t3ver_state != 3)';
+			}
 		}
 	}
 

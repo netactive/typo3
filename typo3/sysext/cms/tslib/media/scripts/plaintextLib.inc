@@ -27,7 +27,7 @@
 /**
  * Generating plain text content of content elements for Direct Mails
  *
- * $Id: plaintextLib.inc 5947 2009-09-16 17:57:09Z ohader $
+ * $Id: plaintextLib.inc 9057 2010-10-14 09:04:16Z benni $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -178,6 +178,10 @@ class user_plaintext {
 				$lines[]=$this->getHeader();
 				$lines[]=$this->breakBulletlist(strip_tags($this->parseBody($this->cObj->data['bodytext'])));
 			break;
+			case 'list':
+				$lines[]=$this->getHeader();
+				$lines[]=$this->getList();
+			break;
 			case 'table':
 				$lines[]=$this->getHeader();
 				$lines[]=$this->breakTable(strip_tags($this->parseBody($this->cObj->data['bodytext'])));
@@ -290,6 +294,17 @@ class user_plaintext {
 			$lines[]=$this->siteUrl.$upload_path.$file;
 		}
 		return implode(chr(10),$lines);
+	}
+
+	/**
+	 * Creates a list
+	 *
+	 * @param	string	type of content
+	 * @return	string	Content
+	 */
+	function getList($CType = 'list') {
+		$str = $this->cObj->cObjGetSingle($this->conf[$CType], $this->conf[$CType . '.']);
+		return trim(strip_tags($this->parseBody($str)));
 	}
 
 	/**

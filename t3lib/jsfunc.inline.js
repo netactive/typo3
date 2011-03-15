@@ -3,7 +3,7 @@
 /***************************************************************
 *  Inline-Relational-Record Editing
 *
-* $Id: jsfunc.inline.js 8015 2010-06-21 18:01:55Z jsegars $
+* $Id: jsfunc.inline.js 9135 2010-10-18 02:21:18Z stan $
 *
 *
 *
@@ -258,7 +258,7 @@ var inline = {
 	importElement: function(objectId, table, uid, type) {
 		window.setTimeout(
 			function() {
-				inline.makeAjaxCall('createNewRecord', [this.getNumberOfRTE(), objectId, uid], true);
+				inline.makeAjaxCall('createNewRecord', [inline.getNumberOfRTE(), objectId, uid], true);
 			},
 			10
 		);

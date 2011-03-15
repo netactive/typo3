@@ -27,7 +27,7 @@
 /**
  * TYPO3 SQL parser
  *
- * $Id: class.t3lib_sqlparser.php 7500 2010-05-01 21:15:20Z xperseguers $
+ * $Id: class.t3lib_sqlparser.php 9691 2010-11-30 15:22:57Z xperseguers $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -1488,11 +1488,13 @@ class t3lib_sqlparser {
 		foreach($components['FIELDS'] as $fN => $fCfg)	{
 			$fieldsKeys[]=$fN.' '.$this->compileFieldCfg($fCfg['definition']);
 		}
-		foreach($components['KEYS'] as $kN => $kCfg)	{
-			if ($kN == 'PRIMARYKEY')	{
-				$fieldsKeys[]='PRIMARY KEY ('.implode(',', $kCfg).')';
-			} elseif ($kN == 'UNIQUE')	{
-				$fieldsKeys[]='UNIQUE '.$kN.' ('.implode(',', $kCfg).')';
+		foreach ($components['KEYS'] as $kN => $kCfg) {
+			if ($kN === 'PRIMARYKEY') {
+				$fieldsKeys[] = 'PRIMARY KEY (' . implode(',', $kCfg) . ')';
+			} elseif ($kN === 'UNIQUE') {
+				$key = key($kCfg);
+				$fields = current($kCfg);
+				$fieldsKeys[] = 'UNIQUE KEY ' . $key . ' (' . implode(',', $fields) . ')';
 			} else {
 				$fieldsKeys[]='KEY '.$kN.' ('.implode(',', $kCfg).')';
 			}

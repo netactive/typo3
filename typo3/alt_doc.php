@@ -29,7 +29,7 @@
  * By sending certain parameters to this script you can bring up a form
  * which allows the user to edit the content of one or more database records.
  *
- * $Id: alt_doc.php 8428 2010-07-28 09:18:27Z ohader $
+ * $Id: alt_doc.php 9697 2010-11-30 23:40:00Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -301,7 +301,7 @@ class SC_alt_doc {
 		}
 
 			// If pages are being edited, we set an instruction about updating the page tree after this operation.
-		if (isset($this->data['pages']))	{
+		if (isset($this->data['pages']) || $BE_USER->workspace != 0 && count($this->data)) {
 			t3lib_BEfunc::setUpdateSignal('updatePageTree');
 		}
 

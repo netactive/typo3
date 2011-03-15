@@ -20,7 +20,7 @@
 *
 *  This copyright notice MUST APPEAR in all copies of this script
 *
-*  TYPO3 SVN ID: $Id: tree.js 7478 2010-04-30 19:45:35Z steffenk $
+*  TYPO3 SVN ID: $Id: tree.js 9723 2010-12-01 13:14:30Z ohader $
 *
 ***************************************************************/
 
@@ -84,7 +84,7 @@ var Tree = {
 	refresh: function() {
 		var r = new Date();
 		// randNum is useful so pagetree does not get cached in browser cache when refreshing
-		var loc = window.location.href.replace(/&randNum=\d+/, '');
+		var loc = window.location.href.replace(/&randNum=\d+|#.*/g, '');
 		var addSign = loc.indexOf('?') > 0 ? '&' : '?';
 		window.location = loc + addSign + 'randNum=' + r.getTime();
 	},

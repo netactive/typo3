@@ -8,7 +8,7 @@
  * 'IM' is short for 'ImageMagick', which is an external image manipulation package available from www.imagemagick.org. Version is ABSOLUTELY preferred to be 4.2.9, but may be 5+. See the install notes for TYPO3!!
  * 'GD' is short for 'GDLib/FreeType', which are libraries that should be compiled into PHP4. GDLib <=1.3 supports GIF, while the latest version 1.8.x and 2.x supports only PNG. GDLib is available from www.boutell.com/gd/. Freetype has a link from there.
  *
- * $Id: config_default.php 9042 2010-10-12 08:45:51Z ohader $
+ * $Id: config_default.php 9805 2010-12-16 14:03:57Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -143,18 +143,6 @@ $TYPO3_CONF_VARS = array(
 						'tagsTable' => 'cachingframework_cache_pagesection_tags',
 					)
 				)
-				/*
-				 For memcached, use:
-				=============
-				'cache_pages' => array(
-					'backend' => 't3lib_cache_backend_MemcachedBackend',
-					'options' => array(
-						'servers' => array('localhost:11211', 'otherhost:11211', 'thirdhost:11211'),	// port is mandatory!
-					)
-				),
-				=============
-				You need to have memcached installed as a daemon and also as a PHP extension!
-				*/
 			)
 		),
 		'useCachingFramework' => FALSE,			// Boolean: Enable this if you want to use the caching framework by default for the core caches cache_pages, cache_pagesection and cache_hash.
@@ -378,7 +366,7 @@ $TYPO3_CONF_VARS = array(
 $T3_VAR = array();	// Initialize.
 
 	// TYPO3 version
-$TYPO_VERSION = '4.3.8';	// deprecated: use the constants defined below
+$TYPO_VERSION = '4.3.9';	// deprecated: use the constants defined below
 define('TYPO3_version', $TYPO_VERSION);
 define('TYPO3_branch', '4.3');
 define('TYPO3_copyright_year', '1998-2009');
