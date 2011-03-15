@@ -29,7 +29,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /*
- * TYPO3 SVN ID: $Id: htmlarea-gecko.js 9155 2010-10-18 23:16:42Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea-gecko.js 10186 2011-01-20 23:51:05Z stan $
  */
 
 /***************************************************
@@ -125,7 +125,11 @@ HTMLArea.prototype.addRangeToSelection = function(selection, range) {
  * Create a range for the current selection
  */
 HTMLArea.prototype._createRange = function(sel) {
-	if (HTMLArea.is_safari) {
+	if (typeof(sel) == "undefined") {
+		return this._doc.createRange();
+	}
+		// Older versions of WebKit did not support getRangeAt
+	if (HTMLArea.is_safari && !sel.getRangeAt) {
 		var range = this._doc.createRange();
 		if (typeof(sel) == "undefined") {
 			return range;
@@ -143,7 +147,6 @@ HTMLArea.prototype._createRange = function(sel) {
 			return range;
 		}
 	}
-	if (typeof(sel) == "undefined") return this._doc.createRange();
 	try {
 		return sel.getRangeAt(0);
 	} catch(e) {

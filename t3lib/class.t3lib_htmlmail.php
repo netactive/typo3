@@ -27,7 +27,7 @@
 /**
  * HTML mail class
  *
- * $Id: class.t3lib_htmlmail.php 8334 2010-07-28 08:54:54Z ohader $
+ * $Id: class.t3lib_htmlmail.php 9970 2010-12-30 16:24:12Z lolli $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -754,13 +754,13 @@ class t3lib_htmlmail {
 				$mailWasSent = mail($this->from_email,
 					$theParts[0],
 					$theParts[1],
-					'From: ' . $recipient,
+					'From: ' . $recipient . $this->linebreak . $this->plain_text_header,
 					$returnPath);
 			} else {
 				$mailWasSent = mail($this->from_email,
 					$theParts[0],
 					$theParts[1],
-					'From: ' . $recipient);
+					'From: ' . $recipient . $this->linebreak . $this->plain_text_header);
 			}
 		}
 		if ($this->returnPath) {
