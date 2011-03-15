@@ -26,7 +26,7 @@
 /**
  * Module: Extension manager
  *
- * $Id: class.em_unzip.php 3439 2008-03-16 19:16:51Z flyguide $
+ * $Id: class.em_unzip.php 9788 2010-12-16 13:40:46Z ohader $
  *
  * @author	Vincent Blavet <vincent@phpconcept.net>
  * @author	Karsten Dambekalns <karsten@typo3.org>
@@ -546,6 +546,11 @@ class em_unzip {
 				$p_entry['filename'] = substr($p_entry['filename'], $p_remove_path_size);
 
 			}
+		}
+		
+			// added by TYPO3 secteam to check for invalid paths
+		if (!t3lib_div::validPathStr($p_entry['filename'])) {
+				return $v_result;
 		}
 
 		// Add the path

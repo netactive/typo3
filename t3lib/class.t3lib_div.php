@@ -27,7 +27,7 @@
 /**
  * Contains the reknown class "t3lib_div" with general purpose functions
  *
- * $Id: class.t3lib_div.php 8587 2010-08-12 20:39:53Z steffenk $
+ * $Id: class.t3lib_div.php 9795 2010-12-16 13:42:21Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  * Usage counts are based on search 22/2 2003 through whole source including tslib/
@@ -3915,17 +3915,19 @@ final class t3lib_div {
 
 	/**
 	 * Checks for malicious file paths.
-	 * Returns true if no '//', '..' or '\' is in the $theFile
+	 *
+	 * Returns TRUE if no '//', '..', '\' or control characters are found in the $theFile.
 	 * This should make sure that the path is not pointing 'backwards' and further doesn't contain double/back slashes.
 	 * So it's compatible with the UNIX style path strings valid for TYPO3 internally.
 	 * Usage: 14
 	 *
 	 * @param	string		Filepath to evaluate
-	 * @return	boolean		True, if no '//', '\', '/../' is in the $theFile and $theFile doesn't begin with '../'
+	 * @return	boolean		TRUE, $theFile is allowed path string
+	 * @see		http://php.net/manual/en/security.filesystem.nullbytes.php
 	 * @todo	Possible improvement: Should it rawurldecode the string first to check if any of these characters is encoded ?
 	 */
 	public static function validPathStr($theFile)	{
-		if (strpos($theFile, '//')===false && strpos($theFile, '\\')===false && !preg_match('#(?:^\.\.|/\.\./)#', $theFile)) {
+		if (strpos($theFile, '//') === FALSE && strpos($theFile, '\\') === FALSE && !preg_match('#(?:^\.\.|/\.\./|[[:cntrl:]])#', $theFile)) {
 			return true;
 		}
 	}
@@ -3966,6 +3968,11 @@ final class t3lib_div {
 	 * @return	boolean
 	 */
 	public static function verifyFilenameAgainstDenyPattern($filename)	{
+			// Filenames are not allowed to contain control characters:
+		if (preg_match('/[[:cntrl:]]/', $filename)) {
+			return FALSE;
+		}
+
 		if (strcmp($filename,'') && strcmp($GLOBALS['TYPO3_CONF_VARS']['BE']['fileDenyPattern'],''))	{
 			$result = eregi($GLOBALS['TYPO3_CONF_VARS']['BE']['fileDenyPattern'],$filename);
 			if ($result)	return false;	// so if a matching filename is found, return false;

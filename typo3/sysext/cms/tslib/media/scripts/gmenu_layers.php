@@ -27,7 +27,7 @@
 /**
  * Contains the GMENU_LAYERS extension class, tslib_gmenu_layers
  *
- * $Id: gmenu_layers.php 7660 2010-05-22 14:29:06Z benni $
+ * $Id: gmenu_layers.php 9035 2010-10-11 20:46:50Z steffenk $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -114,7 +114,7 @@ class tslib_gmenu_layers extends tslib_gmenu {
 	 * @return	void
 	 */
 	function extProc_init()	{
-		$this->WMid = trim($this->mconf['layer_menu_id'])?trim($this->mconf['layer_menu_id']).'x':substr(md5(microtime()),0,6);	// NO '_' (underscore) in the ID!!! NN4 breaks!
+		$this->WMid = trim($this->mconf['layer_menu_id']) ? trim($this->mconf['layer_menu_id']) . 'x' : substr(md5('gl' . serialize($this->mconf)), 0, 6);
 
 		$GLOBALS['TSFE']->applicationData['GMENU_LAYERS']['WMid'][]=$this->WMid;
 		$this->WMtempStore = $GLOBALS['TSFE']->applicationData['GMENU_LAYERS']['WMid'];

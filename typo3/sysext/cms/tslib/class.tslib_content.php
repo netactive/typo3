@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 8979 2010-10-06 08:17:02Z ohader $
+ * $Id: class.tslib_content.php 9784 2010-12-16 13:39:58Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1714,7 +1714,7 @@ class tslib_cObj {
 			}
 			if ($val && strcspn($val,'#/')) {
 					// label:
-				$confData['label'] = trim($parts[0]);
+				$confData['label'] = t3lib_div::removeXSS(trim($parts[0]));
 					// field:
 				$fParts = explode(',',$parts[1]);
 				$fParts[0]=trim($fParts[0]);
@@ -1740,6 +1740,7 @@ class tslib_cObj {
 				} else {
 					$confData['fieldname'] = str_replace(' ','_',trim($typeParts[0]));
 				}
+				$confData['fieldname'] = htmlspecialchars($confData['fieldname']);
 				$fieldCode='';
 
 				if ($conf['wrapFieldName'])	{

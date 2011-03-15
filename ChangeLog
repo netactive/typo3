@@ -1,3 +1,33 @@
+2010-12-16  Oliver Hader  <oliver.hader@typo3.org>
+
+	* Release of TYPO3 4.2.16
+
+2010-12-16  Oliver Hader  <oliver@typo3.org>
+
+	* Fixed bug #14402: XSS in Install tool (thanks to Benjamin Mack)
+	* Fixed bug #16590: t3lib_TSparser::checkIncludeLines() does not check files to be included (thanks to Fabrizio Branca)
+	* Fixed bug #15737: quoteStrForLike does not properly escape strings in sql_mode NO_BACKSLASH_ESCAPES
+	* Fixed bug #16653: SQL injection problem in class.db_list.inc (thanks to Jigal van Hemert)
+	* Fixed bug #15735: FORM content object is susceptible to XSS (thanks to Benjamin Mack)
+	* Fixed bug #16362: Directory traversal attack in em_unzip
+	* Fixed bug #16593: It is possible to bypass 'verifyFilenameAgainstDenyPattern'
+
+2010-11-12  Ernesto Baschny  <ernst@cron-it.de>
+
+	* Fixed bug #15456: Changes made by ColorPicker Wizard are not saved (Thanks to Tobias Hoevelborn)
+
+2010-10-27  Steffen Gebert  <steffen@steffen-gebert.de>
+
+	* Fixed bug #15503: Improve t3lib_userAuth::getCookie() (Thanks to Michael Bürgi)
+
+2010-10-18  Xavier Perseguers  <typo3@perseguers.ch>
+
+	* Fixed bug #1318: 'removeTag' does not remove closing tags
+
+2010-10-11  Steffen Kamper  <steffen@typo3.org>
+
+	* Fixed bug #12376: typo3temp got filled with thousands of javascript_* files (Thanks to Georg Ringer)
+
 2010-10-06  Oliver Hader  <oliver@typo3.org>
 
 	* Release of TYPO3 4.2.15
@@ -7927,4 +7957,4 @@ Charsets:
 
 --------------------
 
-SVN ID: $Id: ChangeLog 8983 2010-10-06 08:27:19Z ohader $
+SVN ID: $Id: ChangeLog 9802 2010-12-16 13:57:33Z ohader $

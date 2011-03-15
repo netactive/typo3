@@ -28,7 +28,7 @@
  * Contains the class "t3lib_db" containing functions for building SQL queries and mysql wrappers, thus providing a foundational API to all database interaction.
  * This class is instantiated globally as $TYPO3_DB in TYPO3 scripts.
  *
- * $Id: class.t3lib_db.php 6149 2009-10-15 08:56:07Z rupi $
+ * $Id: class.t3lib_db.php 9776 2010-12-16 13:38:26Z ohader $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -937,9 +937,36 @@ class t3lib_DB {
 					t3lib_div::sysLog('Could not initialize DB connection with query "'.$v.'": '.mysql_error($this->link),'Core',3);
 				}
 			}
+			$this->setSqlMode();
 		}
 
 		return $this->link;
+	}
+
+	/**
+	 * Fixes the SQL mode by unsetting NO_BACKSLASH_ESCAPES if found.
+	 *
+	 * @return void
+	 */
+	protected function setSqlMode() {
+		$resource = $this->sql_query('SELECT @@SESSION.sql_mode;');
+		if (is_resource($resource)) {
+			$result = $this->sql_fetch_row($resource);
+			if (isset($result[0]) && $result[0] && strpos($result[0], 'NO_BACKSLASH_ESCAPES') !== FALSE) {
+				$modes = array_diff(
+					t3lib_div::trimExplode(',', $result[0]),
+					array('NO_BACKSLASH_ESCAPES')
+				);
+				$query = 'SET sql_mode=\'' . mysql_real_escape_string(implode(',', $modes)) . '\';';
+				$success = $this->sql_query($query);
+
+				t3lib_div::sysLog(
+					'NO_BACKSLASH_ESCAPES could not be removed from SQL mode: ' . $this->sql_error(),
+					'Core',
+					3
+				);
+			}
+		}
 	}
 
 	/**
