@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 TCEforms
 
-$Id: element_tceforms.css 8009 2010-06-21 16:51:09Z steffenk $
+$Id: element_tceforms.css 9106 2010-10-16 18:44:49Z benni $
 - - - - - - - - - - - - - - - - - - - - - */
 img.t3-TCEforms-reqImg {
 	display: inline-block;
@@ -224,6 +224,7 @@ div.typo3-TCEforms-suggest-indicator {
 div.typo3-TCEforms-suggest-choices {
 	position: absolute;
 	width: 250px;
+	z-index: 1;
 }
 
 div.typo3-TCEforms-suggest-choices ul {
@@ -298,6 +299,10 @@ TCEforms Inline-Relational-Record-Editing
 
 .t3-form-field-record-inline {
 	padding: 0 5px;
+}
+
+.sortableHandle {
+	cursor: move;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - -

@@ -32,7 +32,7 @@
  * @author	Philipp Borgmann <philipp.borgmann@gmx.de>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_base.php 8779 2010-09-13 01:03:25Z stan $  *
+ * $Id: class.tx_rtehtmlarea_base.php 9006 2010-10-07 03:43:42Z stan $  *
  */
 
 class tx_rtehtmlarea_base extends t3lib_rteapi {
@@ -1371,7 +1371,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	 */
 
 	function is_FE() {
-		return is_object($GLOBALS['TSFE']) && !$this->isFrontendEditActive();
+		return is_object($GLOBALS['TSFE']) && !$this->isFrontendEditActive() && TYPO3_MODE=='FE';
 	}
 
 	/**

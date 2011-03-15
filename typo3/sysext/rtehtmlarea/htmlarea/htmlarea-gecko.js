@@ -29,7 +29,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /*
- * TYPO3 SVN ID: $Id: htmlarea-gecko.js 8911 2010-09-28 05:59:46Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea-gecko.js 9493 2010-11-19 16:15:28Z stan $
  */
 
 /***************************************************
@@ -120,22 +120,26 @@ HTMLArea.Editor.prototype._createRange = function(sel) {
 HTMLArea.Editor.prototype.selectNode = function(node, endPoint) {
 	this.focus();
 	var selection = this._getSelection();
-	var range = this._doc.createRange();
-	if (node.nodeType == 1 && node.nodeName.toLowerCase() == "body") {
-		if (Ext.isWebKit) {
-			range.setStart(node, 0);
-			range.setEnd(node, node.childNodes.length);
-		} else {
-			range.selectNodeContents(node);
-		}
+	if (Ext.isWebKit && /^(img)$/i.test(node.nodeName)) {
+		this._getSelection().setBaseAndExtent(node, 0, node, 1);
 	} else {
-		range.selectNode(node);
+		var range = this._doc.createRange();
+		if (node.nodeType == 1 && node.nodeName.toLowerCase() == "body") {
+			if (Ext.isWebKit) {
+				range.setStart(node, 0);
+				range.setEnd(node, node.childNodes.length);
+			} else {
+				range.selectNodeContents(node);
+			}
+		} else {
+			range.selectNode(node);
+		}
+		if (typeof(endPoint) != "undefined") {
+			range.collapse(endPoint);
+		}
+		this.emptySelection(selection);
+		this.addRangeToSelection(selection, range);
 	}
-	if (typeof(endPoint) != "undefined") {
-		range.collapse(endPoint);
-	}
-	this.emptySelection(selection);
-	this.addRangeToSelection(selection, range);
 };
 /*
  * Select ONLY the contents inside the given node
@@ -508,7 +512,9 @@ HTMLArea.Editor.prototype._checkBackspace = function() {
 		var range = self._createRange(selection);
 		var startContainer = range.startContainer;
 		var startOffset = range.startOffset;
+			// If the selection is collapsed...
 		if (self._selectionEmpty()) {
+				// ... and the cursor lies in a direct child of body...
 			if (/^(body)$/i.test(startContainer.nodeName)) {
 				var node = startContainer.childNodes[startOffset];
 			} else if (/^(body)$/i.test(startContainer.parentNode.nodeName)) {
@@ -516,20 +522,27 @@ HTMLArea.Editor.prototype._checkBackspace = function() {
 			} else {
 				return false;
 			}
+				// ... which is a br or text node containing no non-whitespace character
 			if (/^(br|#text)$/i.test(node.nodeName) && !/\S/.test(node.textContent)) {
+					// Get a meaningful previous sibling in which to reposition de cursor
 				var previousSibling = node.previousSibling;
 				while (previousSibling && /^(br|#text)$/i.test(previousSibling.nodeName) && !/\S/.test(previousSibling.textContent)) {
 					previousSibling = previousSibling.previousSibling;
 				}
-				HTMLArea.removeFromParent(node);
-				if (/^(ol|ul|dl)$/i.test(previousSibling.nodeName)) {
-					self.selectNodeContents(previousSibling.lastChild, false);
-				} else if (/^(table)$/i.test(previousSibling.nodeName)) {
-					self.selectNodeContents(previousSibling.rows[previousSibling.rows.length-1].cells[previousSibling.rows[previousSibling.rows.length-1].cells.length-1], false);
-				} else if (!/\S/.test(previousSibling.textContent) && previousSibling.firstChild) {
-					self.selectNode(previousSibling.firstChild, true);
-				} else {
-					self.selectNodeContents(previousSibling, false);
+					// If there is no meaningful previous sibling, the cursor is at the start of body
+				if (previousSibling) {
+						// Remove the node
+					HTMLArea.removeFromParent(node);
+						// Position the cursor
+					if (/^(ol|ul|dl)$/i.test(previousSibling.nodeName)) {
+						self.selectNodeContents(previousSibling.lastChild, false);
+					} else if (/^(table)$/i.test(previousSibling.nodeName)) {
+						self.selectNodeContents(previousSibling.rows[previousSibling.rows.length-1].cells[previousSibling.rows[previousSibling.rows.length-1].cells.length-1], false);
+					} else if (!/\S/.test(previousSibling.textContent) && previousSibling.firstChild) {
+						self.selectNode(previousSibling.firstChild, true);
+					} else {
+						self.selectNodeContents(previousSibling, false);
+					}
 				}
 			}
 		}

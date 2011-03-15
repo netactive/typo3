@@ -27,7 +27,7 @@
 /**
  * Contains a class with "Page functions" mainly for the frontend
  *
- * $Id: class.t3lib_page.php 8573 2010-08-11 20:29:05Z lolli $
+ * $Id: class.t3lib_page.php 9468 2010-11-17 19:36:46Z francois $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *
@@ -418,7 +418,13 @@ class t3lib_pageSelect {
 							$this->versionOL($table,$olrow);
 
 								// Merge record content by traversing all fields:
-							if (is_array($olrow))	{
+							if (is_array($olrow)) {
+								if (isset($olrow['_ORIG_uid'])) {
+									$row['_ORIG_uid'] = $olrow['_ORIG_uid'];
+								}
+								if (isset($olrow['_ORIG_pid'])) {
+									$row['_ORIG_pid'] = $olrow['_ORIG_pid'];
+								}
 								foreach($row as $fN => $fV)	{
 									if ($fN!='uid' && $fN!='pid' && isset($olrow[$fN]))	{
 
@@ -1111,7 +1117,7 @@ class t3lib_pageSelect {
 
 				// Filter out new place-holder records in case we are NOT in a versioning preview (that means we are online!)
 			if ($ctrl['versioningWS'] && !$this->versioningPreview)	{
-				$query.=' AND '.$table.'.t3ver_state<=0';	// Shadow state for new items MUST be ignored!
+				$query .= ' AND ' . $table . '.t3ver_state<=0 AND ' . $table . '.pid!=-1';	// Shadow state for new items MUST be ignored!
 			}
 
 				// Enable fields:

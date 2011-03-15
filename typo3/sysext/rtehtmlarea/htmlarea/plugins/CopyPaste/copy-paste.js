@@ -27,7 +27,7 @@
 /*
  * Copy Paste for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: copy-paste.js 8907 2010-09-27 15:15:21Z stan $
+ * TYPO3 SVN ID: $Id: copy-paste.js 9314 2010-11-09 05:51:33Z stan $
  */
 HTMLArea.CopyPaste = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {
@@ -84,9 +84,14 @@ HTMLArea.CopyPaste = HTMLArea.Plugin.extend({
 	 */
 	onGenerate: function () {
 		this.editor.iframe.mon(Ext.get(Ext.isIE ? this.editor.document.body : this.editor.document.documentElement), 'cut', this.cutHandler, this);
-			// Add hot key handling if the button is not enabled in the toolbar
 		Ext.iterate(this.buttonList, function (buttonId, button) {
-			if (!this.isButtonInToolbar(buttonId)) {
+				// Remove button from toolbar, if command is not supported
+				// Starting with Safari 5 and Chrome 6, cut and copy commands are not supported anymore by WebKit
+			if (!Ext.isGecko && !this.editor.document.queryCommandSupported(buttonId)) {
+				this.editor.toolbar.remove(buttonId);
+			}
+				// Add hot key handling if the button is not enabled in the toolbar
+			if (!this.getButton(buttonId)) {
 				this.editor.iframe.hotKeyMap.addBinding({
 					key: button[1].toUpperCase(),
 					ctrl: true,

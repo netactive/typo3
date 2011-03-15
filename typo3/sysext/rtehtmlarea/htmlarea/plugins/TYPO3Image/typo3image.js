@@ -27,7 +27,7 @@
 /*
  * TYPO3Image plugin for htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: typo3image.js 8253 2010-07-23 16:09:26Z stan $
+ * TYPO3 SVN ID: $Id: typo3image.js 9633 2010-11-25 22:14:31Z stan $
  */
 HTMLArea.TYPO3Image = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {
@@ -93,7 +93,7 @@ HTMLArea.TYPO3Image = HTMLArea.Plugin.extend({
 			this.getWindowDimensions(
 				{
 					width:	610,
-					height:	390
+					height:	500
 				},
 				buttonId
 			),

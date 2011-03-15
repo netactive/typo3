@@ -27,7 +27,7 @@
 /*
  * BlockElements Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: block-elements.js 7966 2010-06-19 14:19:13Z stan $
+ * TYPO3 SVN ID: $Id: block-elements.js 9757 2010-12-05 03:04:14Z stan $
  */
 HTMLArea.BlockElements = HTMLArea.Plugin.extend({
 		
@@ -544,7 +544,7 @@ HTMLArea.BlockElements = HTMLArea.Plugin.extend({
 				this.insertList(buttonId, parentElement);
 				break;
 			case "InsertHorizontalRule":
-				this.editor.execCommand('InsertHorizontalRule');
+				this.insertHorizontalRule();
 				break;
 			case "none" :
 				if (this.isAllowedBlockElement(parentElement.nodeName)) {
@@ -930,6 +930,49 @@ HTMLArea.BlockElements = HTMLArea.Plugin.extend({
 				parent.insertBefore(paragraph, after ? endElement.nextSibling : endElement);
 			}
 			this.editor.selectNodeContents(paragraph, true);
+		}
+	},
+	/*
+	 * Insert horizontal line
+	 */
+	insertHorizontalRule: function() {
+		this.editor.execCommand('InsertHorizontalRule');
+			// Apply enterParagraphs rule
+		if (!Ext.isIE && !Ext.isOpera && !this.editor.config.disableEnterParagraphs) {
+			var range = this.editor._createRange(this.editor._getSelection());
+			var startContainer = range.startContainer;
+			if (/^body$/i.test(startContainer.nodeName)) {
+				startContainer.normalize();
+				var ruler = startContainer.childNodes[range.startOffset-1];
+				if (ruler.nextSibling) {
+					if (ruler.nextSibling.nodeType == 3) {
+						if (/\S/.test(ruler.nextSibling.textContent)) {
+							var paragraph = this.editor.document.createElement('p');
+							paragraph = startContainer.appendChild(paragraph);
+							paragraph = startContainer.insertBefore(paragraph, ruler.nextSibling);
+							paragraph.appendChild(ruler.nextSibling);
+						} else {
+							HTMLArea.removeFromParent(ruler.nextSibling);
+							var paragraph = ruler.nextSibling;
+						}
+					} else {
+						var paragraph = ruler.nextSibling;
+					}
+						// Cannot set the cursor on the hr element
+					if (/^hr$/i.test(paragraph.nodeName)) {
+						var inBetweenParagraph = this.editor.document.createElement('p');
+						inBetweenParagraph.innerHTML = '<br />';
+						paragraph = startContainer.insertBefore(inBetweenParagraph, paragraph);
+					}
+				} else {
+					var paragraph = this.editor.document.createElement('p');
+					if (Ext.isWebKit) {
+						paragraph.innerHTML = '<br />';
+					}
+					paragraph = startContainer.appendChild(paragraph);
+				}
+				this.editor.selectNodeContents(paragraph, true);
+			}
 		}
 	},
 	/*

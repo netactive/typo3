@@ -28,7 +28,7 @@
  * Generating gif/png-files from TypoScript
  * Used by the menu-objects and imgResource in TypoScript.
  *
- * $Id: class.tslib_gifbuilder.php 8139 2010-07-08 15:57:05Z psychomieze $
+ * $Id: class.tslib_gifbuilder.php 9317 2010-11-09 13:46:59Z baschny $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -440,7 +440,7 @@ class tslib_gifBuilder extends t3lib_stdGraphic {
 
 		if ($this->setup['transparentBackground'])	{
 				// Auto transparent background is set
-			$Bcolor = ImageColorExact($this->im, $BGcols[0],$BGcols[1],$BGcols[2]);
+			$Bcolor = ImageColorClosest($this->im, $BGcols[0],$BGcols[1],$BGcols[2]);
 			imagecolortransparent($this->im, $Bcolor);
 		} elseif (is_array($this->setup['transparentColor_array']))	{
 				// Multiple transparent colors are set. This is done via the trick that all transparent colors get converted to one color and then this one gets set as transparent as png/gif can just have one transparent color.

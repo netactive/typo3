@@ -41,7 +41,7 @@
  * Thus you preserve backwards compatibility.
  *
  *
- * $Id: tables.php 8269 2010-07-25 18:16:39Z psychomieze $
+ * $Id: tables.php 9126 2010-10-17 10:49:57Z steffenk $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -574,6 +574,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'actions-document-save-view',
 	'actions-document-select',
 	'actions-document-view',
+	'actions-document-synchronize',
 	'actions-edit-add',
 	'actions-edit-copy',
 	'actions-edit-copy-release',

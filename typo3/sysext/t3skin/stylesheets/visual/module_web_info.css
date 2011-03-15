@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Web > Info
 
-$Id: module_web_info.css 7906 2010-06-13 14:56:44Z ohader $
+$Id: module_web_info.css 9677 2010-11-29 20:20:38Z francois $
 - - - - - - - - - - - - - - - - - - - - - */
 
 table.typo3-page-pages tr td.c-headLine {
@@ -14,4 +14,19 @@ table.typo3-page-sysnote tr td {
 
 table.typo3-page-sysnote tr td.c-headLine {
 	background-color: #c5c1b5;
+}
+
+table#langTable td.c-blocked {
+	background-color: #f6d3cf;
+}
+
+table#langTable td.c-ok {
+	background-color: #cdeaca;
+}
+
+table#langTable td.c-fallback {
+}
+
+table#langTable td.c-leftLine {
+	border-left: 1px solid #a2aab8;
 }

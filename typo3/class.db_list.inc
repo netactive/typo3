@@ -28,7 +28,7 @@
  * Include file extending t3lib_recordList
  * Shared between Web>List (db_list.php) and Web>Page (sysext/cms/layout/db_layout.php)
  *
- * $Id: class.db_list.inc 8429 2010-07-28 09:19:00Z ohader $
+ * $Id: class.db_list.inc 9782 2010-12-16 13:39:18Z ohader $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -217,8 +217,9 @@ class recordList extends t3lib_recordList {
 		}
 
 		if ($sL>0)	{
-			$tree = $this->getTreeObject($id,$sL,$this->perms_clause);
-			$this->pidSelect = 'pid IN ('.implode(',',$tree->ids).')';
+			$tree = $this->getTreeObject($this->id, $sL, $this->perms_clause);
+			$pidList = implode(',', $GLOBALS['TYPO3_DB']->cleanIntArray($tree->ids));
+			$this->pidSelect = 'pid IN (' . $pidList . ')';
 		} else {
 			$this->pidSelect = 'pid='.intval($id);
 		}

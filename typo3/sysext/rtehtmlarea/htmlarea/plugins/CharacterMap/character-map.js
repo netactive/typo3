@@ -31,7 +31,7 @@
 /*
  * Character Map Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: character-map.js 8904 2010-09-27 00:58:08Z stan $
+ * TYPO3 SVN ID: $Id: character-map.js 9212 2010-10-27 17:56:42Z stan $
  */
 HTMLArea.CharacterMap = HTMLArea.Plugin.extend({
 	constructor : function(editor, pluginName) {
@@ -148,6 +148,7 @@ HTMLArea.CharacterMap = HTMLArea.Plugin.extend({
 			['&tilde;', '&amp;tilde;'],
 			['&uml;', '&amp;uml;'],
 			['&cedil;', '&amp;cedil;'],
+			['&shy;', '&amp;shy;'],
 			['&ndash;', '&amp;ndash;'],
 			['&mdash;', '&amp;mdash;'],
 			['&lsquo;', '&amp;lsquo;'],
@@ -297,8 +298,7 @@ HTMLArea.CharacterMap = HTMLArea.Plugin.extend({
 			['&Psi;', '&amp;Psi;'],
 			['&psi;', '&amp;psi;'],
 			['&Omega;', '&amp;Omega;'],
-			['&omega;', '&amp;omega;'],
-			['&nbsp;', '&amp;nbsp;']
+			['&omega;', '&amp;omega;']
 		],
 		graphical: [
 			['&crarr;', '&amp;crarr;'],
@@ -312,7 +312,6 @@ HTMLArea.CharacterMap = HTMLArea.Plugin.extend({
 			['&lArr;', '&amp;lArr;'],
 			['&rArr;', '&amp;rArr;'],
 			['&hArr;', '&amp;hArr;'],
-			['&nbsp;', '&amp;nbsp;'],
 			['&nbsp;', '&amp;nbsp;'],
 			['&nbsp;', '&amp;nbsp;'],
 			['&nbsp;', '&amp;nbsp;'],
@@ -338,7 +337,7 @@ HTMLArea.CharacterMap = HTMLArea.Plugin.extend({
 		this.openDialogue(
 			buttonId,
 			'Insert special character',
-			this.getWindowDimensions({width:462, height:330}, buttonId),
+			this.getWindowDimensions({width:434, height:360}, buttonId),
 			this.buildTabItems()
 		);
 		return false;
@@ -437,6 +436,7 @@ HTMLArea.CharacterMap = HTMLArea.Plugin.extend({
 	 * @return	void
 	 */
 	insertCharacter: function (event, target) {
+		event.stopEvent();
 		this.editor.focus();
 		this.restoreSelection();
 		var entity = Ext.get(target).dom.innerHTML;
@@ -447,6 +447,7 @@ HTMLArea.CharacterMap = HTMLArea.Plugin.extend({
 				// Firefox and WebKit convert '&nbsp;' to '&amp;nbsp;'
 			this.editor.insertNodeAtSelection(this.editor.document.createTextNode(((Ext.isGecko || Ext.isWebKit) && entity == '&nbsp;') ? '\xA0' : entity));
 		}
+		return false;
 	},
 	/*
 	 * Reset focus on the the current selection, if at all possible

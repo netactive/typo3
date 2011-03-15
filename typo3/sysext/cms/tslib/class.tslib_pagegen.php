@@ -28,7 +28,7 @@
  * Libraries for pagegen.php
  * The script "pagegen.php" is included by "index_ts.php" when a page is not cached but needs to be rendered.
  *
- * $Id: class.tslib_pagegen.php 8294 2010-07-27 21:12:51Z steffenk $
+ * $Id: class.tslib_pagegen.php 9292 2010-11-06 10:45:28Z steffenk $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -543,7 +543,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							);
 						} else {
 							$pageRenderer->addCssFile(
-								htmlspecialchars($ss),
+								$ss,
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['alternate'] ? 'alternate stylesheet' : 'stylesheet',
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['media'] ? $GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['media'] : 'all',
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['title'] ? $GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['title'] : '',
@@ -679,9 +679,9 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							$type = 'text/javascript';
 						}
 						$pageRenderer->addJsLibrary(
-							htmlspecialchars($key),
-							htmlspecialchars($ss),
-							htmlspecialchars($type),
+							$key,
+							$ss,
+							$type,
 							$GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['compress'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['allWrap']
@@ -701,9 +701,9 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							$type = 'text/javascript';
 						}
 						$pageRenderer->addJsFooterLibrary(
-							htmlspecialchars($key),
-							htmlspecialchars($ss),
-							htmlspecialchars($type),
+							$key,
+							$ss,
+							$type,
 							$GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['compress'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['allWrap']
@@ -724,8 +724,8 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							$type = 'text/javascript';
 						}
 						$pageRenderer->addJsFile(
-							htmlspecialchars($ss),
-							htmlspecialchars($type),
+							$ss,
+							$type,
 							$GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['compress'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['allWrap']
@@ -745,8 +745,8 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							$type = 'text/javascript';
 						}
 						$pageRenderer->addJsFooterFile(
-							htmlspecialchars($ss),
-							htmlspecialchars($type),
+							$ss,
+							$type,
 							$GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['compress'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['allWrap']

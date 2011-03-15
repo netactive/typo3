@@ -1,8 +1,13 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Username inside the toolbar
 
-$Id: toolbar_username.css 7906 2010-06-13 14:56:44Z ohader $
+$Id: toolbar_username.css 9312 2010-11-08 22:46:12Z jsegars $
 - - - - - - - - - - - - - - - - - - - - - */
+
+#username {
+	color: #ffffff;
+	font-weight: bold;
+}
 
 #username.su-user {
 	color: #eb6e5a;

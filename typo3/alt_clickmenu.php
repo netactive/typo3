@@ -35,7 +35,7 @@
  *
  * If you want to integrate a context menu in your scripts, please see template::getContextMenuCode()
  *
- * $Id: alt_clickmenu.php 8157 2010-07-11 12:45:16Z psychomieze $
+ * $Id: alt_clickmenu.php 9014 2010-10-09 10:52:13Z steffenk $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -341,6 +341,10 @@ class clickMenu {
 
 			// Processing by external functions?
 		$menuItems = $this->externalProcessingOfDBMenuItems($menuItems);
+
+		if (!is_array($this->rec)) {
+			$this->rec = array();
+		}
 
 			// Return the printed elements:
 		return $this->printItems($menuItems,

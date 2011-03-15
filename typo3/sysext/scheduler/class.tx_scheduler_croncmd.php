@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_croncmd.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tx_scheduler_croncmd.php 9657 2010-11-26 20:58:54Z lolli $
  */
 class tx_scheduler_CronCmd {
 
@@ -89,13 +89,13 @@ class tx_scheduler_CronCmd {
 				// Minute
 			intval(date('i', $tstamp)),
 				// Hour
-			date('G', $tstamp),
+			intval(date('G', $tstamp)),
 				// Day
-			date('j', $tstamp),
+			intval(date('j', $tstamp)),
 				// Month
-			date('n', $tstamp),
+			intval(date('n', $tstamp)),
 				// Year
-			date('Y', $tstamp)
+			intval(date('Y', $tstamp))
 		);
 
 			// Set valid values
@@ -104,7 +104,7 @@ class tx_scheduler_CronCmd {
 			$this->getList($this->cmd_sections[1], 0, 23),
 			$this->getDayList($this->values[3], $this->values[4]),
 			$this->getList($this->cmd_sections[3], 1, 12),
-			$this->getList('*', date('Y', $tstamp), intval(date('Y', $tstamp))+1)
+			$this->getList('*', intval(date('Y', $tstamp)), intval(date('Y', $tstamp)) + 1)
 		);
 	}
 
@@ -195,16 +195,23 @@ class tx_scheduler_CronCmd {
 			// Consider special field 'day of week'
 			// @TODO: Implement lists and ranges for day of week (2,3 and 1-5 and */2,3 and 1,1-5/2)
 			// @TODO: Support usage of day names in day of week field ("mon", "sun", etc.)
-		if ((strpos($this->cmd_sections[4], '*') === FALSE && preg_match('/[1-7]{1}/', $this->cmd_sections[4]) !== FALSE)) {
+		if ((strpos($this->cmd_sections[4], '*') === FALSE && preg_match('/[0-7]{1}/', $this->cmd_sections[4]) !== FALSE)) {
 				// Unset days from 'day of month' if * is given
 				// * * * * 1 results to every monday of this month
 				// * * 1,2 * 1 results to every monday, plus first and second day of month
 			if ($this->cmd_sections[2] == '*') {
 				$validDays = array();
 			}
+
+				// Allow 0 as representation for sunday and convert to 7
+			$dayOfWeek = $this->cmd_sections[4];
+			if ($dayOfWeek === '0') {
+				$dayOfWeek = '7';
+			}
+
 				// Get list
 			for ($i = 1; $i <= $max_days; $i++) {
-				if (strftime('%u', mktime(0, 0, 0, $currentMonth, $i, $currentYear)) == $this->cmd_sections[4]) {
+				if (strftime('%u', mktime(0, 0, 0, $currentMonth, $i, $currentYear)) == $dayOfWeek) {
 					if (!in_array($i, $validDays)) {
 						$validDays[] = $i;
 					}

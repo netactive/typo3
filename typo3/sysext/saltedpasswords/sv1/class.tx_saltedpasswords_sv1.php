@@ -28,7 +28,7 @@
 /**
  * Contains authentication service class for salted hashed passwords.
  *
- * $Id: class.tx_saltedpasswords_sv1.php 6979 2010-02-23 10:02:38Z ohader $
+ * $Id: class.tx_saltedpasswords_sv1.php 9334 2010-11-11 14:56:54Z lolli $
  */
 
 
@@ -170,7 +170,7 @@ class tx_saltedpasswords_sv1 extends tx_sv_authbase {
 				if (!strcmp(substr($user['password'], 0, 1), 'M')) {
 					$validPasswd = $this->objInstanceSaltedPW->checkPassword(md5($password), substr($user['password'], 1));
 				} else {
-					$validPasswd = $this->objInstanceSaltedPW->checkPassword(md5($password), substr($user['password'], 1));
+					$validPasswd = $this->objInstanceSaltedPW->checkPassword($password, substr($user['password'], 1));
 				}
 
 					// skip further authentication methods

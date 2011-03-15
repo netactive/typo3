@@ -27,7 +27,7 @@
 /**
  * Contains a base class for authentication of users in TYPO3, both frontend and backend.
  *
- * $Id: class.t3lib_userauth.php 8374 2010-07-28 09:04:42Z ohader $
+ * $Id: class.t3lib_userauth.php 9206 2010-10-27 15:45:00Z stephenking $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -403,9 +403,9 @@ class t3lib_userAuth {
 			$cookies = t3lib_div::trimExplode(';', $_SERVER['HTTP_COOKIE']);
 			foreach ($cookies as $cookie) {
 				list ($name, $value) = t3lib_div::trimExplode('=', $cookie);
-				if ($name == $cookieName) {
+				if (strcmp(trim($name), $cookieName) == 0) {
 					// Use the last one
-					$cookieValue = stripslashes($value);
+					$cookieValue = urldecode($value);
 				}
 			}
 		} else {

@@ -29,7 +29,7 @@
  *
  * This module lets you view a page in a more Content Management like style than the ordinary record-list
  *
- * $Id: db_layout.php 8429 2010-07-28 09:19:00Z ohader $
+ * $Id: db_layout.php 9604 2010-11-24 22:42:51Z jigal $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -341,7 +341,7 @@ class SC_db_layout {
 				if (is_array($this->MOD_MENU[$table])) {
 					unset ($this->MOD_MENU[$table]);
 				}
-				if (is_array($tableSettings)) {
+				if (is_array($tableSettings) && count($tableSettings) > 1) {
 					foreach ($tableSettings as $key => $settings) {
 						$this->MOD_MENU[$table][$key] = $LANG->sL($settings['MENU']);
 					}
@@ -548,7 +548,7 @@ class SC_db_layout {
 
 
 			if ($this->pageinfo['content_from_pid']) {
-				//$contentPage = t3lib_BEfunc::getRecord('pages', intval($this->pageinfo['content_from_pid']));
+				$contentPage = t3lib_BEfunc::getRecord('pages', intval($this->pageinfo['content_from_pid']));
 				$title = t3lib_BEfunc::getRecordTitle('pages', $contentPage);
 				$linkToPid = $this->local_linkThisScript(array('id' => $this->pageinfo['content_from_pid']));
 				$link = '<a href="' . $linkToPid . '">' . htmlspecialchars($title) . ' (PID ' . intval($this->pageinfo['content_from_pid']) . ')</a>';

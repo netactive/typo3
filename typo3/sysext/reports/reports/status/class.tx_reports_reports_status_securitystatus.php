@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	reports
  *
- * $Id: class.tx_reports_reports_status_securitystatus.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tx_reports_reports_status_securitystatus.php 9506 2010-11-23 08:34:15Z nxpthx $
  */
 class tx_reports_reports_status_SecurityStatus implements tx_reports_StatusProvider {
 
@@ -77,7 +77,7 @@ class tx_reports_reports_status_SecurityStatus implements tx_reports_StatusProvi
 			$value    = $GLOBALS['LANG']->getLL('status_insecure');
 			$severity = tx_reports_reports_status_Status::ERROR;
 
-			$editUserAccountUrl = 'alt_doc.php?returnUrl=index.php&edit[be_users][' . $row['uid'] . ']=edit';
+			$editUserAccountUrl = 'alt_doc.php?returnUrl=mod.php?M=tools_txreportsM1&edit[be_users][' . $row['uid'] . ']=edit';
 			$message = sprintf(
 				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:warning.backend_admin'),
 				'<a href="' . $editUserAccountUrl . '">',

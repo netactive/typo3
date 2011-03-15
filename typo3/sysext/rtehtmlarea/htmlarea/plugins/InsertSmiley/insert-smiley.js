@@ -30,7 +30,7 @@
 /*
  * Insert Smiley Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: insert-smiley.js 7300 2010-04-12 05:49:17Z stan $
+ * TYPO3 SVN ID: $Id: insert-smiley.js 9212 2010-10-27 17:56:42Z stan $
  */
 
 HTMLArea.InsertSmiley = HTMLArea.Plugin.extend({
@@ -154,6 +154,7 @@ HTMLArea.InsertSmiley = HTMLArea.Plugin.extend({
 	 * @return	void
 	 */
 	insertImageTag: function (event, target) {
+		event.stopEvent();
 		this.editor.focus();
 		this.restoreSelection();
 		var icon = Ext.get(target).first();
@@ -166,5 +167,6 @@ HTMLArea.InsertSmiley = HTMLArea.Plugin.extend({
 			this.editor.selectNode(imgTag, false);
 		}
 		this.close();
+		return false;
 	}
 });

@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 8946 2010-10-04 13:30:15Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 9703 2010-12-01 05:47:19Z stan $
  */
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
 if (typeof(HTMLArea) == 'undefined') {
@@ -968,20 +968,35 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		} else {
 				// Test if the styleSheets array is at all accessible
 			if (Ext.isIE) {
-				try { rules = this.document.styleSheets[0].rules; } catch(e) { stylesAreLoaded = false; errorText = e; }
+				try { 
+					rules = this.document.styleSheets[0].rules;
+				} catch(e) {
+					stylesAreLoaded = false;
+					errorText = e;
+				}
 			} else {
-				try { rules = this.document.styleSheets[0].cssRules; } catch(e) { stylesAreLoaded = false; errorText = e; }
+				try { 
+					this.document.styleSheets && this.document.styleSheets[0] && this.document.styleSheets[0].rules;
+				} catch(e) {
+					stylesAreLoaded = false;
+					errorText = e;
+				}
 			}
 				// Then test if all stylesheets are accessible
 			if (stylesAreLoaded) {
-				Ext.each(this.document.styleSheets, function (styleSheet) {
-					if (Ext.isIE) {
-						try { rules = styleSheet.rules; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
-						try { rules = styleSheet.imports; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
-					} else {
-						try { rules = styleSheet.cssRules; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
-					}
-				});
+				if (this.document.styleSheets.length) {
+					Ext.each(this.document.styleSheets, function (styleSheet) {
+						if (Ext.isIE) {
+							try { rules = styleSheet.rules; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
+							try { rules = styleSheet.imports; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
+						} else {
+							try { rules = styleSheet.cssRules; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
+						}
+					});
+				} else {
+					stylesAreLoaded = false;
+					errorText = 'Empty stylesheets array';
+				}
 			}
 		}
 		if (!stylesAreLoaded) {
@@ -1255,7 +1270,11 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 	/*
 	 * Handler for mouse events
 	 */
-	onMouse: function () {
+	onMouse: function (event, target) {
+			// In WebKit, select the image when it is clicked
+		if (Ext.isWebKit && /^(img)$/i.test(target.nodeName) && event.browserEvent.type == 'click') {
+			this.getEditor().selectNode(target);
+		}
 		this.getToolbar().updateLater.delay(100);
 		return true;
 	},
@@ -1970,11 +1989,8 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 				}, true);
 					// Ext.DomHelper does not honour the custom attribute
 				element.dom.ancestor = ancestor;
-				if (Ext.isIE) {
-					element.on('click', this.onClick, this);
-				} else {
-					element.on('mousedown', this.onMouseDown, this);
-				}
+				element.on('click', this.onClick, this);
+				element.on('mousedown', this.onClick, this);
 				if (!Ext.isOpera) {
 					element.on('contextmenu', this.onContextMenu, this);
 				}
@@ -2058,18 +2074,6 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 		return false;
 	},
 	/*
-	 * MouseDown handler
-	 */
-	onMouseDown: function (event, element) {
-		this.selectElement(element);
-		if (Ext.isIE) {
-			return true;
-		} else {
-			event.stopEvent();
-			return false;
-		}
-	},
-	/*
 	 * ContextMenu handler
 	 */
 	onContextMenu: function (event, target) {
@@ -2109,11 +2113,13 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 			'frameworkready'
 		);
 		this.addListener({
-			afterrender: {
-				fn: this.initEventListeners,
+			beforedestroy: {
+				fn: this.onBeforeDestroy,
 				single: true
 			}
 		});
+			// Monitor iframe becoming ready
+		this.mon(this.iframe, 'iframeready', this.onIframeReady, this, {single: true});
 			// Let the framefork render itself, but it will fail to do so if inside a hidden tab or inline element
 		if (!this.isNested || HTMLArea.util.TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
 			this.render(this.textArea.parent(), this.textArea.id);
@@ -2128,8 +2134,6 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 	 * Initiate events monitoring
 	 */
 	initEventListeners: function () {
-			// Monitor iframe becoming ready
-		this.mon(this.iframe, 'iframeready', this.onIframeReady, this, {single: true});
 			// Make the framework resizable, if configured by the user
 		this.makeResizable();
 			// Monitor textArea container becoming shown or hidden as it may change the height of the status bar
@@ -2152,10 +2156,6 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 		this.addListener({
 			resize: {
 				fn: this.onFrameworkResize
-			},
-			beforedestroy: {
-				fn: this.onBeforeDestroy,
-				single: true
 			}
 		});
 	},
@@ -2285,7 +2285,12 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 	 * Resize the framework components
 	 */
 	onFrameworkResize: function () {
-		this.iframe.setSize(this.getInnerWidth(), this.getInnerHeight());
+			// For unknown reason, in Chrome 7, this following is the only way to set the height of the iframe
+		if (Ext.isChrome) {
+			this.iframe.getResizeEl().dom.setAttribute('style', 'width:' + this.getInnerWidth() + 'px; height:' + this.getInnerHeight() + 'px;');
+		} else {
+			this.iframe.setSize(this.getInnerWidth(), this.getInnerHeight());
+		}
 		this.textArea.setSize(this.getInnerWidth(), this.getInnerHeight());
 	},
 	/*
@@ -2302,7 +2307,12 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 		if (this.getInnerHeight() <= 0) {
 			this.onWindowResize();
 		} else {
-			this.iframe.setHeight(this.getInnerHeight());
+				// For unknown reason, in Chrome 7, this following is the only way to set the height of the iframe
+			if (Ext.isChrome) {
+				this.iframe.getResizeEl().dom.setAttribute('style', 'width:' + this.getInnerWidth() + 'px; height:' + this.getInnerHeight() + 'px;');
+			} else {
+				this.iframe.setHeight(this.getInnerHeight());
+			}
 			this.textArea.setHeight(this.getInnerHeight());
 		}
 	},
@@ -2310,8 +2320,9 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 	 * Fire the editor when all components of the framework are rendered and ready
 	 */
 	onIframeReady: function () {
-		this.ready = this.toolbar.rendered && this.statusBar.rendered && this.textAreaContainer.rendered;
+		this.ready = this.rendered && this.toolbar.rendered && this.statusBar.rendered && this.textAreaContainer.rendered;
 		if (this.ready) {
+			this.initEventListeners();
 			this.textAreaContainer.show();
 			if (!this.getEditor().config.showStatusBar) {
 				this.statusBar.hide();
@@ -2355,7 +2366,7 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 		this.toolbar.destroy();
 		this.statusBar.destroy();
 		this.removeAll(true);
-		if (this.resizable) {
+		if (this.resizer) {
 			this.resizer.destroy();
 		}
 		return true;
@@ -2478,7 +2489,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 						id: this.editorId + '-iframe',
 						tag: 'iframe',
 						cls: 'editorIframe',
-						src: Ext.isGecko ? 'javascript:void(0);' : HTMLArea.editorUrl + 'popups/blank.html'
+						src: (Ext.isGecko || Ext.isChrome) ? 'javascript:void(0);' : HTMLArea.editorUrl + 'popups/blank.html'
 					},
 					isNested: this.isNested,
 					nestedParentElements: this.nestedParentElements,
@@ -3758,6 +3769,7 @@ Ext.ux.form.ColorPaletteField = Ext.extend(Ext.form.TriggerField, {
 		}
 		if (this.menu == null) {
 			this.menu = new Ext.ux.menu.HTMLAreaColorMenu({
+				cls: 'htmlarea-color-menu',
 				hideOnClick: false,
 				colors: this.colors,
 				colorsConfiguration: this.colorsConfiguration,
@@ -4470,10 +4482,9 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 			title: this.localize(title) || title,
 			cls: 'htmlarea-window',
 			width: dimensions.width,
-			height: dimensions.height,
 			border: false,
-				// As of ExtJS 3.1, JS error with IE when the window is resizable
-			//resizable: !Ext.isIE,
+				// As of ExtJS 3.3, JS error with IE when the window is resizable
+			resizable: !Ext.isIE,
 			iconCls: this.getButton(buttonId).iconCls,
 			listeners: {
 				afterrender: {
@@ -4490,6 +4501,7 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 			items: {
 					// The content iframe
 				xtype: 'box',
+				height: dimensions.height-20,
 				itemId: 'content-iframe',
 				autoEl: {
 					tag: 'iframe',

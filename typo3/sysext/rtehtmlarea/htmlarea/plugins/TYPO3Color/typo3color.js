@@ -27,7 +27,7 @@
 /*
  * TYPO3 Color Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: typo3color.js 8003 2010-06-21 15:48:30Z stan $
+ * TYPO3 SVN ID: $Id: typo3color.js 9703 2010-12-01 05:47:19Z stan $
  */
 HTMLArea.TYPO3Color = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {
@@ -137,7 +137,13 @@ HTMLArea.TYPO3Color = HTMLArea.Plugin.extend({
 				element: element,
 				buttonId: buttonId
 			},
-			this.getWindowDimensions({ width: 350}, buttonId),
+			this.getWindowDimensions(
+				{
+					width: 350,
+					height: 350
+				},
+				buttonId
+			),
 			this.buildItemsConfig(element, buttonId),
 			this.setColor
 		);
@@ -311,7 +317,8 @@ HTMLArea.TYPO3Color = HTMLArea.Plugin.extend({
 			cls: 'htmlarea-window',
 			border: false,
 			width: dimensions.width,
-			height: 'auto',
+			height: dimensions.height,
+			autoScroll: true,
 				// As of ExtJS 3.1, JS error with IE when the window is resizable
 			resizable: !Ext.isIE,
 			iconCls: this.getButton(arguments.buttonId).iconCls,
@@ -324,6 +331,9 @@ HTMLArea.TYPO3Color = HTMLArea.Plugin.extend({
 			items: {
 				xtype: 'container',
 				layout: 'form',
+				style: {
+					width: '95%'
+				},
 				defaults: {
 					labelWidth: 150
 				},
