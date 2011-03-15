@@ -28,7 +28,7 @@
  * Shows a picture from uploads/* in enlarged format in a separate window.
  * Picture file and settings is supplied by GET-parameters: file, width, height, sample, alternativeTempPath, effects, frame, bodyTag, title, wrap, md5
  *
- * $Id: showpic.php 9793 2010-12-16 13:41:40Z ohader $
+ * $Id: showpic.php 10532 2011-02-22 15:22:53Z nxpthx $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author		Kasper Skaarhoj	<kasperYYYY@typo3.com>
@@ -149,23 +149,25 @@ class SC_tslib_showpic {
 	function init()	{
 			// Loading internal vars with the GET/POST parameters from outside:
 		$this->file = t3lib_div::_GP('file');
-		$this->parametersEncoded = implode(t3lib_div::_GP('parameters'));
+		$parametersArray = t3lib_div::_GP('parameters');
 		$this->frame = t3lib_div::_GP('frame');
 		$this->md5 = t3lib_div::_GP('md5');
 
 		// ***********************
 		// Check parameters
 		// ***********************
-			// If no file-param is given, we must exit
-		if (!$this->file)	{
-			die('Parameter Error: No file given.');
+			// If no file-param or parameters are given, we must exit
+		if (!$this->file || !isset($parametersArray) || !is_array($parametersArray)) {
+			die('Parameter Error: No file or no parameters given.');
 		}
+
+		$this->parametersEncoded = implode($parametersArray);
 
 			// Chech md5-checksum: If this md5-value does not match the one submitted, then we fail... (this is a kind of security that somebody don't just hit the script with a lot of different parameters
 		$md5_value = t3lib_div::hmac(
 			implode(
 				'|',
-				array($this->file, $this->parametersEncoded, $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'])
+				array($this->file, $this->parametersEncoded)
 			)
 		);
 

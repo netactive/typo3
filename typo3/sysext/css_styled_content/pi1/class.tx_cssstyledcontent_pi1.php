@@ -27,7 +27,7 @@
 /**
  * Plugin 'Content rendering' for the 'css_styled_content' extension.
  *
- * $Id: class.tx_cssstyledcontent_pi1.php 9839 2010-12-17 21:16:35Z psychomieze $
+ * $Id: class.tx_cssstyledcontent_pi1.php 9978 2011-01-01 17:00:41Z psychomieze $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */
@@ -758,6 +758,9 @@ class tx_cssstyledcontent_pi1 extends tslib_pibase {
 		}
 
 			// Edit icons:
+		if (!is_array($conf['editIcons.'])) {
+			$conf['editIcons.'] = array();
+		}
 		$editIconsHTML = $conf['editIcons']&&$GLOBALS['TSFE']->beUserLogin ? $this->cObj->editIcons('',$conf['editIcons'],$conf['editIcons.']) : '';
 
 			// If noRows, we need multiple imagecolumn wraps

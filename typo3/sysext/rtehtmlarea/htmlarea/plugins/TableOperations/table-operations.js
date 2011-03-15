@@ -31,7 +31,7 @@
 /*
  * Table Operations Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: table-operations.js 8088 2010-07-04 20:24:20Z stan $
+ * TYPO3 SVN ID: $Id: table-operations.js 10148 2011-01-20 05:01:33Z stan $
  */
 HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 		
@@ -675,8 +675,18 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 	 * This function gets called when the toolbar is being updated
 	 */
 	onUpdateToolbar: function (button, mode, selectionEmpty, ancestors) {
-		if (mode === 'wysiwyg' && this.editor.isEditable() && button.itemId === 'TO-toggle-borders') {
-			button.setInactive(!HTMLArea._hasClass(this.editor._doc.body, 'htmlarea-showtableborders'));
+		if (mode === 'wysiwyg' && this.editor.isEditable()) {
+			switch (button.itemId) {
+				case 'TO-toggle-borders':
+					button.setInactive(!HTMLArea._hasClass(this.editor._doc.body, 'htmlarea-showtableborders'));
+					break;
+				case 'TO-cell-merge':
+					if (Ext.isGecko) {
+						var selection = this.editor._getSelection();
+						button.setDisabled(button.disabled || selection.rangeCount < 2);
+					}
+					break;
+			}
 		}
 	},
 	/*

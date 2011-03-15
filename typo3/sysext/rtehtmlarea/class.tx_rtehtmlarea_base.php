@@ -32,7 +32,7 @@
  * @author	Philipp Borgmann <philipp.borgmann@gmx.de>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_base.php 9006 2010-10-07 03:43:42Z stan $  *
+ * $Id: class.tx_rtehtmlarea_base.php 10514 2011-02-21 02:21:53Z stan $  *
  */
 
 class tx_rtehtmlarea_base extends t3lib_rteapi {
@@ -81,7 +81,24 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			),
 			'opera' => array (
 				1 => array (
-					'version' => 9.62
+					'version' => 9.62,
+					'system' => 'mac'
+				),
+				2 => array (
+					'version' => 9.62,
+					'system' => 'winNT'
+				),
+				3 => array (
+					'version' => 9.62,
+					'system' => 'linux'
+				),
+				4 => array (
+					'version' => 9.62,
+					'system' => 'win98'
+				),
+				5 => array (
+					'version' => 9.62,
+					'system' => 'win95'
 				)
 			)
 		);
@@ -265,7 +282,10 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 				$this->siteURL = preg_replace('/^(http|https)/', 'https', $this->siteURL);
 				$this->hostURL = preg_replace('/^(http|https)/', 'https', $this->hostURL);
 			}
-
+				// Register RTE windows
+			$this->TCEform->RTEwindows[] = $PA['itemFormElName'];
+			$textAreaId = preg_replace('/[^a-zA-Z0-9_:.-]/', '_', $PA['itemFormElName']);
+			$textAreaId = htmlspecialchars(preg_replace('/^[^a-zA-Z]/', 'x', $textAreaId));
 			/* =======================================
 			 * LANGUAGES & CHARACTER SETS
 			 * =======================================
@@ -346,7 +366,13 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			$editorWrapWidth = '99%';
 			$editorWrapHeight = '100%';
 			$this->RTEdivStyle = 'position:relative; left:0px; top:0px; height:' . $RTEHeight . 'px; width:'.$RTEWidth.'; border: 1px solid black; padding: 2px 2px 2px 2px;';
-
+				// Check if wizard_rte called this for fullscreen edtition; if so, change the size of the RTE to fullscreen using JS
+			if (basename(PATH_thisScript) == 'wizard_rte.php') {
+				$this->fullScreen = true;
+				$editorWrapWidth = '100%';
+				$editorWrapHeight = '100%';
+				$this->RTEdivStyle = 'position:relative; left:0px; top:0px; height:100%; width:100%; border: 1px solid black; padding: 2px 0px 2px 2px;';
+			}
 			/* =======================================
 			 * LOAD CSS AND JAVASCRIPT
 			 * =======================================
@@ -354,6 +380,15 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 				// Preloading the pageStyle and including RTE skin stylesheets
 			$this->addPageStyle();
 			$this->addSkin();
+				// Re-initialize the scripts array so that only the cumulative set of plugins of the last RTE on the page is used
+			$this->cumulativeScripts[$this->TCEform->RTEcounter] = array();
+			$this->includeScriptFiles($this->TCEform->RTEcounter);
+			$this->buildJSMainLangFile($this->TCEform->RTEcounter);
+				// Register RTE in JS:
+			$this->TCEform->additionalJS_post[] = $this->registerRTEinJS($this->TCEform->RTEcounter, $table, $row['uid'], $field, $textAreaId);
+				// Set the save option for the RTE:
+			$this->TCEform->additionalJS_submit[] = $this->setSaveRTE($this->TCEform->RTEcounter, $this->TCEform->formName, $textAreaId, $PA['itemFormElName']);
+			$this->TCEform->additionalJS_delete[] = $this->setDeleteRTE($this->TCEform->RTEcounter, $this->TCEform->formName, $textAreaId);
 				// Loading JavaScript files and code
 			if ($this->TCEform->RTEcounter == 1) {
 				$this->TCEform->additionalJS_pre['rtehtmlarea-loadJScode'] = $this->loadJScode($this->TCEform->RTEcounter);
@@ -378,26 +413,6 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 					$value = $plugin->transformContent($value);
 				}
 			}
-				// Register RTE windows
-			$this->TCEform->RTEwindows[] = $PA['itemFormElName'];
-			$textAreaId = preg_replace('/[^a-zA-Z0-9_:.-]/', '_', $PA['itemFormElName']);
-			$textAreaId = htmlspecialchars(preg_replace('/^[^a-zA-Z]/', 'x', $textAreaId));
-
-				// Check if wizard_rte called this for fullscreen edtition; if so, change the size of the RTE to fullscreen using JS
-			if (basename(PATH_thisScript) == 'wizard_rte.php') {
-				$this->fullScreen = true;
-				$editorWrapWidth = '100%';
-				$editorWrapHeight = '100%';
-				$this->RTEdivStyle = 'position:relative; left:0px; top:0px; height:100%; width:100%; border: 1px solid black; padding: 2px 0px 2px 2px;';
-			}
-
-				// Register RTE in JS:
-			$this->TCEform->additionalJS_post[] = $this->registerRTEinJS($this->TCEform->RTEcounter, $table, $row['uid'], $field, $textAreaId);
-
-				// Set the save option for the RTE:
-			$this->TCEform->additionalJS_submit[] = $this->setSaveRTE($this->TCEform->RTEcounter, $this->TCEform->formName, $textAreaId, $PA['itemFormElName']);
-			$this->TCEform->additionalJS_delete[] = $this->setDeleteRTE($this->TCEform->RTEcounter, $this->TCEform->formName, $textAreaId);
-
 				// Draw the textarea
 			$visibility = 'hidden';
 			$item = $this->triggerField($PA['itemFormElName']).'
@@ -716,11 +731,9 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	 *
 	 * @param	integer		$RTEcounter: The index number of the current RTE editing area within the form.
 	 *
-	 * @return	string		the html code for loading the Javascript Files
- 	 */
-	function loadJSfiles($RTEcounter) {
-			// Re-initialize the scripts array so that only the cumulative set of plugins of the last RTE on the page is used
-		$this->cumulativeScripts[$RTEcounter] = array();
+	 * @return	void
+  	 */
+	protected function includeScriptFiles($RTEcounter) {
 		$this->writeTemporaryFile('EXT:' . $this->ID . '/htmlarea/htmlarea.js', 'htmlarea', 'js', '', TRUE);
 		if ($this->client['browser'] == 'msie') {
 			$this->writeTemporaryFile('EXT:' . $this->ID . '/htmlarea/htmlarea-ie.js', 'htmlarea-ie', 'js', '', TRUE);
@@ -731,11 +744,17 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			$extensionKey = is_object($this->registeredPlugins[$pluginId]) ? $this->registeredPlugins[$pluginId]->getExtensionKey() : $this->ID;
 			$this->writeTemporaryFile('EXT:' . $extensionKey . '/htmlarea/plugins/' . $pluginId . '/' . strtolower(preg_replace('/([a-z])([A-Z])([a-z])/', "$1".'-'."$2"."$3", $pluginId)) . '.js', $pluginId, 'js', '', TRUE);
 		}
-		$this->buildJSMainLangFile($RTEcounter);
-			// Avoid re-initialization on AJax call when RTEarea object was already initialized
-		$loadJavascriptCode = '
-		<script type="text/javascript" src="' . $this->doConcatenate($RTEcounter) . '"></script>
-		<script type="text/javascript">
+	}
+	/**
+	 * Return the HTML code for loading the Javascript files
+	 *
+	 * @param	integer		$RTEcounter: The index number of the current RTE editing area within the form.
+	 *
+	 * @return	string		the html code for loading the Javascript Files
+ 	 */
+	protected function loadJSfiles($RTEcounter) {
+		$loadJavascriptCode = '<script type="text/javascript" src="' . $this->doConcatenate($RTEcounter) . '"></script>' . LF;
+ 		$loadJavascriptCode .= '<script type="text/javascript">
 		/*<![CDATA[*/
 			if (typeof(RTEarea) == "undefined") {
 				RTEarea = new Object();
@@ -826,12 +845,15 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			RTEarea[editornumber].showTagFreeClasses = ' . (trim($this->thisConfig['showTagFreeClasses'])?'true':'false') . ';
 			RTEarea[editornumber].useHTTPS = ' . ((trim(stristr($this->siteURL, 'https')) || $this->thisConfig['forceHTTPS'])?'true':'false') . ';
 			RTEarea[editornumber].tceformsNested = ' . (is_object($this->TCEform) && method_exists($this->TCEform, 'getDynNestedStack') ? $this->TCEform->getDynNestedStack(true) : '[]') . ';
-			RTEarea[editornumber].dialogueWindows = new Object();
-			RTEarea[editornumber].dialogueWindows.defaultPositionFromTop = ' . (isset($this->thisConfig['dialogueWindows.']['defaultPositionFromTop'])? intval($this->thisConfig['dialogueWindows.']['defaultPositionFromTop']) : '100') . ';
-			RTEarea[editornumber].dialogueWindows.defaultPositionFromLeft = ' . (isset($this->thisConfig['dialogueWindows.']['defaultPositionFromLeft'])? intval($this->thisConfig['dialogueWindows.']['defaultPositionFromLeft']) : '100') . ';
-			RTEarea[editornumber].dialogueWindows.doNotResize = ' . (trim($this->thisConfig['dialogueWindows.']['doNotResize'])?'true':'false') . ';
-			RTEarea[editornumber].dialogueWindows.doNotCenter = ' . (trim($this->thisConfig['dialogueWindows.']['doNotCenter'])?'true':'false') . ';';
-
+			RTEarea[editornumber].dialogueWindows = new Object();';
+		if (isset($this->thisConfig['dialogueWindows.']['defaultPositionFromTop'])) {
+			$configureRTEInJavascriptString .= '
+			RTEarea[editornumber].dialogueWindows.positionFromTop = ' . intval($this->thisConfig['dialogueWindows.']['defaultPositionFromTop']) . ';';
+		}
+		if (isset($this->thisConfig['dialogueWindows.']['defaultPositionFromLeft'])) {
+			$configureRTEInJavascriptString .= '
+			RTEarea[editornumber].dialogueWindows.positionFromLeft = ' . intval($this->thisConfig['dialogueWindows.']['defaultPositionFromLeft']) . ';';
+		}
 			// The following properties apply only to the backend
 		if (!$this->is_FE()) {
 			$configureRTEInJavascriptString .= '
@@ -996,7 +1018,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		}
 			// Include JS arrays of configured classes
 		$configureRTEInJavascriptString .= '
-			RTEarea[editornumber].classesUrl = "' . $this->writeTemporaryFile('', 'classes_'.$LANG->lang, 'js', $this->buildJSClassesArray()) . '";';
+			RTEarea[editornumber].classesUrl = "' . $this->writeTemporaryFile('', 'classes_' . $this->language, 'js', $this->buildJSClassesArray(), TRUE) . '";';
 		return $configureRTEInJavascriptString;
 	}
 
@@ -1414,6 +1436,9 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			} elseif (strstr($userAgent,'iPod')) {
 				$browserInfo['system'] = 'iPod';
 			}
+		}
+		if (strstr($userAgent,'Android')) {
+			$browserInfo['system'] = 'android';
 		}
 		return $browserInfo;
 	}

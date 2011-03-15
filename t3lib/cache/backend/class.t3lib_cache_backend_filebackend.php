@@ -31,7 +31,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_backend_filebackend.php 9204 2010-10-26 21:37:48Z lolli $
+ * @version $Id: class.t3lib_cache_backend_filebackend.php 9990 2011-01-05 12:38:37Z steffenk $
  */
 class t3lib_cache_backend_FileBackend extends t3lib_cache_backend_AbstractBackend implements t3lib_cache_backend_PhpCapableBackend {
 
@@ -147,7 +147,9 @@ class t3lib_cache_backend_FileBackend extends t3lib_cache_backend_AbstractBacken
 				$documentRoot = '/';
 			}
 			if (TYPO3_OS === 'WIN') {
-				$documentRoot = '';
+				if (substr($cacheDirectory, 0,  strlen($documentRoot)) === $documentRoot) {
+					$documentRoot = '';
+				}
 			}
 		}
 

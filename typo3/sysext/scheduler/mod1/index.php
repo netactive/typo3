@@ -36,7 +36,7 @@ $BE_USER->modAccess($MCONF, 1); // This checks permissions and exits if the user
  * @author		Ingo Renner <ingo@typo3.org>
  * @package		TYPO3
  * @subpackage	tx_scheduler
- * @version		$Id: index.php 8576 2010-08-12 11:48:21Z xperseguers $
+ * @version		$Id: index.php 10091 2011-01-16 19:58:41Z francois $
  */
 class tx_scheduler_Module extends t3lib_SCbase {
 
@@ -1581,7 +1581,7 @@ class tx_scheduler_Module extends t3lib_SCbase {
 		);
 
 		if (empty($this->CMD) || $this->CMD == 'list') {
-			$buttons['reload'] = '<a href="' . $GLOBALS['MCONF']['_'] . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.reload', TRUE) . '>' .
+			$buttons['reload'] = '<a href="' . $GLOBALS['MCONF']['_'] . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.reload', TRUE) . '">' .
 			  t3lib_iconWorks::getSpriteIcon('actions-system-refresh') .
 		  '</a>';
 		}

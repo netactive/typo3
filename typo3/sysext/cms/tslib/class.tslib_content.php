@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 9824 2010-12-17 13:07:22Z flyguide $
+ * $Id: class.tslib_content.php 10532 2011-02-22 15:22:53Z nxpthx $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1172,6 +1172,9 @@ class tslib_cObj {
 
 
 				// Edit icons:
+			if (!is_array($conf['editIcons.'])) {
+				$conf['editIcons.'] = array();
+			}
 			$editIconsHTML = $conf['editIcons']&&$GLOBALS['TSFE']->beUserLogin ? $this->editIcons('',$conf['editIcons'],$conf['editIcons.']) : '';
 
 				// strech out table:
@@ -2651,6 +2654,8 @@ class tslib_cObj {
 				}
 				if (t3lib_div::inList('swf,swa,dcr',$fileinfo['fileext']))	{
 					$parArray['quality'] = 'quality="high"';
+					$parArray['width'] = 'width="' . ($conf['width'] ? $conf['width'] : 200)  . '"';
+					$parArray['height'] = 'height="' . ($conf['height'] ? $conf['height'] : 200) . '"';
 				}
 				if (t3lib_div::inList('class',$fileinfo['fileext']))	{
 					$parArray['width'] = 'width="' . ($conf['width'] ? $conf['width'] : 200) . '"';
@@ -3205,7 +3210,7 @@ class tslib_cObj {
 				$md5_value = t3lib_div::hmac(
 					implode(
 						'|',
-						array($imageFile, $parametersEncoded, $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'])
+						array($imageFile, $parametersEncoded)
 					)
 				);
 
@@ -3918,6 +3923,9 @@ class tslib_cObj {
 				}
 
 				if ($conf['editIcons'] && $GLOBALS['TSFE']->beUserLogin) {
+					if(!is_array($conf['editIcons.'])) {
+						$conf['editIcons.'] = array();
+					}
 					$content = $this->editIcons($content, $conf['editIcons'], $conf['editIcons.']);
 				}
 
@@ -4268,16 +4276,21 @@ class tslib_cObj {
 		$chars = intval($options[0]);
 		$afterstring = trim($options[1]);
 		$crop2space = trim($options[2]);
-		if ($chars)	{
-			if (strlen($content)>abs($chars))	{
-				if ($chars<0)	{
-					$content = $GLOBALS['TSFE']->csConvObj->substr($GLOBALS['TSFE']->renderCharset,$content,$chars);
-					$trunc_at = strpos($content, ' ');
-					$content = ($trunc_at&&$crop2space) ? $afterstring.substr($content,$trunc_at) : $afterstring.$content;
+		if ($chars) {
+			if ($GLOBALS['TSFE']->csConvObj->strlen($GLOBALS['TSFE']->renderCharset, $content) > abs($chars)) {
+				$truncatePosition = FALSE;
+				if ($chars < 0) {
+					$content = $GLOBALS['TSFE']->csConvObj->substr($GLOBALS['TSFE']->renderCharset, $content, $chars);
+					if ($crop2space) {
+						$truncatePosition = strpos($content, ' ');
+					}
+					$content = ($truncatePosition) ? $afterstring . substr($content, $truncatePosition) : $afterstring . $content;
 				} else {
-					$content = $GLOBALS['TSFE']->csConvObj->substr($GLOBALS['TSFE']->renderCharset,$content,0,$chars);
-					$trunc_at = strrpos($content, ' ');
-					$content = ($trunc_at&&$crop2space) ? substr($content, 0, $trunc_at).$afterstring : $content.$afterstring;
+					$content = $GLOBALS['TSFE']->csConvObj->substr($GLOBALS['TSFE']->renderCharset, $content, 0, $chars);
+					if ($crop2space) {
+						$truncatePosition = strrpos($content, ' ');
+					}
+					$content = ($truncatePosition) ? substr($content, 0, $truncatePosition) . $afterstring : $content . $afterstring;
 				}
 			}
 		}
@@ -5089,7 +5102,7 @@ class tslib_cObj {
  						$contentAccumP++;
  						$treated=1;
 							// in-out-tag: img and other empty tags
-						if ($tag[0]=='img' || substr($tag[1],-3,2)==' /')	{
+						if (preg_match('/^(area|base|br|col|hr|img|input|meta|param)$/i', $tag[0])) {
 							$tag['out']=1;
 						}
  					}
@@ -5183,17 +5196,28 @@ class tslib_cObj {
 
 		foreach ($lParts as $k => $l) {
 			$sameBeginEnd=0;
+			$emptyTag = 0;
 			$l=trim($l);
 			$attrib=array();
 			$nWrapped=0;
-			$byPass=0;
 			if (substr($l,0,1)=='<' && substr($l,-1)=='>')	{
 				$fwParts = explode('>',substr($l,1),2);
-				$backParts = t3lib_div::revExplode('<', substr($fwParts[1],0,-1), 2);
-				$attrib = t3lib_div::get_tag_attributes('<'.$fwParts[0].'>');
-				list($tagName) = explode(' ',$fwParts[0]);
-				$str_content = $backParts[0];
-				$sameBeginEnd = (substr(strtolower($backParts[1]),1,strlen($tagName))==strtolower($tagName));
+				list($tagName, $tagParams) = explode(' ',$fwParts[0], 2);
+				if (!$fwParts[1]) {
+					if (substr($tagName, -1) == '/') {
+						$tagName = substr($tagName, 0, -1);
+					}
+					if (substr($fwParts[0], -1) == '/') {
+						$sameBeginEnd = 1;
+						$emptyTag = 1;
+						$attrib = t3lib_div::get_tag_attributes('<'.substr($fwParts[0], 0, -1).'>');
+					}
+				} else {
+					$backParts = t3lib_div::revExplode('<', substr($fwParts[1],0,-1), 2);
+					$attrib = t3lib_div::get_tag_attributes('<'.$fwParts[0].'>');
+					$str_content = $backParts[0];
+					$sameBeginEnd = (substr(strtolower($backParts[1]),1,strlen($tagName))==strtolower($tagName));
+				}
 			}
 
 			if ($sameBeginEnd && in_array(strtolower($tagName),$encapTags))	{
@@ -5201,6 +5225,8 @@ class tslib_cObj {
 				$uTagName = strtoupper($conf['remapTag.'][$uTagName]?$conf['remapTag.'][$uTagName]:$uTagName);
 			} else {
 				$uTagName = strtoupper($nonWrappedTag);
+					// The line will be wrapped: $uTagName should not be an empty tag
+				$emptyTag = 0;
 				$str_content = $lParts[$k];
 				$nWrapped=1;
 				$attrib=array();
@@ -5230,10 +5256,14 @@ class tslib_cObj {
 				if (!$attrib['align'] && $defaultAlign)	$attrib['align']=$defaultAlign;
 
 				$params = t3lib_div::implodeAttributes($attrib,1);
-				if ($conf['removeWrapping'])	{
+				if ($conf['removeWrapping'] && !($emptyTag && $conf['removeWrapping.']['keepSingleTag'])) {
 					$str_content=$str_content;
 				} else {
-					$str_content='<'.strtolower($uTagName).(trim($params)?' '.trim($params):'').'>'.$str_content.'</'.strtolower($uTagName).'>';
+					if ($emptyTag) {
+						$str_content='<'.strtolower($uTagName).(trim($params)?' '.trim($params):'').' />';
+					} else {
+						$str_content='<'.strtolower($uTagName).(trim($params)?' '.trim($params):'').'>'.$str_content.'</'.strtolower($uTagName).'>';
+					}
 				}
 			}
 

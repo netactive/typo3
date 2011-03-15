@@ -27,7 +27,7 @@
 /*
  * Remove Format Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: remove-format.js 7565 2010-05-08 03:06:49Z stan $
+ * TYPO3 SVN ID: $Id: remove-format.js 10543 2011-02-22 19:33:31Z stan $
  */
 HTMLArea.RemoveFormat = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {
@@ -215,7 +215,7 @@ HTMLArea.RemoveFormat = HTMLArea.Plugin.extend({
 			}
 			if (params['formatting']) {
 					// Remove font, b, strong, i, em, u, strike, span and other inline tags
-				html = html.replace(/<\/?(abbr|acronym|b[^a-zA-Z]|big|cite|code|em[^a-zA-Z]|font|i[^a-zA-Z]|q|s[^a-zA-Z]|samp|small|span|strike|strong|sub|sup|tt|u[^a-zA-Z]|var)[^>]*>/gi, "");
+				html = html.replace(/<\/?(abbr|acronym|b|big|cite|code|em|font|i|q|s|samp|small|span|strike|strong|sub|sup|tt|u|var)(>|[^>a-zA-Z][^>]*>)/gi, '');
 					// Keep tags, strip attributes
 				html = html.replace(/[ \t\n\r]+(style|class|align|cellpadding|cellspacing|frame|bgcolor)=\"[^>\"]*\"/gi, "");
 			}

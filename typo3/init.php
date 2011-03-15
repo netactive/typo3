@@ -49,7 +49,7 @@
  * For a detailed description of this script, the scope of constants and variables in it,
  * please refer to the document "Inside TYPO3"
  *
- * $Id: init.php 8610 2010-08-19 10:02:02Z francois $
+ * $Id: init.php 10458 2011-02-14 11:24:50Z tolleiv $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -422,6 +422,9 @@ $BE_USER->warningEmail = $TYPO3_CONF_VARS['BE']['warning_email_addr'];
 $BE_USER->lockIP = $TYPO3_CONF_VARS['BE']['lockIP'];
 $BE_USER->auth_timeout_field = intval($TYPO3_CONF_VARS['BE']['sessionTimeout']);
 $BE_USER->OS = TYPO3_OS;
+if (TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) {
+	$BE_USER->dontSetCookie = TRUE;
+}
 $BE_USER->start();			// Object is initialized
 $BE_USER->checkCLIuser();
 $BE_USER->backendCheckLogin();	// Checking if there's a user logged in

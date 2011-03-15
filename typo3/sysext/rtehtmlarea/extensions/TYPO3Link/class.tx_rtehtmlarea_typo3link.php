@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_typo3link.php 9249 2010-11-03 14:54:42Z stan $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_typo3link.php 10504 2011-02-20 04:29:12Z stan $
  *
  */
 
@@ -85,7 +85,7 @@ class tx_rtehtmlarea_typo3link extends tx_rtehtmlareaapi {
 			}
 			if (is_array($RTEProperties['classesAnchor.'])) {
 				$registerRTEinJavascriptString .= '
-			RTEarea['.$RTEcounter.'].buttons.'. $button .'.classesAnchorUrl = "' . $this->htmlAreaRTE->writeTemporaryFile('', 'classesAnchor_'.$this->htmlAreaRTE->contentLanguageUid, 'js', $this->buildJSClassesAnchorArray()) . '";';
+			RTEarea['.$RTEcounter.'].buttons.'. $button .'.classesAnchorUrl = "' . $this->htmlAreaRTE->writeTemporaryFile('', 'classesAnchor_'.$this->htmlAreaRTE->contentLanguageUid, 'js', $this->buildJSClassesAnchorArray(), TRUE) . '";';
 			}
 			$registerRTEinJavascriptString .= '
 			RTEarea['.$RTEcounter.'].buttons.'. $button .'.additionalAttributes = "external' . ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extensionKey]['plugins'][$this->pluginName]['additionalAttributes'] ? (',' . $GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extensionKey]['plugins'][$this->pluginName]['additionalAttributes']) : '') . '";';
@@ -108,9 +108,9 @@ class tx_rtehtmlarea_typo3link extends tx_rtehtmlareaapi {
 			if (is_array($conf) && $conf['class']) {
 				$JSClassesAnchorArray .= (($classesAnchorIndex++)?',':'') . ' { ' . $linebreak;
 				$index = 0;
-				$JSClassesAnchorArray .= (($index++)?',':'') . 'name : "' . $conf['class'] . '"' . $linebreak;
+				$JSClassesAnchorArray .= (($index++)?',':'') . 'name : "' . str_replace('"', '', str_replace('\'', '', $conf['class'])) . '"' . $linebreak;
 				if ($conf['type']) {
-					$JSClassesAnchorArray .= (($index++)?',':'') . 'type : "' . $conf['type'] . '"' . $linebreak;
+					$JSClassesAnchorArray .= (($index++)?',':'') . 'type : "' . str_replace('"', '', str_replace('\'', '', $conf['type'])) . '"' . $linebreak;
 				}
 				if (trim(str_replace('\'', '', str_replace('"', '', $conf['image'])))) {
 					$JSClassesAnchorArray .= (($index++)?',':'') . 'image : "' . $this->htmlAreaRTE->siteURL . t3lib_div::resolveBackPath(TYPO3_mainDir . $this->htmlAreaRTE->getFullFileName(trim(str_replace('\'', '', str_replace('"', '', $conf['image']))))) . '"' . $linebreak;

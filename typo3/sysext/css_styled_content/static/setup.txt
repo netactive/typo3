@@ -123,7 +123,7 @@ lib.parseFunc_RTE {
 		div.callRecursive = 1 
 	}
 	nonTypoTagStdWrap.encapsLines {
-		encapsTagList = p,pre,h1,h2,h3,h4,h5,h6
+		encapsTagList = p,pre,h1,h2,h3,h4,h5,h6,hr
 		remapTag.DIV = P
 		nonWrappedTag = P
 		innerStdWrap_all.ifBlank = &nbsp;
@@ -1824,4 +1824,4 @@ plugin.tx_cssstyledcontent._CSS_DEFAULT_STYLE (
 	.csc-textpic-intext-left ol, .csc-textpic-intext-left ul {padding-left: 40px; overflow: auto; }
 )
 
-# TYPO3 SVN ID: $Id: setup.txt 8059 2010-06-25 12:09:22Z steffenk $
+# TYPO3 SVN ID: $Id: setup.txt 10016 2011-01-09 20:32:43Z stan $

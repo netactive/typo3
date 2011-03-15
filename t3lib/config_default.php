@@ -8,7 +8,7 @@
  * 'IM' is short for 'ImageMagick', which is an external image manipulation package available from www.imagemagick.org. Version is ABSOLUTELY preferred to be 4.2.9, but may be 5+. See the install notes for TYPO3!!
  * 'GD' is short for 'GDLib/FreeType', which are libraries that should be compiled into PHP4. GDLib <=1.3 supports GIF, while the latest version 1.8.x and 2.x supports only PNG. GDLib is available from www.boutell.com/gd/. Freetype has a link from there.
  *
- * $Id: config_default.php 9936 2010-12-28 11:32:53Z benni $
+ * $Id: config_default.php 10606 2011-02-23 14:18:48Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -114,7 +114,6 @@ $TYPO3_CONF_VARS = array(
 			'cacheBackends' => array(
 				't3lib_cache_backend_DbBackend'              => 't3lib/cache/backend/class.t3lib_cache_backend_dbbackend.php:t3lib_cache_backend_DbBackend',
 				't3lib_cache_backend_FileBackend'            => 't3lib/cache/backend/class.t3lib_cache_backend_filebackend.php:t3lib_cache_backend_FileBackend',
-				't3lib_cache_backend_GlobalsBackend'         => 't3lib/cache/backend/class.t3lib_cache_backend_globalsbackend.php:t3lib_cache_backend_GlobalsBackend',
 				't3lib_cache_backend_MemcachedBackend'       => 't3lib/cache/backend/class.t3lib_cache_backend_memcachedbackend.php:t3lib_cache_backend_MemcachedBackend',
 				't3lib_cache_backend_PdoBackend'             => 't3lib/cache/backend/class.t3lib_cache_backend_pdobackend.php:t3lib_cache_backend_PdoBackend',
 				't3lib_cache_backend_ApcBackend'             => 't3lib/cache/backend/class.t3lib_cache_backend_apcbackend.php:t3lib_cache_backend_ApcBackend',
@@ -250,7 +249,6 @@ $TYPO3_CONF_VARS = array(
 		'elementVersioningOnly' => TRUE,		// If true, only element versioning is allowed in the backend (see option newPagesVersioningType). Setting this flag is recommended for new installations of TYPO3 4.2+ since "page" and "branch" versioning types are known for the drawbacks of loosing ids and "element" type versions supports moving now. Please note that "page" and "branch" types are deprecated since TYPO3 4.2 and will be unsupported in TYPO3 4.6. Thus, this option will be removed in TYPO3 4.6.
 		'versionNumberInFilename' => FALSE,	// Boolean. If true, included CSS and JS files will have the timestamp embedded in the filename, ie. filename.1269312081.js. This will make browsers and proxies reload the files if they change (thus avoiding caching issues). IMPORTANT: this feature requires this .htaccess rule to work: RewriteCond %{REQUEST_FILENAME} !-f - RewriteCond %{REQUEST_FILENAME} !-d - RewriteRule ^(.+)\.(\d+)\.(php|js|css|png|jpg|gif|gzip)$ $1.$3 [L]. If false the filemtime will be appended as a query-string.
 		'spriteIconGenerator_handler' => '',	// String: Used to register own/other spriteGenerating Handler, they have to implement the interface t3lib_spritemanager_SpriteIconGenerator
-		'allowDonateWindow' => TRUE,			// Boolean. Defines whether to display a TYPO3 donate window to admin users that have been working with the system for more than three months.
 		'AJAX' => array(				// array of key-value pairs for a unified use of AJAX calls in the TYPO3 backend. Keys are the unique ajaxIDs where the value will be resolved to call a method in an object. See ajax.php and the classes/class.typo3ajax.php for more information.
 			'SC_alt_db_navframe::expandCollapse'                => 'typo3/alt_db_navframe.php:SC_alt_db_navframe->ajaxExpandCollapse',
 			'SC_alt_file_navframe::expandCollapse'              => 'typo3/alt_file_navframe.php:SC_alt_file_navframe->ajaxExpandCollapse',
@@ -273,8 +271,6 @@ $TYPO3_CONF_VARS = array(
 			'BackendLogin::refreshLogin'		=> 'typo3/classes/class.ajaxlogin.php:AjaxLogin->refreshLogin',
 			'BackendLogin::isTimedOut'		 	=> 'typo3/classes/class.ajaxlogin.php:AjaxLogin->isTimedOut',
 			'BackendLogin::getChallenge'	 	=> 'typo3/classes/class.ajaxlogin.php:AjaxLogin->getChallenge',
-			'DonateWindow::disable'				=> 'typo3/classes/class.donatewindow.php:DonateWindow->disable',
-			'DonateWindow::postpone'			=> 'typo3/classes/class.donatewindow.php:DonateWindow->postpone',
 			'WorkspaceMenu::toggleWorkspacePreview' => 'typo3/classes/class.workspaceselector.php:WorkspaceSelector->toggleWorkspacePreview',
 			'WorkspaceMenu::setWorkspace'           => 'typo3/classes/class.workspaceselector.php:WorkspaceSelector->setWorkspace',
 			'ExtDirect::getAPI' => 't3lib/extjs/class.t3lib_extjs_extdirectapi.php:t3lib_extjs_ExtDirectApi->getAPI',
@@ -378,7 +374,7 @@ $TYPO3_CONF_VARS = array(
 $T3_VAR = array();	// Initialize.
 
 	// TYPO3 version
-$TYPO_VERSION = '4.4.6';	// deprecated: use the constants defined below
+$TYPO_VERSION = '4.4.7';	// deprecated: use the constants defined below
 define('TYPO3_version', $TYPO_VERSION);
 define('TYPO3_branch', '4.4');
 define('TYPO3_copyright_year', '1998-2010');

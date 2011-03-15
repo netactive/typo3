@@ -27,7 +27,7 @@
 /**
  * Contains the reknown class "t3lib_div" with general purpose functions
  *
- * $Id: class.t3lib_div.php 9862 2010-12-20 19:39:08Z tolleiv $
+ * $Id: class.t3lib_div.php 10558 2011-02-22 22:20:45Z jigal $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  * Usage counts are based on search 22/2 2003 through whole source including tslib/
@@ -3041,13 +3041,19 @@ final class t3lib_div {
 	/**
 	 * Sets the file system mode and group ownership of a file or a folder.
 	 *
-	 * @param   string   Absolute filepath of file or folder, must not be escaped.
+	 * @param   string   Path of file or folder, must not be escaped. Path can be absolute or relative.
 	 * @param   boolean  If set, also fixes permissions of files and folders in the folder (if $path is a folder)
 	 * @return  mixed    TRUE on success, FALSE on error, always TRUE on Windows OS
 	 */
 	public static function fixPermissions($path, $recursive = FALSE) {
 		if (TYPO3_OS != 'WIN') {
 			$result = FALSE;
+
+				// Make path absolute
+			if (!self::isAbsPath($path)) {
+				$path = self::getFileAbsFileName($path, FALSE);
+			}
+
 			if (self::isAllowedAbsPath($path)) {
 				if (@is_file($path)) {
 						// "@" is there because file is not necessarily OWNED by the user
@@ -3096,7 +3102,7 @@ final class t3lib_div {
 	 *
 	 * @param	string		Absolute filepath to write to inside "typo3temp/". First part of this string must match PATH_site."typo3temp/"
 	 * @param	string		Content string to write
-	 * @return	string		Returns false on success, otherwise an error string telling about the problem.
+	 * @return	string		Returns NULL on success, otherwise an error string telling about the problem.
 	 */
 	public static function writeFileToTypo3tempDir($filepath,$content)	{
 
@@ -4097,12 +4103,14 @@ final class t3lib_div {
 				$retVal = $DR;
 			break;
 			case 'TYPO3_HOST_ONLY':
-				$p = explode(':',self::getIndpEnv('HTTP_HOST'));
-				$retVal = $p[0];
+				$httpHost = self::getIndpEnv('HTTP_HOST');
+				$httpHostBracketPosition = strpos($httpHost, ']');
+				$retVal = ($httpHostBracketPosition !== FALSE) ? substr($httpHost, 0, ($httpHostBracketPosition + 1)) : array_shift(explode(':', $httpHost));
 			break;
 			case 'TYPO3_PORT':
-				$p = explode(':',self::getIndpEnv('HTTP_HOST'));
-				$retVal = $p[1];
+				$httpHost = self::getIndpEnv('HTTP_HOST');
+				$httpHostOnly = self::getIndpEnv('TYPO3_HOST_ONLY');
+				$retVal = (strlen($httpHost) > strlen($httpHostOnly)) ? substr($httpHost, strlen($httpHostOnly) + 1) : '';
 			break;
 			case 'TYPO3_REQUEST_HOST':
 				$retVal = (self::getIndpEnv('TYPO3_SSL') ? 'https://' : 'http://').
@@ -5977,6 +5985,10 @@ final class t3lib_div {
 			$cmdLine = $path.' '.implode(' ', $paramsArr);
 		}
 
+		if (TYPO3_OS == 'WIN' && version_compare(phpversion(), '5.3.0', '<')) {
+			$cmdLine = '"' . $cmdLine . '"';
+		}
+		
 		return $cmdLine;
 	}
 

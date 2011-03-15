@@ -27,7 +27,7 @@
 /*
  * SelectFont Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: select-font.js 9332 2010-11-11 05:58:01Z stan $
+ * TYPO3 SVN ID: $Id: select-font.js 10501 2011-02-20 03:03:58Z stan $
  */
 HTMLArea.SelectFont = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {
@@ -127,13 +127,11 @@ HTMLArea.SelectFont = HTMLArea.Plugin.extend({
 	 * This funcion is invoked by the editor when it is being generated
 	 */
 	onGenerate: function () {
-			// Load the dropdowns
+			// Monitor the dropdowns stores being loaded
 		Ext.each(this.dropDownList, function (dropDown) {
-			if (this.getButton(dropDown[0])) {
-				this.getButton(dropDown[0]).getStore().load({
-					callback: function () { this.getButton(dropDown[0]).setValue('none'); },
-					scope: this
-				})
+			var select = this.getButton(dropDown[0]);
+			if (select) {
+				select.mon(select.getStore(), 'load', function () { select.setValue('none'); });
 			}
 		}, this);
 	},

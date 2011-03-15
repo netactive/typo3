@@ -28,7 +28,7 @@
  * Include file extending recordList which extended t3lib_recordList
  * Used specifically for the Web>List module (db_list.php)
  *
- * $Id: class.db_list_extra.inc 8871 2010-09-24 11:59:00Z stephenking $
+ * $Id: class.db_list_extra.inc 10076 2011-01-14 19:27:40Z lolli $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -1472,7 +1472,7 @@ class localRecordList extends recordList {
 	 * @param	integer		UID of record
 	 * @return	string		HTML-table
 	 *
-	 * @deprecated since 4.4: Use getReferenceHTML() instead
+	 * @deprecated since 4.4: Use createReferenceHtml() instead
 	 */
 	function makeRef($table,$uid)	{
 		t3lib_div::logDeprecatedFunction();

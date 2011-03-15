@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 9703 2010-12-01 05:47:19Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea.js 10514 2011-02-21 02:21:53Z stan $
  */
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
 if (typeof(HTMLArea) == 'undefined') {
@@ -58,7 +58,7 @@ Ext.apply(HTMLArea, {
 	Reg_body		: new RegExp('<\/?(body)[^>]*>', 'gi'),
 	reservedClassNames	: /htmlarea/,
 	RE_email		: /([0-9a-z]+([a-z0-9_-]*[0-9a-z])*){1}(\.[0-9a-z]+([a-z0-9_-]*[0-9a-z])*)*@([0-9a-z]+([a-z0-9_-]*[0-9a-z])*\.)+[a-z]{2,9}/i,
-	RE_url			: /(([^:/?#]+):\/\/)?(([a-z0-9_]+:[a-z0-9_]+@)?[a-z0-9_-]{2,}(\.[a-z0-9_-]{2,})+\.[a-z]{2,5}(:[0-9]+)?(\/\S+)*)/i,
+	RE_url			: /(([^:/?#]+):\/\/)?(([a-z0-9_]+:[a-z0-9_]+@)?[a-z0-9_-]{2,}(\.[a-z0-9_-]{2,})+\.[a-z]{2,5}(:[0-9]+)?(\/\S+)*\/?)/i,
 	RE_blockTags		: /^(body|p|h1|h2|h3|h4|h5|h6|ul|ol|pre|dl|dt|dd|div|noscript|blockquote|form|hr|table|caption|fieldset|address|td|tr|th|li|tbody|thead|tfoot|iframe)$/,
 	RE_closingTags		: /^(p|blockquote|a|li|ol|ul|dl|dt|td|th|tr|tbody|thead|tfoot|caption|colgroup|table|div|b|bdo|big|cite|code|del|dfn|em|i|ins|kbd|label|q|samp|small|span|strike|strong|sub|sup|tt|u|var|abbr|acronym|font|center|object|embed|style|script|title|head)$/,
 	RE_noClosingTag		: /^(img|br|hr|col|input|area|base|link|meta|param)$/
@@ -4483,8 +4483,7 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 			cls: 'htmlarea-window',
 			width: dimensions.width,
 			border: false,
-				// As of ExtJS 3.3, JS error with IE when the window is resizable
-			resizable: !Ext.isIE,
+			resizable: true,
 			iconCls: this.getButton(buttonId).iconCls,
 			listeners: {
 				afterrender: {
@@ -4531,30 +4530,26 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	 */
 	getWindowDimensions: function (dimensions, buttonId) {
 			// Apply default dimensions
-		var dialogueWindowDimensions = {
+		this.dialogueWindowDimensions = {
 			width: 250,
-			height: 250,
-			top: this.editorConfiguration.dialogueWindows.defaultPositionFromTop,
-			left: this.editorConfiguration.dialogueWindows.defaultPositionFromLeft
+			height: 250
 		};
+			// Apply default values as per PageTSConfig
+		if (this.editorConfiguration.dialogueWindows) {
+			Ext.apply(this.dialogueWindowDimensions, this.editorConfiguration.dialogueWindows);
+		}
 			// Apply dimensions as per button registration
 		if (this.editorConfiguration.buttonsConfig[buttonId]) {
-			Ext.apply(dialogueWindowDimensions, this.editorConfiguration.buttonsConfig[buttonId].dimensions);
+			Ext.apply(this.dialogueWindowDimensions, this.editorConfiguration.buttonsConfig[buttonId].dimensions);
 		}
 			// Apply dimensions as per call
-		Ext.apply(dialogueWindowDimensions, dimensions);
+		Ext.apply(this.dialogueWindowDimensions, dimensions);
 			// Overrride dimensions as per PageTSConfig
 		var buttonConfiguration = this.editorConfiguration.buttons[this.editorConfiguration.convertButtonId[buttonId]];
 		if (buttonConfiguration && buttonConfiguration.dialogueWindow) {
-			Ext.apply(dialogueWindowDimensions, buttonConfiguration.dialogueWindow);
-			if (buttonConfiguration.dialogueWindow.top) {
-				dialogueWindowDimensions.top = buttonConfiguration.dialogueWindow.positionFromTop;
-			}
-			if (buttonConfiguration.dialogueWindow.left) {
-				dialogueWindowDimensions.left = buttonConfiguration.dialogueWindow.positionFromLeft;
-			}
+			Ext.apply(this.dialogueWindowDimensions, buttonConfiguration.dialogueWindow);
 		}
-		return dialogueWindowDimensions;
+		return this.dialogueWindowDimensions;
 	},
 	/**
 	 ***********************************************
@@ -4622,6 +4617,9 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 			// Close the window if the editor changes mode
 		this.dialog.mon(this.editor, 'modeChange', this.close, this, {single: true });
 		this.saveSelection();
+		if (typeof(this.dialogueWindowDimensions) !== 'undefined') {
+			this.dialog.setPosition(this.dialogueWindowDimensions.positionFromLeft, this.dialogueWindowDimensions.positionFromTop);
+		}
 		this.dialog.show();
 		this.restoreSelection();
 	},
