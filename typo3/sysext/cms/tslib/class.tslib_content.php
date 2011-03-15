@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 9793 2010-12-16 13:41:40Z ohader $
+ * $Id: class.tslib_content.php 9824 2010-12-17 13:07:22Z flyguide $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -392,7 +392,10 @@ class tslib_cObj {
 				$hookObject = t3lib_div::getUserObj($classData);
 
 				if(!($hookObject instanceof tslib_content_stdWrapHook)) {
-					throw new UnexpectedValueException('$hookObject must implement interface tslib_content_stdWrapHook', 1195043965);
+					throw new UnexpectedValueException(
+						$classData . ' must implement interface tslib_content_stdWrapHook',
+						1195043965
+					);
 				}
 
 				$this->stdWrapHookObjects[] = $hookObject;
@@ -404,7 +407,10 @@ class tslib_cObj {
 				$postInitializationProcessor = t3lib_div::getUserObj($classData);
 
 				if(!($postInitializationProcessor instanceof tslib_content_PostInitHook)) {
-					throw new UnexpectedValueException('$postInitializationProcessor must implement interface tslib_content_PostInitHook', 1274563549);
+					throw new UnexpectedValueException(
+						$classData . ' must implement interface tslib_content_PostInitHook',
+						1274563549
+					);
 				}
 
 				$postInitializationProcessor->postProcessContentObjectInitialization($this);
@@ -5842,7 +5848,7 @@ class tslib_cObj {
 
 		$GLOBALS['TSFE']->includeTCA();
 		t3lib_div::loadTCA($table);
-		
+
 		if (is_array($TCA[$table]) && is_array($TCA[$table]['columns'][$field]) && is_array($TCA[$table]['columns'][$field]['config']['items'])) {
 			$values = t3lib_div::trimExplode(',',$inputValue);
 			$output = array();

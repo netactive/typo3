@@ -27,7 +27,7 @@
 /**
  * Module: Workspace manager
  *
- * $Id: index.php 9368 2010-11-13 16:59:31Z benni $
+ * $Id: index.php 9870 2010-12-21 21:06:06Z francois $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Dmitry Dulepov <typo3@accio.lv>
@@ -468,7 +468,7 @@ class SC_mod_user_ws_index extends t3lib_SCbase {
 			if (t3lib_div::_POST('_previewLink'))	{
 				$ttlHours = intval($GLOBALS['BE_USER']->getTSConfigVal('options.workspaces.previewLinkTTLHours'));
 				$ttlHours = ($ttlHours ? $ttlHours : 24*2);
-				$previewUrl = t3lib_BEfunc::getViewDomain($this->id) . 'index.php?ADMCMD_prev='.t3lib_BEfunc::compilePreviewKeyword('', $GLOBALS['BE_USER']->user['uid'],60*60*$ttlHours,$GLOBALS['BE_USER']->workspace).'&id='.intval($GLOBALS['BE_USER']->workspaceRec['db_mountpoints']);
+				$previewUrl = t3lib_BEfunc::getViewDomain($this->id) . '/index.php?ADMCMD_prev=' . t3lib_BEfunc::compilePreviewKeyword('', $GLOBALS['BE_USER']->user['uid'], 60*60*$ttlHours, $GLOBALS['BE_USER']->workspace) . '&id=' . intval($GLOBALS['BE_USER']->workspaceRec['db_mountpoints']);
 				$actionLinks.= '<br />Any user can browse the workspace frontend using this link for the next ' . $ttlHours . ' hours (does not require backend login):<br /><br /><a target="_blank" href="' . htmlspecialchars($previewUrl) . '">' . $previewUrl . '</a>';
 			} else {
 				$actionLinks.= '<input type="submit" name="_previewLink" value="Generate Workspace Preview Link" />';

@@ -27,7 +27,7 @@
 /**
  * Contains class with functions for parsing HTML code.
  *
- * $Id: class.t3lib_parsehtml.php 9628 2010-11-25 17:48:04Z jigal $
+ * $Id: class.t3lib_parsehtml.php 9868 2010-12-21 20:42:28Z stan $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -875,8 +875,11 @@ class t3lib_parsehtml	{
 
 								// rmTagIfNoAttrib
 							if ($endTag || trim($tagParts[1]) || !$tags[$tagName]['rmTagIfNoAttrib'])	{
-								$setTag = !$tags[$tagName]['rmTagIfNoAttrib'];
-
+								$setTag = 1;
+									// Remove this closing tag if $tagName was among $TSconfig['removeTags']
+								if ($endTag && $tags[$tagName]['allowedAttribs'] === 0 && $tags[$tagName]['rmTagIfNoAttrib'] === 1) {
+									$setTag = 0;
+								}
 								if ($tags[$tagName]['nesting'])	{
 									if (!is_array($tagRegister[$tagName]))	$tagRegister[$tagName]=array();
 

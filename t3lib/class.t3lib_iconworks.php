@@ -27,7 +27,7 @@
 /**
  * Contains class for icon generation in the backend
  *
- * $Id: class.t3lib_iconworks.php 8098 2010-07-05 18:48:49Z psychomieze $
+ * $Id: class.t3lib_iconworks.php 9862 2010-12-20 19:39:08Z tolleiv $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -596,6 +596,9 @@ final class t3lib_iconWorks	{
 			@ImagePng($im, $path);
 		} else {
 			@ImageGif($im, $path);
+		}
+		if (@is_file($path)) {
+			t3lib_div::fixPermissions($path);
 		}
 	}
 
