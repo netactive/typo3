@@ -26,7 +26,7 @@
 /**
  * Contains JavaScript for TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: jsfunc.tbe_editor.js 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: jsfunc.tbe_editor.js 9892 2010-12-24 14:36:59Z steffenk $
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Oliver Hader <oh@inpublica.de>
@@ -73,7 +73,7 @@ var TBE_EDITOR = {
 		cm: new Image(),
 		sel: new Image(),
 		clear: new Image()
-	},	
+	},
 
 	// Handling of data structures:
 	addElements: function(elements) {
@@ -195,6 +195,14 @@ var TBE_EDITOR = {
 		if (type) {
 			if (type == 'required') {
 				form = document[TBE_EDITOR.formname][elementName];
+					// Check if we are within a deleted inline element
+				var testNode = $(form.parentNode);
+				while(testNode) {
+					if (testNode.hasClassName && testNode.hasClassName('inlineIsDeletedRecord')) {
+						return result;
+					}
+					testNode = $(testNode.parentNode);
+				}
 				if (form) {
 					var value = form.value;
 					if (!value || elementData.additional && elementData.additional.isPositiveNumber && (isNaN(value) || Number(value) <= 0)) {
@@ -220,7 +228,7 @@ var TBE_EDITOR = {
 						// special treatment for file uploads
 					var tempObj = document[TBE_EDITOR.formname][elementName.replace(/^data/, 'data_files')];
 					numberOfElements = form.length;
-					
+
 					if (tempObj && tempObj.type == 'file' && tempObj.value) {
 						numberOfElements++; // Add new uploaded file to the number of elements
 					}
@@ -332,9 +340,12 @@ var TBE_EDITOR = {
 			return true;
 		}
 	},
+	/**
+	 * This function is not used by core and will be removed in version 4.6
+	 * @deprecated
+	 */
 	setHiddenContent: function(RTEcontent,theField) {
 		document[TBE_EDITOR.formname][theField].value = RTEcontent;
-		alert(document[TBE_EDITOR.formname][theField].value);
 	},
 	fieldChanged_fName: function(fName,el) {
 		var idx=2+TBE_EDITOR.prependFormFieldNamesCnt;
@@ -475,7 +486,7 @@ var TBE_EDITOR = {
 	},
 	submitForm: function() {
 		if (TBE_EDITOR.doSaveFieldName) {
-			document[TBE_EDITOR.formname][TBE_EDITOR.doSaveFieldName].value=1;			
+			document[TBE_EDITOR.formname][TBE_EDITOR.doSaveFieldName].value=1;
 		}
 		document[TBE_EDITOR.formname].submit();
 	},
@@ -550,13 +561,13 @@ var TBE_EDITOR = {
 	},
 	toggle_display_states: function(id, state_1, state_2) {
 		var node = document.getElementById(id);
-		if (node) {	
+		if (node) {
 			switch (node.style.display) {
 				case state_1:
 					node.style.display = state_2;
 					break;
 				case state_2:
-					node.style.display = state_1; 
+					node.style.display = state_1;
 					break;
 			}
 		}

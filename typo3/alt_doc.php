@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  * By sending certain parameters to this script you can bring up a form
  * which allows the user to edit the content of one or more database records.
  *
- * $Id: alt_doc.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: alt_doc.php 10306 2011-01-25 19:12:05Z baschny $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -301,7 +301,7 @@ class SC_alt_doc {
 		}
 
 			// If pages are being edited, we set an instruction about updating the page tree after this operation.
-		if (isset($this->data['pages']))	{
+		if (isset($this->data['pages']) || $BE_USER->workspace != 0 && count($this->data)) {
 			t3lib_BEfunc::setUpdateSignal('updatePageTree');
 		}
 
@@ -483,7 +483,7 @@ class SC_alt_doc {
 				if (
 					'.($GLOBALS['BE_USER']->jsConfirmation(4)?'confirm('.$LANG->JScharCode($LANG->getLL('deleteWarning')).')':'1==1').'
 				)	{
-					window.location.href = "tce_db.php?cmd["+table+"]["+id+"][delete]=1&redirect="+escape(url)+"&vC='.$BE_USER->veriCode().'&prErr=1&uPT=1";
+					window.location.href = "tce_db.php?cmd["+table+"]["+id+"][delete]=1' . t3lib_BEfunc::getUrlToken('tceAction') . '&redirect="+escape(url)+"&vC=' . $BE_USER->veriCode() . '&prErr=1&uPT=1";
 				}
 				return false;
 			}
@@ -494,7 +494,7 @@ class SC_alt_doc {
 				t3lib_BEfunc::viewOnClick($this->popViewId,'',t3lib_BEfunc::BEgetRootLine($this->popViewId),'',$this->viewUrl,$this->popViewId_addParams).
 				' } '
 			: '')
-		).$this->doc->getDynTabMenuJScode();
+		);
 
 			// Setting up the context sensitive menu:
 		$this->doc->getContextMenuCode();
@@ -629,6 +629,7 @@ class SC_alt_doc {
 		$this->newC=0;
 		$thePrevUid='';
 		$editForm='';
+		$trData = NULL;
 
 			// Traverse the GPvar edit array
 		foreach($this->editconf as $table => $conf)	{	// Tables:
@@ -968,7 +969,7 @@ class SC_alt_doc {
 			<input type="hidden" name="closeDoc" value="0" />
 			<input type="hidden" name="doSave" value="0" />
 			<input type="hidden" name="_serialNumber" value="'.md5(microtime()).'" />
-			<input type="hidden" name="_scrollPosition" value="" />';
+			<input type="hidden" name="_scrollPosition" value="" />' . t3lib_TCEforms::getHiddenTokenField('editRecord');
 
 		return $formContent;
 	}
@@ -985,7 +986,7 @@ class SC_alt_doc {
 			// Show palettes:
 			return '
 				<!-- Function menu (checkbox for showing all palettes): -->
-				<br />'.t3lib_BEfunc::getFuncCheck('','SET[showPalettes]',$this->MOD_SETTINGS['showPalettes'],'alt_doc.php',t3lib_div::implodeArrayForUrl('',array_merge($this->R_URL_getvars,array('SET'=>''))),'id="checkShowPalettes"').'<label for="checkShowPalettes">'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.showPalettes',1).'</label>';
+				<br />'.t3lib_BEfunc::getFuncCheck('','SET[showPalettes]',$this->MOD_SETTINGS['showPalettes'],'alt_doc.php',t3lib_div::implodeArrayForUrl('',array_merge($this->R_URL_getvars,array('SET'=>''))) . t3lib_BEfunc::getUrlToken('editRecord'),'id="checkShowPalettes"').'<label for="checkShowPalettes">'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.showPalettes',1).'</label>';
 		}
 		else {
 			return '';
@@ -1136,14 +1137,14 @@ class SC_alt_doc {
 							if($newTranslation) {
 								$href = $this->doc->issueCommand(
 									'&cmd['.$table.']['.$rowsByLang[0]['uid'].'][localize]='.$lang['uid'],
-									$this->backPath.'alt_doc.php?justLocalized='.rawurlencode($table.':'.$rowsByLang[0]['uid'].':'.$lang['uid']).'&returnUrl='.rawurlencode($this->retUrl)
+									$this->backPath.'alt_doc.php?justLocalized='.rawurlencode($table.':'.$rowsByLang[0]['uid'].':'.$lang['uid']).'&returnUrl='.rawurlencode($this->retUrl) . t3lib_BEfunc::getUrlToken('editRecord')
 								);
 
 								// create edit url
 							} else {
 								$href = $this->backPath.'alt_doc.php?';
 								$href .= '&edit['.$table.']['.$rowsByLang[$lang['uid']]['uid'].']=edit';
-								$href .= '&returnUrl='.rawurlencode($this->retUrl);
+								$href .= '&returnUrl='.rawurlencode($this->retUrl) . t3lib_BEfunc::getUrlToken('editRecord');
 							}
 
 							$langSelItems[$lang['uid']]='
@@ -1177,7 +1178,7 @@ class SC_alt_doc {
 		list($table,$orig_uid,$language) = explode(':',$justLocalized);
 
 		if ($TCA[$table] && $TCA[$table]['ctrl']['languageField'] && $TCA[$table]['ctrl']['transOrigPointerField'])	{
-			list($localizedRecord) = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
+			$localizedRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow(
 					'uid',
 					$table,
 					$TCA[$table]['ctrl']['languageField'].'='.intval($language).' AND '.
@@ -1190,7 +1191,7 @@ class SC_alt_doc {
 					// Create parameters and finally run the classic page module for creating a new page translation
 				$params = '&edit['.$table.']['.$localizedRecord['uid'].']=edit';
 				$returnUrl = '&returnUrl='.rawurlencode(t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl')));
-				$location = $GLOBALS['BACK_PATH'].'alt_doc.php?'.$params.$returnUrl;
+				$location = $GLOBALS['BACK_PATH'].'alt_doc.php?'.$params.$returnUrl . t3lib_BEfunc::getUrlToken('editRecord');
 
 				t3lib_utility_Http::redirect($location);
 			}
@@ -1208,6 +1209,11 @@ class SC_alt_doc {
 		global $LANG;
 
 		$modSharedTSconfig = t3lib_BEfunc::getModTSconfig($id, 'mod.SHARED');
+
+			// fallback non sprite-configuration
+		if (preg_match('/\.gif$/', $modSharedTSconfig['properties']['defaultLanguageFlag'])) {
+			$modSharedTSconfig['properties']['defaultLanguageFlag'] = str_replace('.gif', '', $modSharedTSconfig['properties']['defaultLanguageFlag']);
+		}
 
 		$languages = array(
 			0 => array(
@@ -1473,8 +1479,8 @@ class SC_alt_doc {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_doc.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_doc.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_doc.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_doc.php']);
 }
 
 
@@ -1484,10 +1490,14 @@ $SOBE = t3lib_div::makeInstance('SC_alt_doc');
 
 // Preprocessing, storing data if submitted to
 $SOBE->preInit();
-if ($SOBE->doProcessData())	{		// Checks, if a save button has been clicked (or the doSave variable is sent)
-	$SOBE->processData();
-}
 
+$formprotection = t3lib_formprotection_Factory::get();
+
+if ($SOBE->doProcessData())	{		// Checks, if a save button has been clicked (or the doSave variable is sent)
+	if ($formprotection->validateToken(t3lib_div::_GP('formToken'), 'editRecord')) {
+		$SOBE->processData();
+	}
+}
 
 // Main:
 $SOBE->init();

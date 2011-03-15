@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2005-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,9 +29,8 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_pi2.php 8778 2010-09-13 01:01:42Z stan $  *
+ * $Id: class.tx_rtehtmlarea_pi2.php 10120 2011-01-18 20:03:36Z ohader $  *
  */
-require_once(t3lib_extMgm::extPath('rtehtmlarea').'class.tx_rtehtmlarea_base.php');
 class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 
 		// External:
@@ -220,15 +219,11 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 		}
 		$pageRenderer->addCssFile($this->siteURL . 't3lib/js/extjs/ux/resize.css');
 		$pageRenderer->addJsFile($this->siteURL . 't3lib/js/extjs/ux/ext.resizable.js');
+		$pageRenderer->addJsFile($this->siteURL . '/t3lib/js/extjs/notifications.js');
 		if ($this->TCEform->RTEcounter == 1) {
-			$this->TCEform->additionalJS_pre['rtehtmlarea-loadJScode'] = $this->loadJScode($this->TCEform->RTEcounter);
+			$this->TCEform->additionalJS_pre['rtehtmlarea-loadJScode'] = $this->wrapCDATA($this->loadJScode($this->TCEform->RTEcounter));
 		}
 		$this->TCEform->additionalJS_initial = $this->loadJSfiles($this->TCEform->RTEcounter);
-		$resizableSettings = array(
-			'textareaResize' => true,
-			'textareaMaxHeight' => '600'
-		);
-		$pageRenderer->addInlineSettingArray('', $resizableSettings);
 		if ($GLOBALS['TSFE']->isINTincScript()) {
 			$GLOBALS['TSFE']->additionalHeaderData['rtehtmlarea'] = $pageRenderer->render();
 		}
@@ -252,7 +247,7 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 		$textAreaId = htmlspecialchars(preg_replace('/^[^a-zA-Z]/', 'x', $textAreaId)) . '_' . strval($this->TCEform->RTEcounter);
 
 			// Register RTE in JS:
-		$this->TCEform->additionalJS_post[] = $this->registerRTEinJS($this->TCEform->RTEcounter, '', '', '',$textAreaId);
+		$this->TCEform->additionalJS_post[] = $this->wrapCDATA($this->registerRTEinJS($this->TCEform->RTEcounter, '', '', '',$textAreaId));
 
 			// Set the save option for the RTE:
 		$this->TCEform->additionalJS_submit[] = $this->setSaveRTE($this->TCEform->RTEcounter, $this->TCEform->formName, $textAreaId);
@@ -318,8 +313,25 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 		}
 		return $this->pageRenderer;
 	}
+	/**
+	 * Wrap input string in CDATA enclosure
+	 *
+	 * @param	string		$string: input to be wrapped
+	 *
+	 * @return	string		wrapped string
+	 */
+	public function wrapCDATA ($string) {
+		return implode(LF,
+			array(
+				'',
+				'/*<![CDATA[*/',
+				$string,
+				'/*]]>*/'
+			)
+		);
+	}
 }
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/pi2/class.tx_rtehtmlarea_pi2.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/pi2/class.tx_rtehtmlarea_pi2.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/pi2/class.tx_rtehtmlarea_pi2.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/pi2/class.tx_rtehtmlarea_pi2.php']);
 }
 ?>

@@ -27,7 +27,7 @@
 /**
  * Include file extending t3lib_recordList
  *
- * $Id: class.file_list.inc 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: class.file_list.inc 9758 2010-12-05 11:25:36Z stephenking $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -764,7 +764,7 @@ class fileList extends t3lib_recordList {
 
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/class.file_list.inc'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/class.file_list.inc']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/class.file_list.inc'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/class.file_list.inc']);
 }
 ?>

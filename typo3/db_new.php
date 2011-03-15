@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  * This script lets users choose a new database element to create.
  * Includes a wizard mode for visually pointing out the position of new pages
  *
- * $Id: db_new.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: db_new.php 10295 2011-01-25 09:33:06Z baschny $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -328,10 +328,12 @@ class SC_db_new {
 
 				// Record list
 				// If access to Web>List for user, then link to that module.
-			$buttons['record_list'] = t3lib_extMgm::createListViewLink(
-				$this->pageinfo['uid'],
-				'&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')),
-				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showList', TRUE)
+			$buttons['record_list'] = t3lib_BEfunc::getListViewLink(
+				array(
+					'id' => $this->pageinfo['uid'],
+					'returnUrl' => t3lib_div::getIndpEnv('REQUEST_URI'),
+				),
+				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showList')
 			);
 		}
 
@@ -434,7 +436,7 @@ class SC_db_new {
 			$startRows[] = '
 				<tr>
 					<td nowrap="nowrap">' . $rowContent . '</td>
-					<td>' . t3lib_BEfunc::cshItem($table, '', $this->doc->backPath, '', $doNotShowFullDescr) . '</td>
+					<td>' . t3lib_BEfunc::wrapInHelp($table, '') . '</td>
 				</tr>
 			';
 		}
@@ -538,7 +540,7 @@ class SC_db_new {
 							$startRows[] = '
 								<tr>
 									<td nowrap="nowrap">' . $rowContent . '</td>
-									<td>' . t3lib_BEfunc::cshItem($table, '', $this->doc->backPath, '', $doNotShowFullDescr) . '</td>
+									<td>' . t3lib_BEfunc::wrapInHelp($table, '') . '</td>
 								</tr>';
 						} else {
 							$this->tRows[$groupName]['title'] = $thisTitle;
@@ -564,14 +566,14 @@ class SC_db_new {
 			$row = '<tr>
 						<td nowrap="nowrap">' . $halfLine . '<br />' .
 						$firstLevel . '' . $iconFile[$key] . '&nbsp;<strong>' . $value['title'] . '</strong>' .
-						'</td><td>'.t3lib_BEfunc::cshItem($t,'',$this->doc->backPath,'',$doNotShowFullDescr).'</td>
+						'</td><td>' . t3lib_BEfunc::wrapInHelp($table, '') . '</td>
 						</tr>';
 			$count = count($value['html']) - 1;
 			foreach ($value['html'] as $recordKey => $record) {
 				$row .= '
 					<tr>
 						<td nowrap="nowrap">' . ($recordKey < $count ? $secondLevel : $secondLevelLast) . $record . '</td>
-						<td>'.t3lib_BEfunc::cshItem($value['table'][$recordKey], '', $this->doc->backPath, '', $doNotShowFullDescr) . '</td>
+						<td>' . t3lib_BEfunc::wrapInHelp($value['table'][$recordKey], '') . '</td>
 					</tr>';
 			}
 			$finalRows[] = $row;
@@ -720,8 +722,8 @@ class SC_db_new {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/db_new.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/db_new.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/db_new.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/db_new.php']);
 }
 
 

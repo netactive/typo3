@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Basic styles
 
-$Id: main_content.css 8749 2010-09-03 18:13:59Z baschny $
+$Id: main_content.css 8939 2010-09-30 16:21:59Z stephenking $
 - - - - - - - - - - - - - - - - - - - - - */
 
 a img {
@@ -11,14 +11,14 @@ a img {
 span.t3-icon {
 	display: inline-block;
 	position: relative;
-	width: 16px;
-	height: 16px;
 	overflow: hidden;
 }
 
 .t3-icon {
 	background-image:url('../../gfx/icon_fatalerror.gif');
 	background-repeat:no-repeat;
+	width: 16px;
+	height: 16px;
 	font-size:1px;
 	line-height:0;
 }

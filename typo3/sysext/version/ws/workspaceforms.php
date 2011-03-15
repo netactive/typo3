@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Module: Workspace manager
  *
- * $Id: workspaceforms.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: workspaceforms.php 10222 2011-01-21 18:22:24Z tolleiv $
  *
  * @author	Dmitry Dulepov <typo3@accio.lv>
  */
@@ -137,7 +137,6 @@ class SC_mod_user_ws_workspaceForms extends t3lib_SCbase {
 		$this->doc->form = '<form action="' . t3lib_div::getIndpEnv('SCRIPT_NAME').'" method="post" enctype="'.$GLOBALS['TYPO3_CONF_VARS']['SYS']['form_enctype'].'" name="editform" onsubmit="return TBE_EDITOR.checkSubmit(1);">';
 
 		$this->doc->getContextMenuCode();
-		$this->doc->JScode.= $this->doc->getDynTabMenuJScode();
 
 		// Parent initialization:
 		t3lib_SCbase::init();
@@ -646,8 +645,8 @@ class user_SC_mod_user_ws_workspaceForms {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/workspaceforms.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/workspaceforms.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/workspaceforms.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/workspaceforms.php']);
 }
 
 // Make instance:

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Page navigation tree for the Web module
  *
- * $Id: alt_db_navframe.php 8842 2010-09-21 21:02:40Z steffenk $
+ * $Id: alt_db_navframe.php 10121 2011-01-18 20:15:30Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -315,27 +315,22 @@ class SC_alt_db_navframe {
 	 * @return	string	HTML containing workspace info
 	 */
 	protected function getWorkspaceInfo() {
-		global $LANG;
 
-		if ($GLOBALS['BE_USER']->workspace!==0 || $GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.onlineWorkspaceInfo'))	{
-			switch($GLOBALS['BE_USER']->workspace)	{
-				case 0:
-					$wsTitle = '&nbsp;'.$this->doc->icons(2).'['.$LANG->sL('LLL:EXT:lang/locallang_misc.xml:shortcut_onlineWS',1).']';
-				break;
-				case -1:
-					$wsTitle = '['.$LANG->sL('LLL:EXT:lang/locallang_misc.xml:shortcut_offlineWS',1).']';
-				break;
-				default:
-					$wsTitle = '['.$GLOBALS['BE_USER']->workspace.'] '.htmlspecialchars($GLOBALS['BE_USER']->workspaceRec['title']);
-				break;
-			}
+		if (t3lib_extMgm::isLoaded('workspaces') && ($GLOBALS['BE_USER']->workspace !== 0 || $GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.onlineWorkspaceInfo'))) {
+			$wsTitle = htmlspecialchars(tx_Workspaces_Service_Workspaces::getWorkspaceTitle($GLOBALS['BE_USER']->workspace));
 
 			$workspaceInfo = '
-				<div class="bgColor4 workspace-info">
-					<a href="'.htmlspecialchars('mod/user/ws/index.php').'" target="content">'.
-					  t3lib_iconWorks::getSpriteIcon('apps-toolbar-menu-workspace') .
-					'</a>'.$wsTitle.'
-				</div>
+				<div class="bgColor4 workspace-info">' .
+					 t3lib_iconWorks::getSpriteIcon(
+						'apps-toolbar-menu-workspace',
+						array(
+							'title' => $wsTitle,
+							'onclick' => 'top.goToModule(\'web_WorkspacesWorkspaces\');',
+							'style' => 'cursor:pointer;'
+						)
+					) .
+					$wsTitle .
+				'</div>
 			';
 		}
 
@@ -423,8 +418,8 @@ class SC_alt_db_navframe {
 
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_db_navframe.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_db_navframe.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_db_navframe.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_db_navframe.php']);
 }
 
 

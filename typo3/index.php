@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Login-screen of TYPO3.
  *
- * $Id: index.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: index.php 10317 2011-01-26 00:56:49Z baschny $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -211,7 +211,7 @@ class SC_index {
 		}
 
 			// Starting page:
-		$this->content .= $TBE_TEMPLATE->startPage('TYPO3 Login: ' . htmlspecialchars($TYPO3_CONF_VARS['SYS']['sitename']));
+		$this->content .= $TBE_TEMPLATE->startPage('TYPO3 Login: ' . htmlspecialchars($TYPO3_CONF_VARS['SYS']['sitename']), FALSE);
 
 			// Add login form:
 		$this->content.=$this->wrapLoginForm($loginForm);
@@ -366,8 +366,7 @@ class SC_index {
 				if ($this->commandLI=='setCookie') {
 						// we tried it a second time but still no cookie
 						// 26/4 2005: This does not work anymore, because the saving of challenge values in $_SESSION means the system will act as if the password was wrong.
-					t3lib_BEfunc::typo3PrintError ('Login-error',"Yeah, that's a classic. No cookies, no TYPO3.<br /><br />Please accept cookies from TYPO3 - otherwise you'll not be able to use the system.",0);
-					exit;
+					throw new RuntimeException('Login-error: Yeah, that\'s a classic. No cookies, no TYPO3.<br /><br />Please accept cookies from TYPO3 - otherwise you\'ll not be able to use the system.');
 				} else {
 						// try it once again - that might be needed for auto login
 					$this->redirectToURL = 'index.php?commandLI=setCookie';
@@ -398,6 +397,8 @@ class SC_index {
 			if (!$this->loginRefresh)	{
 				t3lib_utility_Http::redirect($this->redirectToURL);
 			} else {
+				$formprotection = t3lib_formprotection_Factory::get();
+				$token = $formprotection->generateToken('extDirect');
 				$TBE_TEMPLATE->JScode.=$TBE_TEMPLATE->wrapScriptTags('
 					if (parent.opener && (parent.opener.busy || parent.opener.TYPO3.loginRefresh)) {
 						if (parent.opener.TYPO3.loginRefresh) {
@@ -405,6 +406,7 @@ class SC_index {
 						} else {
 							parent.opener.busy.loginRefreshed();
 						}
+						parent.opener.TYPO3.ExtDirectToken = "' . $token . '";
 						parent.close();
 					}
 				');
@@ -486,18 +488,18 @@ class SC_index {
 		if (strlen($loginCopyrightWarrantyProvider)>=2 && strlen($loginCopyrightWarrantyURL)>=10)	{
 			$warrantyNote = sprintf($GLOBALS['LANG']->getLL('warranty.by'), htmlspecialchars($loginCopyrightWarrantyProvider), '<a href="' . htmlspecialchars($loginCopyrightWarrantyURL) . '" target="_blank">', '</a>');
 		} else {
-			$warrantyNote = sprintf($GLOBALS['LANG']->getLL('no.warranty'), '<a href="http://typo3.com/1316.0.html" target="_blank">', '</a>');
+			$warrantyNote = sprintf($GLOBALS['LANG']->getLL('no.warranty'), '<a href="' . TYPO3_URL_LICENSE . '" target="_blank">', '</a>');
 		}
 
 			// Compile full copyright notice:
-		$copyrightNotice = '<a href="http://typo3.com/" target="_blank">'.
+		$copyrightNotice = '<a href="' . TYPO3_URL_GENERAL . '" target="_blank">'.
 					'<img src="' . $loginImageSmall . '" alt="' . $GLOBALS['LANG']->getLL('typo3.logo') . '" align="left" />' .
 					$GLOBALS['LANG']->getLL('typo3.cms') . ($GLOBALS['TYPO3_CONF_VARS']['SYS']['loginCopyrightShowVersion']?' ' . $GLOBALS['LANG']->getLL('version.short') . ' ' . htmlspecialchars($GLOBALS['TYPO_VERSION']):'') .
 					'</a>. ' .
 					$GLOBALS['LANG']->getLL('copyright') . ' &copy; ' . TYPO3_copyright_year . ' Kasper Sk&#229;rh&#248;j. ' . $GLOBALS['LANG']->getLL('extension.copyright') . ' ' .
-					sprintf($GLOBALS['LANG']->getLL('details.link'), '<a href="http://typo3.com/" target="_blank">http://typo3.com/</a>') . '<br /> ' .
+					sprintf($GLOBALS['LANG']->getLL('details.link'), '<a href="' . TYPO3_URL_GENERAL . '" target="_blank">' . TYPO3_URL_GENERAL . '</a>') . '<br /> ' .
 					$warrantyNote . ' ' .
-					sprintf($GLOBALS['LANG']->getLL('free.software'), '<a href="http://typo3.com/1316.0.html" target="_blank">', '</a> ') .
+					sprintf($GLOBALS['LANG']->getLL('free.software'), '<a href="' . TYPO3_URL_LICENSE . '" target="_blank">', '</a> ') .
 					$GLOBALS['LANG']->getLL('keep.notice');
 
 			// Return notice:
@@ -556,44 +558,93 @@ class SC_index {
 	 *
 	 * @return	string		HTML content
 	 * @credits			Idea by Jan-Hendrik Heuing
+	 * @deprecated $GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews'] is deprecated since 4.5. Use system news records instead.
 	 */
 	function makeLoginNews() {
 		$newsContent = '';
 
+		$systemNews = $this->getSystemNews();
+		if (count($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews'])) {
+			t3lib_div::logDeprecatedFunction();
+
+			$GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews'] = array_merge(
+				$systemNews,
+				$GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews']
+			);
+		} else {
+			$GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews'] = $systemNews;
+		}
+
 			// Traverse news array IF there are records in it:
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews']) && count($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews']) && !t3lib_div::_GP('loginRefresh')) {
-
+			$htmlParser = t3lib_div::makeInstance('t3lib_parsehtml_proc');
 				// get the main news template, and replace the subpart after looped through
 			$newsContent      = t3lib_parsehtml::getSubpart($GLOBALS['TBE_TEMPLATE']->moduleTemplate, '###LOGIN_NEWS###');
 			$newsItemTemplate = t3lib_parsehtml::getSubpart($newsContent, '###NEWS_ITEM###');
 
-			$newsItemContent = '';
+			$newsItem = '';
 			$count = 1;
-			foreach ($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews'] as $newsItem) {
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews'] as $newsItemData) {
 				$additionalClass = '';
 				if ($count == 1) {
 					$additionalClass = ' first-item';
 				} elseif($count == count($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNews'])) {
 					$additionalClass = ' last-item';
 				}
+
+				$newsItemContent = $htmlParser->TS_transform_rte($htmlParser->TS_links_rte($newsItemData['content']));
 				$newsItemMarker = array(
-					'###HEADER###'  => htmlspecialchars($newsItem['header']),
-					'###DATE###'    => htmlspecialchars($newsItem['date']),
-					'###CONTENT###' => trim($newsItem['content']),
-					'###CLASS###'	=> $additionalClass
+					'###HEADER###'  => htmlspecialchars($newsItemData['header']),
+					'###DATE###'    => htmlspecialchars($newsItemData['date']),
+					'###CONTENT###' => $newsItemContent,
+					'###CLASS###'   => $additionalClass
 				);
 
 				$count++;
-				$newsItemContent .= t3lib_parsehtml::substituteMarkerArray($newsItemTemplate, $newsItemMarker);
+				$newsItem .= t3lib_parsehtml::substituteMarkerArray($newsItemTemplate, $newsItemMarker);
 			}
 
 			$title = ($GLOBALS['TYPO3_CONF_VARS']['BE']['loginNewsTitle'] ? $GLOBALS['TYPO3_CONF_VARS']['BE']['loginNewsTitle'] : $GLOBALS['LANG']->getLL('newsheadline'));
 
 			$newsContent = t3lib_parsehtml::substituteMarker($newsContent,  '###NEWS_HEADLINE###', htmlspecialchars($title));
-			$newsContent = t3lib_parsehtml::substituteSubpart($newsContent, '###NEWS_ITEM###', $newsItemContent);
+			$newsContent = t3lib_parsehtml::substituteSubpart($newsContent, '###NEWS_ITEM###', $newsItem);
 		}
 
 		return $newsContent;
+	}
+
+	/**
+	 * Gets news from sys_news and converts them into a format suitable for
+	 * showing them at the login screen.
+	 *
+	 * @return	array	An array of login news.
+	 */
+	protected function getSystemNews() {
+		$systemNewsTable = 'sys_news';
+		$systemNews      = array();
+
+		$systemNewsRecords = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
+			'title, content, crdate',
+			$systemNewsTable,
+			'1=1' .
+				t3lib_BEfunc::BEenableFields($systemNewsTable) .
+				t3lib_BEfunc::deleteClause($systemNewsTable),
+			'',
+			'crdate DESC'
+		);
+
+		foreach ($systemNewsRecords as $systemNewsRecord) {
+			$systemNews[] = array(
+				'date'    => date(
+					$GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy'],
+					$systemNewsRecord['crdate']
+				),
+				'header'  => $systemNewsRecord['title'],
+				'content' => $systemNewsRecord['content']
+			);
+		}
+
+		return $systemNews;
 	}
 
 	/**
@@ -639,7 +690,7 @@ class SC_index {
 	 *
 	 * @param	string	$unused	Unused
 	 * @return	string		HTML output
-	 * @deprecated since TYPO3 4.3, all the functionality was put in $this->startForm() and $this->addFields_hidden
+	 * @deprecated since TYPO3 4.3, will be removed in TYPO3 4.6 - all the functionality was put in $this->startForm() and $this->addFields_hidden
 	 */
 	function getHiddenFields($unused = '') {
 		t3lib_div::logDeprecatedFunction();
@@ -780,8 +831,8 @@ class SC_index {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/index.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/index.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/index.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/index.php']);
 }
 
 

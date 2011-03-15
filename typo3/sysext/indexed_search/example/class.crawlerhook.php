@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 2001-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Index search crawler hook example
  *
- * $Id: class.crawlerhook.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: class.crawlerhook.php 10120 2011-01-18 20:03:36Z ohader $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
@@ -186,8 +186,8 @@ class tx_indexedsearch_crawlerhook {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/indexed_search/example/class.crawlerhook.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/indexed_search/example/class.crawlerhook.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/indexed_search/example/class.crawlerhook.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/indexed_search/example/class.crawlerhook.php']);
 }
 
 ?>

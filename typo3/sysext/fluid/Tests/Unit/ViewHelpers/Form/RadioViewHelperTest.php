@@ -27,7 +27,7 @@ require_once(dirname(__FILE__) . '/../ViewHelperBaseTestcase.php');
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
-class Tx_Fluid_ViewHelpers_Form_RadioViewHelperTest extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {
+class Tx_Fluid_Tests_Unit_ViewHelpers_Form_RadioViewHelperTest extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {
 
 	/**
 	 * var Tx_Fluid_ViewHelpers_Form_RadioViewHelper
@@ -55,7 +55,7 @@ class Tx_Fluid_ViewHelpers_Form_RadioViewHelperTest extends Tx_Fluid_ViewHelpers
 
 		$this->viewHelper->expects($this->any())->method('getName')->will($this->returnValue('foo'));
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
-		$this->viewHelper->injectTagBuilder($mockTagBuilder);
+		$this->viewHelper->_set('tag', $mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render();
@@ -75,7 +75,7 @@ class Tx_Fluid_ViewHelpers_Form_RadioViewHelperTest extends Tx_Fluid_ViewHelpers
 
 		$this->viewHelper->expects($this->any())->method('getName')->will($this->returnValue('foo'));
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
-		$this->viewHelper->injectTagBuilder($mockTagBuilder);
+		$this->viewHelper->_set('tag', $mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render(TRUE);
@@ -95,7 +95,7 @@ class Tx_Fluid_ViewHelpers_Form_RadioViewHelperTest extends Tx_Fluid_ViewHelpers
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
 		$this->viewHelper->expects($this->never())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
 		$this->viewHelper->expects($this->never())->method('getPropertyValue')->will($this->returnValue(TRUE));
-		$this->viewHelper->injectTagBuilder($mockTagBuilder);
+		$this->viewHelper->_set('tag', $mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render(TRUE);
@@ -118,7 +118,7 @@ class Tx_Fluid_ViewHelpers_Form_RadioViewHelperTest extends Tx_Fluid_ViewHelpers
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
 		$this->viewHelper->expects($this->any())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
 		$this->viewHelper->expects($this->any())->method('getPropertyValue')->will($this->returnValue(TRUE));
-		$this->viewHelper->injectTagBuilder($mockTagBuilder);
+		$this->viewHelper->_set('tag', $mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render();
@@ -139,7 +139,7 @@ class Tx_Fluid_ViewHelpers_Form_RadioViewHelperTest extends Tx_Fluid_ViewHelpers
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
 		$this->viewHelper->expects($this->any())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
 		$this->viewHelper->expects($this->any())->method('getPropertyValue')->will($this->returnValue(array()));
-		$this->viewHelper->injectTagBuilder($mockTagBuilder);
+		$this->viewHelper->_set('tag', $mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render();
@@ -161,7 +161,7 @@ class Tx_Fluid_ViewHelpers_Form_RadioViewHelperTest extends Tx_Fluid_ViewHelpers
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
 		$this->viewHelper->expects($this->any())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
 		$this->viewHelper->expects($this->any())->method('getPropertyValue')->will($this->returnValue('bar'));
-		$this->viewHelper->injectTagBuilder($mockTagBuilder);
+		$this->viewHelper->_set('tag', $mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render();

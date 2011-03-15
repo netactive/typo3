@@ -28,7 +28,7 @@
 /**
  * Contains authentication service class for salted hashed passwords.
  *
- * $Id: class.tx_saltedpasswords_sv1.php 8145 2010-07-09 07:34:38Z steffenk $
+ * $Id: class.tx_saltedpasswords_sv1.php 9758 2010-12-05 11:25:36Z stephenking $
  */
 
 
@@ -170,7 +170,7 @@ class tx_saltedpasswords_sv1 extends tx_sv_authbase {
 				if (!strcmp(substr($user['password'], 0, 1), 'M')) {
 					$validPasswd = $this->objInstanceSaltedPW->checkPassword(md5($password), substr($user['password'], 1));
 				} else {
-					$validPasswd = $this->objInstanceSaltedPW->checkPassword(md5($password), substr($user['password'], 1));
+					$validPasswd = $this->objInstanceSaltedPW->checkPassword($password, substr($user['password'], 1));
 				}
 
 					// skip further authentication methods
@@ -329,7 +329,7 @@ class tx_saltedpasswords_sv1 extends tx_sv_authbase {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/saltedpasswords/sv1/class.tx_saltedpasswords_sv1.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/saltedpasswords/sv1/class.tx_saltedpasswords_sv1.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/saltedpasswords/sv1/class.tx_saltedpasswords_sv1.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/saltedpasswords/sv1/class.tx_saltedpasswords_sv1.php']);
 }
 ?>

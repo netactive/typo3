@@ -29,23 +29,27 @@
  * <code>
  * <f:uri.external uri="http://www.typo3.org" />
  * </code>
- *
- * Output:
+ * <output>
  * http://www.typo3.org
+ * </output>
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @api
- * @scope prototype
  */
 class Tx_Fluid_ViewHelpers_Uri_ExternalViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
 
 	/**
 	 * @param string $uri the target URI
+	 * @param string $defaultScheme scheme the result will be prefixed with if specified $uri does not contain a scheme already
 	 * @return string rendered URI
 	 * @author Bastian Waidelich <bastian@typo3.org>
 	 * @api
 	 */
-	public function render($uri) {
+	public function render($uri, $defaultScheme = 'http') {
+		$scheme = parse_url($uri, PHP_URL_SCHEME);
+		if ($scheme === NULL && $defaultScheme !== '') {
+			$uri = $defaultScheme . '://' . $uri;
+		}
 		return $uri;
 	}
 }

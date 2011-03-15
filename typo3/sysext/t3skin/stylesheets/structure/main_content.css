@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 TYPO3 styles for basic elements
 
-$Id: main_content.css 7974 2010-06-20 08:05:51Z benni $
+$Id: main_content.css 10129 2011-01-18 22:26:48Z stephenking $
 - - - - - - - - - - - - - - - - - - - - - */
 
 html {
@@ -94,7 +94,6 @@ label {
 .checkbox:hover {
 	height: 13px;
 	margin-right: 5px;
-	overflow: hidden;
 	vertical-align: middle;
 	width: 13px;
 }

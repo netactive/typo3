@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -106,6 +106,7 @@ class SC_mod_user_setup_index {
 	 */
 	var $OLD_BE_USER;
 	var $languageUpdate;
+	protected $pagetreeNeedsRefresh = FALSE;
 
 	protected $isAdmin;
 	protected $dividers2tabs;
@@ -117,7 +118,15 @@ class SC_mod_user_setup_index {
 	protected $passwordIsSubmitted = FALSE;
 	protected $setupIsUpdated = FALSE;
 	protected $tempDataIsCleared = FALSE;
+	protected $installToolFileExists = FALSE;
+	protected $installToolFileKeep = FALSE;
 
+	/**
+	 * Form protection instance
+	 *
+	 * @var t3lib_formprotection_BackendFormProtection
+	 */
+	protected $formProtection;
 
 	/******************************
 	 *
@@ -125,13 +134,27 @@ class SC_mod_user_setup_index {
 	 *
 	 ******************************/
 
+
+	/**
+	 * Instanciate the form protection before a simulated user is initialized.
+	 */
+	public function __construct() {
+		$this->formProtection = t3lib_formProtection_Factory::get();
+	}
+
+	/**
+	 * Getter for the form protection instance.
+	 */
+	public function getFormProtection() {
+		return $this->formProtection;
+	}
+
 	/**
 	 * If settings are submitted to _POST[DATA], store them
-	 * NOTICE: This method is called before the template.php is included. See buttom of document
-	 *
-	 * @return	void
+	 * NOTICE: This method is called before the template.php is included. See
+	 * bottom of document.
 	 */
-	function storeIncomingData()	{
+	public function storeIncomingData() {
 		/* @var $BE_USER t3lib_beUserAuth */
 		global $BE_USER;
 
@@ -142,8 +165,11 @@ class SC_mod_user_setup_index {
 		$storeRec = array();
 		$fieldList = $this->getFieldsFromShowItem();
 
-		if (is_array($d))	{
-
+		if (is_array($d) && $this->formProtection->validateToken(
+				(string) t3lib_div::_POST('formToken'),
+				'BE user setup', 'edit'
+			)
+		) {
 				// UC hashed before applying changes
 			$save_before = md5(serialize($BE_USER->uc));
 
@@ -152,6 +178,11 @@ class SC_mod_user_setup_index {
 				// reload left frame when switching BE language
 			if (isset($d['lang']) && ($d['lang'] != $BE_USER->uc['lang'])) {
 				$this->languageUpdate = true;
+			}
+
+				// reload pagetree if the title length is changed
+			if (isset($d['titleLen']) && ($d['titleLen'] !== $BE_USER->uc['titleLen'])) {
+				$this->pagetreeNeedsRefresh = TRUE;
 			}
 
 			if ($d['setValuesToDefault']) {
@@ -266,6 +297,9 @@ class SC_mod_user_setup_index {
 	function init()	{
 		$this->MCONF = $GLOBALS['MCONF'];
 
+			// check Install Tool enable file
+		$this->setInstallToolFileExists();
+		$this->setInstallToolFileKeep();
 
 			// Returns the script user - that is the REAL logged in user! ($GLOBALS[BE_USER] might be another user due to simulation!)
 		$scriptUser = $this->getRealScriptUserObj();
@@ -283,7 +317,6 @@ class SC_mod_user_setup_index {
 		$this->doc = t3lib_div::makeInstance('template');
 		$this->doc->backPath = $GLOBALS['BACK_PATH'];
 		$this->doc->setModuleTemplate('templates/setup.html');
-		$this->doc->JScodeLibArray['dyntabmenu'] = $this->doc->getDynTabMenuJScode();
 		$this->doc->form = '<form action="index.php" method="post" name="usersetup" enctype="application/x-www-form-urlencoded">';
 		$this->doc->tableLayout = array(
 			'defRow' => array(
@@ -305,10 +338,20 @@ class SC_mod_user_setup_index {
 
 			// file creation / delete
 		if ($this->isAdmin) {
+			if ($this->installToolFileKeep) {
+				$flashMessage = t3lib_div::makeInstance(
+					't3lib_FlashMessage',
+					$LANG->getLL('enableInstallTool.fileHasKeep'),
+					$LANG->getLL('enableInstallTool.file'),
+					t3lib_FlashMessage::WARNING
+				);
+				$this->content .= $flashMessage->render();
+			}
+
 			if (t3lib_div::_POST('deleteInstallToolEnableFile')) {
 				unlink(PATH_typo3conf . 'ENABLE_INSTALL_TOOL');
-				$installToolEnableFileExists = is_file(PATH_typo3conf . 'ENABLE_INSTALL_TOOL');
-				if ($installToolEnableFileExists) {
+				$this->setInstallToolFileExists();
+				if ($this->getInstallToolFileExists()) {
 					$flashMessage = t3lib_div::makeInstance(
 						't3lib_FlashMessage',
 						$LANG->getLL('enableInstallTool.fileDelete_failed'),
@@ -328,8 +371,8 @@ class SC_mod_user_setup_index {
 			if (t3lib_div::_POST('createInstallToolEnableFile')) {
 				touch(PATH_typo3conf . 'ENABLE_INSTALL_TOOL');
 				t3lib_div::fixPermissions(PATH_typo3conf . 'ENABLE_INSTALL_TOOL');
-				$installToolEnableFileExists = is_file(PATH_typo3conf . 'ENABLE_INSTALL_TOOL');
-				if ($installToolEnableFileExists) {
+				$this->setInstallToolFileExists();
+				if ($this->getInstallToolFileExists()) {
 					$flashMessage = t3lib_div::makeInstance(
 						't3lib_FlashMessage',
 						$LANG->getLL('enableInstallTool.fileCreate_ok'),
@@ -356,6 +399,10 @@ class SC_mod_user_setup_index {
 					top.TYPO3ModuleMenu.refreshMenu();
 				}
 			';
+		}
+
+		if ($this->pagetreeNeedsRefresh) {
+			t3lib_BEfunc::setUpdateSignal('updatePageTree');
 		}
 
 			// Start page:
@@ -412,20 +459,20 @@ class SC_mod_user_setup_index {
 			// render the menu items
 		$menuItems = $this->renderUserSetup();
 
-		$this->content .= $this->doc->spacer(20) . $this->doc->getDynTabMenu($menuItems, 'user-setup', false, false, 100, 1, false, 1, $this->dividers2tabs);
+		$this->content .= $this->doc->spacer(20) . $this->doc->getDynTabMenu($menuItems, 'user-setup', FALSE, FALSE, 0, 1, FALSE, 1, $this->dividers2tabs);
 
+		$formToken = $this->formProtection->generateToken('BE user setup', 'edit');
 
 			// Submit and reset buttons
 		$this->content .= $this->doc->spacer(20);
 		$this->content .= $this->doc->section('',
 			t3lib_BEfunc::cshItem('_MOD_user_setup', 'reset', $BACK_PATH) . '
 			<input type="hidden" name="simUser" value="'.$this->simUser.'" />
+			<input type="hidden" name="formToken" value="' . $formToken . '" />
 			<input type="submit" name="data[save]" value="'.$LANG->getLL('save').'" />
 			<input type="submit" name="data[setValuesToDefault]" value="'.$LANG->getLL('resetConfiguration').'" onclick="return confirm(\''.$LANG->getLL('setToStandardQuestion').'\');" />
 			<input type="submit" name="data[clearSessionVars]" value="' . $LANG->getLL('clearSessionVars') . '"  onclick="return confirm(\'' . $LANG->getLL('clearSessionVarsQuestion') . '\');" />'
 		);
-
-
 
 			// Notice
 		$this->content .= $this->doc->spacer(30);
@@ -436,6 +483,8 @@ class SC_mod_user_setup_index {
 			t3lib_FlashMessage::INFO
 		);
 		$this->content .= $flashMessage->render();
+			// end of wrapper div
+		$this->content .= '</div>';
 
 			// Setting up the buttons and markers for docheader
 		$docHeaderButtons = $this->getButtons();
@@ -443,13 +492,49 @@ class SC_mod_user_setup_index {
 		$markers['CONTENT'] = $this->content;
 
 			// Build the <body> for the module
-		$this->content = $this->doc->startPage($LANG->getLL('UserSettings'));
-		$this->content.= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
-			// end of wrapper div
-		$this->content .= '</div>';
-		$this->content.= $this->doc->endPage();
-		$this->content = $this->doc->insertStylesAndJS($this->content);
+		$this->content = $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
+			// Renders the module page
+		$this->content = $this->doc->render(
+			$LANG->getLL('UserSettings'),
+			$this->content
+		);
 
+	}
+
+	/**
+	 * Sets existance of Install Tool file
+	 *
+	 * return void
+	 */
+	public function setInstallToolFileExists() {
+		$this->installToolFileExists = is_file(PATH_typo3conf . 'ENABLE_INSTALL_TOOL');
+	}
+
+	/**
+	 * Sets property if Install Tool file contains "KEEP_FILE"
+	 */
+	public function setInstallToolFileKeep() {
+		if ($this->installToolFileExists) {
+			$this->installToolFileKeep = (trim(file_get_contents(PATH_typo3conf . 'ENABLE_INSTALL_TOOL')) === 'KEEP_FILE');
+		}
+	}
+
+	/**
+	 * Gets property installToolFileExists
+	 *
+	 * @return boolean $this->installToolFileExists
+	 */
+	public function getInstallToolFileExists() {
+		return $this->installToolFileExists;
+	}
+
+	/**
+	 * Gets property installToolFileKeep
+	 *
+	 * @return boolean $this->installToolFileKeep
+	 */
+	public function getInstallToolFileKeep() {
+		return $this->installToolFileKeep;
 	}
 
 	/**
@@ -508,13 +593,6 @@ class SC_mod_user_setup_index {
 
 		$this->dividers2tabs = isset($GLOBALS['TYPO3_USER_SETTINGS']['ctrl']['dividers2tabs']) ? intval($GLOBALS['TYPO3_USER_SETTINGS']['ctrl']['dividers2tabs']) : 0;
 
-
-		// "display full help" is active?
-		$displayFullText = ($GLOBALS['BE_USER']->uc['edit_showFieldHelp'] == 'text');
-		if ($displayFullText) {
-			$this->doc->tableLayout['defRowEven'] = array('defCol' => array ('<td valign="top" colspan="3">','</td>'));
-		}
-
 		foreach ($fieldArray as $fieldName) {
 			$more = '';
 
@@ -548,10 +626,8 @@ class SC_mod_user_setup_index {
 			}
 
 			$label = $this->getLabel($config['label'], $fieldName);
-			$csh = $this->getCSH($config['csh'] ? $config['csh'] : $fieldName);
-			if (!$csh) {
-				$csh = '<img class="csh-dummy" src="' . $this->doc->backPath . 'clear.gif" width="16" height="16" />';
-			}
+			$label = $this->getCSH($config['csh'] ? $config['csh'] : $fieldName, $label);
+
 			$type = $config['type'];
 			$eval = $config['eval'];
 			$class = $config['class'];
@@ -629,14 +705,8 @@ class SC_mod_user_setup_index {
 			}
 
 
-				// add another table row with the full text help if needed
-			if ($displayFullText) {
-				$code[$i++][1] = $csh;
-				$csh = '';
-			}
-
-			$code[$i][1] = $csh . $label;
-			$code[$i++][2]   = $html;
+			$code[$i][1] = $label;
+			$code[$i++][2] = $html;
 
 
 
@@ -761,22 +831,20 @@ class SC_mod_user_setup_index {
 	 * @return string	                       html with description and button
 	 */
 	public function renderInstallToolEnableFileButton(array $params, SC_mod_user_setup_index $parent) {
-		// Install Tool access file
+			// Install Tool access file
 		$installToolEnableFile = PATH_typo3conf . 'ENABLE_INSTALL_TOOL';
-		$installToolEnableFileExists = is_file($installToolEnableFile);
-		if ($installToolEnableFileExists && (time() - filemtime($installToolEnableFile) > 3600)) {
-			$content = file_get_contents($installToolEnableFile);
-			$verifyString = 'KEEP_FILE';
-
-			if (trim($content) !== $verifyString) {
+		if ($parent->getInstallToolFileExists() && ($GLOBALS['EXEC_TIME'] - filemtime($installToolEnableFile) > 3600)) {
+			if (!$parent->getInstallToolFileKeep()) {
 					// Delete the file if it is older than 3600s (1 hour)
 				unlink($installToolEnableFile);
-				$installToolEnableFileExists = is_file($installToolEnableFile);
+				$parent->setInstallToolFileExists();
 			}
 		}
 
-		if ($installToolEnableFileExists) {
-			return '<input type="submit" name="deleteInstallToolEnableFile" value="' . $GLOBALS['LANG']->sL('LLL:EXT:setup/mod/locallang.xml:enableInstallTool.deleteFile') . '" />';
+		if ($parent->getInstallToolFileExists()) {
+			return '<input type="submit" name="deleteInstallToolEnableFile"' .
+					($parent->getInstallToolFileKeep() ? ' disabled="disabled"' : '') .
+					' value="' . $GLOBALS['LANG']->sL('LLL:EXT:setup/mod/locallang.xml:enableInstallTool.deleteFile') . '" />';
 		} else {
 			return '<input type="submit" name="createInstallToolEnableFile" value="' . $GLOBALS['LANG']->sL('LLL:EXT:setup/mod/locallang.xml:enableInstallTool.createFile') . '" />';
 		}
@@ -798,7 +866,7 @@ class SC_mod_user_setup_index {
 		$this->simulateSelector = '';
 		unset($this->OLD_BE_USER);
 		if ($BE_USER->isAdmin())	{
-			$this->simUser = t3lib_div::_GP('simUser');
+			$this->simUser = intval(t3lib_div::_GP('simUser'));
 
 				// Make user-selector:
 			$users = t3lib_BEfunc::getUserNames('username,usergroup,usergroup_cached_list,uid,realName', t3lib_BEfunc::BEenableFields('be_users'));
@@ -887,15 +955,22 @@ class SC_mod_user_setup_index {
 	 * Returns the CSH Icon for given string
 	 *
 	 * @param	string		Locallang key
+	 * @param	string		The label to be used, that should be wrapped in help
 	 * @return	string		HTML output.
 	 */
-	protected function getCSH($str) {
-		if (!t3lib_div::inList('language,simuser', $str)) {
-			$str = 'option_' . $str;
-		}
-		return t3lib_BEfunc::cshItem('_MOD_user_setup', $str, $this->doc->backPath, '|', false, 'margin-bottom:0px;');
+	protected function getCSH($str, $label) {
+		$context = '_MOD_user_setup';
+		$field = $str;
+		$strParts = explode(':', $str);
+		if (count($strParts) > 1) {
+				// Setting comes from another extension
+			$context = $strParts[0];
+			$field = $strParts[1];
+		} else if (!t3lib_div::inList('language,simuser', $str)) {
+			$field = 'option_' . $str;
+ 		}
+		return t3lib_BEfunc::wrapInHelp($context, $field, $label);
 	}
-
 	/**
 	 * Returns array with fields defined in $GLOBALS['TYPO3_USER_SETTINGS']['showitem']
 	 *
@@ -916,8 +991,8 @@ class SC_mod_user_setup_index {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/setup/mod/index.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/setup/mod/index.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/setup/mod/index.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/setup/mod/index.php']);
 }
 
 
@@ -935,4 +1010,5 @@ $SOBE->init();
 $SOBE->main();
 $SOBE->printContent();
 
+$SOBE->getFormProtection()->persistTokens();
 ?>

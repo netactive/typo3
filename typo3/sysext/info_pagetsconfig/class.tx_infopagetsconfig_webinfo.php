@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -127,7 +127,7 @@ class tx_infopagetsconfig_webinfo extends t3lib_extobjbase {
 
 					$tsparser = t3lib_div::makeInstance('t3lib_TSparser');
 					$tsparser->lineNumberOffset=0;
-					$TScontent = $tsparser->doSyntaxHighlight(trim($v).chr(10),'',1);
+					$TScontent = $tsparser->doSyntaxHighlight(trim($v) .LF, '', 0);
 
 					$lines[]='
 						<tr><td nowrap="nowrap" class="bgColor5">'.$pTitle.'</td></tr>
@@ -238,7 +238,7 @@ class tx_infopagetsconfig_webinfo extends t3lib_extobjbase {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/info_pagetsconfig/class.tx_infopagetsconfig_webinfo.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/info_pagetsconfig/class.tx_infopagetsconfig_webinfo.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/info_pagetsconfig/class.tx_infopagetsconfig_webinfo.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/info_pagetsconfig/class.tx_infopagetsconfig_webinfo.php']);
 }
 ?>

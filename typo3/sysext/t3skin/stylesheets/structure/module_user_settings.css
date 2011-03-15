@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 User settings
 
-$Id: module_user_settings.css 7906 2010-06-13 14:56:44Z ohader $
+$Id: module_user_settings.css 9131 2010-10-17 14:24:52Z benni $
 - - - - - - - - - - - - - - - - - - - - - */
 
 table.typo3-usersettings {
@@ -10,12 +10,11 @@ table.typo3-usersettings {
 
 table.typo3-usersettings td {
 	width: 300px;
+	line-height: 20px;
 	padding-left: 8px;
 }
 
 table.typo3-usersettings td.td-label label {
-	float: left;
-	margin-left: 3px;
 	width: 275px;
 }
 

@@ -1,24 +1,30 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Module menu
 
-$Id: module_menu.css 8842 2010-09-21 21:02:40Z steffenk $
+$Id: module_menu.css 10168 2011-01-20 18:51:19Z stephenking $
 - - - - - - - - - - - - - - - - - - - - - */
 
 #typo3-module-menu {
 	background: #dddddd;
-	background-image: url('../../images/backgrounds/module-menu-right.gif');
-	background-position: right top;
+	background-image: -moz-linear-gradient(top, #bdbdbd, 100px #dddddd);
+	background-image: -webkit-gradient(linear, 0 0, 0 25%, color-stop(0, #bdbdbd), color-stop(1, #dddddd));
+	background-image: linear-gradient(top, #bdbdbd, 100px #dddddd);
+}
+
+/**
+ * Shadow on the right side of the module menu.
+ */
+#typo3-module-menu,
+#typo3-menu li.menuSection li a:hover {
+	background-image: url("data:image/png;base64,R0lGODlhAgABAIAAAMjIyLOzsyH5BAAAAAAALAAAAAACAAEAAAICRAoAOw==");
+	/* star-hack targets IE6+7 */
+	*background-image: url("../../images/backgrounds/module-menu-right.png");
+	background-position: right;
 	background-repeat: repeat-y;
 }
 
 #typo3-module-menu .x-panel-body {
 	background-color: transparent;
-}
-
-#typo3-side-menu {
-	background-image: url('../../images/backgrounds/module-menu-top.png');
-	background-position: right top;
-	background-repeat: no-repeat;
 }
 
 #typo3-menu,
@@ -28,6 +34,7 @@ $Id: module_menu.css 8842 2010-09-21 21:02:40Z steffenk $
 
 #typo3-menu a {
 	color: #1e2121;
+	outline: 0;
 }
 
 #typo3-menu > li {
@@ -41,16 +48,31 @@ $Id: module_menu.css 8842 2010-09-21 21:02:40Z steffenk $
 	border-bottom: none;
 }
 
+/* hovered menu item */
 #typo3-menu li.menuSection li a:hover,
-#typo3-menu li.menuSection li.hover a,
 #typo3-menu li.highlighted a {
-	background-color: #f1f1f1;
 	border-top: 1px solid #b8b8b8;
 	border-bottom: 1px solid #b8b8b8;
 }
 
+#typo3-menu li.menuSection li a:hover {
+	background-color: #e8e8e8;
+}
+
+/* active menu item */
 #typo3-menu li.highlighted {
 	font-weight: bold;
+}
+
+#typo3-menu li.highlighted a,
+#typo3-menu li.menuSection li.highlighted a:hover,
+.no-boxshadow #typo3-menu li.menuSection li.highlighted a:hover {
+	background-color: #ebebeb;
+	background-image: none;
+	-moz-box-shadow: none;
+	-ms-box-shadow: none;
+	-webkit-box-shadow: none;
+	box-shadow: none;
 }
 
 #typo3-menu li div.modgroup {

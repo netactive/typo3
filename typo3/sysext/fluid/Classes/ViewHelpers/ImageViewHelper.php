@@ -14,18 +14,38 @@
  *                                                                        */
 
 /**
+ * Resizes a given image (if required) and renders the respective img tag
  *
- * @todo documentation
+ * = Examples =
  *
- */
-
-/**
+ * <code title="Default">
+ * <f:image src="EXT:myext/Resources/Public/typo3_logo.png" alt="alt text" />
+ * </code>
+ * <output>
+ * <img alt="alt text" src="typo3conf/ext/myext/Resources/Public/typo3_logo.png" width="396" height="375" />
+ * or (in BE mode):
+ * <img alt="alt text" src="../typo3conf/ext/viewhelpertest/Resources/Public/typo3_logo.png" width="396" height="375" />
+ * </output>
  *
+ * <code title="Inline notation">
+ * {f:image(src: 'EXT:viewhelpertest/Resources/Public/typo3_logo.png', alt: 'alt text', minWidth: 30, maxWidth: 40)}
+ * </code>
+ * <output>
+ * <img alt="alt text" src="../typo3temp/pics/f13d79a526.png" width="40" height="38" />
+ * (depending on your TYPO3s encryption key)
+ * </output>
+ *
+ * <code title="non existing image">
+ * <f:image src="NonExistingImage.png" alt="foo" />
+ * </code>
+ * <output>
+ * Could not get image resource for "NonExistingImage.png".
+ * </output>
  */
 class Tx_Fluid_ViewHelpers_ImageViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper {
 
 	/**
-	 * @var	tslib_cObj
+	 * @var tslib_cObj
 	 */
 	protected $contentObject;
 
@@ -35,23 +55,27 @@ class Tx_Fluid_ViewHelpers_ImageViewHelper extends Tx_Fluid_Core_ViewHelper_Abst
 	protected $tagName = 'img';
 
 	/**
-	 * @var	t3lib_fe contains a backup of the current $GLOBALS['TSFE'] if used in BE mode
+	 * @var t3lib_fe contains a backup of the current $GLOBALS['TSFE'] if used in BE mode
 	 */
 	protected $tsfeBackup;
 
 	/**
-	 * @var	string
+	 * @var string
 	 */
 	protected $workingDirectoryBackup;
 
 	/**
-	 * Constructor. Used to create an instance of tslib_cObj used by the render() method.
-	 *
-	 * @param tslib_cObj $contentObject injector for tslib_cObj (optional)
+	 * @var Tx_Extbase_Configuration_ConfigurationManagerInterface
+	 */
+	protected $configurationManager;
+
+	/**
+	 * @param Tx_Extbase_Configuration_ConfigurationManagerInterface $configurationManager
 	 * @return void
 	 */
-	public function __construct($contentObject = NULL) {
-		$this->contentObject = $contentObject !== NULL ? $contentObject : t3lib_div::makeInstance('tslib_cObj');
+	public function injectConfigurationManager(Tx_Extbase_Configuration_ConfigurationManagerInterface $configurationManager) {
+		$this->configurationManager = $configurationManager;
+		$this->contentObject = $this->configurationManager->getContentObject();
 	}
 
 	/**
@@ -70,7 +94,7 @@ class Tx_Fluid_ViewHelpers_ImageViewHelper extends Tx_Fluid_Core_ViewHelper_Abst
 	}
 
 	/**
-	 * Render the img tag.
+	 * Resizes a given image (if required) and renders the respective img tag
 	 * @see http://typo3.org/documentation/document-library/references/doc_core_tsref/4.2.0/view/1/5/#id4164427
 	 *
 	 * @param string $src
@@ -136,8 +160,7 @@ class Tx_Fluid_ViewHelpers_ImageViewHelper extends Tx_Fluid_Core_ViewHelper_Abst
 		$this->workingDirectoryBackup = getcwd();
 		chdir(PATH_site);
 
-		$configurationManager = Tx_Extbase_Dispatcher::getConfigurationManager();
-		$typoScriptSetup = $configurationManager->loadTypoScriptSetup();
+		$typoScriptSetup = $this->configurationManager->getConfiguration(Tx_Extbase_Configuration_ConfigurationManagerInterface::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
 		$GLOBALS['TSFE'] = new stdClass();
 		$template = t3lib_div::makeInstance('t3lib_TStemplate');
 		$template->tt_track = 0;

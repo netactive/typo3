@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  * Used from TCEFORMS an other elements
  * In other words: This is the ELEMENT BROWSER!
  *
- * $Id: class.browse_links.php 8769 2010-09-08 10:46:19Z stephenking $
+ * $Id: class.browse_links.php 10142 2011-01-19 20:50:34Z lolli $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -253,7 +253,7 @@ class localPageTree extends t3lib_browseTree {
 
 		$this->init();
 
-		$this->clause = ' AND doktype!=255'.$this->clause;
+		$this->clause = ' AND doktype!=' . t3lib_pageSelect::DOKTYPE_RECYCLER . $this->clause;
 	}
 
 	/**
@@ -814,12 +814,19 @@ class browse_links {
 
 			// CurrentUrl - the current link url must be passed around if it exists
 		if ($this->mode == 'wizard')	{
-			$currentLinkParts = t3lib_div::unQuoteFilenames($this->P['currentValue'], TRUE);
+			$currentValues = t3lib_div::trimExplode(LF, trim($this->P['currentValue']));
+			if (count($currentValues) > 0) {
+				$currentValue = array_pop($currentValues);
+			} else {
+				$currentValue = '';
+			}
+			$currentLinkParts = t3lib_div::unQuoteFilenames($currentValue, TRUE);
 			$initialCurUrlArray = array (
 				'href'   => $currentLinkParts[0],
 				'target' => $currentLinkParts[1],
 				'class'  => $currentLinkParts[2],
 				'title'  => $currentLinkParts[3],
+				'params'  => $currentLinkParts[4]
 			);
 			$this->curUrlArray = (is_array(t3lib_div::_GP('curUrl'))) ?
 				array_merge($initialCurUrlArray, t3lib_div::_GP('curUrl')) :
@@ -882,6 +889,9 @@ class browse_links {
 
 			// Initializing the title value (RTE)
 		$this->setTitle = ($this->curUrlArray['title'] != '-') ? $this->curUrlArray['title'] : '';
+		
+			// Initializing the params value
+		$this->setParams = ($this->curUrlArray['params'] != '-') ? $this->curUrlArray['params'] : '';
 
 			// BEGIN accumulation of header JavaScript:
 		$JScode = '
@@ -894,8 +904,9 @@ class browse_links {
 
 			var cur_href="'.($this->curUrlArray['href']?$this->curUrlArray['href']:'').'";
 			var cur_target="'.($this->setTarget?$this->setTarget:'').'";
-			var cur_class = "'.($this->setClass ? $this->setClass : '-').'";
+			var cur_class = "' . ($this->setClass ? $this->setClass : '') . '";
 			var cur_title="'.($this->setTitle?$this->setTitle:'').'";
+			var cur_params="' . ($this->setParams ? $this->setParams : '') . '";
 
 			function browse_links_setTarget(target)	{	//
 				cur_target=target;
@@ -912,6 +923,10 @@ class browse_links {
 			function browse_links_setValue(value) {	//
 				cur_href=value;
 				add_href="&curUrl[href]="+value;
+			}
+			function browse_links_setParams(params)	{	//
+				cur_params=params;
+				add_params="&curUrl[params]="+escape(params);
 			}
 		';
 
@@ -975,22 +990,32 @@ class browse_links {
 				function updateValueInMainForm(input)	{	//
 					var field = checkReference();
 					if (field)	{
-						if (cur_target == "" && (cur_title != "" || cur_class != "-")) {
+						if (cur_target == "" && (cur_class != "" || cur_title != "" || cur_params != "")) {
 							cur_target = "-";
 						}
-						if (cur_title == "" && cur_class == "-") {
-							cur_class = "";
+						if (cur_class == "" && (cur_title != "" || cur_params != "")) {
+							cur_class = "-";
 						}
 						cur_class = cur_class.replace(/[\'\"]/g, "");
 						if (cur_class.indexOf(" ") != -1) {
 							cur_class = "\"" + cur_class + "\"";
 						}
+						if (cur_title == "" && cur_params != "") {
+ 							cur_title = "-";
+ 						}
 						cur_title = cur_title.replace(/(^\")|(\"$)/g, "");
 						if (cur_title.indexOf(" ") != -1) {
 							cur_title = "\"" + cur_title + "\"";
 						}
-						input = input + " " + cur_target + " " + cur_class + " " + cur_title;
-						field.value = input;
+						if (cur_params) {
+							cur_params = cur_params.replace(/\bid\=.*?(\&|$)/, "");
+						}
+						input = input + " " + cur_target + " " + cur_class + " " + cur_title + " " + cur_params;
+						if(field.value && field.className.search(/textarea/) != -1) {
+							field.value += "\n" + input;
+						} else {
+							field.value = input;
+						}
 						'.$update.'
 					}
 				}
@@ -1465,6 +1490,17 @@ class browse_links {
 		}
 
 		$content .= '
+			<!--
+				Selecting params for link:
+			-->
+				<form action="" name="lparamsform" id="lparamsform">
+					<table border="0" cellpadding="2" cellspacing="1" id="typo3-linkParams">
+						<tr>
+							<td style="width: 96px;">' . $GLOBALS['LANG']->getLL('params', 1) . '</td>
+							<td><input type="text" name="lparams" class="typo3-link-input" onchange="browse_links_setParams(this.value);" value="' . htmlspecialchars($this->setParams) . '" /></td>
+						</tr>
+					</table>
+				</form>
 
 			<!--
 				Selecting class for link:
@@ -1473,7 +1509,7 @@ class browse_links {
 					<table border="0" cellpadding="2" cellspacing="1" id="typo3-linkClass">
 						<tr>
 							<td style="width: 96px;">' . $GLOBALS['LANG']->getLL('class', 1) . '</td>
-							<td><input type="text" name="lclass" onchange="browse_links_setClass(this.value);" value="' . htmlspecialchars($this->setClass) . '"' . $this->doc->formWidth(10) . ' /></td>
+							<td><input type="text" name="lclass" class="typo3-link-input" onchange="browse_links_setClass(this.value);" value="' . htmlspecialchars($this->setClass) . '" /></td>
 						</tr>
 					</table>
 				</form>
@@ -1485,7 +1521,7 @@ class browse_links {
 					<table border="0" cellpadding="2" cellspacing="1" id="typo3-linkTitle">
 						<tr>
 							<td style="width: 96px;">' . $GLOBALS['LANG']->getLL('title', 1) . '</td>
-							<td><input type="text" name="ltitle" onchange="browse_links_setTitle(this.value);" value="' . htmlspecialchars($this->setTitle) . '"' . $this->doc->formWidth(10) . ' /></td>
+							<td><input type="text" name="ltitle" class="typo3-link-input" onchange="browse_links_setTitle(this.value);" value="' . htmlspecialchars($this->setTitle) . '" /></td>
 						</tr>
 					</table>
 				</form>
@@ -1524,6 +1560,7 @@ class browse_links {
 					browse_links_setTarget(document.ltargetform.ltarget.value);
 					browse_links_setClass(document.lclassform.lclass.value);
 					browse_links_setTitle(document.ltitleform.ltitle.value);
+					browse_links_setParams(document.lparamsform.lparams.value);
 					document.ltargetform.popup_width.selectedIndex=0;
 					document.ltargetform.popup_height.selectedIndex=0;
 				}
@@ -1826,7 +1863,7 @@ class browse_links {
 			$titleLen=intval($GLOBALS['BE_USER']->uc['titleLen']);
 			$mainPageRec = t3lib_BEfunc::getRecordWSOL('pages',$expPageId);
 			$picon = t3lib_iconWorks::getSpriteIconForRecord('pages', $mainPageRec);
-			$picon.= htmlspecialchars(t3lib_div::fixed_lgd_cs($mainPageRec['title'],$titleLen));
+			$picon .= t3lib_BEfunc::getRecordTitle('pages', $mainPageRec, TRUE);
 			$out.=$picon.'<br />';
 
 				// Look up tt_content elements from the expanded page:
@@ -1856,7 +1893,7 @@ class browse_links {
 						$arrCol.
 						'<a href="#" onclick="return link_typo3Page(\''.$expPageId.'\',\'#'.$row['uid'].'\');">'.
 						$icon.
-						htmlspecialchars(t3lib_div::fixed_lgd_cs($row['header'],$titleLen)).
+						t3lib_BEfunc::getRecordTitle('tt_content', $row, TRUE) .
 						'</a><br />';
 
 					// Finding internal anchor points:
@@ -2832,8 +2869,8 @@ class browse_links {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/class.browse_links.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/class.browse_links.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/class.browse_links.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/class.browse_links.php']);
 }
 
 ?>

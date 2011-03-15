@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2009-2010 Julian Kleinhans <typo3@kj187.de>
+ *  (c) 2009-2011 Julian Kleinhans <typo3@kj187.de>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -31,7 +31,7 @@ require_once(t3lib_extMgm::extPath('recycler', 'classes/helper/class.tx_recycler
  * @author	Julian Kleinhans <typo3@kj187.de>
  * @package	TYPO3
  * @subpackage	tx_recycler
- * @version $Id: class.tx_recycler_view_deletedRecords.php 7905 2010-06-13 14:42:33Z ohader $
+ * @version $Id: class.tx_recycler_view_deletedRecords.php 10120 2011-01-18 20:03:36Z ohader $
  **/
 class tx_recycler_view_deletedRecords {
 
@@ -81,8 +81,8 @@ class tx_recycler_view_deletedRecords {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/recycler/classes/view/class.tx_recycler_view_deletedRecords.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/recycler/classes/view/class.tx_recycler_view_deletedRecords.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/recycler/classes/view/class.tx_recycler_view_deletedRecords.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/recycler/classes/view/class.tx_recycler_view_deletedRecords.php']);
 }
 
 ?>

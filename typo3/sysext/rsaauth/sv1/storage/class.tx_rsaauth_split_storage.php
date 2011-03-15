@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009-2010 Dmitry Dulepov <dmitry@typo3.org>
+*  (c) 2009-2011 Dmitry Dulepov <dmitry@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -25,7 +25,7 @@
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
  *
- * $Id: class.tx_rsaauth_split_storage.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tx_rsaauth_split_storage.php 10120 2011-01-18 20:03:36Z ohader $
  */
 
 require_once(t3lib_extMgm::extPath('rsaauth', 'sv1/storage/class.tx_rsaauth_abstract_storage.php'));
@@ -68,8 +68,8 @@ class tx_rsaauth_split_storage extends tx_rsaauth_abstract_storage {
 			$GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_rsaauth_keys',
 						'crdate<' . ($GLOBALS['EXEC_TIME'] - 30 * 60));
 
-			// Get our value
-			list($row) = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('key_value',
+				// Get our value
+			$row = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('key_value',
 				'tx_rsaauth_keys', 'uid=' . $keyId);
 			if (is_array($row)) {
 				$result = $keyPart1 . $row['key_value'];
@@ -130,8 +130,8 @@ class tx_rsaauth_split_storage extends tx_rsaauth_abstract_storage {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rsaauth/sv1/storage/class.tx_rsaauth_split_storage.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rsaauth/sv1/storage/class.tx_rsaauth_split_storage.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rsaauth/sv1/storage/class.tx_rsaauth_split_storage.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rsaauth/sv1/storage/class.tx_rsaauth_split_storage.php']);
 }
 
 ?>

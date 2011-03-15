@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009-2010 François Suter <francois@typo3.org>
+*  (c) 2009-2011 François Suter <francois@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_sleeptask.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: class.tx_scheduler_sleeptask.php 10120 2011-01-18 20:03:36Z ohader $
  */
 class tx_scheduler_SleepTask extends tx_scheduler_Task {
 
@@ -69,8 +69,8 @@ class tx_scheduler_SleepTask extends tx_scheduler_Task {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/scheduler/examples/class.tx_scheduler_sleeptask.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/scheduler/examples/class.tx_scheduler_sleeptask.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/scheduler/examples/class.tx_scheduler_sleeptask.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/scheduler/examples/class.tx_scheduler_sleeptask.php']);
 }
 
 ?>

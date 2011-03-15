@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2005-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+ *  (c) 2005-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  * module but also can be used from extensions. Originally 99.9%% of the code
  * was written by Kasper and only transfered here by Dmitry.
  *
- * $Id: class.wslib_gui.php 8831 2010-09-20 16:50:05Z steffenk $
+ * $Id: class.wslib_gui.php 10222 2011-01-21 18:22:24Z tolleiv $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Dmitry Dulepov <dmitry@typo3.org>
@@ -647,7 +647,7 @@ class wslib_gui {
 					$this->formatWorkspace_cache[$wsid] = '';	// Does not output anything for ONLINE because it might confuse people to think that the elemnet IS online which is not the case - only that it exists as an offline version in the online workspace...
 					break;
 				default:
-					list($titleRec) = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('title','sys_workspace','uid='.intval($wsid).t3lib_BEfunc::deleteClause('sys_workspace'));
+					$titleRec = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('title', 'sys_workspace', 'uid=' . intval($wsid) . t3lib_BEfunc::deleteClause('sys_workspace'));
 					$this->formatWorkspace_cache[$wsid] = '['.$wsid.'] '.$titleRec['title'];
 					break;
 			}
@@ -850,8 +850,8 @@ class wslib_gui {
 			$entry[] = $text;
 		}
 
-		return count($entry) ? '<span onmouseover="document.getElementById(\'log_'.$table.$id.'\').style.visibility = \'visible\';" onmouseout="document.getElementById(\'log_'.$table.$id.'\').style.visibility = \'hidden\';">'.$stageCommands.' ('.count($entry).')</span>'.
-			'<div class="logLayer" style="visibility: hidden; position: absolute;" id="log_'.$table.$id.'">'.implode('<hr/>',$entry).'</div>' : $stageCommands;
+		return count($entry) ? '<span onmouseover="document.getElementById(\'log_' . $table . $id . '\').style.visibility = \'visible\';" onmouseout="document.getElementById(\'log_' . $table . $id . '\').style.visibility = \'hidden\';">' . $stageCommands . ' (' . count($entry) . ')</span>' .
+				'<div class="t3-version-infolayer logLayer" id="log_' . $table . $id . '">' . implode('<hr/>', $entry) . '</div>' : $stageCommands;
 	}
 
 	/**
@@ -866,7 +866,7 @@ class wslib_gui {
 	function displayWorkspaceOverview_commandLinks($table,&$rec_on,&$rec_off,$vType)	{
 		global	$LANG;
 
-		if ($this->publishAccess && (!($GLOBALS['BE_USER']->workspaceRec['publish_access']&1) || (int)$rec_off['t3ver_stage']===10))	{
+		if ($this->publishAccess && (!($GLOBALS['BE_USER']->workspaceRec['publish_access']&1) || (int)$rec_off['t3ver_stage']===-10))	{
 			$actionLinks =
 				'<a href="'.htmlspecialchars($this->doc->issueCommand(
 				'&cmd['.$table.']['.$rec_on['uid'].'][version][action]=swap'.
@@ -1302,8 +1302,8 @@ class wslib_gui {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/class.wslib_gui.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/class.wslib_gui.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/class.wslib_gui.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/class.wslib_gui.php']);
 }
 
 ?>

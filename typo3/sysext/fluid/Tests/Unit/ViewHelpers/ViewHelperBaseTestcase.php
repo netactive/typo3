@@ -22,7 +22,7 @@
 
 /**
  */
-abstract class Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase extends Tx_Extbase_BaseTestCase {
+abstract class Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase extends Tx_Extbase_Tests_Unit_BaseTestCase {
 
 	/**
 	 * @var Tx_Fluid_Core_ViewHelper_ViewHelperVariableContainer
@@ -105,7 +105,7 @@ abstract class Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase extends Tx_Extbase_Ba
 		$viewHelper->setRenderingContext($this->renderingContext);
 		$viewHelper->setArguments($this->arguments);
 		if ($viewHelper instanceof Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper) {
-			$viewHelper->injectTagBuilder($this->tagBuilder);
+			$viewHelper->_set('tag', $this->tagBuilder);
 		}
 	}
 }

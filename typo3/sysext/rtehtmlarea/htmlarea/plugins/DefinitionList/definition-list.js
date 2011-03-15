@@ -27,7 +27,7 @@
 /*
  * DefinitionList Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: definition-list.js 7855 2010-06-09 17:43:44Z stan $
+ * TYPO3 SVN ID: $Id: definition-list.js 9755 2010-12-04 16:41:20Z stan $
  */
 HTMLArea.DefinitionList = HTMLArea.BlockElements.extend({
 		
@@ -75,6 +75,8 @@ HTMLArea.DefinitionList = HTMLArea.BlockElements.extend({
 			var buttonConfiguration = {
 				id		: buttonId,
 				tooltip		: this.localize(buttonId + '-Tooltip'),
+				contextMenuTitle: this.localize(buttonId + '-contextMenuTitle'),
+				helpText	: this.localize(buttonId + '-helpText'),
 				iconCls		: 'htmlarea-action-' + button[5],
 				action		: 'onButtonPress',
 				context		: button[1],

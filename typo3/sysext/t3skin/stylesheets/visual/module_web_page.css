@@ -1,13 +1,13 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Web > Page
 
-$Id: module_web_page.css 8452 2010-07-30 11:45:30Z steffenk $
+$Id: module_web_page.css 10258 2011-01-22 17:22:37Z flyguide $
 - - - - - - - - - - - - - - - - - - - - - */
 
 .t3-page-colHeader {
 	font-weight: bold;
-	text-transform: uppercase;
 	text-align: left;
+	font-size: 11px;
 }
 
 .t3-page-colHeader-label {
@@ -81,4 +81,26 @@ table#typo3-page-stdlist tr td.c-headLine {
 
 table.typo3-page-buttons td {
 	padding-right: 10px;
+}
+
+td.t3-gridCell-restricted {
+	background-color: #e8e0e0;
+}
+
+td.t3-gridCell-unassigned {
+	background-color: #e5e5e5;
+}
+
+td.t3-gridCell-restricted div.t3-row-header,
+td.t3-gridCell-unassigned div.t3-row-header {
+	-moz-opacity: 0.4;
+	opacity: .40;
+	filter: alpha(opacity = 40);
+}
+
+td.t3-gridCell-restricted div.t3-row-header div,
+td.t3-gridCell-unassigned div.t3-row-header div {
+	-moz-opacity: 0.6;
+	opacity: .60;
+	filter: alpha(opacity = 60);
 }

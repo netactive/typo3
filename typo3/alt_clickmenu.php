@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -35,7 +35,7 @@
  *
  * If you want to integrate a context menu in your scripts, please see template::getContextMenuCode()
  *
- * $Id: alt_clickmenu.php 8842 2010-09-21 21:02:40Z steffenk $
+ * $Id: alt_clickmenu.php 10329 2011-01-26 10:17:14Z stephenking $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -342,6 +342,10 @@ class clickMenu {
 			// Processing by external functions?
 		$menuItems = $this->externalProcessingOfDBMenuItems($menuItems);
 
+		if (!is_array($this->rec)) {
+			$this->rec = array();
+		}
+
 			// Return the printed elements:
 		return $this->printItems($menuItems,
 			$root?
@@ -556,7 +560,10 @@ class clickMenu {
 	 * @internal
 	 */
 	function DB_db_list($table,$uid,$rec)	{
-		$url = t3lib_div::getIndpEnv('TYPO3_REQUEST_DIR') . t3lib_extMgm::extRelPath('list') . 'mod1/db_list.php?table='.($table=='pages'? '' : $table) . '&id=' . ($table == 'pages' ? $uid : $rec['pid']);
+		$urlParams = array();
+		$urlParams['id'] = ($table == 'pages') ? $uid : $rec['pid'];
+		$urlParams['table'] = $table == 'pages' ? '' : $table;
+		$url = t3lib_BEfunc::getModuleUrl('web_list', $urlParams, '', TRUE);
 		return $this->linkItem(
 			$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->getLL('CM_db_list')),
 			$this->excludeIcon(t3lib_iconWorks::getSpriteIcon('actions-system-list-open')),
@@ -635,9 +642,10 @@ class clickMenu {
 	 * @param	integer		page uid to edit (PID)
 	 * @return	array		Item array, element in $menuItems
 	 * @internal
-	 * @deprecated since TYPO3 4.0 - Use DB_editPageProperties instead
+	 * @deprecated since TYPO3 4.0, will be removed in TYPO3 4.6 - Use DB_editPageProperties instead
 	 */
 	function DB_editPageHeader($uid)	{
+		t3lib_div::logDeprecatedFunction();
 		return $this->DB_editPageProperties($uid);
 	}
 
@@ -745,7 +753,7 @@ class clickMenu {
 			$conf = '1==1';
 		}
 		$editOnClick = 'if(' . $loc . " && " . $conf . " ){" . $loc . ".location.href=top.TS.PATH_typo3+'tce_db.php?redirect='+top.rawurlencode(" . $this->frameLocation($loc . '.document') . ")+'".
-			"&cmd[".$table.']['.$uid.'][delete]=1&prErr=1&vC='.$GLOBALS['BE_USER']->veriCode()."';}hideCM();top.nav.refresh();";
+			"&cmd[" . $table . '][' . $uid . '][delete]=1&prErr=1&vC=' . $GLOBALS['BE_USER']->veriCode() . t3lib_BEfunc::getUrlToken('tceAction') . "';}hideCM();top.nav.refresh.defer(500, top.nav);";
 
 		return $this->linkItem(
 			$this->label('delete'),
@@ -781,7 +789,24 @@ class clickMenu {
 		return $this->linkItem(
 			$this->label('tempMountPoint'),
 			$this->excludeIcon(t3lib_iconWorks::getSpriteIcon('apps-pagetree-page-mountpoint')),
-			"if (top.content.nav_frame) { top.content.nav_frame.location.href = 'alt_db_navframe.php?setTempDBmount=".intval($page_id)."'; } return hideCM();"
+			"if (top.content.nav_frame) {
+				var node = top.TYPO3.Backend.NavigationContainer.PageTree.getSelected();
+				if (node === null) {
+					return false;
+				}
+
+				var useNode = {
+					attributes: {
+						nodeData: {
+							id: " . intval($page_id) . "
+						}
+					}
+				};
+
+			 	node.ownerTree.commandProvider.mountAsTreeRoot(useNode, node.ownerTree);
+			 }
+			 return hideCM();
+			"
 		);
 	}
 
@@ -815,7 +840,7 @@ class clickMenu {
 		$loc = 'top.content.list_frame';
 		$editOnClick = 'if(' . $loc . '){' . $loc . ".location.href=top.TS.PATH_typo3+'tce_db.php?redirect='+top.rawurlencode(" . $this->frameLocation($loc . '.document') . ")+'" .
 			"&data[" . $table . '][' . $uid . '][' . $flagField . ']=' .
-                ($rec[$flagField] ? 0 : 1) .'&prErr=1&vC=' . $GLOBALS['BE_USER']->veriCode()."';}hideCM();top.nav.refresh();";
+                ($rec[$flagField] ? 0 : 1) . '&prErr=1&vC=' . $GLOBALS['BE_USER']->veriCode() . t3lib_BEfunc::getUrlToken('tceAction') . "';}hideCM();top.nav.refresh.defer(500, top.nav);";
 
 		return $this->linkItem(
 			$title,
@@ -957,7 +982,7 @@ class clickMenu {
 			return $this->linkItem(
 				$this->label($type),
 				$this->excludeIcon('<img'.t3lib_iconWorks::skinImg($this->PH_backPath,'gfx/'.$image,'width="12" height="12"').' alt="" />'),
-				$editOnClick . 'top.nav.refresh();return hideCM();'
+				$editOnClick . 'return hideCM();'
 				);
 		} else {
 			return $this->FILE_launch($path, $script, $type, $image, true);
@@ -1124,7 +1149,7 @@ class clickMenu {
 		$editOnClick='';
 		$loc = 'top.content.list_frame';
 		$editOnClick = 'if(' . $loc . '){' . $loc . '.document.location=top.TS.PATH_typo3+"tce_db.php?redirect="+top.rawurlencode(' . $this->frameLocation($loc . '.document') . ')+"' .
-			'&cmd[pages]['.$srcUid.']['.$action.']='.$negativeSign.$dstUid.'&prErr=1&vC='.$GLOBALS['BE_USER']->veriCode().'";}hideCM();top.nav.refresh();';
+			'&cmd[pages][' . $srcUid . '][' . $action . ']=' . $negativeSign . $dstUid . '&prErr=1&vC=' . $GLOBALS['BE_USER']->veriCode() . t3lib_BEfunc::getUrlToken('tceAction') . '";}hideCM();top.nav.refresh();';
 
 		return $this->linkItem(
 			$this->label($action.'Page_'.$into),
@@ -1746,6 +1771,7 @@ class SC_alt_clickmenu {
 			$this->content = $this->doc->insertStylesAndJS($this->content);
 			echo $this->content;
 		} else {
+			t3lib_formprotection_Factory::get()->persistTokens();
 			$this->content = $GLOBALS['LANG']->csConvObj->utf8_encode($this->content,$GLOBALS['LANG']->charSet);
 			t3lib_ajax::outputXMLreply($this->content);
 		}
@@ -1753,8 +1779,8 @@ class SC_alt_clickmenu {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_clickmenu.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_clickmenu.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_clickmenu.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_clickmenu.php']);
 }
 
 

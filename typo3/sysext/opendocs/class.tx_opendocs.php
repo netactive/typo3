@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2010 Benjamin Mack <mack@xnos.org>
+*  (c) 2008-2011 Benjamin Mack <mack@xnos.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -297,7 +297,7 @@ class tx_opendocs implements backend_toolbarItem {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/opendocs/class.tx_opendocs.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/opendocs/class.tx_opendocs.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/opendocs/class.tx_opendocs.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/opendocs/class.tx_opendocs.php']);
 }
 ?>

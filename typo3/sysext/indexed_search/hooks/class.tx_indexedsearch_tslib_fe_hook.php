@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- * (c) 2009-2010 Oliver Hader <oliver@typo3.org>
+ * (c) 2009-2011 Oliver Hader <oliver@typo3.org>
  * All rights reserved
  *
  * This script is part of the TYPO3 project. The TYPO3 project is
@@ -25,7 +25,7 @@
 /**
  * Hooks for tslib_fe (TSFE).
  *
- * $Id: class.tx_indexedsearch_tslib_fe_hook.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tx_indexedsearch_tslib_fe_hook.php 10120 2011-01-18 20:03:36Z ohader $
  *
  * @author		Oliver Hader <oliver@typo3.org>
  * @package		TYPO3

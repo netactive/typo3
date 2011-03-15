@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009-2010 Marcus Krause, Helmut Hummel (security@typo3.org)
+*  (c) 2009-2011 Marcus Krause, Helmut Hummel (security@typo3.org)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -159,7 +159,7 @@ $SOBE->init();
 $SOBE->main();
 $SOBE->printContent();
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/sysext/install/mod/class.tx_install_ajax.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/sysext/install/mod/class.tx_install_ajax.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/sysext/install/mod/class.tx_install_ajax.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/sysext/install/mod/class.tx_install_ajax.php']);
 }
 ?>

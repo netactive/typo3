@@ -6,7 +6,7 @@ URL    : http://typo3.org
 
 Description : styles the Open Documents toolbar item
 
-	$Id: opendocs.css 7775 2010-05-31 08:06:03Z benni $
+	$Id: opendocs.css 9881 2010-12-22 20:19:58Z jigal $
 
 - - - - - - - - - - - - - - - - - - - - - */
 
@@ -79,7 +79,7 @@ Description : styles the Open Documents toolbar item
 	vertical-align: top;
 }
 
-#tx-opendocs-menu .toolbar-item-menu .list .opendoc .close img {
+#tx-opendocs-menu .toolbar-item-menu .list .opendoc .close span {
 	cursor: pointer;
 }
 

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  * Will display the list of main- and sub-modules available to the user.
  * Each module will be show with description and a link to the module.
  *
- * $Id: alt_intro.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: alt_intro.php 10121 2011-01-18 20:15:30Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -106,9 +106,11 @@ class SC_alt_intro {
 		$alt_menuObj = t3lib_div::makeInstance('alt_menu_functions');
 
 		$TBE_TEMPLATE->divClass = $TBE_TEMPLATE->bodyTagId;
-		$this->content.= $TBE_TEMPLATE->startPage('About modules');
 
-		$this->content .= '
+		$this->content = '
+			<div id="typo3-docheader">
+				<div id="typo3-docheader-row1">&nbsp;</div>
+			</div>
 			<div id="typo3-alt-intro-php-sub">
 			<h1>TYPO3 '.TYPO3_version.'<br />'.$LANG->getLL('introtext').'</h1>
 
@@ -129,8 +131,11 @@ class SC_alt_intro {
 		$this->content.='<p class="c-features"><em>('.$LANG->getLL('endText').')</em></p>';
 		$this->content .= '<br /></div>';
 
-			// End page
-		$this->content.= $TBE_TEMPLATE->endPage();
+			// Renders the module page
+		$this->content = $TBE_TEMPLATE->render(
+			'About modules',
+			$this->content
+		);
 	}
 
 	/**
@@ -144,8 +149,8 @@ class SC_alt_intro {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_intro.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_intro.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_intro.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_intro.php']);
 }
 
 

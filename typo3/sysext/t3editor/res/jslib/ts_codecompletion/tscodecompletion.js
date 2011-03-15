@@ -226,10 +226,10 @@ var TsCodeCompletion = function(codeMirror, outerdiv) {
 	 */
 //	TODO check if this wokrs correctly after updating the codemirror base
 	function prepareLinefeeds() {
-		mirror.editor.win.select.insertNewlineAtCursor_original = mirror.editor.win.select.insertNewlineAtCursor;
-		mirror.editor.win.select.insertNewlineAtCursor = function(window) {
+		mirror.win.select.insertNewlineAtCursor_original = mirror.win.select.insertNewlineAtCursor;
+		mirror.win.select.insertNewlineAtCursor = function(window) {
 			if (cc==0) {
-				mirror.editor.win.select.insertNewlineAtCursor_original(window);
+				mirror.win.select.insertNewlineAtCursor_original(window);
 			}
 		};
 		mirror.editor.indentAtCursor_original = mirror.editor.indentAtCursor;
@@ -261,7 +261,7 @@ var TsCodeCompletion = function(codeMirror, outerdiv) {
 	}
 
 	function getCursorNode() {
-		var cursorNode = mirror.editor.win.select.selectionTopNode(mirror.editor.win.document.body, false);
+		var cursorNode = mirror.win.select.selectionTopNode(mirror.win.document.body, false);
 		// cursorNode is null if the cursor is positioned at the beginning of the first line
 		if (cursorNode == null) {
 			cursorNode = mirror.editor.container.firstChild;
@@ -361,7 +361,7 @@ var TsCodeCompletion = function(codeMirror, outerdiv) {
 				refreshCodeCompletion();
 
 			} else if (keycode == Event.KEY_BACKSPACE) {
-				var cursorNode = mirror.editor.win.select.selectionTopNode(mirror.editor.win.document.body, false);
+				var cursorNode = mirror.win.select.selectionTopNode(mirror.win.document.body, false);
 				if (cursorNode.innerHTML == '.') {
 					// force full refresh at keyUp
 					compResult = null;
@@ -386,7 +386,7 @@ var TsCodeCompletion = function(codeMirror, outerdiv) {
 		mirror.editor.highlightAtCursor();
 
 		// retrieves the node right to the cursor
-		currentCursorPosition = mirror.editor.win.select.markSelection(mirror.editor.win);
+		currentCursorPosition = mirror.win.select.markSelection(mirror.win);
 		cursorNode = getCursorNode();
 
 		// the cursornode has to be stored cause inserted breaks have to be deleted after pressing enter if the codecompletion is active
@@ -577,22 +577,19 @@ var TsCodeCompletion = function(codeMirror, outerdiv) {
 		var word = proposals[currWord].word;
 		// tokenize current line
 		mirror.editor.highlightAtCursor();
+		var select = mirror.win.select;
 		var cursorNode = getCursorNode();
+		
 		if (cursorNode.currentText
 			&& cursorNode.currentText != '.'
 			&& cursorNode.currentText.strip() != '' ) {
-			cursorNode.innerHTML = '';
-			cursorNode.currentText = '';
+			// if there is some typed text already, left to the "." -> simply replace node content with the word
+			cursorNode.innerHTML = word;
+			cursorNode.currentText = word;
+			select.setCursorPos(mirror.editor.container, {node: cursorNode, offset: 0});
+		} else { // if there is no text there, insert the word at the cursor position
+			mirror.replaceSelection(word);
 		}
-		mirror.replaceSelection(word);
-		// set cursor behind the selection
-		var select = mirror.editor.win.select;
-		var start = select.cursorPos(mirror.editor.container, true),
-			end = select.cursorPos(mirror.editor.container, false);
-		if (!start || !end) {
-			return;
-		}
-		select.setCursorPos(mirror.editor.container, end, end);
 	}
 
 

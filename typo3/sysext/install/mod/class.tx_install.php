@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains the class for the Install Tool
  *
- * $Id: class.tx_install.php 8818 2010-09-19 14:05:16Z ohader $
+ * $Id: class.tx_install.php 10331 2011-01-26 12:43:16Z baschny $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Ingmar Schlecht <ingmar@typo3.org>
@@ -143,21 +143,27 @@
 require_once(t3lib_extMgm::extPath('install') . 'requirements.php');
 
 // include update classes
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_charsetdefaults.php');
 require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_compatversion.php');
 require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_cscsplit.php');
 require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_notinmenu.php');
 require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_mergeadvanced.php');
 require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_installsysexts.php');
 require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_imagescols.php');
-require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_installversioning.php');
 require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_installnewsysexts.php');
 require_once(t3lib_extMgm::extPath('install') . 'mod/class.tx_install_session.php');
 require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_statictemplates.php');
 require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_t3skin.php');
 require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_compressionlevel.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_migrateworkspaces.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_flagsfromsprite.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_addflexformstoacl.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_imagelink.php');
 
 /**
  * Install Tool module
+ *
+ * $Id: class.tx_install.php 10331 2011-01-26 12:43:16Z baschny $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Ingmar Schlecht <ingmar@typo3.org>
@@ -218,10 +224,17 @@ class tx_install extends t3lib_install {
 	 */
 	protected $session = NULL;
 
+	/**
+	 * the form protection instance used for creating and verifying form tokens
+	 *
+	 * @var t3lib_formprotection_InstallToolFormProtection
+	 */
+	protected $formProtection = NULL;
+
 	var $menuitems = array(
 		'config' => 'Basic Configuration',
 		'database' => 'Database Analyser',
-		'update' => 'Update Wizard',
+		'update' => 'Upgrade Wizard',
 		'images' => 'Image Processing',
 		'extConfig' => 'All Configuration',
 		'cleanup' => 'Clean up',
@@ -231,6 +244,19 @@ class tx_install extends t3lib_install {
 		'logout' => 'Logout from Install Tool',
 	);
 
+		// PHP modules which are required. Can be changed by hook in getMissingPhpModules()
+	protected $requiredPhpModules = array(
+		'filter',
+		'gd',
+		'json',
+		'mysql',
+		'pcre',
+		'session',
+		'SPL',
+		'standard',
+		'xml',
+		'zlib'
+	);
 
 
 
@@ -244,7 +270,9 @@ class tx_install extends t3lib_install {
 	function tx_install() {
 		parent::t3lib_install();
 
-		if (!$GLOBALS['TYPO3_CONF_VARS']['BE']['installToolPassword'])	die("Install Tool deactivated.<br />You must enable it by setting a password in typo3conf/localconf.php. If you insert the line below, the password will be 'joh316':<br /><br />\$TYPO3_CONF_VARS['BE']['installToolPassword'] = 'bacb98acf97e0b6112b1d1b650b84971';");
+		if (!$GLOBALS['TYPO3_CONF_VARS']['BE']['installToolPassword']) {
+			$this->outputErrorAndExit('Install Tool deactivated.<br />You must enable it by setting a password in typo3conf/localconf.php. If you insert the line below, the password will be \'joh316\':<br /><br />$TYPO3_CONF_VARS[\'BE\'][\'installToolPassword\'] = \'bacb98acf97e0b6112b1d1b650b84971\';', 'Fatal error');
+		}
 
 		if ($this->sendNoCacheHeaders) {
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
@@ -266,6 +294,23 @@ class tx_install extends t3lib_install {
 			$this->step = 'go';
 		} else {
 			$this->step = intval(t3lib_div::_GP('step'));
+		}
+
+			// Let DBAL decide whether to load itself
+		$dbalLoaderFile = $this->backPath . 'sysext/dbal/class.tx_dbal_autoloader.php';
+		if (@is_file($dbalLoaderFile)) {
+			include($dbalLoaderFile);
+		}
+
+		if ($this->mode === '123') {
+				// Check for mandatory PHP modules
+			$missingPhpModules = $this->getMissingPhpModules();
+			if (count($missingPhpModules) > 0) {
+				throw new RuntimeException('TYPO3 Installation Error: The following PHP module(s) is/are missing: <em>' .
+						implode(', ', $missingPhpModules) .
+						'</em><br /><br />You need to install and enable these modules first to be able to install TYPO3.'
+				);
+			}
 		}
 		$this->redirect_url = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('redirect_url'));
 
@@ -314,7 +359,7 @@ class tx_install extends t3lib_install {
 			($this->step? '&step=' . $this->step : '');
 		$this->typo3temp_path = PATH_site.'typo3temp/';
 		if (!is_dir($this->typo3temp_path) || !is_writeable($this->typo3temp_path)) {
-			die('Install Tool needs to write to typo3temp/. Make sure this directory is writeable by your webserver: '. $this->typo3temp_path);
+			$this->outputErrorAndExit('Install Tool needs to write to typo3temp/. Make sure this directory is writeable by your webserver: ' . htmlspecialchars($this->typo3temp_path), 'Fatal error');
 		}
 
 		try {
@@ -340,15 +385,14 @@ class tx_install extends t3lib_install {
 				@touch($enableInstallToolFile);
 			}
 
-				// Let DBAL decide whether to load itself
-			$dbalLoaderFile = $this->backPath . 'sysext/dbal/class.tx_dbal_autoloader.php';
-			if (@is_file($dbalLoaderFile)) {
-				include($dbalLoaderFile);
-			}
-
 			if($this->redirect_url) {
 				t3lib_utility_Http::redirect($this->redirect_url);
 			}
+
+			$this->formProtection = t3lib_formProtection_Factory::get(
+				't3lib_formprotection_InstallToolFormProtection'
+			);
+			$this->formProtection->injectInstallTool($this);
 		} else {
 			$this->loginForm();
 		}
@@ -503,6 +547,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			TRUE,
 			TRUE
 		);
+
 			// Send content to the page wrapper function
 		$this->output($this->outputWrapper($content));
 	}
@@ -729,6 +774,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					if (is_file($enableInstallToolFile) && trim(file_get_contents($enableInstallToolFile)) !== 'KEEP_FILE') {
 						unlink(PATH_typo3conf . 'ENABLE_INSTALL_TOOL');
 					}
+					$this->formProtection->clean();
 					$this->session->destroySession();
 					t3lib_utility_Http::redirect($this->scriptSelf);
 				break;
@@ -780,7 +826,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							fields in the database.
 						</p>
 						<p>
-							<strong>3: Update Wizard</strong>
+							<strong>3: Upgrade Wizard</strong>
 							<br />
 							Here you will find update methods taking care of
 							changes to the TYPO3 core which are not backwards
@@ -882,6 +928,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				break;
 			}
 		}
+
+		$this->formProtection->persistTokens();
 	}
 
 	/**
@@ -912,8 +960,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					There is no connection to the database!
 				</strong>
 				<br />
-				(Username: <em>' . TYPO3_db_username . '</em>,
-				Host: <em>' . TYPO3_db_host . '</em>,
+				(Username: <em>' . htmlspecialchars(TYPO3_db_username) . '</em>,
+				Host: <em>' . htmlspecialchars(TYPO3_db_host) . '</em>,
 				Using Password: YES)
 				<br />
 				Go to Step 1 and enter a valid username and password!
@@ -922,7 +970,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 		$error_missingDB = '
 			<p class="typo3-message message-error">
 				<strong>
-					There is no access to the database (<em>' . TYPO3_db . '</em>)!
+					There is no access to the database (<em>' . htmlspecialchars(TYPO3_db) . '</em>)!
 				</strong>
 				<br />
 				Go to Step 2 and select a valid database!
@@ -998,11 +1046,11 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						'encryptionKey' => $this->createEncryptionKey(),
 						'branch' => TYPO3_branch,
 						'labelUsername' => 'Username',
-						'username' => TYPO3_db_username,
+						'username' => htmlspecialchars(TYPO3_db_username),
 						'labelPassword' => 'Password',
-						'password' => TYPO3_db_password,
+						'password' => htmlspecialchars(TYPO3_db_password),
 						'labelHost' => 'Host',
-						'host' => TYPO3_db_host ? TYPO3_db_host : 'localhost',
+						'host' => TYPO3_db_host ? htmlspecialchars(TYPO3_db_host) : 'localhost',
 						'continue' => 'Continue',
 						'llDescription' => 'If you have not already created a username and password to access the database, please do so now. This can be done using tools provided by your host.'
 					);
@@ -1149,11 +1197,11 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$step4SubPartMarkers = array(
 								'llSummary' => 'Database summary:',
 								'llUsername' => 'Username:',
-								'username' => TYPO3_db_username,
+								'username' => htmlspecialchars(TYPO3_db_username),
 								'llHost' => 'Host:',
-								'host' => TYPO3_db_host,
+								'host' => htmlspecialchars(TYPO3_db_host),
 								'llDatabase' => 'Database:',
-								'database' => TYPO3_db,
+								'database' => htmlspecialchars(TYPO3_db),
 								'llNumberTables' => 'Number of tables:',
 								'numberTables' => count($whichTables),
 								'action' => htmlspecialchars($this->action),
@@ -1251,12 +1299,20 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 
 		if (TYPO3_OS=='WIN') {
 			$paths=array($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_path_lzw'], $GLOBALS['TYPO3_CONF_VARS']['GFX']['im_path'], 'c:\\php\\imagemagick\\', 'c:\\php\\GraphicsMagick\\', 'c:\\apache\\ImageMagick\\', 'c:\\apache\\GraphicsMagick\\');
+			if (!isset($_SERVER['PATH'])) {
+				$serverPath = array_change_key_case($_SERVER, CASE_UPPER);
+				$paths = array_merge($paths, explode(';', $serverPath['PATH']));
+			} else {
+				$paths = array_merge($paths, explode(';', $_SERVER['PATH']));
+			}
 		} else {
 			$paths=array($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_path_lzw'], $GLOBALS['TYPO3_CONF_VARS']['GFX']['im_path'], '/usr/local/bin/','/usr/bin/','/usr/X11R6/bin/');
+			$paths = array_merge($paths, explode(':', $_SERVER['PATH']));
 		}
+		$paths = array_unique($paths);
 
 		asort($paths);
-		if (ini_get('safe_mode')) {
+		if (t3lib_utility_PhpOptions::isSafeModeEnabled()) {
 			$paths=array(ini_get('safe_mode_exec_dir'),'/usr/local/php/bin/');
 		}
 		if ($this->INSTALL['checkIM']['lzw']) {
@@ -2072,13 +2128,24 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$doit=1;
 									if ($k=='BE' && $vk=='installToolPassword') {
 										if ($value) {
-											if (isset($_POST['installToolPassword_check']) && (!t3lib_div::_GP('installToolPassword_check') || strcmp(t3lib_div::_GP('installToolPassword_check'),$value))) {
-												$doit=0;
-												$this->errorMessages[] = '
-													The two passwords did not
-													match! The password was not
-													changed.
-												';
+											if (isset($_POST['installToolPassword_check'])) {
+												if (!$this->formProtection->validateToken(
+													(string) $_POST['formToken'],
+													'installToolPassword',
+													'change'
+												)) {
+													$doit = FALSE;
+													break;
+												}
+
+												if (!t3lib_div::_GP('installToolPassword_check')
+													|| strcmp(t3lib_div::_GP('installToolPassword_check'), $value)
+												) {
+													$doit = FALSE;
+													$this->errorMessages[]
+														= 'The two passwords did not ' .
+															'match! The password was not changed.';
+												}
 											}
 											if (t3lib_div::_GP('installToolPassword_md5'))	$value =md5($value);
 										} else $doit=0;
@@ -2386,7 +2453,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			// *****************
 			// Safe mode related
 			// *****************
-		if (ini_get('safe_mode')) {
+		if (t3lib_utility_PhpOptions::isSafeModeEnabled()) {
 			$this->message($ext, 'Safe mode turned on', '
 				<p>
 					<em>safe_mode=' . ini_get('safe_mode') . '</em>
@@ -2442,14 +2509,12 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				<p>
 					<strong>Notice: </strong>
 					<br />
-					ImageMagick 4.2.9 is recommended and the binaries are
-					normally installed by RPM in /usr/X11R6/bin or by compiling
-					in /usr/local/bin. Please look in the "Inside TYPO3"
-					pdf-document for extensive information about ImageMagick issues.
+					ImageMagick 6 or GraphicsMagick is recommended and the binaries are
+					normally installed in /usr/bin.
 					<br />
 					Paths to ImageMagick are defined in localconf.php and may be
 					something else than /usr/bin/, but this is default for
-					ImageMagick 5+
+					ImageMagick 6+
 				</p>
 			', 2);
 			if (ini_get('doc_root')) {
@@ -2466,7 +2531,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 		} else {
 			$this->message($ext, 'safe_mode: off',"",-1);
 		}
-		if (ini_get('sql.safe_mode')) {
+		if (t3lib_utility_PhpOptions::isSqlSafeModeEnabled()) {
 			$this->message($ext, 'sql.safe_mode is enabled', '
 				<p>
 					<em>sql.safe_mode=' . ini_get('sql.safe_mode') . '</em>
@@ -2590,17 +2655,9 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			case 'get_form':
 				$out = '
 					<p id="checkMailForm">
-						You can check the mail() function by entering your email
+						You can check the t3lib_mail functionality by entering your email
 						address here and press the button. You should then
-						receive a testmail from test@test.test.
-						<br />
-						Since almost all mails in TYPO3 are sent using the
-						t3lib_htmlmail class, sending with this class can be
-						tested by checking the box
-						<strong>Test t3lib_htmlmail</strong> below.
-						The return-path of the mail is set to null@' . t3lib_div::getIndpEnv('HTTP_HOST') . '.
-						Some mail servers won\'t send the mail if the host of
-						the return-path is not resolved correctly.
+						receive a testmail from "typo3installtool@example.org".
 					</p>
 				';
 					// Get the template file
@@ -2623,7 +2680,6 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					'message' => $this->mailMessage,
 					'enterEmail' => 'Enter the email address',
 					'actionUrl' => $this->action . '#checkMailForm',
-					'useHtmlMailLabel' => 'Test t3lib_htmlmail',
 					'submit' => 'Send test mail'
 				);
 					// Fill the markers
@@ -2640,20 +2696,14 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$subject = 'TEST SUBJECT';
 					$email = trim($this->INSTALL['check_mail']);
 
-					if($this->INSTALL['use_htmlmail']) {
-					  	$emailObj = t3lib_div::makeInstance('t3lib_htmlmail');
-					  	/* @var $emailObj t3lib_htmlmail */
-						$emailObj->start();
-						$emailObj->subject = $subject;
-						$emailObj->from_email = 'test@test.test';
-						$emailObj->from_name = 'TYPO3 Install Tool';
-						$emailObj->returnPath = 'null@'.t3lib_div::getIndpEnv('HTTP_HOST');
-						$emailObj->addPlain('TEST CONTENT');
-						$emailObj->setHTML($emailObj->encodeMsg('<html><body>HTML TEST CONTENT</body></html>'));
-						$emailObj->send($email);
-					} else {
-						t3lib_div::plainMailEncoded($email,$subject,'TEST CONTENT','From: test@test.test');
-					}
+						/** @var $mailMessage t3lib_mail_Message */
+					$mailMessage = t3lib_div::makeInstance('t3lib_mail_Message');
+					$mailMessage->addTo($email)
+							->addFrom('typo3installtool@example.org', 'TYPO3 Install Tool')
+							->setSubject($subject)
+							->setBody('<html><body>HTML TEST CONTENT</body></html>');
+					$mailMessage->addPart('TEST CONTENT');
+					$mailMessage->send();
 					$this->mailMessage= 'Mail was sent to: ' . $email;
 				}
 			break;
@@ -3027,7 +3077,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$src = $this->backPath.'gfx/typo3logo.gif';
 			if (@is_file($src) && !strstr($src,' ') && !strstr($dest,' ')) {
 				$cmd = t3lib_div::imageMagickCommand('convert', $src.' '.$dest, $path);
-				exec($cmd);
+				t3lib_utility_Command::exec($cmd);
 			} else die('No typo3/gfx/typo3logo.gif file!');
 			$out='';
 			if (@is_file($dest)) {
@@ -3086,7 +3136,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 
 		$cmd = t3lib_div::imageMagickCommand($file, $parameters, $path);
 		$retVal = false;
-		exec($cmd, $retVal);
+		t3lib_utility_Command::exec($cmd, $retVal);
 		$string = $retVal[0];
 		list(,$ver) = explode('Magick', $string);
 		list($ver) = explode(' ',trim($ver));
@@ -3118,9 +3168,9 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					<p>
 						You may need to enter data for these values:
 						<br />
-						Username: <strong>' . TYPO3_db_username . '</strong>
+						Username: <strong>' . htmlspecialchars(TYPO3_db_username) . '</strong>
 						<br />
-						Host: <strong>' . TYPO3_db_host . '</strong>
+						Host: <strong>' . htmlspecialchars(TYPO3_db_host) . '</strong>
 						<br />
 						<br />
 						Use the form below.
@@ -3134,13 +3184,13 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							Username:
 						</dt>
 						<dd>
-							' . TYPO3_db_username . '
+							' . htmlspecialchars(TYPO3_db_username) . '
 						</dd>
 						<dt>
 							Host:
 						</dt>
 						<dd>
-							' . TYPO3_db_host . '
+							' . htmlspecialchars(TYPO3_db_host) . '
 						</dd>
 					</dl>
 				', -1, 1);
@@ -3157,7 +3207,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				} elseif (!$GLOBALS['TYPO3_DB']->sql_select_db(TYPO3_db))  {
 					$this->message($ext, 'Database', '
 						<p>
-							\''.TYPO3_db.'\' could not be selected as database!
+							\'' . htmlspecialchars(TYPO3_db) . '\' could not be selected as database!
 							<br />
 							Please select another one or create a new database.
 						</p>
@@ -3166,7 +3216,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				} else  {
 					$this->message($ext, 'Database', '
 						<p>
-							<strong>' . TYPO3_db . '</strong> is selected as
+							<strong>' . htmlspecialchars(TYPO3_db) . '</strong> is selected as
 							database.
 						</p>
 					', 1, 1);
@@ -3185,9 +3235,9 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					<p>
 						Connecting to SQL database failed with these settings:
 						<br />
-						Username: <strong>' . TYPO3_db_username . '</strong>
+						Username: <strong>' . htmlspecialchars(TYPO3_db_username) . '</strong>
 						<br />
-						Host: <strong>' . TYPO3_db_host . '</strong>
+						Host: <strong>' . htmlspecialchars(TYPO3_db_host) . '</strong>
 					</p>
 					<p>
 						Make sure you\'re using the correct set of data.
@@ -3778,43 +3828,30 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							break;
 							case 'im_path':
 								list($value,$version) = explode('|',$value);
-								if (!preg_match('/[[:space:]]/',$value,$reg) && strlen($value)<100) {
-									if (strcmp($GLOBALS['TYPO3_CONF_VARS']['GFX'][$key], $value)) {
-										$this->setValueInLocalconfFile($lines, '$TYPO3_CONF_VARS[\'GFX\'][\'' . $key . '\']', $value);
-									}
-									if(doubleval($version)>0 && doubleval($version)<4) {	// Assume GraphicsMagick
-										$value_ext = 'gm';
-									} elseif(doubleval($version)<5) {	// Assume ImageMagick 4.x
-										$value_ext = '';
-									} elseif(doubleval($version) >= 6) {	// Assume ImageMagick 6.x
-										$value_ext = 'im6';
-									} else	{	// Assume ImageMagick 5.x
-										$value_ext = 'im5';
-									}
-									if (strcmp(strtolower($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5']),$value_ext)) {
-										$this->setValueInLocalconfFile($lines, '$TYPO3_CONF_VARS[\'GFX\'][\'im_version_5\']', $value_ext);
-									}
-	// 								if (strcmp(strtolower($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5']),$value))	$this->setValueInLocalconfFile($lines, '$TYPO3_CONF_VARS['GFX']['im_version_5']', $value);
-								} else {
-									$this->errorMessages[] = '
-										Path \'' . $value . '\' contains spaces
-										or is longer than 100 chars (...not
-										saved)
-									';
+								if (strcmp($GLOBALS['TYPO3_CONF_VARS']['GFX'][$key], $value)) {
+									$this->setValueInLocalconfFile($lines, '$TYPO3_CONF_VARS[\'GFX\'][\'' . $key . '\']', $value);
+								}
+								if (doubleval($version) > 0 && doubleval($version) < 4) {
+										// Assume GraphicsMagick
+									$value_ext = 'gm';
+								} elseif (doubleval($version) < 5) {
+										// Assume ImageMagick 4.x
+									$value_ext = '';
+								} elseif (doubleval($version) >= 6) {
+										// Assume ImageMagick 6.x
+									$value_ext = 'im6';
+								} else	{
+										// Assume ImageMagick 5.x
+									$value_ext = 'im5';
+								}
+								if (strcmp(strtolower($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5']), $value_ext)) {
+									$this->setValueInLocalconfFile($lines, '$TYPO3_CONF_VARS[\'GFX\'][\'im_version_5\']', $value_ext);
 								}
 							break;
 							case 'im_path_lzw':
 								list($value) = explode('|',$value);
-								if (!preg_match('/[[:space:]]/',$value) && strlen($value)<100) {
-									if (strcmp($GLOBALS['TYPO3_CONF_VARS']['GFX'][$key], $value)) {
-										$this->setValueInLocalconfFile($lines, '$TYPO3_CONF_VARS[\'GFX\'][\'' . $key . '\']', $value);
-									}
-								} else {
-									$this->errorMessages[] = '
-										Path \'' . $value . '\' contains spaces
-										or is longer than 100 chars (...not
-										saved)
-									';
+								if (strcmp($GLOBALS['TYPO3_CONF_VARS']['GFX'][$key], $value)) {
+									$this->setValueInLocalconfFile($lines, '$TYPO3_CONF_VARS[\'GFX\'][\'' . $key . '\']', $value);
 								}
 							break;
 							case 'TTFdpi':
@@ -4115,15 +4152,43 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 		return (is_array($test) ? 1 : 0);
 	}
 
+	/**
+	 * Checks if the essential PHP modules are loaded
+	 *
+	 * @return array list of modules which are missing
+	 */
+	protected function getMissingPhpModules() {
 
+			// Hook to adjust the required PHP modules in the 1-2-3 installer
+		$modules = $this->requiredPhpModules;
+		if (is_array ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/install/mod/class.tx_install.php']['requiredPhpModules'])) {
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/install/mod/class.tx_install.php']['requiredPhpModules'] as $classData) {
+				$hookObject = t3lib_div::getUserObj($classData);
+				$modules = $hookObject->setRequiredPhpModules($modules, $this);
+			}
+		}
+		$this->requiredPhpModules = $modules;
 
-
-
-
-
-
-
-
+		$result = array();
+		foreach ($this->requiredPhpModules as $module) {
+			if (is_array($module)) {
+				$detectedSubmodules = FALSE;
+				foreach ($module as $submodule) {
+					if (extension_loaded($submodule)) {
+						$detectedSubmodules = TRUE;
+					}
+				}
+				if ($detectedSubmodules === FALSE) {
+					$result[] = 'one of: (' . implode(', ', $module) . ')';
+				}
+			} else {
+				if (!extension_loaded($module)) {
+					$result[] = $module;
+				}
+			}
+		}
+		return $result;
+	}
 
 	/*****************************************
 	 *
@@ -4208,7 +4273,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				<a href="http://www.freetype.org/">http://www.freetype.org/</a>
 				<br />
 				Generally, TYPO3 packages are listed at
-				<a href="http://typo3.org/download/packages/">http://typo3.org/download/packages/</a>
+				<a href="' . TYPO3_URL_DOWNLOAD . '">' . TYPO3_URL_DOWNLOAD . '</a>
 			</p>
 		';
 	}
@@ -4232,7 +4297,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			subsequently includes the localconf.php file in which you can then
 			override values.
 			<br />
-			See this page for <a href="http://typo3.org/1275.0.html">more
+			See this page for <a href="' . TYPO3_URL_SYSTEMREQUIREMENTS . '">more
 			information about system requirements.</a>
 		</p>';
 	}
@@ -4310,7 +4375,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				In order to do this, TYPO3 uses two sets of tools:
 			</p>
 			<p>
-				<strong>ImageMagick:</strong>
+				<strong>ImageMagick / GraphicsMagick:</strong>
 				<br />
 				For conversion of non-web formats to webformats, combining
 				images with alpha-masks, performing image-effects like blurring
@@ -4321,20 +4386,18 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				namely \'convert\' (converting fileformats, scaling, effects),
 				\'combine\'/\'composite\' (combining images with masks) and
 				\'identify\' (returns image information).
+				GraphicsMagick is an alternative to ImageMagick and can be enabled
+				by setting [GFX][im_version_5] to \'gm\'. This is recommended and
+				enabled by default.
 				<br />
-				Because ImageMagick are external programs, two requirements must
-				be met: 1) The programs must be installed on the server and
-				working and 2) if safe_mode is enabled, the programs must be
-				located in the folder defined by the php.ini setting,
+				Because ImageMagick and Graphicsmagick are external programs, two
+				requirements must be met: 1) The programs must be installed on the
+				server and working and 2) if safe_mode is enabled, the programs must
+				be located in the folder defined by the php.ini setting,
 				<em>safe_mode_exec_dir</em> (else they are not executed).
 				<br />
 				ImageMagick is available for both Windows and Unix. The current
-				version is 5+, but TYPO3 enthusiasts prefer an old version 4.2.9
-				because that version has three main advantages: It\'s faster in
-				some operations, the blur-function works, the sharpen-function
-				works. Anyway you do it, you must tell TYPO3 by configuration
-				whether you\'re using version 5+ or 4.2.9. (flag:
-				[GFX][im_version_5])
+				version is 6+.
 				<br />
 				ImageMagick homepage is at <a href="http://www.imagemagick.org/">http://www.imagemagick.org/</a>
 			</p>
@@ -4402,25 +4465,25 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					ImageMagick enabled:
 				</dt>
 				<dd>
-					' . $GLOBALS['TYPO3_CONF_VARS']['GFX']['im'] . '
+					' . htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['GFX']['im']) . '
 				</dd>
 				<dt>
 					ImageMagick path:
 				</dt>
 				<dd>
-					' . $im_path . ' <span>(' . $im_path_version . ')</span>
+					' . htmlspecialchars($im_path) . ' <span>(' . htmlspecialchars($im_path_version) . ')</span>
 				</dd>
 				<dt>
 					ImageMagick path/LZW:
 				</dt>
 				<dd>
-					' . $im_path_lzw . ' <span>(' . $im_path_lzw_version . ')</span>
+					' . htmlspecialchars($im_path_lzw) . ' <span>(' . htmlspecialchars($im_path_lzw_version) . ')</span>
 				</dd>
 				<dt>
 					Version 5/GraphicsMagick flag:
 				</dt>
 				<dd>
-					' . ($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5'] ? $GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5'] : '&nbsp;') . '
+					' . ($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5'] ? htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5']) : '&nbsp;') . '
 				</dd>
 			</dl>
 			<dl id="t3-install-imageprocessingother">
@@ -4428,33 +4491,33 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					GDLib enabled:
 				</dt>
 				<dd>
-					' . ($GLOBALS['TYPO3_CONF_VARS']['GFX']['gdlib'] ? $GLOBALS['TYPO3_CONF_VARS']['GFX']['gdlib'] : '&nbsp;') . '
+					' . ($GLOBALS['TYPO3_CONF_VARS']['GFX']['gdlib'] ? htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['GFX']['gdlib']) : '&nbsp;') . '
 				</dd>
 				<dt>
 					GDLib using PNG:
 				</dt>
 				<dd>
-					' . ($GLOBALS['TYPO3_CONF_VARS']['GFX']['gdlib_png'] ? $GLOBALS['TYPO3_CONF_VARS']['GFX']['gdlib_png'] : '&nbsp;') . '
+					' . ($GLOBALS['TYPO3_CONF_VARS']['GFX']['gdlib_png'] ? htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['GFX']['gdlib_png']) : '&nbsp;') . '
 				</dd>
 				<dt>
 					IM5 effects enabled:
 				</dt>
 				<dd>
-					' . $GLOBALS['TYPO3_CONF_VARS']['GFX']['im_v5effects'] . '
+					' . htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_v5effects']) . '
 					<span>(Blurring/Sharpening with IM 5+)</span>
 				</dd>
 				<dt>
 					Freetype DPI:
 				</dt>
 				<dd>
-					' . $GLOBALS['TYPO3_CONF_VARS']['GFX']['TTFdpi'] . '
+					' . htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['GFX']['TTFdpi']) . '
 					<span>(Should be 96 for Freetype 2)</span>
 				</dd>
 				<dt>
 					Mask invert:
 				</dt>
 				<dd>
-					' . $GLOBALS['TYPO3_CONF_VARS']['GFX']['im_imvMaskState'] . '
+					' . htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_imvMaskState']) . '
 					<span>(Should be set for some IM versions approx. 5.4+)</span>
 				</dd>
 			</dl>
@@ -4463,7 +4526,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					File Formats:
 				</dt>
 				<dd>
-					' . $GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'] . '
+					' . htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext']) . '
 				</dd>
 			</dl>
 		';
@@ -4486,8 +4549,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$msg .= '
 				<p>
 					Warning: Mismatch between the version of ImageMagick' .
-					' (' . $im_path_version.') and the configuration of ' .
-					'[GFX][im_version_5] (' . $GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5'] . ')
+					' (' . htmlspecialchars($im_path_version) . ') and the configuration of ' .
+					'[GFX][im_version_5] (' . htmlspecialchars($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5']) . ')
 				</p>
 			';
 			$etype=2;
@@ -5421,20 +5484,20 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					Username:
 				</dt>
 				<dd>
-					' . TYPO3_db_username . '
+					' . htmlspecialchars(TYPO3_db_username) . '
 				</dd>
 				<dt>
 					Host:
 				</dt>
 				<dd>
-					' . TYPO3_db_host . '
+					' . htmlspecialchars(TYPO3_db_host) . '
 				</dd>
 			</dl>
 		', -1, 1);
 
 		$this->message($headCode, 'Database', '
 			<p>
-				<strong>' . TYPO3_db . '</strong> is selected as database.
+				<strong>' . htmlspecialchars(TYPO3_db) . '</strong> is selected as database.
 				<br />
 				Has <strong>' . count($whichTables) . '</strong> tables.
 			</p>
@@ -5606,16 +5669,26 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$diff = $this->getDatabaseExtra($FDdb, $FDfile);
 							$remove_statements = $this->getUpdateSuggestions($diff,'remove');
 
-							$this->performUpdateQueries($update_statements['clear_table'],$this->INSTALL['database_update']);
+							$results = array();
+							$results[] = $this->performUpdateQueries($update_statements['clear_table'], $this->INSTALL['database_update']);
 
-							$this->performUpdateQueries($update_statements['add'],$this->INSTALL['database_update']);
-							$this->performUpdateQueries($update_statements['change'],$this->INSTALL['database_update']);
-							$this->performUpdateQueries($remove_statements['change'],$this->INSTALL['database_update']);
-							$this->performUpdateQueries($remove_statements['drop'],$this->INSTALL['database_update']);
+							$results[] = $this->performUpdateQueries($update_statements['add'], $this->INSTALL['database_update']);
+							$results[] = $this->performUpdateQueries($update_statements['change'], $this->INSTALL['database_update']);
+							$results[] = $this->performUpdateQueries($remove_statements['change'], $this->INSTALL['database_update']);
+							$results[] = $this->performUpdateQueries($remove_statements['drop'], $this->INSTALL['database_update']);
 
-							$this->performUpdateQueries($update_statements['create_table'],$this->INSTALL['database_update']);
-							$this->performUpdateQueries($remove_statements['change_table'],$this->INSTALL['database_update']);
-							$this->performUpdateQueries($remove_statements['drop_table'],$this->INSTALL['database_update']);
+							$results[] = $this->performUpdateQueries($update_statements['create_table'], $this->INSTALL['database_update']);
+							$results[] = $this->performUpdateQueries($remove_statements['change_table'], $this->INSTALL['database_update']);
+							$results[] = $this->performUpdateQueries($remove_statements['drop_table'], $this->INSTALL['database_update']);
+
+							$this->databaseUpdateErrorMessages = array();
+							foreach ($results as $resultSet) {
+								if (is_array($resultSet)) {
+									foreach ($resultSet as $key => $errorMessage) {
+										$this->databaseUpdateErrorMessages[$key] = $errorMessage;
+									}
+								}
+							}
 						}
 
 							// Init again / first time depending...
@@ -6372,6 +6445,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 	 */
 	function updateWizard_parts($action) {
 		$content = '';
+		$updateItems = array();
+
 			// Get the template file
 		$templateFile = @file_get_contents(PATH_site . $this->templateFilePath . 'UpdateWizardParts.html');
 
@@ -6399,22 +6474,32 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$singleUpdate = array();
 					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/install']['update'] as $identifier => $className) {
 						$tmpObj = $this->getUpgradeObjInstance($className, $identifier);
-						if (method_exists($tmpObj,'checkForUpdate')) {
+						if ($tmpObj->shouldRenderWizard()) {
 							$explanation = '';
-							if ($tmpObj->checkForUpdate($explanation)) {
-								$updateMarkers = array(
-									'identifier' => $identifier,
-									'explanation' => $explanation,
-									'next' => 'Next'
-								);
-								$singleUpdate[] = t3lib_parsehtml::substituteMarkerArray(
-									$singleUpdateWizardBoxSubpart,
-									$updateMarkers,
-									'###|###',
-									TRUE,
-									FALSE
-								);
+							$tmpObj->checkForUpdate($explanation);
+
+							$updateMarkers = array(
+								'next' => '<button type="submit" name="TYPO3_INSTALL[update][###IDENTIFIER###]">
+						Next
+						<span class="t3-install-form-button-icon-positive">&nbsp;</span>
+					</button>',
+								'identifier'  => $identifier,
+								'title'       => $tmpObj->getTitle(),
+								'explanation' => $explanation,
+							);
+
+								// only display the message, no button
+							if (!$tmpObj->shouldRenderNextButton()) {
+								$updateMarkers['next'] = '';
 							}
+
+							$singleUpdate[] = t3lib_parsehtml::substituteMarkerArray(
+								$singleUpdateWizardBoxSubpart,
+								$updateMarkers,
+								'###|###',
+								TRUE,
+								FALSE
+							);
 						}
 					}
 
@@ -6516,6 +6601,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$tmpObj = $this->getUpgradeObjInstance($className, $identifier);
 
 						$updateMarkers['identifier'] = $identifier;
+						$updateMarkers['title'] = $tmpObj->getTitle();
 
 						if (method_exists($tmpObj,'getUserInput')) {
 							$updateMarkers['identifierMethod'] = $tmpObj->getUserInput('TYPO3_INSTALL[update][' . $identifier . ']');
@@ -6567,6 +6653,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 
 					$tmpObj = $this->getUpgradeObjInstance($className, $identifier);
 					$updateItemsMarkers['identifier'] = $identifier;
+					$updateItemsMarkers['title'] = $tmpObj->getTitle();
 						// check user input if testing method is available
 					if (method_exists($tmpObj,'checkUserInput') && !$tmpObj->checkUserInput($customOutput)) {
 						$customOutput = '';
@@ -6679,9 +6766,29 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					implode(chr(10), $updateItems)
 				);
 				$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = FALSE;
+				
+				// also render the link to the next update wizard, if available
+				$nextUpdateWizard = $this->getNextUpdadeWizardInstance($tmpObj);
+				if ($nextUpdateWizard) {
+					$content = t3lib_parsehtml::substituteMarkerArray(
+						$content,
+						array('NEXTIDENTIFIER' => $nextUpdateWizard->getIdentifier()),
+						'###|###',
+						TRUE,
+						FALSE
+					);
+				} else {
+					// no next wizard, also hide the button to the next update wizard
+					$content = t3lib_parsehtml::substituteSubpart(
+						$content,
+						'###NEXTUPDATEWIZARD###',
+						''
+					);
+				}
+				
 			break;
 		}
-		$this->message('Update Wizard', $title, $content);
+		$this->message('Upgrade Wizard', $title, $content);
 	}
 
 	/**
@@ -6693,10 +6800,37 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 	 */
 	function getUpgradeObjInstance($className, $identifier) {
 		$tmpObj = t3lib_div::getUserObj($className);
+		$tmpObj->setIdentifier($identifier);
 		$tmpObj->versionNumber = t3lib_div::int_from_ver(TYPO3_version);
 		$tmpObj->pObj = $this;
 		$tmpObj->userInput = $this->INSTALL['update'][$identifier];
 		return $tmpObj;
+	}
+
+	/**
+	 * Returns the next upgrade wizard object.
+	 *
+	 * Used to show the link/button to the next upgrade wizard
+	 * @param	object	$currentObj		current Upgrade Wizard Object
+	 * @return	mixed	Upgrade Wizard instance or FALSE
+	 */
+	protected function getNextUpdadeWizardInstance($currentObj) {
+		$isPreviousRecord = TRUE;
+		foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/install']['update'] as $identifier => $className) {
+				// first, find the current update wizard, and then start validating the next ones
+			if ($currentObj->getIdentifier() == $identifier) {
+				$isPreviousRecord = FALSE;
+				continue;
+			}
+
+			if (!$isPreviousRecord) {
+				$nextUpdateWizard = $this->getUpgradeObjInstance($className, $identifier);
+				if ($nextUpdateWizard->shouldRenderWizard()) {
+					return $nextUpdateWizard;
+				}
+			}
+		}
+		return FALSE;
 	}
 
 	/**
@@ -7921,7 +8055,10 @@ $out="
 			'action' => $this->scriptSelf.'?TYPO3_INSTALL[type]=extConfig',
 			'enterPassword' => 'Enter new password:',
 			'enterAgain' => 'Enter again:',
-			'submit' => 'Set new password'
+			'submit' => 'Set new password',
+			'formToken' => $this->formProtection->generateToken(
+				'installToolPassword', 'change'
+			),
 		);
 			// Fill the markers
 		$content = t3lib_parsehtml::substituteMarkerArray(
@@ -7945,16 +8082,16 @@ $out="
 			<p>
 				<strong>TYPO3 CMS.</strong> Copyright &copy; 1998-' . date('Y') . '
 				Kasper Sk&#229;rh&#248;j. Extensions are copyright of their respective
-				owners. Go to <a href="http://typo3.com/">http://typo3.com/</a>
+				owners. Go to <a href="' . TYPO3_URL_GENERAL . '">' . TYPO3_URL_GENERAL . '</a>
 				for details. TYPO3 comes with ABSOLUTELY NO WARRANTY;
-				<a href="http://typo3.com/1316.0.html">click</a> for details.
+				<a href="' . TYPO3_URL_LICENSE . '">click</a> for details.
 				This is free software, and you are welcome to redistribute it
-				under certain conditions; <a href="http://typo3.com/1316.0.html">click</a>
+				under certain conditions; <a href="' . TYPO3_URL_LICENSE . '">click</a>
 				for details. Obstructing the appearance of this notice is prohibited by law.
 			</p>
 			<p>
-				<a href="http://typo3.org/donate"><strong>Donate</strong></a> |
-				<a href="http://typo3.org">TYPO3.org</a>
+				<a href="' . TYPO3_URL_DONATE . '"><strong>Donate</strong></a> |
+				<a href="' . TYPO3_URL_ORG . '">TYPO3.org</a>
 			</p>
 		';
 
@@ -8147,6 +8284,31 @@ $out="
 					'###CURRENT###',
 					$currentSubpart
 				);
+
+				$errorSubpart = '';
+				if (isset($this->databaseUpdateErrorMessages[$key])) {
+						// Get the subpart for current
+					$errorSubpart = t3lib_parsehtml::getSubpart($rowsSubpart, '###ERROR###');
+						// Define the markers content
+					$currentMarkers = array (
+						'errorMessage' => $this->databaseUpdateErrorMessages[$key],
+					);
+						// Fill the markers in the subpart
+					$errorSubpart = t3lib_parsehtml::substituteMarkerArray(
+						$errorSubpart,
+						$currentMarkers,
+						'###|###',
+						TRUE,
+						FALSE
+					);
+				}
+					// Substitute the subpart for error messages
+				$rowsSubpart = t3lib_parsehtml::substituteSubpart(
+					$rowsSubpart,
+					'###ERROR###',
+					$errorSubpart
+				);
+
 					// Fill the markers in the subpart
 				$rowsSubpart = t3lib_parsehtml::substituteMarkerArray(
 					$rowsSubpart,
@@ -8276,9 +8438,23 @@ $out="
 		$bytes = t3lib_div::generateRandomBytes($keyLength);
 		return substr(bin2hex($bytes), -96);
 	}
+
+	/**
+	 * Adds an error message that should be displayed.
+	 *
+	 * @param string $messageText
+	 *        the text of the message to display, must not be empty
+	 */
+	public function addErrorMessage($messageText) {
+		if ($messageText == '') {
+			throw new InvalidArgumentException('$messageText must not be empty.');
+		}
+
+		$this->errorMessages[] = $messageText;
+	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/install/mod/class.tx_install.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/install/mod/class.tx_install.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/install/mod/class.tx_install.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/install/mod/class.tx_install.php']);
 }
 ?>

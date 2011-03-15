@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -258,7 +258,7 @@ class tx_wizardcrpages_webfunc_2 extends t3lib_extobjbase {
 	 * @return	string		HTML code for a help-bubble image.
 	 */
 	function helpBubble()	{
-		return '<img src="'.$GLOBALS['BACK_PATH'].'gfx/helpbubble.gif" width="14" height="14" hspace="2" align="top"'.$this->pObj->doc->helpStyle().' alt="" />';
+		return '<img src="'.$GLOBALS['BACK_PATH'].'gfx/helpbubble.gif" width="14" height="14" hspace="2" align="top" alt="" />';
 	}
 
 	/**
@@ -331,7 +331,7 @@ class tx_wizardcrpages_webfunc_2 extends t3lib_extobjbase {
 
 		$group = '';
 		if (in_array(254, $types) && !in_array(254, $removeItems)) {
-			$group .= '<option style="background: url(&quot;' . $backPath . 'sysext/t3skin/icons/gfx/i/sysf.gif&quot;) no-repeat scroll 0% 50% rgb(255, 255, 255); height: 16px; padding-top: 2px; padding-left: 22px;" value="254">SysFolder</option>';
+			$group .= '<option style="background: url(&quot;' . $backPath . 'sysext/t3skin/icons/gfx/i/sysf.gif&quot;) no-repeat scroll 0% 50% rgb(255, 255, 255); height: 16px; padding-top: 2px; padding-left: 22px;" value="254">Folder</option>';
 		}
 		if (in_array(255, $types) && !in_array(255, $removeItems)) {
 			$group .= '<option style="background: url(&quot;' . $backPath . 'sysext/t3skin/icons/gfx/i/recycler.gif&quot;) no-repeat scroll 0% 50% rgb(255, 255, 255); height: 16px; padding-top: 2px; padding-left: 22px;" value="255">Recycler</option>';
@@ -346,7 +346,7 @@ class tx_wizardcrpages_webfunc_2 extends t3lib_extobjbase {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/wizard_crpages/class.tx_wizardcrpages_webfunc_2.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/wizard_crpages/class.tx_wizardcrpages_webfunc_2.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/wizard_crpages/class.tx_wizardcrpages_webfunc_2.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/wizard_crpages/class.tx_wizardcrpages_webfunc_2.php']);
 }
 ?>

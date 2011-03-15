@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Logout script for the backend
  * This script saves the interface positions and calls the closeTypo3Windows in the frameset
  *
- * $Id: logout.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: logout.php 10121 2011-01-18 20:15:30Z ohader $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
@@ -78,8 +78,8 @@ class SC_logout {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/logout.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/logout.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/logout.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/logout.php']);
 }
 
 

@@ -28,20 +28,19 @@
  * <code title="Defaults">
  * <f:form.submit value="Send Mail" />
  * </code>
- *
- * Output:
+ * <output>
  * <input type="submit" />
+ * </output>
  *
  * <code title="Dummy content for template preview">
  * <f:submit name="mySubmit" value="Send Mail"><button>dummy button</button></f:submit>
  * </code>
- *
-  * Output:
+ * <output>
  * <input type="submit" name="mySubmit" value="Send Mail" />
+ * </output>
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @api
- * @scope prototype
  */
 class Tx_Fluid_ViewHelpers_Form_SubmitViewHelper extends Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper {
 

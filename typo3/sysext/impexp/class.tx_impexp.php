@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -2628,7 +2628,7 @@ class tx_impexp {
 						$pInfo['msg'].="'".$pInfo['ref']."' cannot be INSERTED on this page! ";
 					}
 					if (!$this->checkDokType($table, $this->display_import_pid_record['doktype']) && !$TCA[$table]['ctrl']['rootLevel'])	{
-						$pInfo['msg'].="'".$table."' cannot be INSERTED on this page type (change to 'sysFolder'!) ";
+						$pInfo['msg'].="'".$table."' cannot be INSERTED on this page type (change page type to 'Folder'.) ";
 					}
 				}
 				if (!$BE_USER->check('tables_modify',$table))	{$pInfo['msg'].="You are not allowed to CREATE '".$table."' tables! ";}
@@ -3335,7 +3335,7 @@ class tx_impexp {
 
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/impexp/class.tx_impexp.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/impexp/class.tx_impexp.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/impexp/class.tx_impexp.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/impexp/class.tx_impexp.php']);
 }
 ?>

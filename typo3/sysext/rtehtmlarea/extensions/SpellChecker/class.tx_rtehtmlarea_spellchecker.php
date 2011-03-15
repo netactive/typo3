@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2008-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -26,13 +26,10 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_spellchecker.php 7703 2010-05-27 21:23:59Z stan $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_spellchecker.php 10120 2011-01-18 20:03:36Z ohader $
  *
  */
-
-require_once(t3lib_extMgm::extPath('rtehtmlarea').'class.tx_rtehtmlareaapi.php');
-
-class tx_rtehtmlarea_spellchecker extends tx_rtehtmlareaapi {
+class tx_rtehtmlarea_spellchecker extends tx_rtehtmlarea_api {
 
 	protected $extensionKey = 'rtehtmlarea';	// The key of the extension that is extending htmlArea RTE
 	protected $pluginName = 'SpellChecker';		// The name of the plugin registered by the extension
@@ -79,7 +76,7 @@ class tx_rtehtmlarea_spellchecker extends tx_rtehtmlareaapi {
 			// Set the use of personal dictionary
 			// $this->thisConfig['enablePersonalDicts'] is DEPRECATED as of 4.3.0
 		$enablePersonalDicts = ($this->thisConfig['buttons.'][$button.'.']['enablePersonalDictionaries'] || $this->thisConfig['enablePersonalDicts']) ? ((isset($GLOBALS['BE_USER']->userTS['options.']['enablePersonalDicts']) && $GLOBALS['BE_USER']->userTS['options.']['enablePersonalDicts']) ? true : false) : false;
-		if (ini_get('safe_mode') || $this->htmlAreaRTE->is_FE()) {
+		if (t3lib_utility_PhpOptions::isSafeModeEnabled() || $this->htmlAreaRTE->is_FE()) {
 			$enablePersonalDicts = false;
 		}
 
@@ -101,7 +98,7 @@ class tx_rtehtmlarea_spellchecker extends tx_rtehtmlareaapi {
 		return $registerRTEinJavascriptString;
 	}
 }
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/SpellChecker/class.tx_rtehtmlarea_spellchecker.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/SpellChecker/class.tx_rtehtmlarea_spellchecker.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/SpellChecker/class.tx_rtehtmlarea_spellchecker.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/SpellChecker/class.tx_rtehtmlarea_spellchecker.php']);
 }
 ?>

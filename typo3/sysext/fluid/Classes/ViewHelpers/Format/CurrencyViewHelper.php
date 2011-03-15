@@ -28,20 +28,27 @@
  * <code title="Defaults">
  * <f:format.currency>123.456</f:format.currency>
  * </code>
- *
- * Output:
+ * <output>
  * 123,46
+ * </output>
  *
  * <code title="All parameters">
  * <f:format.currency currencySign="$" decimalSeparator="." thousandsSeparator=",">54321</f:format.currency>
  * </code>
- *
- * Output:
+ * <output>
  * 54,321.00 $
+ * </output>
+ *
+ * <code title="Inline notation">
+ * {someNumber -> f:format.currency(thousandsSeparator: ',', currencySign: '€')}
+ * </code>
+ * <output>
+ * 54,321,00 €
+ * (depending on the value of {someNumber})
+ * </output>
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @api
- * @scope prototype
  */
 class Tx_Fluid_ViewHelpers_Format_CurrencyViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
 

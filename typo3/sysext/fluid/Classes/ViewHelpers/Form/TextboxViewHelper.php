@@ -30,13 +30,12 @@
  * <code title="Example">
  * <f:form.textbox name="myTextBox" value="default value" />
  * </code>
- *
- * Output:
+ * <output>
  * <input type="text" name="myTextBox" value="default value" />
+ * </output>
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @api
- * @scope prototype
  * @deprecated since 1.0.0 alpha 7
  */
 class Tx_Fluid_ViewHelpers_Form_TextboxViewHelper extends Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper {

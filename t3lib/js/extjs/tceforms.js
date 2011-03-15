@@ -1,7 +1,7 @@
 /***************************************************************
  * extJS for TCEforms
  *
- * $Id: tceforms.js 8012 2010-06-21 17:16:42Z steffenk $
+ * $Id: tceforms.js 9469 2010-11-17 19:46:10Z psychomieze $
  *
  * Copyright notice
  *
@@ -38,17 +38,25 @@ TYPO3.TCEFORMS = {
 	},
 
 	convertDateFieldsToDatePicker: function() {
-		var dateFields = Ext.select("input[id^=tceforms-date]");
+		var dateFields = Ext.select("input[id^=tceforms-date]"), minDate, maxDate, lowerMatch, upperMatch;
 		dateFields.each(function(element) {
 			var index = element.dom.id.match(/tceforms-datefield-/) ? 0 : 1;
 			var format = TYPO3.settings.datePickerUSmode ? TYPO3.settings.dateFormatUS : TYPO3.settings.dateFormat;
 
 			var datepicker = element.next('span');
 
+			// check for daterange
+			var lowerMatch = element.dom.className.match(/lower-(\d+)\b/);
+			minDate = Ext.isArray(lowerMatch) ? new Date(lowerMatch[1] * 1000) : null;
+			var upperMatch = element.dom.className.match(/upper-(\d+)\b/);
+			maxDate = Ext.isArray(upperMatch) ? new Date(upperMatch[1] * 1000) : null;
+
 			var menu = new Ext.menu.DateMenu({
 				id:			'p' + element.dom.id,
 				format:		format[index],
 				value:		Date.parseDate(element.dom.value, format[index]),
+				minDate:	minDate,
+				maxDate:	maxDate,
 				handler: 	function(picker, date){
 					var relElement = Ext.getDom(picker.ownerCt.id.substring(1));
 					relElement.value = date.format(format[index]);

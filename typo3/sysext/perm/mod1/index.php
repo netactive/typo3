@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Module: Permission setting
  *
- * $Id: index.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: index.php 10295 2011-01-25 09:33:06Z baschny $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -88,7 +88,7 @@ $BE_USER->modAccess($MCONF,1);
  * @author	Andreas Kundoch <typo3@mehrwert.de>
  * @package	TYPO3
  * @subpackage	core
- * @version	$Id: index.php 8742 2010-08-30 18:55:32Z baschny $
+ * @version	$Id: index.php 10295 2011-01-25 09:33:06Z baschny $
  */
 class SC_mod_web_perm_index {
 
@@ -311,14 +311,16 @@ class SC_mod_web_perm_index {
 			$markers['CONTENT'] = $this->content;
 
 				// Build the <body> for the module
-			$this->content = $this->doc->startPage($LANG->getLL('permissions'));
-			$this->content.= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
+			$this->content = $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
 		} else {
 				// If no access or if ID == zero
-			$this->content.=$this->doc->startPage($LANG->getLL('permissions'));
-			$this->content.=$this->doc->header($LANG->getLL('permissions'));
+			$this->content =$this->doc->header($LANG->getLL('permissions'));
 		}
-		$this->content.= $this->doc->endPage();
+			// Renders the module page
+		$this->content = $this->doc->render(
+			$LANG->getLL('permissions'),
+			$this->content
+		);
 	}
 
 	/**
@@ -358,10 +360,12 @@ class SC_mod_web_perm_index {
 		}
 
 			// If access to Web>List for user, then link to that module.
-		$buttons['record_list'] = t3lib_extMgm::createListViewLink(
-			$this->pageinfo['uid'],
-			'&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')),
-			$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showList', TRUE)
+		$buttons['record_list'] = t3lib_BEfunc::getListViewLink(
+			array(
+				'id' => $this->pageinfo['uid'],
+				'returnUrl' => t3lib_div::getIndpEnv('REQUEST_URI'),
+			),
+			$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showList')
 		);
 		return $buttons;
 	}
@@ -512,7 +516,7 @@ class SC_mod_web_perm_index {
 			<input type="submit" name="submit" value="'.$LANG->getLL('Save',1).'" />'.
 			'<input type="submit" value="'.$LANG->getLL('Abort',1).'" onclick="'.htmlspecialchars('jumpToUrl(\'index.php?id='.$this->id.'\'); return false;').'" />
 			<input type="hidden" name="redirect" value="'.htmlspecialchars(TYPO3_MOD_PATH.'index.php?mode='.$this->MOD_SETTINGS['mode'].'&depth='.$this->MOD_SETTINGS['depth'].'&id='.intval($this->return_id).'&lastEdited='.$this->id).'" />
-		';
+		' . t3lib_TCEforms::getHiddenTokenField('tceAction');
 
 			// Adding section with the permission setting matrix:
 		$this->content.=$this->doc->divider(5);
@@ -835,8 +839,8 @@ class SC_mod_web_perm_index {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/web/perm/index.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/web/perm/index.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/web/perm/index.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/web/perm/index.php']);
 }
 
 

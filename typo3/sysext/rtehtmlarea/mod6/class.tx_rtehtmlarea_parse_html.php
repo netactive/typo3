@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2005-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  *
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_parse_html.php 7270 2010-04-10 04:51:04Z stan $  *
+ * $Id: class.tx_rtehtmlarea_parse_html.php 10120 2011-01-18 20:03:36Z ohader $  *
  */
 
 class tx_rtehtmlarea_parse_html {
@@ -124,7 +124,11 @@ class tx_rtehtmlarea_parse_html {
 
 		$HTMLParser = t3lib_div::makeInstance('t3lib_parsehtml');
 		if (is_array($thisConfig['enableWordClean.'])) {
-			$HTMLparserConfig = is_array($thisConfig['enableWordClean.']['HTMLparser.'])  ? $HTMLParser->HTMLparserConfig($thisConfig['enableWordClean.']['HTMLparser.']) : '';
+			$HTMLparserConfig = $thisConfig['enableWordClean.']['HTMLparser.'];
+			if (is_array($HTMLparserConfig)) {
+				$this->keepSpanTagsWithId($HTMLparserConfig);
+				$HTMLparserConfig = $HTMLParser->HTMLparserConfig($HTMLparserConfig);
+			}
 		}
 		if (is_array($HTMLparserConfig)) {
 			$html = $HTMLParser->HTMLcleaner($html, $HTMLparserConfig[0], $HTMLparserConfig[1], $HTMLparserConfig[2], $HTMLparserConfig[3]);
@@ -140,8 +144,52 @@ class tx_rtehtmlarea_parse_html {
 		}
 		return $html;
 	}
+	/**
+	 * Modify incoming HTMLparser config in an attempt to keep span tags with id
+	 * Such tags are used by the RTE in order to restore the cursor position when the cleaning operation is completed.
+	 *
+	 * @param	array		$HTMLparserConfig: incoming HTMLParser configuration (wil be modified)
+	 * @return	void
+	 */
+	protected function keepSpanTagsWithId(&$HTMLparserConfig) {
+			// Allow span tag
+		if (isset($HTMLparserConfig['allowTags'])) {
+			if (!t3lib_div::inList($HTMLparserConfig['allowTags'], 'span')) {
+				$HTMLparserConfig['allowTags'] .= ',span';
+			}
+		} else {
+			$HTMLparserConfig['allowTags'] = 'span';
+		}
+			// Allow attributes on span tags
+		if (isset($HTMLparserConfig['noAttrib']) && t3lib_div::inList($HTMLparserConfig['noAttrib'], 'span')) {
+			$HTMLparserConfig['noAttrib'] = t3lib_div::rmFromList('span', $HTMLparserConfig['noAttrib']);
+		}
+			// Do not remove span tags
+		if (isset($HTMLparserConfig['removeTags']) && t3lib_div::inList($HTMLparserConfig['removeTags'], 'span')) {
+			$HTMLparserConfig['removeTags'] = t3lib_div::rmFromList('span', $HTMLparserConfig['removeTags']);
+		}
+			// Review the tags array
+		if (is_array($HTMLparserConfig['tags.'])) {
+				// Allow span tag
+			if (isset($HTMLparserConfig['tags.']['span']) && !$HTMLparserConfig['tags.']['span']) {
+				$HTMLparserConfig['tags.']['span'] = 1;
+			}
+			if (is_array($HTMLparserConfig['tags.']['span.'])) {
+				if (isset($HTMLparserConfig['tags.']['span.']['allowedAttribs'])) {
+					if (!$HTMLparserConfig['tags.']['span.']['allowedAttribs']) {
+						$HTMLparserConfig['tags.']['span.']['allowedAttribs'] = 'id';
+					} else if (!t3lib_div::inList($HTMLparserConfig['tags.']['span.']['allowedAttribs'], 'id')) {
+						$HTMLparserConfig['tags.']['span.']['allowedAttribs'] .= ',id';
+					}
+				}
+				if (isset($HTMLparserConfig['tags.']['span.']['fixAttrib.']['id.']['unset'])) {
+					unset($HTMLparserConfig['tags.']['span.']['fixAttrib.']['id.']['unset']);
+				}
+			}
+		}
+	}
 }
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod6/class.tx_rtehtmlarea_parse_html.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod6/class.tx_rtehtmlarea_parse_html.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod6/class.tx_rtehtmlarea_parse_html.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod6/class.tx_rtehtmlarea_parse_html.php']);
 }
 ?>

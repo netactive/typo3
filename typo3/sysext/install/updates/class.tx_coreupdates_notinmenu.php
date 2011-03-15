@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Sebastian Kurfürst <sebastian@garbage-group.de>
+*  (c) 1999-2011 Sebastian Kurfürst <sebastian@garbage-group.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,18 +30,10 @@
  *
  * @author Sebastian Kurfürst <sebastian@garbage-group.de>
  * @author Steffen Kamper <info@sk-typo3.de>
- * @version $Id: class.tx_coreupdates_notinmenu.php 8742 2010-08-30 18:55:32Z baschny $
+ * @version $Id: class.tx_coreupdates_notinmenu.php 10120 2011-01-18 20:03:36Z ohader $
  */
-class tx_coreupdates_notinmenu {
-	var $versionNumber;	// version number coming from t3lib_div::int_from_ver()
-
-	/**
-	 * parent object
-	 *
-	 * @var tx_install
-	 */
-	var $pObj;
-	var $userInput;	// user input
+class tx_coreupdates_notinmenu extends Tx_Install_Updates_Base {
+	protected $title = 'Update Pages with Doktype "Not in menu"';
 
 
 	/**

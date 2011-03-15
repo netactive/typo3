@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Move element wizard:
  * Moving pages or content elements (tt_content) around in the system via a page tree navigation.
  *
- * $Id: move_el.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: move_el.php 10295 2011-01-25 09:33:06Z baschny $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compatible.
  *
@@ -130,7 +130,11 @@ class ext_posMap_pages extends t3lib_positionMap {
 	 * @return	string		Onclick attribute content
 	 */
 	function onClickEvent($pid,$newPagePID)	{
-		return 'window.location.href=\'tce_db.php?cmd[pages]['.$GLOBALS['SOBE']->moveUid.']['.$this->moveOrCopy.']='.$pid.'&redirect='.rawurlencode($this->R_URI).'&prErr=1&uPT=1&vC='.$GLOBALS['BE_USER']->veriCode().'\';return false;';
+		return 'window.location.href=\'tce_db.php?cmd[pages][' . $GLOBALS['SOBE']->moveUid . '][' . $this->moveOrCopy . ']=' . $pid .
+				'&redirect=' . rawurlencode($this->R_URI) .
+				'&prErr=1&uPT=1&vC=' . $GLOBALS['BE_USER']->veriCode() .
+				t3lib_BEfunc::getUrlToken('tceAction') .
+				'\';return false;';
 	}
 
 	/**
@@ -451,8 +455,8 @@ class SC_move_el {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/move_el.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/move_el.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/move_el.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/move_el.php']);
 }
 
 

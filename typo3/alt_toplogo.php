@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Top logo frame
  * Displays the logo in the top frame (upper left corner)
  *
- * $Id: alt_toplogo.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: alt_toplogo.php 10121 2011-01-18 20:15:30Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant content
  *
@@ -46,13 +46,14 @@
  * TOTAL FUNCTIONS: 2
  * (This index is automatically created/updated by the extension "extdeveval")
  *
+ * @deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. The TYPO3 backend is using typo3/backend.php with less frames, which makes this file obsolete.
  */
-
-
 
 require ('init.php');
 require ('template.php');
 require ('classes/class.typo3logo.php');
+
+t3lib_div::deprecationLog('alt_toplogo.php is deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. The TYPO3 backend is using typo3/backend.php with less frames, which makes this file obsolete.');
 
 
 
@@ -97,8 +98,8 @@ class SC_alt_toplogo {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_toplogo.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_toplogo.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_toplogo.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_toplogo.php']);
 }
 
 

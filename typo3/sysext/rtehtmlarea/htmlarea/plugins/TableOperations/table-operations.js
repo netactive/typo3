@@ -31,7 +31,7 @@
 /*
  * Table Operations Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: table-operations.js 8087 2010-07-04 20:18:10Z stan $
+ * TYPO3 SVN ID: $Id: table-operations.js 10191 2011-01-21 06:06:58Z stan $
  */
 HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 		
@@ -129,7 +129,7 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 		['cell-insert-before',	'td,th',			'cellinsertbefore', false, 'cell-insert-before'],
 		['cell-insert-after',	'td,th',			'cellinsertafter', false, 'cell-insert-after'],
 		['cell-delete',		'td,th',			'celldelete', false, 'cell-delete'],
-		['cell-merge',		'tr',				'cellmerge', false, 'cell-merge'],
+		['cell-merge',		Ext.isGecko? 'tr' : 'td,th',	'cellmerge', false, 'cell-merge'],
 		['cell-split',		'td,th[colSpan!=1,rowSpan!=1]',	'cellsplit', false, 'cell-split']
 	],
 	/*
@@ -264,11 +264,8 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 				}
 				break;
 		}
-		if (this.removedFieldsets.indexOf('style') == -1 && this.getButton('BlockStyle')) {
-			var blockStyle = this.getPluginInstance('BlockStyle');
-			if (blockStyle && blockStyle.cssLoaded) {
-				this.addConfigElement(this.buildStylingFieldsetConfig(element, buttonId), generalTabItems);
-			}
+		if (this.removedFieldsets.indexOf('style') == -1 && this.getPluginInstance('BlockStyle')) {
+			this.addConfigElement(this.buildStylingFieldsetConfig(element, buttonId), generalTabItems);
 		}
 		if (!Ext.isEmpty(generalTabItems)) {
 			tabItems.push({
@@ -398,7 +395,10 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 		if (this.properties.required) {
 			if (this.properties.required.indexOf('captionOrSummary') != -1) {
 				if (!/\S/.test(params.f_caption) && !/\S/.test(params.f_summary)) {
-					Ext.MessageBox.alert(this.localize('Error'), this.localize('captionOrSummary' + '-required'));
+					TYPO3.Dialog.ErrorDialog({
+						title: this.getButton(this.dialog.arguments.buttonId).tooltip.title,
+						msg: this.localize('captionOrSummary' + '-required')
+					});
 					var field = this.dialog.find('itemId', 'f_caption')[0];
 					var tab = field.findParentByType('container');
 					tab.ownerCt.activate(tab);
@@ -412,7 +412,10 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 				};
 				Ext.iterate(required, function (item) {
 					if (!params[item] && this.properties.required.indexOf(required[item]) != -1) {
-						Ext.MessageBox.alert(this.localize('Error'), this.localize(required[item] + '-required'));
+						TYPO3.Dialog.ErrorDialog({
+							title: this.getButton(this.dialog.arguments.buttonId).tooltip.title,
+							msg: this.localize(required[item] + '-required')
+						});
 						var field = this.dialog.find('itemId', item)[0];
 						var tab = field.findParentByType('container');
 						tab.ownerCt.activate(tab);
@@ -434,7 +437,10 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 			};
 			Ext.iterate(required, function (item) {
 				if (!params[item]) {
-					Ext.MessageBox.alert(this.localize('Error'), this.localize(required[item]));
+					TYPO3.Dialog.ErrorDialog({
+						title: this.getButton(this.dialog.arguments.buttonId).tooltip.title,
+						msg: this.localize(required[item])
+					});
 					var field = this.dialog.find('itemId', item)[0];
 					var tab = field.findParentByType('container');
 					tab.ownerCt.activate(tab);
@@ -516,16 +522,16 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 			    case "f_st_float":
 				switch (val) {
 				    case "not set":
-					HTMLArea._removeClass(table, this.floatRight);
-					HTMLArea._removeClass(table, this.floatLeft);
+					HTMLArea.DOM.removeClass(table, this.floatRight);
+					HTMLArea.DOM.removeClass(table, this.floatLeft);
 					break;
 				    case "right":
-					HTMLArea._removeClass(table, this.floatLeft);
-					HTMLArea._addClass(table, this.floatRight);
+					HTMLArea.DOM.removeClass(table, this.floatLeft);
+					HTMLArea.DOM.addClass(table, this.floatRight);
 					break;
 				    case "left":
-					HTMLArea._removeClass(table, this.floatRight);
-					HTMLArea._addClass(table, this.floatLeft);
+					HTMLArea.DOM.removeClass(table, this.floatRight);
+					HTMLArea.DOM.addClass(table, this.floatLeft);
 					break;
 				}
 				break;
@@ -675,8 +681,18 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 	 * This function gets called when the toolbar is being updated
 	 */
 	onUpdateToolbar: function (button, mode, selectionEmpty, ancestors) {
-		if (mode === 'wysiwyg' && this.editor.isEditable() && button.itemId === 'TO-toggle-borders') {
-			button.setInactive(!HTMLArea._hasClass(this.editor._doc.body, 'htmlarea-showtableborders'));
+		if (mode === 'wysiwyg' && this.editor.isEditable()) {
+			switch (button.itemId) {
+				case 'TO-toggle-borders':
+					button.setInactive(!HTMLArea.DOM.hasClass(this.editor.document.body, 'htmlarea-showtableborders'));
+					break;
+				case 'TO-cell-merge':
+					if (Ext.isGecko) {
+						var selection = this.editor._getSelection();
+						button.setDisabled(button.disabled || selection.rangeCount < 2);
+					}
+					break;
+			}
 		}
 	},
 	/*
@@ -1038,10 +1054,13 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 				var cell = this.getClosest("td");
 				if (!cell) var cell = this.getClosest("th");
 				if (!cell) {
-					Ext.MessageBox.alert('', this.localize("Please click into some cell"));
+					TYPO3.Dialog.InformationDialog({
+						title: this.getButton('TO-cell-merge').tooltip.title,
+						msg: this.localize('Please click into some cell')
+					});
 					break;
 				}
-				var tr = cell.parentElement;
+				var tr = cell.parentNode;
 				var no_cols = parseInt(prompt(this.localize("How many columns would you like to merge?"), 2));
 				if (!no_cols) break;
 				var no_rows = parseInt(prompt(this.localize("How many rows would you like to merge?"), 2));
@@ -1134,7 +1153,7 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 			this.toggleBorders();
 			break;
 		    default:
-			alert("Button [" + buttonId + "] not yet implemented");
+			break;
 		}
 	},
 	/*
@@ -1170,10 +1189,10 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 	 */
 	toggleBorders : function (forceBorders) {
 		var body = this.editor._doc.body;
-		if (!HTMLArea._hasClass(body, 'htmlarea-showtableborders')) {
-			HTMLArea._addClass(body,'htmlarea-showtableborders');
+		if (!HTMLArea.DOM.hasClass(body, 'htmlarea-showtableborders')) {
+			HTMLArea.DOM.addClass(body,'htmlarea-showtableborders');
 		} else if (!forceBorders) {
-			HTMLArea._removeClass(body,'htmlarea-showtableborders');
+			HTMLArea.DOM.removeClass(body,'htmlarea-showtableborders');
 		}
 	},
 	/*
@@ -1287,20 +1306,20 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 			odd = oddClass[type];
 			even = evenClass[type];
 			if (remove) {
-				HTMLArea._removeClass(row, odd);
-				HTMLArea._removeClass(row, even);
+				HTMLArea.DOM.removeClass(row, odd);
+				HTMLArea.DOM.removeClass(row, even);
 				// Check if i is even, and apply classes for both possible results
 			} else if (odd && even) {
 				if ((i % 2) == 0) {
-					if (HTMLArea._hasClass(row, even)) {
-						HTMLArea._removeClass(row, even);
+					if (HTMLArea.DOM.hasClass(row, even)) {
+						HTMLArea.DOM.removeClass(row, even);
 					}
-					HTMLArea._addClass(row, odd);
+					HTMLArea.DOM.addClass(row, odd);
 				} else {
-					if (HTMLArea._hasClass(row, odd)) {
-						HTMLArea._removeClass(row, odd);
+					if (HTMLArea.DOM.hasClass(row, odd)) {
+						HTMLArea.DOM.removeClass(row, odd);
 					}
-					HTMLArea._addClass(row, even);
+					HTMLArea.DOM.addClass(row, even);
 				}
 			}
 		}
@@ -1330,20 +1349,20 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 				odd = oddClass[type];
 				even = evenClass[type];
 				if (remove) {
-					if (odd) HTMLArea._removeClass(cell, odd);
-					if (even) HTMLArea._removeClass(cell, even);
+					if (odd) HTMLArea.DOM.removeClass(cell, odd);
+					if (even) HTMLArea.DOM.removeClass(cell, even);
 				} else if (odd && even) {
 						// Check if j+startAt is even, and apply classes for both possible results
 					if ((j % 2) == 0) {
-						if (HTMLArea._hasClass(cell, even)) {
-							HTMLArea._removeClass(cell, even);
+						if (HTMLArea.DOM.hasClass(cell, even)) {
+							HTMLArea.DOM.removeClass(cell, even);
 						}
-						HTMLArea._addClass(cell, odd);
+						HTMLArea.DOM.addClass(cell, odd);
 					} else{
-						if (HTMLArea._hasClass(cell, odd)) {
-							HTMLArea._removeClass(cell, odd);
+						if (HTMLArea.DOM.hasClass(cell, odd)) {
+							HTMLArea.DOM.removeClass(cell, odd);
 						}
-						HTMLArea._addClass(cell, even);
+						HTMLArea.DOM.addClass(cell, even);
 					}
 				}
 			}
@@ -1410,23 +1429,23 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 			lastRowClassName = rowLastClass[type];
 			if (remove) {
 				if (baseClassName) {
-					HTMLArea._removeClass(row, rowClassName);
+					HTMLArea.DOM.removeClass(row, rowClassName);
 				}
 				if (lastRowClassName && i == n-1) {
-					HTMLArea._removeClass(row, lastRowClassName);
+					HTMLArea.DOM.removeClass(row, lastRowClassName);
 				}
 			} else {
 				if (baseClassName) {
-					if (HTMLArea._hasClass(row, baseClassName, true)) {
-						HTMLArea._removeClass(row, baseClassName, true);
+					if (HTMLArea.DOM.hasClass(row, baseClassName, true)) {
+						HTMLArea.DOM.removeClass(row, baseClassName, true);
 					}
-					HTMLArea._addClass(row, rowClassName);
+					HTMLArea.DOM.addClass(row, rowClassName);
 				}
 				if (lastRowClassName) {
 					if (i == n-1) {
-						HTMLArea._addClass(row, lastRowClassName);
-					} else if (HTMLArea._hasClass(row, lastRowClassName)) {
-						HTMLArea._removeClass(row, lastRowClassName);
+						HTMLArea.DOM.addClass(row, lastRowClassName);
+					} else if (HTMLArea.DOM.hasClass(row, lastRowClassName)) {
+						HTMLArea.DOM.removeClass(row, lastRowClassName);
 					}
 				}
 			}
@@ -1459,23 +1478,23 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 				lastColumnClassName = columnLastClass[type];
 				if (remove) {
 					if (baseClassName) {
-						HTMLArea._removeClass(cell, columnClassName);
+						HTMLArea.DOM.removeClass(cell, columnClassName);
 					}
 					if (lastColumnClassName && j == n-1) {
-							HTMLArea._removeClass(cell, lastColumnClassName);
+							HTMLArea.DOM.removeClass(cell, lastColumnClassName);
 					}
 				} else {
 					if (baseClassName) {
-						if (HTMLArea._hasClass(cell, baseClassName, true)) {
-							HTMLArea._removeClass(cell, baseClassName, true);
+						if (HTMLArea.DOM.hasClass(cell, baseClassName, true)) {
+							HTMLArea.DOM.removeClass(cell, baseClassName, true);
 						}
-						HTMLArea._addClass(cell, columnClassName);
+						HTMLArea.DOM.addClass(cell, columnClassName);
 					}
 					if (lastColumnClassName) {
 						if (j == n-1) {
-							HTMLArea._addClass(cell, lastColumnClassName);
-						} else if (HTMLArea._hasClass(cell, lastColumnClassName)) {
-							HTMLArea._removeClass(cell, lastColumnClassName);
+							HTMLArea.DOM.addClass(cell, lastColumnClassName);
+						} else if (HTMLArea.DOM.hasClass(cell, lastColumnClassName)) {
+							HTMLArea.DOM.removeClass(cell, lastColumnClassName);
 						}
 					}
 				}
@@ -1509,7 +1528,7 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 			} else {
 				var firstRow = thead.rows[0];
 			}
-			HTMLArea._removeClass(firstRow, this.useHeaderClass);
+			HTMLArea.DOM.removeClass(firstRow, this.useHeaderClass);
 		} else {
 			if (thead) {
 				var rows = thead.rows;
@@ -1528,10 +1547,10 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 		}
 		if (headers == "both") {
 			var firstRow = tbody.rows[0];
-			HTMLArea._addClass(firstRow, this.useHeaderClass);
+			HTMLArea.DOM.addClass(firstRow, this.useHeaderClass);
 		} else if (headers != "top") {
 			var firstRow = tbody.rows[0];
-			HTMLArea._removeClass(firstRow, this.useHeaderClass);
+			HTMLArea.DOM.removeClass(firstRow, this.useHeaderClass);
 			this.remapRowCells(firstRow, "td");
 		}
 		if (headers == "top" || headers == "both") {
@@ -1601,7 +1620,7 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 				var classNames = newCell.className.trim().split(" ");
 				for (var i = classNames.length; --i >= 0;) {
 					if (!allowedClasses.test(classNames[i])) {
-						HTMLArea._removeClass(newCell, classNames[i]);
+						HTMLArea.DOM.removeClass(newCell, classNames[i]);
 					}
 				}
 			}
@@ -1806,7 +1825,7 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 				if (thead.length && thead[0].rows.length) {
 					selected = 'top';
 				} else if (tbody.length && tbody[0].rows.length) {
-					if (HTMLArea._hasClass(tbody[0].rows[0], this.useHeaderClass)) {
+					if (HTMLArea.DOM.hasClass(tbody[0].rows[0], this.useHeaderClass)) {
 						selected = 'both';
 					} else if (tbody[0].rows[0].cells.length && tbody[0].rows[0].cells[0].nodeName.toLowerCase() == 'th') {
 						selected = 'left';
@@ -1916,12 +1935,12 @@ HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 	 */
 	setStyleOptions: function (dropDown, element, nodeName, defaultClass) {
 		var blockStyle = this.getPluginInstance('BlockStyle');
-		if (dropDown && blockStyle && blockStyle.cssLoaded) {
+		if (dropDown && blockStyle) {
 			if (defaultClass) {
 				var classNames = new Array();
 				classNames.push(defaultClass);
 			} else {
-				var classNames = blockStyle.getClassNames(element);
+				var classNames = HTMLArea.DOM.getClassNames(element);
 			}
 			blockStyle.buildDropDownOptions(dropDown, nodeName);
 			blockStyle.setSelectedOption(dropDown, classNames, 'noUnknown', defaultClass);

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2005-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  *
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: ext_localconf.php 8689 2010-08-25 20:05:43Z stan $  *
+ * $Id: ext_localconf.php 10120 2011-01-18 20:03:36Z ohader $  *
  */
 
 if (!defined ("TYPO3_MODE")) 	die ('Access denied.');
@@ -63,7 +63,9 @@ t3lib_extMgm::addPageTSConfig('<INCLUDE_TYPOSCRIPT: source="FILE:EXT:' . $_EXTKE
 t3lib_extMgm::addUserTSConfig('<INCLUDE_TYPOSCRIPT: source="FILE:EXT:' . $_EXTKEY . '/res/' . strtolower($TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['defaultConfiguration']) . '/userTSConfig.txt">');
 
 	// Add Clear RTE Cache to Clear Cache menu
-require_once(t3lib_extMgm::extPath('rtehtmlarea').'hooks/clearrtecache/ext_localconf.php');
+require_once(t3lib_extMgm::extPath('rtehtmlarea') . 'hooks/clearrtecache/ext_localconf.php');
+	// Add Status Report about Conflicting Extensions
+require_once(t3lib_extMgm::extPath('rtehtmlarea') . 'hooks/statusreport/ext_localconf.php');
 
 	// Troubleshooting and script compression
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['enableDebugMode'] = isset($_EXTCONF['enableDebugMode']) ? $_EXTCONF['enableDebugMode'] : 0;
@@ -102,6 +104,11 @@ $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins'] = array();
 	// Editor Mode configuration
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['EditorMode'] = array();
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['EditorMode']['objectReference'] = 'EXT:'.$_EXTKEY.'/extensions/EditorMode/class.tx_rtehtmlarea_editormode.php:&tx_rtehtmlarea_editormode';
+	// General Element configuration
+$TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['EditElement'] = array();
+$TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['EditElement']['objectReference'] = 'EXT:'.$_EXTKEY.'/extensions/EditElement/class.tx_rtehtmlarea_editelement.php:&tx_rtehtmlarea_editelement';
+$TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['EditElement']['addIconsToSkin'] = 0;
+$TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['EditElement']['disableInFE'] = 0;
 	// Inline Elements configuration
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['DefaultInline'] = array();
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['DefaultInline']['objectReference'] = 'EXT:'.$_EXTKEY.'/extensions/DefaultInline/class.tx_rtehtmlarea_defaultinline.php:&tx_rtehtmlarea_defaultinline';
@@ -233,6 +240,10 @@ $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['RemoveFormat'] = array();
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['RemoveFormat']['objectReference'] = 'EXT:'.$_EXTKEY.'/extensions/RemoveFormat/class.tx_rtehtmlarea_removeformat.php:&tx_rtehtmlarea_removeformat';
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['RemoveFormat']['addIconsToSkin'] = 0;
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['RemoveFormat']['disableInFE'] = 0;
+$TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['PlainText'] = array();
+$TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['PlainText']['objectReference'] = 'EXT:'.$_EXTKEY.'/extensions/PlainText/class.tx_rtehtmlarea_plaintext.php:&tx_rtehtmlarea_plaintext';
+$TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['PlainText']['addIconsToSkin'] = 0;
+$TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['PlainText']['disableInFE'] = 0;
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['DefaultClean'] = array();
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['DefaultClean']['objectReference'] = 'EXT:'.$_EXTKEY.'/extensions/DefaultClean/class.tx_rtehtmlarea_defaultclean.php:&tx_rtehtmlarea_defaultclean';
 $TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['plugins']['TYPO3HtmlParser'] = array();

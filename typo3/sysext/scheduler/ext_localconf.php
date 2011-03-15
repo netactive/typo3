@@ -1,5 +1,5 @@
 <?php
-/* $Id: ext_localconf.php 8156 2010-07-11 12:42:05Z psychomieze $ */
+/* $Id: ext_localconf.php 9231 2010-10-30 12:52:07Z lolli $ */
 
 if (!defined ('TYPO3_MODE')) {
 	die ('Access denied.');
@@ -29,4 +29,13 @@ if (!empty($extConf['showSampleTasks'])) {
 		'additionalFields' => 'tx_scheduler_SleepTask_AdditionalFieldProvider'
 	);
 }
+
+	// Add caching framework garbage collection task
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks']['tx_scheduler_CachingFrameworkGarbageCollection'] = array(
+		'extension'        => $_EXTKEY,
+		'title'            => 'LLL:EXT:' . $_EXTKEY . '/locallang.xml:cachingFrameworkGarbageCollection.name',
+		'description'      => 'LLL:EXT:' . $_EXTKEY . '/locallang.xml:cachingFrameworkGarbageCollection.description',
+		'additionalFields' => 'tx_scheduler_CachingFrameworkGarbageCollection_AdditionalFieldProvider',
+	);
+
 ?>

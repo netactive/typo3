@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 2001-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -116,13 +116,15 @@ class tx_indexed_search_extparse {
 			return FALSE;
 		}
 
+		$safeModeEnabled = t3lib_utility_PhpOptions::isSafeModeEnabled();
+
 			// Switch on file extension:
 		switch($extension)	{
 			case 'pdf':
 					// PDF
 				if ($indexerConfig['pdftools'])	{
 					$pdfPath = rtrim($indexerConfig['pdftools'], '/').'/';
-					if (ini_get('safe_mode') || (@is_file($pdfPath.'pdftotext'.$exe) && @is_file($pdfPath.'pdfinfo'.$exe)))	{
+					if ($safeModeEnabled || (@is_file($pdfPath . 'pdftotext' . $exe) && @is_file($pdfPath . 'pdfinfo' . $exe))) {
 						$this->app['pdfinfo'] = $pdfPath.'pdfinfo'.$exe;
 						$this->app['pdftotext'] = $pdfPath.'pdftotext'.$exe;
 							// PDF mode:
@@ -135,7 +137,7 @@ class tx_indexed_search_extparse {
 					// Catdoc
 				if ($indexerConfig['catdoc'])	{
 					$catdocPath = rtrim($indexerConfig['catdoc'], '/').'/';
-					if (ini_get('safe_mode') || @is_file($catdocPath.'catdoc'.$exe))	{
+					if ($safeModeEnabled || @is_file($catdocPath . 'catdoc' . $exe)) {
 						$this->app['catdoc'] = $catdocPath.'catdoc'.$exe;
 						$extOK = TRUE;
 					} else $this->pObj->log_setTSlogMessage(sprintf($this->sL('LLL:EXT:indexed_search/locallang.xml:catdocNotFound'), $catdocPath), 3);
@@ -146,7 +148,7 @@ class tx_indexed_search_extparse {
 					// ppthtml
 				if ($indexerConfig['ppthtml'])	{
 					$ppthtmlPath = rtrim($indexerConfig['ppthtml'], '/').'/';
-					if (ini_get('safe_mode') || @is_file($ppthtmlPath.'ppthtml'.$exe)){
+					if ($safeModeEnabled || @is_file($ppthtmlPath . 'ppthtml' . $exe)) {
 						$this->app['ppthtml'] = $ppthtmlPath.'ppthtml'.$exe;
 						$extOK = TRUE;
 					} else $this->pObj->log_setTSlogMessage(sprintf($this->sL('LLL:EXT:indexed_search/locallang.xml:ppthtmlNotFound'), $ppthtmlPath), 3);
@@ -156,7 +158,7 @@ class tx_indexed_search_extparse {
 					// Xlhtml
 				if ($indexerConfig['xlhtml'])	{
 					$xlhtmlPath = rtrim($indexerConfig['xlhtml'], '/').'/';
-					if (ini_get('safe_mode') || @is_file($xlhtmlPath.'xlhtml'.$exe)){
+					if ($safeModeEnabled || @is_file($xlhtmlPath . 'xlhtml' . $exe)) {
 						$this->app['xlhtml'] = $xlhtmlPath.'xlhtml'.$exe;
 						$extOK = TRUE;
 					} else $this->pObj->log_setTSlogMessage(sprintf($this->sL('LLL:EXT:indexed_search/locallang.xml:xlhtmlNotFound'), $xlhtmlPath), 3);
@@ -170,7 +172,7 @@ class tx_indexed_search_extparse {
 			case 'odt':		// Oasis OpenDocument Text
 				if ($indexerConfig['unzip'])	{
 					$unzipPath = rtrim($indexerConfig['unzip'], '/').'/';
-					if (ini_get('safe_mode') || @is_file($unzipPath.'unzip'.$exe))	{
+					if ($safeModeEnabled || @is_file($unzipPath . 'unzip' . $exe)) {
 						$this->app['unzip'] = $unzipPath.'unzip'.$exe;
 						$extOK = TRUE;
 					} else $this->pObj->log_setTSlogMessage(sprintf($this->sL('LLL:EXT:indexed_search/locallang.xml:unzipNotFound'), $unzipPath), 3);
@@ -180,7 +182,7 @@ class tx_indexed_search_extparse {
 					// Catdoc
 				if ($indexerConfig['unrtf'])	{
 					$unrtfPath = rtrim($indexerConfig['unrtf'], '/').'/';
-					if (ini_get('safe_mode') || @is_file($unrtfPath.'unrtf'.$exe))	{
+					if ($safeModeEnabled || @is_file($unrtfPath . 'unrtf' . $exe)) {
 						$this->app['unrtf'] = $unrtfPath.'unrtf'.$exe;
 						$extOK = TRUE;
 					} else $this->pObj->log_setTSlogMessage(sprintf($this->sL('LLL:EXT:indexed_search/locallang.xml:unrtfNotFound'), $unrtfPath), 3);
@@ -410,7 +412,7 @@ class tx_indexed_search_extparse {
 				if ($this->app['pdfinfo'])	{
 						// Getting pdf-info:
 					$cmd = $this->app['pdfinfo'] . ' ' . escapeshellarg($absFile);
-					exec($cmd,$res);
+					t3lib_utility_Command::exec($cmd, $res);
 					$pdfInfo = $this->splitPdfInfo($res);
 					unset($res);
 					if (intval($pdfInfo['pages']))	{
@@ -420,7 +422,7 @@ class tx_indexed_search_extparse {
 						$tempFileName = t3lib_div::tempnam('Typo3_indexer');		// Create temporary name
 						@unlink ($tempFileName);	// Delete if exists, just to be safe.
 						$cmd = $this->app['pdftotext'] . ' -f ' . $low . ' -l ' . $high . ' -enc UTF-8 -q ' . escapeshellarg($absFile) . ' ' . $tempFileName;
-						exec($cmd);
+						t3lib_utility_Command::exec($cmd);
 						if (@is_file($tempFileName))	{
 							$content = t3lib_div::getUrl($tempFileName);
 							unlink($tempFileName);
@@ -436,7 +438,7 @@ class tx_indexed_search_extparse {
 			case 'doc':
 				if ($this->app['catdoc'])	{
 					$cmd = $this->app['catdoc'] . ' -d utf-8 ' . escapeshellarg($absFile);
-					exec($cmd,$res);
+					t3lib_utility_Command::exec($cmd, $res);
 					$content = implode(LF,$res);
 					unset($res);
 					$contentArr = $this->pObj->splitRegularContent($this->removeEndJunk($content));
@@ -446,7 +448,7 @@ class tx_indexed_search_extparse {
 			case 'ppt':
 				if ($this->app['ppthtml'])	{
 					$cmd = $this->app['ppthtml'] . ' ' . escapeshellarg($absFile);
-					exec($cmd,$res);
+					t3lib_utility_Command::exec($cmd, $res);
 					$content = implode(LF,$res);
 					unset($res);
 					$content = $this->pObj->convertHTMLToUtf8($content);
@@ -457,7 +459,7 @@ class tx_indexed_search_extparse {
 			case 'xls':
 				if ($this->app['xlhtml'])	{
 					$cmd = $this->app['xlhtml'] . ' -nc -te ' . escapeshellarg($absFile);
-					exec($cmd,$res);
+					t3lib_utility_Command::exec($cmd, $res);
 					$content = implode(LF,$res);
 					unset($res);
 					$content = $this->pObj->convertHTMLToUtf8($content);
@@ -474,13 +476,13 @@ class tx_indexed_search_extparse {
 				if ($this->app['unzip'])	{
 						// Read content.xml:
 					$cmd = $this->app['unzip'] . ' -p ' . escapeshellarg($absFile) . ' content.xml';
-					exec($cmd,$res);
+					t3lib_utility_Command::exec($cmd, $res);
 					$content_xml = implode(LF,$res);
 					unset($res);
 
 						// Read meta.xml:
 					$cmd = $this->app['unzip'] . ' -p ' . escapeshellarg($absFile) . ' meta.xml';
-					exec($cmd, $res);
+					t3lib_utility_Command::exec($cmd, $res);
 					$meta_xml = implode(LF,$res);
 					unset($res);
 
@@ -507,7 +509,7 @@ class tx_indexed_search_extparse {
 			case 'rtf':
 				if ($this->app['unrtf'])	{
 					$cmd = $this->app['unrtf'] . ' ' . escapeshellarg($absFile);
-					exec($cmd,$res);
+					t3lib_utility_Command::exec($cmd, $res);
 					$fileContent = implode(LF,$res);
 					unset($res);
 					$fileContent = $this->pObj->convertHTMLToUtf8($fileContent);
@@ -583,7 +585,7 @@ class tx_indexed_search_extparse {
 			case 'pdf':
 					// Getting pdf-info:
 				$cmd = $this->app['pdfinfo'] . ' ' . escapeshellarg($absFile);
-				exec($cmd,$res);
+				t3lib_utility_Command::exec($cmd, $res);
 				$pdfInfo = $this->splitPdfInfo($res);
 				unset($res);
 
@@ -670,8 +672,8 @@ class tx_indexed_search_extparse {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/indexed_search/class.external_parser.php'])    {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/indexed_search/class.external_parser.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/indexed_search/class.external_parser.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/indexed_search/class.external_parser.php']);
 }
 
 ?>

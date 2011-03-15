@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2010 Aishwara M.B. (aishu.moorthy@gmail.com)
+ *  (c) 2010-2011 Aishwara M.B. (aishu.moorthy@gmail.com)
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -271,8 +271,8 @@ class tslib_mediaWizardCoreProvider implements tslib_mediaWizardProvider {
 
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['tslib/class.tslib_mediawizardcoreprovider.php']) {
-	include_once ($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['tslib/class.tslib_mediawizardcoreprovider.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['tslib/class.tslib_mediawizardcoreprovider.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['tslib/class.tslib_mediawizardcoreprovider.php']);
 }
 
 ?>

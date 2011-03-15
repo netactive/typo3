@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Generates a thumbnail and returns an image stream, either GIF/PNG or JPG
  *
- * $Id: thumbs.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: thumbs.php 10121 2011-01-18 20:15:30Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author		Kasper Skårhøj	<kasperYYYY@typo3.com>
@@ -240,9 +240,11 @@ class SC_t3lib_thumbs {
 				if (!file_exists($this->output))	{
 					$parameters = '-sample ' . $this->size . ' ' . $this->wrapFileName($this->input) . '[0] ' . $this->wrapFileName($this->output);
 					$cmd = t3lib_div::imageMagickCommand('convert', $parameters);
-					exec($cmd);
+					t3lib_utility_Command::exec($cmd);
 					if (!file_exists($this->output))	{
 						$this->errorGif('No thumb','generated!',basename($this->input));
+					} else {
+						t3lib_div::fixPermissions($this->output);
 					}
 				}
 					// The thumbnail is read and output to the browser
@@ -395,12 +397,20 @@ class SC_t3lib_thumbs {
 	 * @return string $inputName escaped as needed
 	 */
 	protected function wrapFileName($inputName) {
-		return escapeshellarg($inputName);
+		if ($GLOBALS['TYPO3_CONF_VARS']['SYS']['UTF8filesystem']) {
+			$currentLocale = setlocale(LC_CTYPE, 0);
+			setlocale(LC_CTYPE, $GLOBALS['TYPO3_CONF_VARS']['SYS']['systemLocale']);
+		}
+		$escapedInputName = escapeshellarg($inputName);
+		if ($GLOBALS['TYPO3_CONF_VARS']['SYS']['UTF8filesystem']) {
+			setlocale(LC_CTYPE, $currentLocale);
+		}
+		return $escapedInputName;
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['t3lib/thumbs.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['t3lib/thumbs.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/thumbs.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/thumbs.php']);
 }
 
 

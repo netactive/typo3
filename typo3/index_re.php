@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -33,7 +33,7 @@
  * 		RewriteRule   ^typo3$  typo3/index_re.php
  * ... and this document will redirect to the right script.
  *
- * $Id: index_re.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: index_re.php 10121 2011-01-18 20:15:30Z ohader $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3

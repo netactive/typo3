@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Front End session user. Login and session data
  * Included from index_ts.php
  *
- * $Id: class.tslib_feuserauth.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: class.tslib_feuserauth.php 10120 2011-01-18 20:03:36Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -486,6 +486,31 @@ class tslib_feUserAuth extends t3lib_userAuth {
 	}
 
 	/**
+	 * Returns the session data stored for $key.
+	 * The data will last only for this login session since it is stored in the session table.
+	 *
+	 * @param  string  $key
+	 * @return mixed
+	 */
+	public function getSessionData($key) {
+		return $this->getKey('ses', $key);
+	}
+
+	/**
+	 * Saves the tokens so that they can be used by a later incarnation of this class.
+	 *
+	 * @param  string  $key
+	 * @param  mixed   $data
+	 * @return void
+	 */
+	public function setAndSaveSessionData($key, $data) {
+		$this->setKey('ses', $key, $data);
+		$this->storeSessionData();
+	}
+
+
+
+	/**
 	 * Registration of records/"shopping basket" in session data
 	 * This will take the input array, $recs, and merge into the current "recs" array found in the session data.
 	 * If a change in the recs storage happens (which it probably does) the function setKey() is called in order to store the array again.
@@ -554,6 +579,8 @@ class tslib_feUserAuth extends t3lib_userAuth {
 			// @deprecated: Check for commerce basket records. The following lines should be removed once a fixed commerce version is released.
 			// Extensions like commerce which have their own session table should just put some small bit of data into fe_session_data using $GLOBALS['TSFE']->fe_user->setKey('ses', ...) to make the session stable.
 		if ($count == false && t3lib_extMgm::isLoaded('commerce')) {
+			t3lib_div::deprecationLog("EXT:commerce specific code in tslib_feuserauth::isExistingSessionRecord() is deprecated. Will be removed in 4.6");
+
 			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 							'*',
 							'tx_commerce_baskets',
@@ -572,8 +599,8 @@ class tslib_feUserAuth extends t3lib_userAuth {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['tslib/class.tslib_feuserauth.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['tslib/class.tslib_feuserauth.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['tslib/class.tslib_feuserauth.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['tslib/class.tslib_feuserauth.php']);
 }
 
 ?>

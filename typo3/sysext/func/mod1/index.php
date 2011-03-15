@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Module: Advanced functions
  * Advanced Functions related to pages
  *
- * $Id: index.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: index.php 10120 2011-01-18 20:03:36Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -157,10 +157,12 @@ class SC_mod_web_func_index extends t3lib_SCbase {
 			$markers['CONTENT'] = $this->content;
 		}
 			// Build the <body> for the module
-		$this->content = $this->doc->startPage($LANG->getLL('title'));
-		$this->content.= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
-		$this->content.= $this->doc->endPage();
-		$this->content = $this->doc->insertStylesAndJS($this->content);
+		$this->content = $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
+			// Renders the module page
+		$this->content = $this->doc->render(
+			$LANG->getLL('title'),
+			$this->content
+		);
 	}
 
 	/**
@@ -203,19 +205,22 @@ class SC_mod_web_func_index extends t3lib_SCbase {
 			}
 
 				// If access to Web>List for user, then link to that module.
-			$buttons['record_list'] = t3lib_extMgm::createListViewLink(
-				$this->pageinfo['uid'],
-				'&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')),
-				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showList', TRUE)
+			$buttons['record_list'] = t3lib_BEfunc::getListViewLink(
+				array(
+					'id' => $this->pageinfo['uid'],
+					'returnUrl' => t3lib_div::getIndpEnv('REQUEST_URI'),
+				),
+				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showList')
 			);
+
 		}
 		return $buttons;
 	}
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/web/func/index.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/web/func/index.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/web/func/index.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/web/func/index.php']);
 }
 
 

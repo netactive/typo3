@@ -27,7 +27,7 @@
 /*
  * Inline Elements Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: inline-elements.js 7301 2010-04-12 07:10:34Z stan $
+ * TYPO3 SVN ID: $Id: inline-elements.js 9755 2010-12-04 16:41:20Z stan $
  */
 /*
  * Creation of the class of InlineElements plugins
@@ -106,6 +106,8 @@ HTMLArea.InlineElements = HTMLArea.Plugin.extend({
 			var buttonConfiguration = {
 				id		: buttonId,
 				tooltip		: this.localize(buttonId + "-Tooltip"),
+				contextMenuTitle: this.localize(buttonId + '-contextMenuTitle'),
+				helpText	: this.localize(buttonId + '-helpText'),
 				action		: "onButtonPress",
 				context		: button[1],
 				hide		: false,
@@ -357,7 +359,7 @@ HTMLArea.InlineElements = HTMLArea.Plugin.extend({
 				classNames = newElement.className.trim().split(" ");
 				for (var i = 0; i < classNames.length; ++i) {
 					if (!allowedClasses.test(classNames[i])) {
-						HTMLArea._removeClass(newElement, classNames[i]);
+						HTMLArea.DOM.removeClass(newElement, classNames[i]);
 					}
 				}
 			}

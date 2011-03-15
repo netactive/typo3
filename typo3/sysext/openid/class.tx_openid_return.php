@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2010 Dmitry Dulepov <dmitry@typo3.org>
+*  (c) 2008-2011 Dmitry Dulepov <dmitry@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -45,7 +45,7 @@ require_once('../../init.php');
 /**
  * This class is the OpenID return script for the TYPO3 Backend.
  *
- * $Id: class.tx_openid_return.php 8445 2010-07-29 13:18:16Z dmitry $
+ * $Id: class.tx_openid_return.php 10120 2011-01-18 20:03:36Z ohader $
  *
  * @author	Dmitry Dulepov <dmitry@typo3.org>
  */
@@ -64,8 +64,8 @@ class tx_openid_return {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/openid/class.tx_openid_return.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/openid/class.tx_openid_return.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/openid/class.tx_openid_return.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/openid/class.tx_openid_return.php']);
 }
 
 $module = t3lib_div::makeInstance('tx_openid_return');

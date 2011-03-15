@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Element Browser / RTE link selection
 
-$Id: element_rte.css 7974 2010-06-20 08:05:51Z benni $
+$Id: element_rte.css 9017 2010-10-09 11:12:28Z steffenk $
 - - - - - - - - - - - - - - - - - - - - - */
 
 #typo3-browse-links-php {
@@ -69,4 +69,8 @@ table#typo3-msgBox {
 
 table#typo3-msgBox tr td {
 	padding: 10px 50px 10px 50px;
+}
+
+input.typo3-link-input {
+	width: 250px;
 }

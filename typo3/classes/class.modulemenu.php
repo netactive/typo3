@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2010 Ingo Renner <ingo@typo3.org>
+*  (c) 2007-2011 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -134,8 +134,9 @@ class ModuleMenu {
 							'link' => $subData['link'],
 							'originalLink' => $subData['originalLink'],
 							'index' => $index++,
-							'navigationFrameScript' => $subData['navFrameScript'],
-							'navigationFrameScriptParam' => $subData['navFrameScriptParam'],
+							'navigationFrameScript' => $subData['navigationFrameScript'],
+							'navigationFrameScriptParam' => $subData['navigationFrameScriptParam'],
+							'navigationComponentId' => $subData['navigationComponentId'],
 						);
 					}
 				}
@@ -207,8 +208,21 @@ class ModuleMenu {
 				'description' => $GLOBALS['LANG']->moduleLabels['labels'][$moduleKey.'label']
 			);
 
-			if(is_array($moduleData['sub'])) {
-
+			if (!is_array($moduleData['sub']) && $moduleData['script'] != 'dummy.php') {
+					// Work around for modules with own main entry, but being self the only submodule
+				$modules[$moduleKey]['subitems'][$moduleKey] = array(
+					'name' => $moduleName,
+					'title' => $GLOBALS['LANG']->moduleLabels['tabs'][$moduleName . '_tab'],
+					'onclick' => 'top.goToModule(\'' . $moduleName . '\');',
+					'icon' => $this->getModuleIcon($moduleName . '_tab'),
+					'link' => $moduleLink,
+					'originalLink' => $moduleLink,
+					'description' => $GLOBALS['LANG']->moduleLabels['labels'][$moduleKey . 'label'],
+					'navigationFrameScript' => NULL,
+					'navigationFrameScriptParam' => NULL,
+					'navigationComponentId' => NULL,
+				);
+			} else if (is_array($moduleData['sub'])) {
 				foreach($moduleData['sub'] as $submoduleName => $submoduleData) {
 					$submoduleLink = t3lib_div::resolveBackPath($submoduleData['script']);
 
@@ -227,7 +241,8 @@ class ModuleMenu {
 						'originalLink' => $originalLink,
 						'description'  => $submoduleDescription,
 						'navigationFrameScript' => $submoduleData['navFrameScript'],
-						'navigationFrameScriptParam' => $submoduleData['navFrameScriptParam']
+						'navigationFrameScriptParam' => $submoduleData['navFrameScriptParam'],
+						'navigationComponentId' => $submoduleData['navigationComponentId'],
 					);
 
 					if($moduleData['navFrameScript']) {
@@ -350,8 +365,8 @@ class ModuleMenu {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/classes/class.modulemenu.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/classes/class.modulemenu.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/classes/class.modulemenu.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/classes/class.modulemenu.php']);
 }
 
 ?>

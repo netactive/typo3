@@ -29,7 +29,7 @@
  * Will make the vertical, horizontal, selectorbox based menus AND the "about modules" display.
  * Basically it traverses the module structure and generates output based on that.
  *
- * $Id: class.alt_menu_functions.inc 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: class.alt_menu_functions.inc 10161 2011-01-20 14:54:34Z baschny $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant content
  *
@@ -225,7 +225,7 @@ class alt_menu_functions {
 
 				// Code for "About modules"
 			$descrCode.='
-						<tr class="c-mainitem bgColor4">
+						<tr class="c-mainitem">
 							<td colspan="3">'.$imageCode.$label.'</td>
 						</tr>';
 
@@ -599,7 +599,11 @@ class alt_menu_functions {
 			$functions[]=array(
 				'id' => 'temp_CACHED',
 				'title' => $title,
-				'href' => $backPath.'tce_db.php?vC='.$BE_USER->veriCode().'&redirect='.rawurlencode(t3lib_div::getIndpEnv('TYPO3_REQUEST_SCRIPT')).'&cacheCmd=temp_CACHED',
+				'href' => $backPath .
+						'tce_db.php?vC=' . $BE_USER->veriCode() .
+						'&redirect=' . rawurlencode(t3lib_div::getIndpEnv('TYPO3_REQUEST_SCRIPT')) .
+						'&cacheCmd=temp_CACHED' .
+						t3lib_BEfunc::getUrlToken('tceAction'),
 				'icon' => '<img'.t3lib_iconWorks::skinImg($backPath,'gfx/clear_cache_files_in_typo3c.gif','width="21" height="18"').' title="'.htmlspecialchars($title).'" alt="" />'
 			);
 		}
@@ -609,7 +613,10 @@ class alt_menu_functions {
 		$functions[]=array(
 			'id' => 'all',
 			'title' => $title,
-			'href' => $backPath.'tce_db.php?vC='.$BE_USER->veriCode().'&redirect='.rawurlencode(t3lib_div::getIndpEnv('TYPO3_REQUEST_SCRIPT')).'&cacheCmd=all',
+			'href' => $backPath . 'tce_db.php?vC=' . $BE_USER->veriCode() .
+					'&redirect=' . rawurlencode(t3lib_div::getIndpEnv('TYPO3_REQUEST_SCRIPT')) .
+					'&cacheCmd=all' .
+					t3lib_BEfunc::getUrlToken('tceAction'),
 			'icon' => '<img'.t3lib_iconWorks::skinImg($backPath,'gfx/clear_all_cache.gif','width="21" height="18"').' title="'.htmlspecialchars($title).'" alt="" />'
 		);
 
@@ -662,7 +669,7 @@ class alt_menu_functions {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/class.alt_menu_functions.inc'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/class.alt_menu_functions.inc']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/class.alt_menu_functions.inc'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/class.alt_menu_functions.inc']);
 }
 ?>

@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasper@typo3.com)
-*  (c) 2005-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 1999-2011 Kasper Skårhøj (kasper@typo3.com)
+*  (c) 2005-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -31,7 +31,7 @@
  * @author	Kasper Skårhøj <kasper@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_user.php 8742 2010-08-30 18:55:32Z baschny $  *
+ * $Id: class.tx_rtehtmlarea_user.php 10120 2011-01-18 20:03:36Z ohader $  *
  */
 
 class tx_rtehtmlarea_user {
@@ -289,8 +289,8 @@ class tx_rtehtmlarea_user {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod5/class.tx_rtehtmlarea_user.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod5/class.tx_rtehtmlarea_user.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod5/class.tx_rtehtmlarea_user.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod5/class.tx_rtehtmlarea_user.php']);
 }
 
 ?>

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2004-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 2004-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -356,11 +356,14 @@ class tx_version_cm1 extends t3lib_SCbase {
 			}
 
 				// If access to Web>List for user, then link to that module.
-			$buttons['record_list'] = t3lib_extMgm::createListViewLink(
-				$this->pageinfo['uid'],
-				'&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')),
-				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showList', TRUE)
-			);
+			$buttons['record_list'] = t3lib_BEfunc::getListViewLink(
+				array(
+					'id' => $this->pageinfo['uid'],
+					'returnUrl' => t3lib_div::getIndpEnv('REQUEST_URI'),
+				),
+				'',
+				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showList')
+ 			);
 		}
 		return $buttons;
 	}
@@ -531,7 +534,7 @@ class tx_version_cm1 extends t3lib_SCbase {
 			<input type="hidden" name="prErr" value="1" />
 			<input type="hidden" name="redirect" value="'.htmlspecialchars($this->REQUEST_URI).'" />
 			<input type="submit" name="_" value="' . $GLOBALS['LANG']->getLL('createNewVersion') . '" />
-
+			' . t3lib_TCEforms::getHiddenTokenField('tceAction') . '
 			</form>
 
 		';
@@ -726,10 +729,10 @@ class tx_version_cm1 extends t3lib_SCbase {
 			$ttlHours = ($ttlHours ? $ttlHours : 24*2);
 
 			if (t3lib_div::_POST('_previewLink_wholeWorkspace'))	{
-				$previewUrl = t3lib_div::getIndpEnv('TYPO3_SITE_URL').'index.php?ADMCMD_prev='.t3lib_BEfunc::compilePreviewKeyword('', $GLOBALS['BE_USER']->user['uid'],60*60*$ttlHours,$GLOBALS['BE_USER']->workspace).'&id='.intval($this->id);
+				$previewUrl = t3lib_BEfunc::getViewDomain($this->id) . '/index.php?ADMCMD_prev=' . t3lib_BEfunc::compilePreviewKeyword('', $GLOBALS['BE_USER']->user['uid'], 60*60*$ttlHours, $GLOBALS['BE_USER']->workspace) . '&id=' . intval($this->id);
 			} else {
 				$params = 'id='.$this->id.'&ADMCMD_previewWS='.$GLOBALS['BE_USER']->workspace;
-				$previewUrl = t3lib_div::getIndpEnv('TYPO3_SITE_URL').'index.php?ADMCMD_prev='.t3lib_BEfunc::compilePreviewKeyword($params, $GLOBALS['BE_USER']->user['uid'],60*60*$ttlHours);
+				$previewUrl = t3lib_BEfunc::getViewDomain($this->id) . '/index.php?ADMCMD_prev=' . t3lib_BEfunc::compilePreviewKeyword($params, $GLOBALS['BE_USER']->user['uid'], 60*60*$ttlHours);
 			}
 			$this->content .= $this->doc->section($GLOBALS['LANG']->getLL('previewUrl'), sprintf($GLOBALS['LANG']->getLL('previewInstruction'), $ttlHours) . '<br /><br /><a target="_blank" href="' . htmlspecialchars($previewUrl) . '">' . $previewUrl . '</a>', 0, 1);
 		}
@@ -1134,7 +1137,7 @@ class tx_version_cm1 extends t3lib_SCbase {
 					$this->formatWorkspace_cache[$wsid] = '';	// Does not output anything for ONLINE because it might confuse people to think that the elemnet IS online which is not the case - only that it exists as an offline version in the online workspace...
 				break;
 				default:
-					list($titleRec) = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('title','sys_workspace','uid='.intval($wsid).t3lib_BEfunc::deleteClause('sys_workspace'));
+					$titleRec = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('title', 'sys_workspace', 'uid=' . intval($wsid) . t3lib_BEfunc::deleteClause('sys_workspace'));
 					$this->formatWorkspace_cache[$wsid] = '['.$wsid.'] '.$titleRec['title'];
 				break;
 			}
@@ -1243,8 +1246,8 @@ class tx_version_cm1 extends t3lib_SCbase {
 			$entry[] = $text;
 		}
 
-		return count($entry) ? '<span onmouseover="document.getElementById(\'log_'.$table.$id.'\').style.visibility = \'visible\';" onmouseout="document.getElementById(\'log_'.$table.$id.'\').style.visibility = \'hidden\';">'.$stageCommands.' ('.count($entry).')</span>'.
-				'<div class="logLayer" style="visibility: hidden; position: absolute;" id="log_'.$table.$id.'">'.implode('<hr/>',array_reverse($entry)).'</div>' : $stageCommands;
+		return count($entry) ? '<span onmouseover="document.getElementById(\'log_' . $table . $id . '\').style.visibility = \'visible\';" onmouseout="document.getElementById(\'log_' . $table . $id . '\').style.visibility = \'hidden\';">' . $stageCommands . ' (' . count($entry) . ')</span>' .
+				'<div class="t3-version-infolayer logLayer" id="log_' . $table . $id . '">' . implode('<hr/>', array_reverse($entry)) . '</div>' : $stageCommands;
 	}
 
 	/**
@@ -1685,7 +1688,7 @@ class tx_version_cm1 extends t3lib_SCbase {
 	 * @return	string		HTML content, mainly link tags and images.
 	 */
 	function displayWorkspaceOverview_commandLinks($table,&$rec_on,&$rec_off,$vType)	{
-		if ($this->publishAccess && (!($GLOBALS['BE_USER']->workspaceRec['publish_access']&1) || (int)$rec_off['t3ver_stage']===10))	{
+		if ($this->publishAccess && (!($GLOBALS['BE_USER']->workspaceRec['publish_access']&1) || (int)$rec_off['t3ver_stage']===-10))	{
 			$actionLinks =
 				'<a href="'.htmlspecialchars($this->doc->issueCommand(
 						'&cmd['.$table.']['.$rec_on['uid'].'][version][action]=swap'.
@@ -1836,8 +1839,8 @@ class tx_version_cm1 extends t3lib_SCbase {
 
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/version/cm1/index.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/version/cm1/index.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/version/cm1/index.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/version/cm1/index.php']);
 }
 
 

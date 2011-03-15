@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2010 Benjamin Mack <benni@typo3.org>
-*  (c) 2008-2010 Steffen Kamper <info@sk-typo3.de>
+*  (c) 2008-2011 Benjamin Mack <benni@typo3.org>
+*  (c) 2008-2011 Steffen Kamper <info@sk-typo3.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,23 +29,14 @@
 /**
  * Contains the update class for adding the system extension "simulate static".
  *
- * $Id: class.tx_coreupdates_installsysexts.php 8242 2010-07-20 21:07:10Z steffenk $
+ * $Id: class.tx_coreupdates_installsysexts.php 10318 2011-01-26 01:16:25Z baschny $
  *
  * @author  Benjamin Mack <benni@typo3.org>
  * @author  Steffen Kamper <info@sk-typo3.de>
  */
-class tx_coreupdates_installsysexts {
-	public $versionNumber;	// version number coming from t3lib_div::int_from_ver()
+class tx_coreupdates_installsysexts extends Tx_Install_Updates_Base {
+	protected $title = 'Install Outsourced System Extensions';
 	protected $newSystemExtensions = array('info', 'perm', 'func', 'filelist', 'about', 'cshmanual', 'feedit', 'opendocs', 'simulatestatic');
-
-	/**
-	 * parent object
-	 *
-	 * @var tx_install
-	 */
-	public $pObj;
-	public $userInput;	// user input
-
 
 	/**
 	 * Checks if an update is needed
@@ -54,7 +45,7 @@ class tx_coreupdates_installsysexts {
 	 * @return	boolean		whether an update is needed (true) or not (false)
 	 */
 	public function checkForUpdate(&$description) {
-		$result = false;
+		$result = FALSE;
 		$description = '
 			<p>
 				Install the following system extensions as their functionality
@@ -116,8 +107,11 @@ class tx_coreupdates_installsysexts {
 
 		foreach($this->newSystemExtensions as $ext) {
 			if (!t3lib_extMgm::isLoaded($ext)) {
-				$result = true;
+				$result = TRUE;
 			}
+		}
+		if ($this->isWizardDone()) {
+			$result = FALSE;
 		}
 		return $result;
 	}
@@ -188,24 +182,21 @@ class tx_coreupdates_installsysexts {
 	 * @return	boolean		whether it worked (true) or not (false)
 	 */
 	public function performUpdate(&$dbQueries, &$customMessages) {
-		$result = false;
 
-		// Get extension keys that were submitted by the used to be installed and that are valid for this update wizard:
+			// Get extension keys that were submitted by the user to be installed and that are valid for this update wizard
 		if (is_array($this->pObj->INSTALL['update']['installSystemExtensions']['sysext'])) {
 			$extArray = array_intersect(
 				$this->newSystemExtensions,
 				array_keys($this->pObj->INSTALL['update']['installSystemExtensions']['sysext'])
 			);
-			$extList = $this->addExtToList($extArray);
-			if ($extList) {
-				$this->writeNewExtensionList($extList);
-				$result = true;
-			}
+			$this->installExtensions($extArray);
 		}
 
-		return $result;
-	}
+			// Never show this wizard again
+		$this->markWizardAsDone();
 
+		return TRUE;
+	}
 
 	/**
 	 * Adds extension to extension list and returns new list. If -1 is returned, an error happend.
@@ -213,8 +204,10 @@ class tx_coreupdates_installsysexts {
 	 *
 	 * @param	array		Extension keys to add
 	 * @return	string		New list of installed extensions or -1 if error
+	 * @deprecated since TYPO3 4.5, will be removed in TYPO3 4.7 - Should not be needed anymore. Extensions should be installed directly by calling Tx_Install_Updates_Base::installExtensions()
 	 */
 	function addExtToList(array $extKeys) {
+		t3lib_div::logDeprecatedFunction();
 			// Get list of installed extensions and add this one.
 		$tmpLoadedExt = $GLOBALS['TYPO3_LOADED_EXT'];
 		if (isset($tmpLoadedExt['_CACHEFILE'])) {
@@ -235,8 +228,10 @@ class tx_coreupdates_installsysexts {
 	 *
 	 * @param	string		List of extensions
 	 * @return	void
+	 * @deprecated since TYPO3 4.5, will be removed in TYPO3 4.7 - Use Tx_Install_Updates_Base::installExtensions() instead
 	 */
-	protected function writeNewExtensionList($newExtList)	{
+	protected function writeNewExtensionList($newExtList) {
+		t3lib_div::logDeprecatedFunction();
 			// Instance of install tool
 		$instObj = new t3lib_install;
 		$instObj->allowUpdateLocalConf = 1;

@@ -29,7 +29,7 @@
 /*
  * Image Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: default-image.js 8252 2010-07-23 15:52:18Z stan $
+ * TYPO3 SVN ID: $Id: default-image.js 8942 2010-10-03 00:15:51Z stan $
  */
 HTMLArea.DefaultImage = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {
@@ -405,10 +405,18 @@ HTMLArea.DefaultImage = HTMLArea.Plugin.extend({
 			try {
 				window.ipreview.location.replace(url);
 			} catch (e) {
-				Ext.MessageBox.alert('', this.localize('image_url_invalid'), function () { tabPanel.setActiveTab(0); urlField.focus(); });
+				TYPO3.Dialog.InformationDialog({
+					title: this.localize('Image Preview'),
+					msg: this.localize('image_url_invalid'),
+					fn: function () { tabPanel.setActiveTab(0); urlField.focus(); }
+				});
 			}
 		} else {
-			Ext.MessageBox.alert('', this.localize('image_url_first'), function () { tabPanel.setActiveTab(0); urlField.focus(); });
+			TYPO3.Dialog.InformationDialog({
+				title: this.localize('Image Preview'),
+				msg: this.localize('image_url_first'),
+				fn: function () { tabPanel.setActiveTab(0); urlField.focus(); }
+			});
 		}
 		return false;
 	},
@@ -430,7 +438,11 @@ HTMLArea.DefaultImage = HTMLArea.Plugin.extend({
 			this.close();
 		} else {
 			var tabPanel = this.dialog.find('itemId', 'tabpanel')[0];
-			Ext.MessageBox.alert('', this.localize('image_url_required'), function () { tabPanel.setActiveTab(0); urlField.focus(); });
+			TYPO3.Dialog.InformationDialog({
+				title: this.localize('image_url'),
+				msg: this.localize('image_url_required'),
+				fn: function () { tabPanel.setActiveTab(0); urlField.focus(); }
+			});
 		}
 		return false;
 	},

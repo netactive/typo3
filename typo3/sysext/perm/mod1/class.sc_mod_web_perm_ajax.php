@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2010 mehrwert (typo3@mehrwert.de)
+*  (c) 2007-2011 mehrwert (typo3@mehrwert.de)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -55,7 +55,7 @@ $GLOBALS['LANG']->includeLLFile('EXT:lang/locallang_mod_web_perm.xml');
  * (user and group)) via new TYPO3AJAX facility
  *
  * @author		Andreas Kundoch <typo3@mehrwert.de>
- * @version		$Id: class.sc_mod_web_perm_ajax.php 8227 2010-07-18 19:58:11Z steffenk $
+ * @version		$Id: class.sc_mod_web_perm_ajax.php 10120 2011-01-18 20:03:36Z ohader $
  * @package		TYPO3
  * @subpackage	core
  * @license		GPL
@@ -390,8 +390,8 @@ class SC_mod_web_perm_ajax {
 
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/web/perm/class.sc_mod_web_perm_ajax.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/web/perm/class.sc_mod_web_perm_ajax.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/web/perm/class.sc_mod_web_perm_ajax.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/web/perm/class.sc_mod_web_perm_ajax.php']);
 }
 
 ?>

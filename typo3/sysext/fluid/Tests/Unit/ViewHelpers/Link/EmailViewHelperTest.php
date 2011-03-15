@@ -18,7 +18,7 @@ require_once(dirname(__FILE__) . '/../ViewHelperBaseTestcase.php');
 /**
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License, version 2
  */
-class Tx_Fluid_ViewHelpers_Link_EmailViewHelperTest extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {
+class Tx_Fluid_Tests_Unit_ViewHelpers_Link_EmailViewHelperTest extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {
 
 	/**
 	 * var Tx_Fluid_ViewHelpers_Link_EmailViewHelper
@@ -56,7 +56,7 @@ class Tx_Fluid_ViewHelpers_Link_EmailViewHelperTest extends Tx_Fluid_ViewHelpers
 		$mockTagBuilder->expects($this->once())->method('setTagName')->with('a');
 		$mockTagBuilder->expects($this->once())->method('addAttribute')->with('href', 'mailto:some@email.tld');
 		$mockTagBuilder->expects($this->once())->method('setContent')->with('some content');
-		$this->viewHelper->injectTagBuilder($mockTagBuilder);
+		$this->viewHelper->_set('tag', $mockTagBuilder);
 
 		$this->viewHelper->expects($this->any())->method('renderChildren')->will($this->returnValue('some content'));
 
@@ -73,7 +73,7 @@ class Tx_Fluid_ViewHelpers_Link_EmailViewHelperTest extends Tx_Fluid_ViewHelpers
 
 		$mockTagBuilder = $this->getMock('Tx_Fluid_Core_ViewHelper_TagBuilder', array('setTagName', 'addAttribute', 'setContent'));
 		$mockTagBuilder->expects($this->once())->method('setContent')->with('some@email.tld');
-		$this->viewHelper->injectTagBuilder($mockTagBuilder);
+		$this->viewHelper->_set('tag', $mockTagBuilder);
 
 		$this->viewHelper->expects($this->any())->method('renderChildren')->will($this->returnValue(NULL));
 

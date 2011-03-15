@@ -32,7 +32,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: class.tx_scheduler.php 9758 2010-12-05 11:25:36Z stephenking $
  */
 
 class tx_scheduler implements t3lib_Singleton {
@@ -419,8 +419,8 @@ class tx_scheduler implements t3lib_Singleton {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/scheduler/class.tx_scheduler.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/scheduler/class.tx_scheduler.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/scheduler/class.tx_scheduler.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/scheduler/class.tx_scheduler.php']);
 }
 
 

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2010 Tobias Liebig <mail_typo3@etobi.de>
+*  (c) 2007-2011 Tobias Liebig <mail_typo3@etobi.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,19 +30,23 @@ require_once(t3lib_extMgm::extPath('t3editor', 'classes/class.tx_t3editor.php'))
 class tx_t3editor_hooks_tstemplateinfo {
 
 	/**
-	 *
 	 * @var tx_t3editor
 	 */
 	protected $t3editor = NULL;
+	
+	/**
+	 * @var string
+	 */
+	protected $ajaxSaveType = 'tx_tstemplateinfo';
 
 	/**
-	 *
 	 * @return tx_t3editor
 	 */
 	protected function getT3editor() {
 		if ($this->t3editor == NULL) {
 			$this->t3editor = t3lib_div::makeInstance('tx_t3editor')
-				->setMode(tx_t3editor::MODE_TYPOSCRIPT);
+				->setMode(tx_t3editor::MODE_TYPOSCRIPT)
+				->setAjaxSaveType($this->ajaxSaveType);
 		}
 		return $this->t3editor;
 	}
@@ -62,7 +66,6 @@ class tx_t3editor_hooks_tstemplateinfo {
 
 			// insert javascript code in document header
 			$pObj->JScode .= $t3editor->getJavascriptCode($pObj);
-			$pObj->loadJavascriptLib(t3lib_extmgm::extRelPath('t3editor') . 'res/jslib/tx_tstemplateinfo/tx_tstemplateinfo.js');
 		}
 	}
 
@@ -119,7 +122,7 @@ class tx_t3editor_hooks_tstemplateinfo {
 	 */
 	public function save($parameters, $pObj) {
 		$savingsuccess = false;
-		if ($parameters['type'] == 'tx_tstemplateinfo') {
+		if ($parameters['type'] == $this->ajaxSaveType) {
 
 			$pageId = t3lib_div::_GP('pageId');
 			if (!is_numeric($pageId) || $pageId < 1) {
@@ -165,6 +168,18 @@ class tx_t3editor_hooks_tstemplateinfo {
 						}
 					}
 					if (count($recData)) {
+						
+						// process template row before saving
+						require_once t3lib_extMgm::extPath('tstemplate_info').'class.tx_tstemplateinfo.php';
+						$tstemplateinfo = t3lib_div::makeInstance('tx_tstemplateinfo'); /* @var $tstemplateinfo tx_tstemplateinfo */
+							// load the MOD_SETTINGS in order to check if the includeTypoScriptFileContent is set						
+						$tstemplateinfo->pObj->MOD_SETTINGS = t3lib_BEfunc::getModuleData(
+							array('includeTypoScriptFileContent' => true), 
+							array(), 
+							'web_ts'
+						);
+						$recData['sys_template'][$saveId] = $tstemplateinfo->processTemplateRowBeforeSaving($recData['sys_template'][$saveId]);
+						
 						// Create new tce-object
 						$tce = t3lib_div::makeInstance('t3lib_TCEmain');
 						$tce->stripslashes_values = 0;
@@ -189,8 +204,8 @@ class tx_t3editor_hooks_tstemplateinfo {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/t3editor/classes/class.tx_t3editor_hooks_tstemplateinfo.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/t3editor/classes/class.tx_t3editor_hooks_tstemplateinfo.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/t3editor/classes/class.tx_t3editor_hooks_tstemplateinfo.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/t3editor/classes/class.tx_t3editor_hooks_tstemplateinfo.php']);
 }
 
 ?>

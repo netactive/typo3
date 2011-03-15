@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2007-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -26,11 +26,11 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlareaapi.php 7905 2010-06-13 14:42:33Z ohader $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlareaapi.php 10120 2011-01-18 20:03:36Z ohader $
  *
  */
 
-abstract class tx_rtehtmlareaapi {
+abstract class tx_rtehtmlarea_api {
 
 	protected $extensionKey;				// The key of the extension that is extending htmlArea RTE
 	protected $pluginName;					// The name of the plugin registered by the extension
@@ -228,10 +228,10 @@ abstract class tx_rtehtmlareaapi {
 	public function getRequiredPlugins() {
 		return $this->requiredPlugins;
 	}
-} // end of class
-
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/class.tx_rtehtmlareaapi.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/class.tx_rtehtmlareaapi.php']);
 }
-
+/*
+ * Class alias for backward compatibility (TYPO3 4.5)
+ */
+abstract class tx_rtehtmlareaapi extends tx_rtehtmlarea_api {
+}
 ?>

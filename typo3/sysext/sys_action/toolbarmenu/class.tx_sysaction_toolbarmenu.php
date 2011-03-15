@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2010 Steffen Kamper <info@sk-typo3.de>
+*  (c) 2008-2011 Steffen Kamper <info@sk-typo3.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -198,8 +198,8 @@ class tx_sysactionToolbarMenu implements backend_toolbarItem {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/sys_action/toolbarmenu/class.tx_sysaction_toolbarmenu.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/sys_action/toolbarmenu/class.tx_sysaction_toolbarmenu.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/sys_action/toolbarmenu/class.tx_sysaction_toolbarmenu.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/sys_action/toolbarmenu/class.tx_sysaction_toolbarmenu.php']);
 }
 
 ?>

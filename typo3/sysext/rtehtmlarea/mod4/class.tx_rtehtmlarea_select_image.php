@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasper@typo3.com)
-*  (c) 2004-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 1999-2011 Kasper Skårhøj (kasper@typo3.com)
+*  (c) 2004-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -31,7 +31,7 @@
  * @author	Kasper Skårhøj <kasper@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_select_image.php 8742 2010-08-30 18:55:32Z baschny $  *
+ * $Id: class.tx_rtehtmlarea_select_image.php 10120 2011-01-18 20:03:36Z ohader $  *
  */
 require_once(PATH_typo3.'class.browse_links.php');
 
@@ -261,7 +261,7 @@ class tx_rtehtmlarea_select_image extends browse_links {
 	 * @return	string		the body tag additions
 	 */
 	public function getBodyTagAdditions() {
-		return '';
+		return 'onload="initEventListeners();"';
 	}
 
 	/**
@@ -329,33 +329,43 @@ class tx_rtehtmlarea_select_image extends browse_links {
 	 * @return	void
 	 */
 	public function insertMagicImage($filepath, $imgInfo, $altText='', $titleText='', $additionalParams='') {
-		if (is_array($imgInfo) && count($imgInfo)==4 && $this->RTEImageStorageDir)	{
-			$fI = pathinfo($imgInfo[3]);
-			$fileFunc = t3lib_div::makeInstance('t3lib_basicFileFunctions');
-			$basename = $fileFunc->cleanFileName('RTEmagicP_'.$fI['basename']);
-			$destPath =PATH_site.$this->RTEImageStorageDir;
-			if (@is_dir($destPath))	{
-				$destName = $fileFunc->getUniqueName($basename,$destPath);
-				@copy($imgInfo[3],$destName);
-				t3lib_div::fixPermissions($destName);
-				$cWidth = t3lib_div::intInRange(t3lib_div::_GP('cWidth'), 0, $this->magicMaxWidth);
-				$cHeight = t3lib_div::intInRange(t3lib_div::_GP('cHeight'), 0, $this->magicMaxHeight);
-				if (!$cWidth)	$cWidth = $this->magicMaxWidth;
-				if (!$cHeight)	$cHeight = $this->magicMaxHeight;
-
-				$imgI = $this->imgObj->imageMagickConvert($filepath,'WEB',$cWidth.'m',$cHeight.'m');	// ($imagefile,$newExt,$w,$h,$params,$frame,$options,$mustCreate=0)
-				if ($imgI[3])	{
-					$fI=pathinfo($imgI[3]);
-					$mainBase='RTEmagicC_'.substr(basename($destName),10).'.'.$fI['extension'];
-					$destName = $fileFunc->getUniqueName($mainBase,$destPath);
-					@copy($imgI[3],$destName);
+		if (is_array($imgInfo) && count($imgInfo) == 4) {
+			if ($this->RTEImageStorageDir) {
+				$fI = pathinfo($imgInfo[3]);
+				$fileFunc = t3lib_div::makeInstance('t3lib_basicFileFunctions');
+				$basename = $fileFunc->cleanFileName('RTEmagicP_'.$fI['basename']);
+				$destPath =PATH_site.$this->RTEImageStorageDir;
+				if (@is_dir($destPath))	{
+					$destName = $fileFunc->getUniqueName($basename,$destPath);
+					@copy($imgInfo[3],$destName);
 					t3lib_div::fixPermissions($destName);
-					$destName = dirname($destName).'/'.rawurlencode(basename($destName));
-					$iurl = $this->siteURL.substr($destName,strlen(PATH_site));
-					$this->imageInsertJS($iurl, $imgI[0], $imgI[1], $altText, $titleText, $additionalParams);
+					$cWidth = t3lib_div::intInRange(t3lib_div::_GP('cWidth'), 0, $this->magicMaxWidth);
+					$cHeight = t3lib_div::intInRange(t3lib_div::_GP('cHeight'), 0, $this->magicMaxHeight);
+					if (!$cWidth)	$cWidth = $this->magicMaxWidth;
+					if (!$cHeight)	$cHeight = $this->magicMaxHeight;
+	
+					$imgI = $this->imgObj->imageMagickConvert($filepath,'WEB',$cWidth.'m',$cHeight.'m');	// ($imagefile,$newExt,$w,$h,$params,$frame,$options,$mustCreate=0)
+					if ($imgI[3])	{
+						$fI=pathinfo($imgI[3]);
+						$mainBase='RTEmagicC_'.substr(basename($destName),10).'.'.$fI['extension'];
+						$destName = $fileFunc->getUniqueName($mainBase,$destPath);
+						@copy($imgI[3],$destName);
+						t3lib_div::fixPermissions($destName);
+						$destName = dirname($destName).'/'.rawurlencode(basename($destName));
+						$iurl = $this->siteURL.substr($destName,strlen(PATH_site));
+						$this->imageInsertJS($iurl, $imgI[0], $imgI[1], $altText, $titleText, $additionalParams);
+					} else {
+						t3lib_div::sysLog('Attempt at creating a magic image failed due to error converting image: "' . $filepath . '".', $this->extKey . '/tx_rtehtmlarea_select_image', t3lib_div::SYSLOG_SEVERITY_ERROR);
+					}
+				} else {
+					t3lib_div::sysLog('Attempt at creating a magic image failed due to incorrect destination path: "' . $destPath . '".', $this->extKey . '/tx_rtehtmlarea_select_image', t3lib_div::SYSLOG_SEVERITY_ERROR);
 				}
+			} else {
+				t3lib_div::sysLog('Attempt at creating a magic image failed due to absent RTE_imageStorageDir', $this->extKey . '/tx_rtehtmlarea_select_image', t3lib_div::SYSLOG_SEVERITY_ERROR);
 			}
-		}
+		} else {
+			t3lib_div::sysLog('Attempt at creating a magic image failed due to missing image file info.', $this->extKey . '/tx_rtehtmlarea_select_image', t3lib_div::SYSLOG_SEVERITY_ERROR);
+		}	
 	}
 
 	/**
@@ -449,9 +459,10 @@ class tx_rtehtmlarea_select_image extends browse_links {
 		$JScode='
 			var plugin = window.parent.RTEarea["' . $editorNo . '"].editor.getPlugin("TYPO3Image");
 			var HTMLArea = window.parent.HTMLArea;
-			var Ext = window.parent.Ext;
-			if (Ext.isWebKit) {
-				plugin.dialog.mon(Ext.get(plugin.dialog.getComponent("content-iframe").getEl().dom.contentWindow.document.documentElement), "dragend", plugin.onDrop, plugin, {single: true});
+			function initEventListeners() {
+				if (Ext.isWebKit) {
+					Ext.EventManager.addListener(window.document.body, "dragend", plugin.onDrop, plugin, { single: true });
+				}
 			}
 			function jumpToUrl(URL,anchor)	{
 				var add_act = URL.indexOf("act=")==-1 ? "&act='.$act.'" : "";
@@ -992,7 +1003,7 @@ class tx_rtehtmlarea_select_image extends browse_links {
 	function TBE_dragNDrop($expandFolder=0,$extensionList='')	{
 		global $BACK_PATH;
 
-		$expandFolder = $expandFolder ? $expandFolder : $this->expandFolder;
+		$expandFolder = $expandFolder ? $expandFolder : t3lib_div::_GP('expandFolder');
 		$out='';
 		if ($expandFolder && $this->checkFolder($expandFolder))	{
 			if ($this->isWebFolder($expandFolder))	{
@@ -1065,7 +1076,7 @@ class tx_rtehtmlarea_select_image extends browse_links {
 								// Add default class for images
 							$lines[]='
 								<tr>
-									<td colspan="2"><img src="'.$iurl.'" width="'.$IW.'" height="'.$IH.'" alt=""' . ($this->defaultClass?(' class="'.$this->defaultClass.'"'):''). ' /></td>
+									<td colspan="2"><img src="'.$iurl.'" width="'.$IW.'" height="'.$IH.'" alt=""' . ($this->defaultClass?(' class="'.$this->defaultClass.'"'):''). ' style="cursor:move;" /></td>
 								</tr>';
 							$lines[]='
 								<tr>
@@ -1226,8 +1237,8 @@ class tx_rtehtmlarea_select_image extends browse_links {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod4/class.tx_rtehtmlarea_select_image.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod4/class.tx_rtehtmlarea_select_image.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod4/class.tx_rtehtmlarea_select_image.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/mod4/class.tx_rtehtmlarea_select_image.php']);
 }
 
 ?>

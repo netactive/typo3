@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -31,7 +31,7 @@
  * Will appear as the default document in the top frame if configured to appear.
  * This is the default menu used during "condensed mode"
  *
- * $Id: alt_topmenu_dummy.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: alt_topmenu_dummy.php 10121 2011-01-18 20:15:30Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant content
  *
@@ -50,6 +50,7 @@
  * TOTAL FUNCTIONS: 3
  * (This index is automatically created/updated by the extension "extdeveval")
  *
+ * @deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. The TYPO3 backend is using typo3/backend.php with less frames, which makes this file obsolete.
  */
 
 
@@ -57,6 +58,8 @@ require ('init.php');
 require ('template.php');
 require_once ('class.alt_menu_functions.inc');
 
+
+t3lib_div::deprecationLog('alt_topmenu_dummy.php is deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. The TYPO3 backend is using typo3/backend.php with less frames, which makes this file obsolete.');
 
 
 
@@ -180,8 +183,8 @@ class SC_alt_topmenu_dummy {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_topmenu_dummy.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_topmenu_dummy.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_topmenu_dummy.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_topmenu_dummy.php']);
 }
 
 

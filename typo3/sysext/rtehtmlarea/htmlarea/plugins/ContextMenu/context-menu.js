@@ -30,7 +30,7 @@
 /*
  * Context Menu Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: context-menu.js 8252 2010-07-23 15:52:18Z stan $
+ * TYPO3 SVN ID: $Id: context-menu.js 10133 2011-01-18 23:33:12Z stan $
  */
 HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 	constructor : function(editor, pluginName) {
@@ -125,9 +125,9 @@ HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 								itemId: itemId,
 								cls: 'button',
 								overCls: 'hover',
-								text: (button.contextMenuTitle || button.tooltip.title),
+								text: (button.contextMenuTitle ? button.contextMenuTitle : button.tooltip.title),
 								iconCls: button.iconCls,
-								helpText: this.localize(itemId + '-helpText') || this.localize(itemId + '-tooltip'),
+								helpText: (button.helpText ? button.helpText : this.localize(itemId + '-tooltip')),
 								hidden: true
 							});
 							firstInGroup = false;
@@ -185,6 +185,9 @@ HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 	 */
 	showMenu: function (event, target) {
 		this.showContextItems(target);
+		if (!Ext.isIE) {
+			this.ranges = this.editor.getSelectionRanges();
+		}
 		var iframeEl = this.editor.iframe.getEl();
 		this.menu.showAt([Ext.get(target).getX() + iframeEl.getX(), Ext.get(target).getY() + iframeEl.getY()]);
 	},
@@ -201,7 +204,8 @@ HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 			} else if (xtype === 'menuitem') {
 				var button = this.getButton(menuItem.getItemId());
 				if (button) {
-					menuItem.setText(button.tooltip.title);
+					menuItem.setText(button.contextMenuTitle ? button.contextMenuTitle : button.tooltip.title);
+					menuItem.helpText = button.helpText ? button.helpText : menuItem.helpText;
 					menuItem.setVisible(!button.disabled);
 					lastIsButton = lastIsButton || !button.disabled;
 				} else {
@@ -239,9 +243,12 @@ HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 	 * Handler invoked when a menu item is clicked on
 	 */
 	onItemClick: function (item, event) {
+		if (!Ext.isIE) {
+			this.editor.setSelectionRanges(this.ranges);
+		}
 		var button = this.getButton(item.getItemId());
 		if (button) {
-			button.fireEvent('click', button, event);
+			button.fireEvent('HTMLAreaEventContextMenu', button, event);
 		} else if (item.getItemId() === 'DeleteTarget') {
 				// Do not leave a non-ie table cell empty
 			var parent = this.deleteTarget.parent().dom;

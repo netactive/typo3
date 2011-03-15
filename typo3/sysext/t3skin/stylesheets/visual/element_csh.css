@@ -1,12 +1,12 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Context Sensitive Help (CSH)
 
-$Id: element_csh.css 7989 2010-06-20 14:34:23Z benni $
+$Id: element_csh.css 10313 2011-01-25 22:29:04Z baschny $
 - - - - - - - - - - - - - - - - - - - - - */
 
 table.typo3-csh-inline {
-	background-color: #ffffff;
-	border: 1px solid #a2aab8;
+	background-color: #ffffc7;
+	border: 1px solid #cccccc;
 }
 
 .typo3-csh-inline {
@@ -17,14 +17,10 @@ table.typo3-csh-inline {
 }
 
 a.typo3-csh-link .typo3-csh-inline {
-	background: #ffffff;
+	background-color: #ffffc7;
+	border: 1px solid #cccccc;
 	color: #000000;
 	font-weight: normal;
-}
-
-div.typo3-csh-inline p.t3-csh-short {
-	border: #b6b6b6 1px solid;
-	border-top: none;
 }
 
 img.typo3-csh-icon {
@@ -34,6 +30,44 @@ img.typo3-csh-icon {
 a.typo3-csh-link {
 	white-space: normal;
 }
+
+/** new CSH code **/
+table.t3-help-inline {
+	background-color: #ffffc7;
+	border: 1px solid #cccccc;
+}
+
+.t3-help-inline {
+	box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+	-moz-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+	-webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+	line-height: 16px;
+}
+
+a.t3-help-link .t3-help-inline {
+	background: #ffffc7;
+	color: #000000;
+	font-weight: normal;
+}
+
+p.t3-help-short.tipIsLinked {
+	cursor: pointer;
+}
+
+.t3-help-teaser,
+.t3-help-teaser label,
+.t3-help-teaser-icon {
+	cursor: help;
+}
+
+img.t3-help-icon {
+	cursor: help;
+}
+
+a.t3-help-link {
+	white-space: normal;
+}
+
 
 /*  view_help.php */
 #typo3-view-help-php {

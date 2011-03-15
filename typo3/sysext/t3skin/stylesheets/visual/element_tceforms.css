@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 TCEforms
 
-$Id: element_tceforms.css 8009 2010-06-21 16:51:09Z steffenk $
+$Id: element_tceforms.css 10213 2011-01-21 15:23:41Z jsegars $
 - - - - - - - - - - - - - - - - - - - - - */
 
 table.typo3-TCEforms {
@@ -35,6 +35,54 @@ table#typo3-altdoc-header input,
 	border: 0;
 }
 
+.t3-tceforms-input-wrapper,
+.t3-tceforms-input-wrapper-hover,
+.t3-tceforms-input-wrapper-datetime,
+.t3-tceforms-input-wrapper-datetime-hover {
+	display: block;
+	float: left;
+	position: relative;
+}
+
+
+
+.t3-tceforms-input-wrapper .t3-tceforms-input-clearer,
+.t3-tceforms-input-wrapper-hover .t3-tceforms-input-clearer {
+	position: absolute;
+	right: 4px;
+	top: 28%;
+	z-index: 1000;
+	cursor: pointer;
+}
+
+.t3-tceforms-input-wrapper-datetime .t3-tceforms-input-clearer,
+.t3-tceforms-input-wrapper-datetime-hover .t3-tceforms-input-clearer {
+	position: absolute;
+	right: 24px;
+	top: 28%;
+	z-index: 1000;
+	cursor: pointer;
+}
+
+.t3-tceforms-input-wrapper .tceforms-textfield,
+.t3-tceforms-input-wrapper-hover .tceforms-textfield,
+.t3-tceforms-input-wrapper .tceforms-datetimefield,
+.t3-tceforms-input-wrapper-hover .tceforms-datetimefield,
+.t3-tceforms-input-wrapper-datetime .tceforms-textfield,
+.t3-tceforms-input-wrapper-datetime-hover .tceforms-textfield,
+.t3-tceforms-input-wrapper-datetime .tceforms-datetimefield,
+.t3-tceforms-input-wrapper-datetime-hover .tceforms-datetimefield {
+	position: relative;
+	z-index: 2000;
+	min-height: 14px;
+	padding-right: 20px!important;
+}
+
+.t3-tceforms-input-wrapper-hover .t3-tceforms-input-clearer,
+.t3-tceforms-input-wrapper-datetime-hover .t3-tceforms-input-clearer {
+	z-index: 3700;
+}
+
 table.typo3-TCEforms table#typo3-altdoc-header input:hover,
 .c-inputButton:hover {
 	background: none;
@@ -48,7 +96,7 @@ table.typo3-TCEforms span.typo3-TCEforms-recHeader {
 
 table.typo3-TCEforms div.typo3-dyntabmenu-tabs,
 table.typo3-TCEforms tr.typo3-TCEforms-recHeaderRow td {
-	background: #F1F1F1;
+	background: #f8f8f8;
 }
 
 table.typo3-TCEforms tr.typo3-TCEforms-recHeaderRow td {
@@ -65,48 +113,42 @@ table.typo3-TCEforms span.typo3-TCEforms-helpText {
 	color: #fff;
 }
 
-table.typo3-TCEforms-select-checkbox  {
-	background-color: #efeff4;
+table.typo3-TCEforms-select-checkbox {
+	background-color: #ffffff;
 	border: 1px solid #aaa;
-}
-
-table.typo3-TCEforms-select-checkbox tr {
-	background-color: #efeff4;
-}
-
-table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr.c-selectedItem {
-	background-color: #d7dbe2;
-}
-
-table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr.c-unselectedItem {
-	background-color: #efeff4;
-}
-
-table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr.c-invalidItem {
-	background-color: #ff6600;
-}
-
-table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr.c-header-checkbox-controls td {
-	background-color: #b8bec9;
-	text-align: right;
-}
-
-table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr.c-header-checkbox-controls td a {
-	color: white;
 }
 
 table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr.c-header td {
 	background-color: #fff;
-	border-bottom: 1px solid #999999;
 	font-weight: bold;
 }
 
-table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr td {
-	border-bottom: 1px #999 dashed;
+table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr:nth-child(2n) {
+	background-color: #f7f7f7;
 }
 
-table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr td.c-labelCell p.c-descr {
-	font-style: italic;
+table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr.c-selectedItem {
+	background-color: #d8ecd0;
+}
+
+table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr.c-invalidItem {
+	color: #dddddd;
+}
+
+table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr:hover {
+	background-color: #dedede;
+}
+
+table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr.c-selectedItem:hover {
+	background-color: #abd99a;
+}
+
+table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr.c-invalidItem:hover {
+	background-color: transparent;
+}
+
+table.typo3-TCEforms table.typo3-TCEforms-select-checkbox tr td.c-labelCell {
+	white-space: nowrap;
 }
 
 table.typo3-TCEforms optgroup.c-divider,
@@ -218,7 +260,6 @@ table.typo3-TCEforms .wrapperTable3,
 table.typo3-TCEforms .wrapperTable4,
 table.typo3-TCEforms .wrapperTable5 {
 	border: 1px solid #c0c0c0;
-	border-top: none;
 }
 
 table.typo3-TCEforms .wrapperTable1 {
@@ -245,6 +286,14 @@ table.typo3-TCEforms table.wrapperAttention .wrapperTable5 {
 
 .t3-form-palette-fieldset {
 	border:none;
+}
+
+table.typo3-TCEforms div.imagethumbs .nobr {
+	background-color: #CCC;
+}
+
+table.typo3-TCEforms span.filetypes {
+	font-size: 0.8em;
 }
 
 input.typo3-TCEforms-suggest-search {
@@ -377,4 +426,24 @@ TCEforms Sections
 
 .t3-form-field-add-flexsection {
 	border-top: 1px solid #cdcdcd;
+}
+
+
+.typo3-TCEforms-select-selectedItemWithBackgroundImage {
+	background-color:#fff;
+	background-position: 0% 50%;
+	background-repeat:no-repeat;
+	padding:1px 1px 1px 24px;
+}
+
+.ext-webkit .typo3-TCEforms-select-selectedItemWithBackgroundImage {
+	text-indent: 20px;
+	background-position-x: 6px;
+}
+.ext-webkit .typo3-TCEforms-select-selectedItemWithBackgroundImage optgroup option {
+	text-indent: 20px;
+}
+.ext-chrome:not(.ext-mac) .typo3-TCEforms-select-selectedItemWithBackgroundImage {
+	text-indent: 0px;
+	background-position-x: 5px;
 }

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Displays the secondary-options palette for the TCEFORMs wherever they are shown.
  *
- * $Id: alt_palette.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: alt_palette.php 10121 2011-01-18 20:15:30Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -54,8 +54,8 @@
  * TOTAL FUNCTIONS: 5
  * (This index is automatically created/updated by the extension "extdeveval")
  *
+ * @deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. The TYPO3 backend is using typo3/backend.php with less frames, which makes this file obsolete.
  */
-
 
 
 require('init.php');
@@ -63,6 +63,7 @@ require('template.php');
 $LANG->includeLLFile('EXT:lang/locallang_alt_doc.xml');
 
 
+t3lib_div::deprecationLog('alt_palette.php is deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. The TYPO3 backend is using typo3/backend.php with less frames, which makes this file obsolete.');
 
 
 
@@ -74,7 +75,7 @@ $LANG->includeLLFile('EXT:lang/locallang_alt_doc.xml');
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
- * @deprecated since TYPO3 4.3, will be removed in TYPO3 4.5
+ * @deprecated since TYPO3 4.3, will be removed in TYPO3 4.6
  */
 class formRender extends t3lib_TCEforms {
 
@@ -83,10 +84,13 @@ class formRender extends t3lib_TCEforms {
 	 * (Horizontally, for display in the top frame)
 	 * (Used if GET var "backRef" IS set)
 	 *
+	 * @deprecated since TYPO3 4.3, will be removed in TYPO3 4.6
 	 * @param	array		Array of information from which the fields are built.
 	 * @return	string		HTML output
 	 */
 	function printPalette($palArr)	{
+		t3lib_div::logDeprecatedFunction();
+
 		$out='';
 
 			// For each element on the palette, write a few table cells with the field name, content and control images:
@@ -369,8 +373,8 @@ class SC_alt_palette {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_palette.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/alt_palette.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_palette.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/alt_palette.php']);
 }
 
 

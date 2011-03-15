@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -49,7 +49,7 @@
  * For a detailed description of this script, the scope of constants and variables in it,
  * please refer to the document "Inside TYPO3"
  *
- * $Id: init.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: init.php 10121 2011-01-18 20:15:30Z ohader $
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -274,9 +274,8 @@ if ((TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) && basename(PATH_thisScript) == 
 // **********************
 // Check Hardcoded lock on BE:
 // **********************
-if ($TYPO3_CONF_VARS['BE']['adminOnly'] < 0)	{
-	t3lib_BEfunc::typo3printError('Backend locked', 'Backend and Install Tool are locked for maintenance. [BE][adminOnly] is set to "' . intval($TYPO3_CONF_VARS['BE']['adminOnly']) . '".');
-	exit;
+if ($TYPO3_CONF_VARS['BE']['adminOnly'] < 0) {
+	throw new RuntimeException('TYPO3 Backend locked: Backend and Install Tool are locked for maintenance. [BE][adminOnly] is set to "' . intval($TYPO3_CONF_VARS['BE']['adminOnly']) . '".');
 }
 if (!(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) && @is_file(PATH_typo3conf . 'LOCK_BACKEND')) {
 	if (TYPO3_PROCEED_IF_NO_USER == 2) {
@@ -286,7 +285,7 @@ if (!(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) && @is_file(PATH_typo3conf . 'L
 		if ($fContent)	{
 			header('Location: '.$fContent);	// Redirect
 		} else {
-			t3lib_BEfunc::typo3printError('Backend locked', 'Browser backend is locked for maintenance. Remove lock by removing the file "typo3conf/LOCK_BACKEND" or use CLI-scripts.');
+			throw new RuntimeException('TYPO3 Backend locked: Browser backend is locked for maintenance. Remove lock by removing the file "typo3conf/LOCK_BACKEND" or use CLI-scripts.');
 		}
 		exit;
 	}
@@ -367,17 +366,17 @@ if (TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_INSTALL) {
 // *************************
 // Connect to the database
 // *************************
-if ($TYPO3_DB->sql_pconnect(TYPO3_db_host, TYPO3_db_username, TYPO3_db_password))	{
+	// Redirect to install tool if database host and database are not defined
+if (!TYPO3_db_host && !TYPO3_db) {
+	t3lib_utility_Http::redirect('install/index.php?mode=123&step=1&password=joh316');
+} elseif ($TYPO3_DB->sql_pconnect(TYPO3_db_host, TYPO3_db_username, TYPO3_db_password)) {
 	if (!TYPO3_db)	{
-		t3lib_BEfunc::typo3PrintError('Database Error', 'No database selected');
-		exit;
+		throw new RuntimeException('Database Error: No database selected', time());
 	} elseif (!$TYPO3_DB->sql_select_db(TYPO3_db))	{
-		t3lib_BEfunc::typo3PrintError('Database Error', 'Cannot connect to the current database, "' . TYPO3_db . '"');
-		exit;
+		throw new RuntimeException('Database Error: Cannot connect to the current database, "' . TYPO3_db . '"', time());
 	}
 } else {
-	t3lib_BEfunc::typo3PrintError('Database Error', 'The current username, password or host was not accepted when the connection to the database was attempted to be established!');
-	exit;
+	throw new RuntimeException('Database Error: The current username, password or host was not accepted when the connection to the database was attempted to be established!', time());
 }
 
 
@@ -385,8 +384,7 @@ if ($TYPO3_DB->sql_pconnect(TYPO3_db_host, TYPO3_db_username, TYPO3_db_password)
 // Checks for proper browser
 // *******************************
 if (!$CLIENT['BROWSER'] && !(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI)) {
-	t3lib_BEfunc::typo3PrintError ('Browser error','Your browser version looks incompatible with this TYPO3 version!',0);
-	exit;
+	throw new RuntimeException('Browser Error: Your browser version looks incompatible with this TYPO3 version!', time());
 }
 
 

@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Module menu
 
-$Id: module_menu.css 8842 2010-09-21 21:02:40Z steffenk $
+$Id: module_menu.css 9327 2010-11-10 22:09:31Z stephenking $
 - - - - - - - - - - - - - - - - - - - - - */
 
 #typo3-menu {
@@ -68,4 +68,8 @@ $Id: module_menu.css 8842 2010-09-21 21:02:40Z steffenk $
 #typo3-menu div.expanded,
 #typo3-menu div.collapsed {
 	margin-left: 0px;
+}
+
+#typo3-module-menu #typo3-docheader {
+	min-width: 0;
 }

@@ -29,7 +29,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /*
- * TYPO3 SVN ID: $Id: htmlarea-gecko.js 7866 2010-06-10 15:16:59Z stan $
+ * TYPO3 SVN ID: $Id: htmlarea-gecko.js 10181 2011-01-20 23:36:41Z stan $
  */
 
 /***************************************************
@@ -86,7 +86,11 @@ HTMLArea.Editor.prototype.addRangeToSelection = function(selection, range) {
  * Create a range for the current selection
  */
 HTMLArea.Editor.prototype._createRange = function(sel) {
-	if (Ext.isWebKit) {
+	if (Ext.isEmpty(sel)) {
+		return this._doc.createRange();
+	}
+		// Older versions of WebKit did not support getRangeAt
+	if (Ext.isWebKit && !sel.getRangeAt) {
 		var range = this._doc.createRange();
 		if (typeof(sel) == "undefined") {
 			return range;
@@ -104,9 +108,6 @@ HTMLArea.Editor.prototype._createRange = function(sel) {
 			return range;
 		}
 	}
-	if (Ext.isEmpty(sel)) {
-		return this._doc.createRange();
-	}
 	try {
 		return sel.getRangeAt(0);
 	} catch(e) {
@@ -120,22 +121,26 @@ HTMLArea.Editor.prototype._createRange = function(sel) {
 HTMLArea.Editor.prototype.selectNode = function(node, endPoint) {
 	this.focus();
 	var selection = this._getSelection();
-	var range = this._doc.createRange();
-	if (node.nodeType == 1 && node.nodeName.toLowerCase() == "body") {
-		if (Ext.isWebKit) {
-			range.setStart(node, 0);
-			range.setEnd(node, node.childNodes.length);
-		} else {
-			range.selectNodeContents(node);
-		}
+	if (Ext.isWebKit && /^(img)$/i.test(node.nodeName)) {
+		this._getSelection().setBaseAndExtent(node, 0, node, 1);
 	} else {
-		range.selectNode(node);
+		var range = this._doc.createRange();
+		if (node.nodeType == 1 && node.nodeName.toLowerCase() == "body") {
+			if (Ext.isWebKit) {
+				range.setStart(node, 0);
+				range.setEnd(node, node.childNodes.length);
+			} else {
+				range.selectNodeContents(node);
+			}
+		} else {
+			range.selectNode(node);
+		}
+		if (typeof(endPoint) != "undefined") {
+			range.collapse(endPoint);
+		}
+		this.emptySelection(selection);
+		this.addRangeToSelection(selection, range);
 	}
-	if (typeof(endPoint) != "undefined") {
-		range.collapse(endPoint);
-	}
-	this.emptySelection(selection);
-	this.addRangeToSelection(selection, range);
 };
 /*
  * Select ONLY the contents inside the given node
@@ -207,7 +212,36 @@ HTMLArea.Editor.prototype.getSelectionType = function(selection) {
 	}
 	return type;
 };
-
+/*
+ * Return the ranges of the selection
+ */
+HTMLArea.Editor.prototype.getSelectionRanges = function(selection) {
+	if (!selection) {
+		var selection = this._getSelection();
+	}
+	var ranges = [];
+		// Older versions of WebKit did not support getRangeAt
+	if (selection.getRangeAt) {
+		for (var i = selection.rangeCount; --i >= 0;) {
+			ranges.push(selection.getRangeAt(i));
+		}
+	}
+	return ranges;
+};
+/*
+ * Add ranges to the selection
+ */
+HTMLArea.Editor.prototype.setSelectionRanges = function(ranges, selection) {
+	if (!selection) {
+		var selection = this._getSelection();
+	}
+	if (selection.getRangeAt) {
+		this.emptySelection(selection);
+		for (var i = ranges.length; --i >= 0;) {
+			this.addRangeToSelection(selection, ranges[i]);
+		}
+	}
+};
 /*
  * Retrieves the selected element (if any), just in the case that a single element (object like and image or a table) is selected.
  */
@@ -368,15 +402,20 @@ HTMLArea.Editor.prototype.getBookmarkNode = function(bookmark, endPoint) {
 HTMLArea.Editor.prototype.moveToBookmark = function (bookmark) {
 	var startSpan  = this.getBookmarkNode(bookmark, true);
 	var endSpan    = this.getBookmarkNode(bookmark, false);
-
+	var parent;
 	var range = this._createRange();
-		// If the previous sibling is a text node, let the anchorNode have it as parent
-	if (startSpan.previousSibling && startSpan.previousSibling.nodeType == 3) {
-		range.setStart(startSpan.previousSibling, startSpan.previousSibling.data.length);
+	if (startSpan) {
+			// If the previous sibling is a text node, let the anchorNode have it as parent
+		if (startSpan.previousSibling && startSpan.previousSibling.nodeType == 3) {
+			range.setStart(startSpan.previousSibling, startSpan.previousSibling.data.length);
+		} else {
+			range.setStartBefore(startSpan);
+		}
+		HTMLArea.removeFromParent(startSpan);
 	} else {
-		range.setStartBefore(startSpan);
+			// For some reason, the startSpan was removed or its id attribute was removed so that it cannot be retrieved
+		range.setStart(this._doc.body, 0);
 	}
-	HTMLArea.removeFromParent(startSpan);
 		// If the bookmarked range was collapsed, the end span will not be available
 	if (endSpan) {
 			// If the next sibling is a text node, let the focusNode have it as parent
@@ -476,13 +515,13 @@ HTMLArea.Editor.prototype.cleanAppleStyleSpans = function(node) {
 		} else {
 			var spans = node.getElementsByTagName("span");
 			for (var i = spans.length; --i >= 0;) {
-				if (HTMLArea._hasClass(spans[i], "Apple-style-span")) {
+				if (HTMLArea.DOM.hasClass(spans[i], "Apple-style-span")) {
 					this.removeMarkup(spans[i]);
 				}
 			}
 			var fonts = node.getElementsByTagName("font");
 			for (i = fonts.length; --i >= 0;) {
-				if (HTMLArea._hasClass(fonts[i], "Apple-style-span")) {
+				if (HTMLArea.DOM.hasClass(fonts[i], "Apple-style-span")) {
 					this.removeMarkup(fonts[i]);
 				}
 			}
@@ -503,7 +542,9 @@ HTMLArea.Editor.prototype._checkBackspace = function() {
 		var range = self._createRange(selection);
 		var startContainer = range.startContainer;
 		var startOffset = range.startOffset;
+			// If the selection is collapsed...
 		if (self._selectionEmpty()) {
+				// ... and the cursor lies in a direct child of body...
 			if (/^(body)$/i.test(startContainer.nodeName)) {
 				var node = startContainer.childNodes[startOffset];
 			} else if (/^(body)$/i.test(startContainer.parentNode.nodeName)) {
@@ -511,20 +552,27 @@ HTMLArea.Editor.prototype._checkBackspace = function() {
 			} else {
 				return false;
 			}
+				// ... which is a br or text node containing no non-whitespace character
 			if (/^(br|#text)$/i.test(node.nodeName) && !/\S/.test(node.textContent)) {
+					// Get a meaningful previous sibling in which to reposition de cursor
 				var previousSibling = node.previousSibling;
 				while (previousSibling && /^(br|#text)$/i.test(previousSibling.nodeName) && !/\S/.test(previousSibling.textContent)) {
 					previousSibling = previousSibling.previousSibling;
 				}
-				HTMLArea.removeFromParent(node);
-				if (/^(ol|ul|dl)$/i.test(previousSibling.nodeName)) {
-					self.selectNodeContents(previousSibling.lastChild, false);
-				} else if (/^(table)$/i.test(previousSibling.nodeName)) {
-					self.selectNodeContents(previousSibling.rows[previousSibling.rows.length-1].cells[previousSibling.rows[previousSibling.rows.length-1].cells.length-1], false);
-				} else if (!/\S/.test(previousSibling.textContent) && previousSibling.firstChild) {
-					self.selectNode(previousSibling.firstChild, true);
-				} else {
-					self.selectNodeContents(previousSibling, false);
+					// If there is no meaningful previous sibling, the cursor is at the start of body
+				if (previousSibling) {
+						// Remove the node
+					HTMLArea.removeFromParent(node);
+						// Position the cursor
+					if (/^(ol|ul|dl)$/i.test(previousSibling.nodeName)) {
+						self.selectNodeContents(previousSibling.lastChild, false);
+					} else if (/^(table)$/i.test(previousSibling.nodeName)) {
+						self.selectNodeContents(previousSibling.rows[previousSibling.rows.length-1].cells[previousSibling.rows[previousSibling.rows.length-1].cells.length-1], false);
+					} else if (!/\S/.test(previousSibling.textContent) && previousSibling.firstChild) {
+						self.selectNode(previousSibling.firstChild, true);
+					} else {
+						self.selectNodeContents(previousSibling, false);
+					}
 				}
 			}
 		}
@@ -653,7 +701,7 @@ HTMLArea.Editor.prototype._checkInsertP = function() {
 		}
 		p = df.firstChild;
 		if (p) {
-			if (!/\S/.test(p.innerHTML) || (p.childNodes.length == 1 && /^br$/i.test(p.firstChild.nodeName))) {
+			if (!/\S/.test(p.innerHTML) || (!/\S/.test(p.textContent) && !/<(img|hr|table)/i.test(p.innerHTML))) {
  				if (/^h[1-6]$/i.test(p.nodeName)) {
 					p = this.convertNode(p, "p");
 				}
@@ -663,7 +711,7 @@ HTMLArea.Editor.prototype._checkInsertP = function() {
 				if (!Ext.isOpera) {
 					p.innerHTML = "<br />";
 				}
-				if(/^li$/i.test(p.nodeName) && left_empty && !block.nextSibling) {
+				if (/^li$/i.test(p.nodeName) && left_empty && (!block.nextSibling || !/^li$/i.test(block.nextSibling.nodeName))) {
 					left = block.parentNode;
 					left.removeChild(block);
 					range.setEndAfter(left);
@@ -683,8 +731,15 @@ HTMLArea.Editor.prototype._checkInsertP = function() {
 			if (a && /^a$/i.test(a.nodeName) && !/\S/.test(a.innerHTML)) {
 				this.convertNode(a, 'br');
 			}
+				// Walk inside the deepest child element (presumably inline element)
+			while (p.firstChild && p.firstChild.nodeType == 1 && !/^(br|img|hr|table)$/i.test(p.firstChild.nodeName)) {
+				p = p.firstChild;
+			}
 			if (/^br$/i.test(p.nodeName)) {
-				p = p.parentNode.insertBefore(this._doc.createTextNode("\x20"), p);
+				p = p.parentNode.insertBefore(doc.createTextNode('\x20'), p);
+			} else if (!/\S/.test(p.innerHTML)) {
+					// Need some element inside the deepest element
+				p.appendChild(doc.createElement('br'));
 			}
 			this.selectNodeContents(p, true);
 		} else {

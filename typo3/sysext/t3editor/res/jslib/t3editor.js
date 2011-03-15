@@ -34,6 +34,8 @@ T3editor.instances = {};
 // path to the editor ext dir
 // can be overwritten in class.tx_t3editor.php
 T3editor.PATH_t3e = "../../../sysext/t3editor/";
+T3editor.PATH_codemirror = "../../../contrib/codemirror/js/";
+
 
 function T3editor(textarea) {
 	var self = this;
@@ -63,18 +65,18 @@ function T3editor(textarea) {
 	this.statusbar_wrap = this.outerdiv.down('.t3e_statusbar_wrap');
 	this.statusbar_title = this.outerdiv.down('.t3e_statusbar_title');
 	this.statusbar_status = this.outerdiv.down('.t3e_statusbar_status');
-	
+
 	this.statusbar_title.update( this.textarea.readAttribute('alt') );
 	this.statusbar_status.update( '' );
 
 		// setting options
 	var options = {
 		height: ( textareaDim.height ) + 'px',
-		width: ( textareaDim.width - 40 ) + 'px',
+		width: ( textareaDim.width + this.adjustWidth ) + 'px',
 		content: $(this.textarea).value,
 		parserfile: T3editor.parserfile,
 		stylesheet: T3editor.stylesheet,
-		path: T3editor.PATH_t3e + "res/jslib/codemirror/",
+		path: T3editor.PATH_codemirror,
 		outerEditor: this,
 		saveFunction: this.saveFunction.bind(this),
 		initCallback: this.init.bind(this),
@@ -92,22 +94,24 @@ T3editor.prototype = {
 		saveFunctionEvent: null,
 		saveButtons: null,
 		updateTextareaEvent: null,
-	
+		adjustWidth: -30,
+		disabled: false,
+
 		init: function() {
 			var textareaDim = $(this.textarea).getDimensions();
 			// hide the textarea
 			this.textarea.hide();
 
 			this.attachEvents();
-			this.resize(textareaDim.width, textareaDim.height );
-			
+			this.resize(textareaDim.width + this.adjustWidth, textareaDim.height );
+
 			this.modalOverlay.hide();
 			$(this.outerdiv).fire('t3editor:initFinished', {t3editor: this});
 		},
 
 		attachEvents: function() {
 			var that = this;
-			
+
 			// get the form object
 			var form = $(this.textarea.form);
 			this.saveButtons = form.getInputs('image', 'submit');
@@ -119,7 +123,7 @@ T3editor.prototype = {
 			}.bind(this));
 
 			this.updateTextareaEvent = this.updateTextarea.bind(this);
-			
+
 			Event.observe($(this.textarea.form), 'submit', this.updateTextareaEvent);
 
 			Event.observe(this.mirror.win.document, 'keyup', function(event) {
@@ -127,7 +131,7 @@ T3editor.prototype = {
 			});
 			Event.observe(this.mirror.win.document, 'keydown', function(event) {
 				$(that.outerdiv).fire('t3editor:keydown', {t3editor: that, actualEvent: event});
-				
+
 				if ((event.ctrlKey || event.metaKey) && event.keyCode == 122) {
 					that.toggleFullscreen();
 					event.stop();
@@ -137,17 +141,17 @@ T3editor.prototype = {
 				$(that.outerdiv).fire('t3editor:click', {t3editor: that, actualEvent: event});
 			});
 		},
-	
+
 		// indicates is content is modified and not safed yet
 		textModified: false,
-		
+
 		// check if code in editor has been modified since last saving
 		checkTextModified: function() {
 			if (!this.textModified) {
 				this.textModified = true;
 			}
 		},
-		
+
 		updateTextarea: function(event) {
 			this.textarea.value = this.mirror.getCode();
 		},
@@ -157,18 +161,18 @@ T3editor.prototype = {
 			this.checkTextModified();
 			$(that.outerdiv).fire('t3editor:change', {t3editor: that});
 		},
-		
+
 		saveFunction: function(event) {
 			this.modalOverlay.show();
 			this.updateTextarea(event);
-			
+
 			if (event) {
 				Event.stop(event);
 			}
 
 			var params = $(this.textarea.form).serialize(true);
 			params = Object.extend( {t3editor_disableEditor: 'false'}, params);
-			
+
 			$(this.outerdiv).fire('t3editor:save', {parameters: params, t3editor: this});
 
 		},
@@ -182,10 +186,11 @@ T3editor.prototype = {
 			}
 			this.modalOverlay.hide();
 		},
-				
+
 		// toggle between the textarea and t3editor
 		toggleView: function(disable) {
 			$(this.outerdiv).fire('t3editor:toggleView', {t3editor: this, disable: disable});
+			this.disabled = disable;
 			if (disable) {
 				this.textarea.value = this.mirror.editor.getCode();
 				this.outerdiv.hide();
@@ -194,7 +199,7 @@ T3editor.prototype = {
 					Event.stopObserving(button,'click',this.saveFunctionEvent);
 				}.bind(this));
 				Event.stopObserving($(this.textarea.form), 'submit', this.updateTextareaEvent);
-				
+
 			} else {
 				this.mirror.editor.importCode(this.textarea.value);
 				this.textarea.hide();
@@ -206,14 +211,13 @@ T3editor.prototype = {
 				Event.observe($(this.textarea.form), 'submit', this.updateTextareaEvent);
 			}
 		},
-		
-		
+
 		resize: function(width, height) {
 			if (this.outerdiv) {
 				newheight = (height - 1);
 				newwidth = (width + 11);
 				if (Prototype.Browser.IE) newwidth = newwidth + 8;
-				
+
 				$(this.outerdiv).setStyle({
 					height: newheight + 'px',
 					width: newwidth + 'px'
@@ -229,7 +233,7 @@ T3editor.prototype = {
 			}
 
 		},
-		
+
 		// toggle between normal view and fullscreen mode
 		toggleFullscreen: function() {
 			if (this.outerdiv.hasClassName('t3e_fullscreen')) {
@@ -274,8 +278,15 @@ T3editor.prototype = {
 T3editor.toggleEditor = function(checkbox, index) {
 	if (!Prototype.Browser.MobileSafari
 		&& !Prototype.Browser.WebKit) {
-		
+
 		if (index == undefined) {
+			if (top.TYPO3.BackendUserSettings) {
+				top.TYPO3.BackendUserSettings.ExtDirect.set(
+					'disableT3Editor',
+					checkbox.checked,
+					function(response) {}
+				);
+			}
 			$$('textarea.t3editor').each(
 				function(textarea, i) {
 					T3editor.toggleEditor(checkbox, i);
@@ -296,7 +307,7 @@ T3editor.toggleEditor = function(checkbox, index) {
 // ------------------------------------------------------------------------
 
 if (!Prototype.Browser.MobileSafari) {
-	// everything ready: turn textarea's into fancy editors	
+	// everything ready: turn textarea's into fancy editors
 	Event.observe(window, 'load',
 		function() {
 			$$('textarea.t3editor').each(
@@ -308,6 +319,28 @@ if (!Prototype.Browser.MobileSafari) {
 					}
 				}
 			);
+
+			if (T3editor.ajaxSavetype != "") {
+				Event.observe(document, 't3editor:save',
+					function(event) {
+						var params = Object.extend({
+							ajaxID: "tx_t3editor::saveCode",
+							t3editor_savetype: T3editor.ajaxSavetype
+						}, event.memo.parameters);
+
+						new Ajax.Request(
+							T3editor.URL_typo3 + "ajax.php", {
+								parameters: params,
+								onComplete: function(ajaxrequest) {
+									var wasSuccessful = ajaxrequest.status == 200
+									&& ajaxrequest.headerJSON.result == true
+									event.memo.t3editor.saveFunctionComplete(wasSuccessful);
+								}
+							}
+						);
+					}
+				);
+			}
 		}
 	);
 }

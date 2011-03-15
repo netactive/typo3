@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2004 Kasper Skårhøj (kasper@typo3.com)
-*  (c) 2010 Georg Ringer (typo3@ringerge.org)
+*  (c) 1999-2011 Kasper Skårhøj (kasper@typo3.com)
+*  (c) 2010-2011 Georg Ringer (typo3@ringerge.org)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -210,8 +210,8 @@ class tx_impexp_task implements tx_taskcenter_Task {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/impexp/task/class.tx_impexp_task.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/impexp/task/class.tx_impexp_task.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/impexp/task/class.tx_impexp_task.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/impexp/task/class.tx_impexp_task.php']);
 }
 
 ?>

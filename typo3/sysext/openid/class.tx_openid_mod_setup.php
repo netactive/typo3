@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009-2010 Steffen Gebert <steffen@steffen-gebert.de>
+*  (c) 2009-2011 Steffen Gebert <steffen@steffen-gebert.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
 /**
  * This class is the OpenID return script for the TYPO3 Backend (used in the user-settings module).
  *
- * $Id: class.tx_openid_mod_setup.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tx_openid_mod_setup.php 10120 2011-01-18 20:03:36Z ohader $
  *
  * @author	Steffen Gebert <steffen@steffen-gebert.de>
  */
@@ -64,7 +64,7 @@ class tx_openid_mod_setup {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/openid/class.tx_openid_mod_setup.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/openid/class.tx_openid_mod_setup.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/openid/class.tx_openid_mod_setup.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/openid/class.tx_openid_mod_setup.php']);
 }
 ?>

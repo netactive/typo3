@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Wizard to display the RTE in "full screen" mode
  *
- * $Id: wizard_rte.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: wizard_rte.php 10295 2011-01-25 09:33:06Z baschny $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -198,7 +198,8 @@ class SC_wizard_rte {
 
 				// Adding hidden fields:
 			$formContent.= '<input type="hidden" name="redirect" value="'.htmlspecialchars($this->R_URI).'" />
-						<input type="hidden" name="_serialNumber" value="'.md5(microtime()).'" />';
+						<input type="hidden" name="_serialNumber" value="'.md5(microtime()).'" />' .
+						t3lib_TCEforms::getHiddenTokenField('tceAction');
 
 
 				// Finally, add the whole setup:
@@ -327,8 +328,8 @@ class SC_wizard_rte {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/wizard_rte.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/wizard_rte.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/wizard_rte.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/wizard_rte.php']);
 }
 
 

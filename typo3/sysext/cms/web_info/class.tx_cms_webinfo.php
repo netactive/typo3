@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Contains a class with functions for page related statistics added to the backend Info module
  *
- * $Id: class.tx_cms_webinfo.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: class.tx_cms_webinfo.php 10120 2011-01-18 20:03:36Z ohader $
  * Revised for TYPO3 3.6 5/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -197,7 +197,7 @@ class tx_cms_webinfo_hits extends tx_cms_webinfo_page {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/cms/web_info/class.tx_cms_webinfo.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/cms/web_info/class.tx_cms_webinfo.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/cms/web_info/class.tx_cms_webinfo.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/cms/web_info/class.tx_cms_webinfo.php']);
 }
 ?>

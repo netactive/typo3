@@ -27,7 +27,7 @@
 /*
  * Copy Paste for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: copy-paste.js 7300 2010-04-12 05:49:17Z stan $
+ * TYPO3 SVN ID: $Id: copy-paste.js 9313 2010-11-09 05:33:34Z stan $
  */
 HTMLArea.CopyPaste = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {
@@ -45,7 +45,7 @@ HTMLArea.CopyPaste = HTMLArea.Plugin.extend({
 		 * Registering plugin "About" information
 		 */
 		var pluginInformation = {
-			version		: '2.0',
+			version		: '2.2',
 			developer	: 'Stanislas Rolland',
 			developerUrl	: 'http://www.sjbr.ca/',
 			copyrightOwner	: 'Stanislas Rolland',
@@ -84,9 +84,14 @@ HTMLArea.CopyPaste = HTMLArea.Plugin.extend({
 	 */
 	onGenerate: function () {
 		this.editor.iframe.mon(Ext.get(Ext.isIE ? this.editor.document.body : this.editor.document.documentElement), 'cut', this.cutHandler, this);
-			// Add hot key handling if the button is not enabled in the toolbar
 		Ext.iterate(this.buttonList, function (buttonId, button) {
-			if (!this.isButtonInToolbar(buttonId)) {
+				// Remove button from toolbar, if command is not supported
+				// Starting with Safari 5 and Chrome 6, cut and copy commands are not supported anymore by WebKit
+			if (!Ext.isGecko && !this.editor.document.queryCommandSupported(buttonId)) {
+				this.editor.toolbar.remove(buttonId);
+			}
+				// Add hot key handling if the button is not enabled in the toolbar
+			if (!this.getButton(buttonId)) {
 				this.editor.iframe.hotKeyMap.addBinding({
 					key: button[1].toUpperCase(),
 					ctrl: true,
@@ -444,32 +449,64 @@ HTMLArea.CopyPaste = HTMLArea.Plugin.extend({
 	 * Mozilla clipboard access exception handler
 	 */
 	mozillaClipboardAccessException: function () {
-		if (this.buttonsConfiguration.paste && this.buttonsConfiguration.paste.mozillaAllowClipboardURL) {
-			if (confirm(this.localize('Allow-Clipboard-Helper-Extension'))) {
-				if (InstallTrigger.enabled()) {
-					var mozillaXpi = new Object();
-					mozillaXpi['AllowClipboard Helper'] = this.buttonsConfiguration.paste.mozillaAllowClipboardURL;
-					InstallTrigger.install(mozillaXpi, this.mozillaInstallCallback);
-				} else {
-					alert(this.localize('Mozilla-Org-Install-Not-Enabled'));
-					this.appendToLog('mozillaClipboardAccessException', 'Mozilla install was not enabled.');
-					return;
+		if (InstallTrigger && this.buttonsConfiguration.paste && this.buttonsConfiguration.paste.mozillaAllowClipboardURL) {
+			TYPO3.Dialog.QuestionDialog({
+				title: this.localize('Allow-Clipboard-Helper-Add-On-Title'),
+				msg: this.localize('Allow-Clipboard-Helper-Extension'),
+				fn: this.installAllowClipboardHelperExtension,
+				scope: this
+			});
+		} else {
+			TYPO3.Dialog.QuestionDialog({
+				title: this.localize('Firefox-Security-Prefs-Question-Title'),
+				msg: this.localize('Moz-Clipboard'),
+				fn: function (button) {
+					if (button == 'yes') {
+						window.open('http://mozilla.org/editor/midasdemo/securityprefs.html');
+					}
 				}
+			});
+			if (!InstallTrigger) {
+				this.appendToLog('mozillaClipboardAccessException', 'Firefox InstallTrigger was not defined.');
 			}
-		} else if (confirm(this.localize('Moz-Clipboard'))) {
-			window.open('http://mozilla.org/editor/midasdemo/securityprefs.html');
 		}
 	},
 	/*
-	 * Mozilla Add-on installer call back
+	 * Install AllowClipboardHelperExtension
+	 *
+	 * @param	string		button: yes or no button was clicked in the dialogue
+	 *
+	 * @return	void
 	 */
-	mozillaInstallCallback: function (url, returnCode) {
-		if (returnCode == 0) {
-			alert(this.localize('Allow-Clipboard-Helper-Extension-Success'));
-		} else {
-			alert(this.localize('Moz-Extension-Failure'));
-			this.appendToLog('mozillaInstallCallback', 'Mozilla install return code was: ' + returnCode + '.');
+	installAllowClipboardHelperExtension: function (button) {
+		if (button == 'yes') {
+			if (InstallTrigger.enabled()) {
+				var self = this;
+				function mozillaInstallCallback(url, returnCode) {
+					if (returnCode == 0) {
+						TYPO3.Dialog.InformationDialog({
+							title: self.localize('Allow-Clipboard-Helper-Add-On-Title'),
+							msg: self.localize('Allow-Clipboard-Helper-Extension-Success')
+						});
+					} else {
+						TYPO3.Dialog.ErrorDialog({
+							title: self.localize('Allow-Clipboard-Helper-Add-On-Title'),
+							msg: self.localize('Moz-Extension-Failure')
+						});
+						self.appendToLog('installAllowClipboardHelperExtension', 'Mozilla install return code was: ' + returnCode + '.');
+					}
+					return false;
+				}
+				var mozillaXpi = new Object();
+				mozillaXpi['AllowClipboard Helper'] = this.buttonsConfiguration.paste.mozillaAllowClipboardURL;
+				InstallTrigger.install(mozillaXpi, mozillaInstallCallback);
+			} else {
+				TYPO3.Dialog.ErrorDialog({
+					title: this.localize('Allow-Clipboard-Helper-Add-On-Title'),
+					msg: this.localize('Mozilla-Org-Install-Not-Enabled')
+				});
+				this.appendToLog('installAllowClipboardHelperExtension', 'Mozilla install was not enabled.');
+			}
 		}
-		return;
 	}
 });

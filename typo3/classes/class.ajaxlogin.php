@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2010 Christoph Koehler (christoph@webempoweredchurch.org)
+*  (c) 2008-2011 Christoph Koehler (christoph@webempoweredchurch.org)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -44,7 +44,13 @@ class AjaxLogin {
 	 */
 	public function login(array $parameters, TYPO3AJAX $ajaxObj) {
 		if ($GLOBALS['BE_USER']->user['uid']) {
-			$json = array('success' => TRUE);
+			$formprotection = t3lib_formprotection_Factory::get();
+			$token = $formprotection->generateToken('extDirect');
+
+			$json = array(
+				'success' => TRUE,
+				'token' => $token
+			);
 		} else {
 			$json = array('success' => FALSE);
 		}
@@ -134,8 +140,8 @@ class AjaxLogin {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/classes/class.ajaxlogin.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/classes/class.ajaxlogin.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/classes/class.ajaxlogin.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/classes/class.ajaxlogin.php']);
 }
 
 ?>

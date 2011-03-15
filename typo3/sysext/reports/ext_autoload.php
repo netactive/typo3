@@ -2,7 +2,7 @@
 /*
  * Register necessary class names with autoloader
  *
- * $Id: ext_autoload.php 8156 2010-07-11 12:42:05Z psychomieze $
+ * $Id: ext_autoload.php 10098 2011-01-17 10:56:55Z flyguide $
  */
 $extensionPath = t3lib_extMgm::extPath('reports');
 return array(
@@ -15,5 +15,7 @@ return array(
 	'tx_reports_reports_status_securitystatus' => $extensionPath . 'reports/status/class.tx_reports_reports_status_securitystatus.php',
 	'tx_reports_reports_status_configurationstatus' => $extensionPath . 'reports/status/class.tx_reports_reports_status_configurationstatus.php',
 	'tx_reports_reports_status_status' => $extensionPath . 'reports/status/class.tx_reports_reports_status_status.php',
+	'tx_reports_tasks_systemstatusupdatetask' => $extensionPath . 'tasks/class.tx_reports_tasks_systemstatusupdatetask.php',
+	'tx_reports_tasks_systemstatusupdatetasknotificationemailfield' => $extensionPath . 'tasks/class.tx_reports_tasks_systemstatusupdatetasknotificationemailfield.php',
 );
 ?>

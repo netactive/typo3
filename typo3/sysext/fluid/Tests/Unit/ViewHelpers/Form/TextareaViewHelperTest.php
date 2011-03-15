@@ -29,7 +29,7 @@ require_once(dirname(__FILE__) . '/../ViewHelperBaseTestcase.php');
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
-class Tx_Fluid_ViewHelpers_Form_TextareaViewHelperTest extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {
+class Tx_Fluid_Tests_Unit_ViewHelpers_Form_TextareaViewHelperTest extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {
 
 	/**
 	 * var Tx_Fluid_ViewHelpers_Form_TextareaViewHelper
@@ -50,7 +50,7 @@ class Tx_Fluid_ViewHelpers_Form_TextareaViewHelperTest extends Tx_Fluid_ViewHelp
 	public function renderCorrectlySetsTagName() {
 		$mockTagBuilder = $this->getMock('Tx_Fluid_Core_ViewHelper_TagBuilder', array('setTagName'), array(), '', FALSE);
 		$mockTagBuilder->expects($this->once())->method('setTagName')->with('textarea');
-		$this->viewHelper->injectTagBuilder($mockTagBuilder);
+		$this->viewHelper->_set('tag', $mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render();
@@ -67,7 +67,7 @@ class Tx_Fluid_ViewHelpers_Form_TextareaViewHelperTest extends Tx_Fluid_ViewHelp
 		$this->viewHelper->expects($this->once())->method('registerFieldNameForFormTokenGeneration')->with('NameOfTextarea');
 		$mockTagBuilder->expects($this->once())->method('setContent')->with('Current value');
 		$mockTagBuilder->expects($this->once())->method('render');
-		$this->viewHelper->injectTagBuilder($mockTagBuilder);
+		$this->viewHelper->_set('tag', $mockTagBuilder);
 
 		$arguments = new Tx_Fluid_Core_ViewHelper_Arguments(array(
 			'name' => 'NameOfTextarea',
@@ -99,7 +99,7 @@ class Tx_Fluid_ViewHelpers_Form_TextareaViewHelperTest extends Tx_Fluid_ViewHelp
 		$this->viewHelper->expects($this->once())->method('registerFieldNameForFormTokenGeneration')->with('NameOfTextarea');
 		$mockTagBuilder->expects($this->once())->method('setContent')->with('some &lt;tag&gt; &amp; &quot;quotes&quot;');
 		$mockTagBuilder->expects($this->once())->method('render');
-		$this->viewHelper->injectTagBuilder($mockTagBuilder);
+		$this->viewHelper->_set('tag', $mockTagBuilder);
 
 		$arguments = new Tx_Fluid_Core_ViewHelper_Arguments(array(
 			'name' => 'NameOfTextarea',

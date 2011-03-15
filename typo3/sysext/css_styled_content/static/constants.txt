@@ -5,10 +5,10 @@ content {
     # cat=content/cHeader/h0; type=int[1-5]; label=Default Header type: Enter the number of the header layout to be used by default.
   defaultHeaderType = 1
     # cat=advanced/links; type=small; label=Pageframe object: The name of the "contentframe". Normally set to "page" if the site has a frameset. Otherwise it should be an empty value. This is important, as it determines the target of internal links!
-  pageFrameObj = 
-  
+  pageFrameObj =
+
   shortcut.tables = tt_content,tt_address,tt_links,tt_guest,tt_board,tt_calender,tt_products,tt_news,tt_rating,tt_poll
-   
+
     # cat=content/other/a; type=small; label= Content Element margins (before): Space before each content element.
   spaceBefore = 0
     # cat=content/other/b; type=small; label= Content Element margins (after): Space after each content element.
@@ -74,7 +74,7 @@ styles.content.imgtext {
     # cat=content/cImage/i4; type=string; label= Image border CSS-selector: If you want your border to apply elsewhere, change this setting. E.g. to apply to the whole image+caption, use 'DIV.csc-textpic-border DIV.csc-textpic-imagewrap .csc-textpic-image'.
   borderSelector = DIV.{$styles.content.imgtext.borderClass} DIV.csc-textpic-imagewrap .csc-textpic-image IMG, DIV.{$styles.content.imgtext.borderClass} DIV.csc-textpic-single-image IMG
     # cat=content/cImage/i5; type=string; label= Image border class: The name of the CSS class for creating image borders
-  borderClass = csc-textpic-border  
+  borderClass = csc-textpic-border
     # cat=content/cImage/i5; type=boolean; label= Image row separation: Whether images should be rendered/wrapped in separated rows, e.g. inside a DIV.csc-textpic-imagerow element
   separateRows = 1
     # cat=content/cImage/i6; type=boolean; label= Add clearer after intext images: Whether a clearer should be added after textpic elements of type intext-left or intext-right
@@ -99,7 +99,7 @@ styles.content.mailform {
 
 styles.content.loginform {
   target = _top
-    # cat=content/cLogin; type=int+; label= PID of user archive: Enter the page-uid number (PID) of the sysFolder where you keep your fe_users that are supposed to login on this site. This setting is necessary, if login is going to work!
+    # cat=content/cLogin; type=int+; label= PID of user archive: Enter the page-uid number (PID) of the folder where you keep your fe_users that are supposed to login on this site. This setting is necessary, if login is going to work!
   pid =
     # cat=content/cLogin; type=; label= Message, Login: This is the message (if any) that is popped-up when a user logs in as a front-end user
   goodMess =
@@ -123,7 +123,7 @@ styles.content.media {
   	# cat=content/cMedia/j3; type=int+; label= Media Video Height: define the default height for the media video
   defaultVideoHeight = 400
     # cat=content/cMedia/j4; type=; label= Audio Player: configure the path to the video player
-  audioPlayer = typo3/contrib/flashmedia/player.swf	
+  audioPlayer = typo3/contrib/flashmedia/player.swf
    	# cat=content/cMedia/j5; type=int+; label= Media Audio Width: define the default width for the media audio
   defaultAudioWidth = 300
     # cat=content/cMedia/j6; type=int+; label= Media Audio Height: define the default height for the media audio
@@ -134,5 +134,5 @@ styles.content.media {
 PAGE_TARGET =
 
 
-# TYPO3 SVN ID: $Id: constants.txt 8782 2010-09-13 08:34:33Z psychomieze $
+# TYPO3 SVN ID: $Id: constants.txt 10097 2011-01-17 10:40:14Z flyguide $
 

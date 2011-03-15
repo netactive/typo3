@@ -1,5 +1,5 @@
 #
-# TYPO3 SVN ID: $Id: ext_tables.sql 8551 2010-08-10 11:38:55Z lolli $
+# TYPO3 SVN ID: $Id: ext_tables.sql 10200 2011-01-21 11:19:19Z flyguide $
 #
 
 
@@ -246,7 +246,7 @@ CREATE TABLE pages_language_overlay (
   t3ver_wsid int(11) DEFAULT '0' NOT NULL,
   t3ver_label varchar(255) DEFAULT '' NOT NULL,
   t3ver_state tinyint(4) DEFAULT '0' NOT NULL,
-  t3ver_stage tinyint(4) DEFAULT '0' NOT NULL,
+  t3ver_stage int(11) DEFAULT '0' NOT NULL,
   t3ver_count int(11) DEFAULT '0' NOT NULL,
   t3ver_tstamp int(11) DEFAULT '0' NOT NULL,
   t3_origuid int(11) DEFAULT '0' NOT NULL,
@@ -314,7 +314,7 @@ CREATE TABLE sys_template (
   t3ver_wsid int(11) DEFAULT '0' NOT NULL,
   t3ver_label varchar(255) DEFAULT '' NOT NULL,
   t3ver_state tinyint(4) DEFAULT '0' NOT NULL,
-  t3ver_stage tinyint(4) DEFAULT '0' NOT NULL,
+  t3ver_stage int(11) DEFAULT '0' NOT NULL,
   t3ver_count int(11) DEFAULT '0' NOT NULL,
   t3ver_tstamp int(11) DEFAULT '0' NOT NULL,
   t3_origuid int(11) DEFAULT '0' NOT NULL,
@@ -358,7 +358,7 @@ CREATE TABLE tt_content (
   t3ver_wsid int(11) DEFAULT '0' NOT NULL,
   t3ver_label varchar(255) DEFAULT '' NOT NULL,
   t3ver_state tinyint(4) DEFAULT '0' NOT NULL,
-  t3ver_stage tinyint(4) DEFAULT '0' NOT NULL,
+  t3ver_stage int(11) DEFAULT '0' NOT NULL,
   t3ver_count int(11) DEFAULT '0' NOT NULL,
   t3ver_tstamp int(11) DEFAULT '0' NOT NULL,
   t3ver_move_id int(11) DEFAULT '0' NOT NULL,
@@ -388,12 +388,12 @@ CREATE TABLE tt_content (
   endtime int(11) unsigned DEFAULT '0' NOT NULL,
   colPos tinyint(3) unsigned DEFAULT '0' NOT NULL,
   subheader varchar(255) DEFAULT '' NOT NULL,
-  spaceBefore tinyint(4) unsigned DEFAULT '0' NOT NULL,
-  spaceAfter tinyint(4) unsigned DEFAULT '0' NOT NULL,
+  spaceBefore smallint(5) unsigned DEFAULT '0' NOT NULL,
+  spaceAfter smallint(5) unsigned DEFAULT '0' NOT NULL,
   fe_group varchar(100) DEFAULT '0' NOT NULL,
   header_link varchar(255) DEFAULT '' NOT NULL,
   imagecaption_position varchar(6) DEFAULT '' NOT NULL,
-  image_link varchar(255) DEFAULT '' NOT NULL,
+  image_link text,
   image_zoom tinyint(3) unsigned DEFAULT '0' NOT NULL,
   image_noRows tinyint(3) unsigned DEFAULT '0' NOT NULL,
   image_effects tinyint(3) unsigned DEFAULT '0' NOT NULL,
@@ -437,42 +437,33 @@ CREATE TABLE tt_content (
   KEY language (l18n_parent,sys_language_uid)
 );
 
-
 #
-# Table structure for table 'pages'
+# Table structure for table 'backend_layout'
 #
-CREATE TABLE pages (
-  url varchar(255) DEFAULT '' NOT NULL,
-  starttime int(11) unsigned DEFAULT '0' NOT NULL,
-  endtime int(11) unsigned DEFAULT '0' NOT NULL,
-  urltype tinyint(4) unsigned DEFAULT '0' NOT NULL,
-  shortcut int(10) unsigned DEFAULT '0' NOT NULL,
-  shortcut_mode int(10) unsigned DEFAULT '0' NOT NULL,
-  no_cache int(10) unsigned DEFAULT '0' NOT NULL,
-  fe_group varchar(100) DEFAULT '0' NOT NULL,
-  subtitle varchar(255) DEFAULT '' NOT NULL,
-  layout tinyint(3) unsigned DEFAULT '0' NOT NULL,
-  target varchar(80) DEFAULT '' NOT NULL,
-  media text,
-  lastUpdated int(10) unsigned DEFAULT '0' NOT NULL,
-  keywords text,
-  cache_timeout int(10) unsigned DEFAULT '0' NOT NULL,
-  newUntil int(10) unsigned DEFAULT '0' NOT NULL,
-  description text,
-  no_search tinyint(3) unsigned DEFAULT '0' NOT NULL,
-  SYS_LASTCHANGED int(10) unsigned DEFAULT '0' NOT NULL,
-  abstract text,
-  module varchar(10) DEFAULT '' NOT NULL,
-  extendToSubpages tinyint(3) unsigned DEFAULT '0' NOT NULL,
-  author varchar(255) DEFAULT '' NOT NULL,
-  author_email varchar(80) DEFAULT '' NOT NULL,
-  nav_title varchar(255) DEFAULT '' NOT NULL,
-  nav_hide tinyint(4) DEFAULT '0' NOT NULL,
-  content_from_pid int(10) unsigned DEFAULT '0' NOT NULL,
-  mount_pid int(10) unsigned DEFAULT '0' NOT NULL,
-  mount_pid_ol tinyint(4) DEFAULT '0' NOT NULL,
-  alias varchar(32) DEFAULT '' NOT NULL,
-  l18n_cfg tinyint(4) DEFAULT '0' NOT NULL,
-  fe_login_mode tinyint(4) DEFAULT '0' NOT NULL,
-  KEY alias (alias)
+CREATE TABLE backend_layout (
+  uid int(11) NOT NULL auto_increment,
+  pid int(11) DEFAULT '0' NOT NULL,
+  t3ver_oid int(11) DEFAULT '0' NOT NULL,
+  t3ver_id int(11) DEFAULT '0' NOT NULL,
+  t3ver_wsid int(11) DEFAULT '0' NOT NULL,
+  t3ver_label varchar(255) DEFAULT '' NOT NULL,
+  t3ver_state tinyint(4) DEFAULT '0' NOT NULL,
+  t3ver_stage int(11) DEFAULT '0' NOT NULL,
+  t3ver_count int(11) DEFAULT '0' NOT NULL,
+  t3ver_tstamp int(11) DEFAULT '0' NOT NULL,
+  t3ver_move_id int(11) DEFAULT '0' NOT NULL,
+  t3_origuid int(11) DEFAULT '0' NOT NULL,
+  tstamp int(11) unsigned DEFAULT '0' NOT NULL,
+  crdate int(11) unsigned DEFAULT '0' NOT NULL,
+  cruser_id int(11) unsigned DEFAULT '0' NOT NULL,
+  hidden tinyint(4) unsigned DEFAULT '0' NOT NULL,
+  deleted tinyint(4) DEFAULT '0' NOT NULL,
+  sorting int(11) unsigned DEFAULT '0' NOT NULL,
+  title varchar(255) DEFAULT '' NOT NULL,
+  description text NOT NULL,
+  config text NOT NULL,
+  icon text NOT NULL,
+  PRIMARY KEY (uid),
+  KEY parent (pid),
+  KEY t3ver_oid (t3ver_oid,t3ver_wsid)
 );

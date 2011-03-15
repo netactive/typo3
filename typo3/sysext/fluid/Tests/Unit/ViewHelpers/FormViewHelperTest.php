@@ -27,7 +27,7 @@ require_once(dirname(__FILE__) . '/ViewHelperBaseTestcase.php');
 
 /**
  */
-class Tx_Fluid_ViewHelpers_FormViewHelperTest extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {
+class Tx_Fluid_Tests_Unit_ViewHelpers_FormViewHelperTest extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {
 	/**
 	 * @test
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
@@ -204,11 +204,11 @@ class Tx_Fluid_ViewHelpers_FormViewHelperTest extends Tx_Fluid_ViewHelpers_ViewH
 	 */
 	public function renderAddsDefaultFieldNamePrefixToTemplateVariableContainerIfNoPrefixIsSpecified() {
 		$expectedPrefix = 'tx_someextension_someplugin';
-		$this->request->expects($this->once())->method('getControllerExtensionName')->will($this->returnValue('SomeExtension'));
-		$this->request->expects($this->once())->method('getPluginName')->will($this->returnValue('SomePlugin'));
 
 		$viewHelper = $this->getAccessibleMock('Tx_Fluid_ViewHelpers_FormViewHelper', array('renderChildren', 'renderHiddenIdentityField', 'renderHiddenReferrerFields', 'renderRequestHashField', 'addFormFieldNamesToViewHelperVariableContainer', 'removeFormFieldNamesFromViewHelperVariableContainer'), array(), '', FALSE);
 		$this->injectDependenciesIntoViewHelper($viewHelper);
+
+		$viewHelper->setArguments(new Tx_Fluid_Core_ViewHelper_Arguments(array('extensionName' => 'SomeExtension', 'pluginName' => 'SomePlugin')));
 
 		$this->viewHelperVariableContainer->expects($this->once())->method('add')->with('Tx_Fluid_ViewHelpers_FormViewHelper', 'fieldNamePrefix', $expectedPrefix);
 		$this->viewHelperVariableContainer->expects($this->once())->method('remove')->with('Tx_Fluid_ViewHelpers_FormViewHelper', 'fieldNamePrefix');

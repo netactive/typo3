@@ -1,11 +1,11 @@
 *******************************************************************************
 INSTALLING TYPO3
-$Id: INSTALL.txt 5199 2009-03-11 17:30:52Z ohader $
+$Id: INSTALL_tgz.txt 2389 2011-01-26 17:42:42Z ohader $
 *******************************************************************************
 
 This document is a part of the TYPO3 project. TYPO3 is an open source web
 content management system released under the GNU GPL. TYPO3 is copyright
-(c) 1999-2010 by Kasper Skaarhoj.
+(c) 1999-2011 by Kasper Skaarhoj.
 
 This document describes the system requirements for TYPO3 and the installation
 routine.
@@ -89,8 +89,8 @@ the web server.
 
 To install TYPO3, unpack the source package locally. Unpacking will produce a
 directory with a name like typo3_src-x.y.z, where x, y and z correspond to the
-TYPO3 version. For example, the TYPO3 4.3.0 source package will create a
-directory named typo3_src-4.3.0.
+TYPO3 version. For example, the TYPO3 4.5.0 source package will create a
+directory named typo3_src-4.5.0.
 
 Next unpack the dummy package. This will create a directory with the name
 dummy-x.y.z. Now create a new directory and copy all files and folders from
@@ -116,8 +116,8 @@ Installation: recommended
 To install TYPO3, unpack the source package outside of the web site root
 directory on your server. The location must be accessible to the web server.
 Unpacking will produce a directory with a name like typo3_src-x.y.z, where x,
-y and z correspond to the TYPO3 version. For example, the TYPO3 4.3.0 source
-package will create a directory named typo3_src-4.3.0.
+y and z correspond to the TYPO3 version. For example, the TYPO3 4.5.0 source
+package will create a directory named typo3_src-4.5.0.
 
 Unpack the dummy package in the temporary location on the server. This will
 create a dummy-x.y.z directory. Move all files and directories from the
@@ -133,11 +133,11 @@ packages.
 
 On Linux, Unix or Mac OS X systems create a symbolic link named typo3_src
 pointing to the source package:
-	ln -s /var/www/typo3_src-4.3.0 /var/www/example.com/typo3_src
+	ln -s /var/www/typo3_src-4.5.0 /var/www/example.com/typo3_src
 
 On Windows Vista or Windows 7 create a symbolic link named typo3_src
 pointing to the source package:
-	mklink /D C:\<dir>\typo3_src-4.3.0 C:\<dir>\example.com\typo3_src
+	mklink /D C:\<dir>\typo3_src-4.5.0 C:\<dir>\example.com\typo3_src
 
 Users of Windows XP/2000 can use the "junction" program by Marc Russinovich to
 create links. The program can be obtained at:

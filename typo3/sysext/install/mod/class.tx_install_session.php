@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009-2010 Ernesto Baschny <ernst@cron-it.de>
+*  (c) 2009-2011 Ernesto Baschny <ernst@cron-it.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -33,7 +33,7 @@
  * @package TYPO3
  * @subpackage tx_install
  *
- * @version $Id: class.tx_install_session.php 8477 2010-08-03 15:40:23Z ohader $
+ * @version $Id: class.tx_install_session.php 10120 2011-01-18 20:03:36Z ohader $
  */
 class tx_install_session {
 
@@ -388,8 +388,8 @@ class tx_install_session {
 
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/install/mod/class.tx_install_session.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/install/mod/class.tx_install_session.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/install/mod/class.tx_install_session.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/install/mod/class.tx_install_session.php']);
 }
 
 ?>

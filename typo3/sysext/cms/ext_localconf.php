@@ -1,5 +1,5 @@
 <?php
-# TYPO3 SVN ID: $Id: ext_localconf.php 8845 2010-09-21 22:13:24Z steffenk $
+# TYPO3 SVN ID: $Id: ext_localconf.php 9478 2010-11-17 23:05:15Z steffenk $
 if (!defined ('TYPO3_MODE')) 	die ('Access denied.');
 
 t3lib_extMgm::addUserTSConfig('
@@ -193,9 +193,15 @@ $TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapC
 $TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processCmdmapClass'][]  = 'EXT:cms/tslib/hooks/class.tx_cms_treelistcacheupdate.php:&tx_cms_treelistCacheUpdate';
 $TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['moveRecordClass'][]     = 'EXT:cms/tslib/hooks/class.tx_cms_treelistcacheupdate.php:&tx_cms_treelistCacheUpdate';
 
-	// Register the core media wizard provider
-tslib_mediaWizardManager::registerMediaWizardProvider('tslib_mediaWizardCoreProvider');
-	// register eID provider for ExtDirect for the frontend
-$GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['ExtDirect'] = PATH_tslib . 'extdirecteid.php';
+if (TYPO3_MODE === 'FE') {
+		// Register the core media wizard provider
+	tslib_mediaWizardManager::registerMediaWizardProvider('tslib_mediaWizardCoreProvider');
+		// register eID provider for ExtDirect for the frontend
+	$GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['ExtDirect'] = PATH_tslib . 'extdirecteid.php';
+}
+
+	// register search keys
+$GLOBALS ['TYPO3_CONF_VARS']['SYS']['livesearch']['page'] = 'pages';
+$GLOBALS ['TYPO3_CONF_VARS']['SYS']['livesearch']['content'] = 'tt_content';
 
 ?>

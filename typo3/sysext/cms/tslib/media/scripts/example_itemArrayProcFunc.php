@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * This is an example of how to manipulate menu item arrays.
  * Used in the "testsite" package
  *
- * $Id: example_itemArrayProcFunc.php 8763 2010-09-06 11:57:16Z steffenk $
+ * $Id: example_itemArrayProcFunc.php 10120 2011-01-18 20:03:36Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *

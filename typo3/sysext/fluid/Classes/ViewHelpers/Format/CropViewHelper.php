@@ -24,33 +24,40 @@
  * <code title="Defaults">
  * <f:format.crop maxCharacters="10">This is some very long text</f:format.crop>
  * </code>
- *
- * Output:
+ * <output>
  * This is...
+ * </output>
  *
  * <code title="Custom suffix">
  * <f:format.crop maxCharacters="17" append="&nbsp;[more]">This is some very long text</f:format.crop>
  * </code>
- *
- * Output:
+ * <output>
  * This is some&nbsp;[more]
+ * </output>
  *
  * <code title="Don't respect word boundaries">
  * <f:format.crop maxCharacters="10" respectWordBoundaries="false">This is some very long text</f:format.crop>
  * </code>
- *
- * Output:
+ * <output>
  * This is so...
+ * </output>
  *
  * <code title="Don't respect HTML tags">
  * <f:format.crop maxCharacters="28" respectWordBoundaries="false" respectHtml="false">This is some text with <strong>HTML</strong> tags</f:format.crop>
  * </code>
- *
- * Output:
+ * <output>
  * This is some text with <stro
+ * </output>
+ *
+ * <code title="Inline notation">
+ * {someLongText -> f:format.crop(maxCharacters: 10)}
+ * </code>
+ * <output>
+ * someLongText cropped after 10 characters...
+ * (depending on the value of {someLongText})
+ * </output>
  *
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License, version 2
- * @scope prototype
  */
 class Tx_Fluid_ViewHelpers_Format_CropViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
 
@@ -65,13 +72,17 @@ class Tx_Fluid_ViewHelpers_Format_CropViewHelper extends Tx_Fluid_Core_ViewHelpe
 	protected $tsfeBackup;
 
 	/**
-	 * Constructor. Used to create an instance of tslib_cObj used by the render() method.
-	 *
-	 * @param tslib_cObj $contentObject injector for tslib_cObj (optional)
+	 * @var Tx_Extbase_Configuration_ConfigurationManagerInterface
+	 */
+	protected $configurationManager;
+
+	/**
+	 * @param Tx_Extbase_Configuration_ConfigurationManagerInterface $configurationManager
 	 * @return void
 	 */
-	public function __construct($contentObject = NULL) {
-		$this->contentObject = $contentObject !== NULL ? $contentObject : t3lib_div::makeInstance('tslib_cObj');
+	public function injectConfigurationManager(Tx_Extbase_Configuration_ConfigurationManagerInterface $configurationManager) {
+		$this->configurationManager = $configurationManager;
+		$this->contentObject = $this->configurationManager->getContentObject();
 	}
 
 	/**

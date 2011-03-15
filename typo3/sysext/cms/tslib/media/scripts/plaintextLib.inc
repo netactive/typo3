@@ -27,7 +27,7 @@
 /**
  * Generating plain text content of content elements for Direct Mails
  *
- * $Id: plaintextLib.inc 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: plaintextLib.inc 10317 2011-01-26 00:56:49Z baschny $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -118,7 +118,6 @@
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage tslib
- * @link http://typo3.org/doc.0.html?&tx_extrepmgm_pi1[extUid]=270&tx_extrepmgm_pi1[tocEl]=398&cHash=e3024de334
  */
 class user_plaintext {
 	var $cObj;
@@ -177,6 +176,10 @@ class user_plaintext {
 			case 'bullets':
 				$lines[]=$this->getHeader();
 				$lines[]=$this->breakBulletlist(strip_tags($this->parseBody($this->cObj->data['bodytext'])));
+			break;
+			case 'list':
+				$lines[]=$this->getHeader();
+				$lines[]=$this->getList();
 			break;
 			case 'table':
 				$lines[]=$this->getHeader();
@@ -289,6 +292,17 @@ class user_plaintext {
 			$lines[]=$this->siteUrl.$upload_path.$file;
 		}
 		return implode(chr(10),$lines);
+	}
+
+	/**
+	 * Creates a list
+	 *
+	 * @param	string	type of content
+	 * @return	string	Content
+	 */
+	function getList($CType = 'list') {
+		$str = $this->cObj->cObjGetSingle($this->conf[$CType], $this->conf[$CType . '.']);
+		return trim(strip_tags($this->parseBody($str)));
 	}
 
 	/**
@@ -667,7 +681,7 @@ class user_plaintext {
 
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['media/scripts/plaintextLib.inc'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['media/scripts/plaintextLib.inc']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['media/scripts/plaintextLib.inc'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['media/scripts/plaintextLib.inc']);
 }
 ?>

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -268,10 +268,12 @@ class SC_mod_tools_dbint_index {
 		);
 
 			// Build the <body> for the module
-		$this->content = $this->doc->startPage($GLOBALS['LANG']->getLL('title'));
-		$this->content.= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
-		$this->content.= $this->doc->endPage();
-		$this->content = $this->doc->insertStylesAndJS($this->content);
+		$this->content = $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
+			// Renders the module page
+		$this->content = $this->doc->render(
+			$GLOBALS['LANG']->getLL('title'),
+			$this->content
+		);
 	}
 
 	/**
@@ -317,28 +319,34 @@ class SC_mod_tools_dbint_index {
 	}
 
 	/**
-	 * Menu
+	 * Creates the overview menu.
 	 *
-	 * @return	void
 	 */
-	function func_default()	{
-		$this->content .= $this->doc->header($GLOBALS['LANG']->getLL('title'));
-
-		$content = '<dl class="t3-overview-list">';
-
+	protected function func_default() {
 		$availableModFuncs = array('records', 'relations', 'search', 'filesearch', 'refindex');
+
+		$moduleTitle = $GLOBALS['LANG']->getLL('title');
+		$content     = '<dl class="t3-overview-list">';
+
 		foreach ($availableModFuncs as $modFunc) {
-			$link = 'index.php?SET[function]=' . $modFunc;
-			$title = $GLOBALS['LANG']->getLL($modFunc);
+			$link        = 'index.php?SET[function]=' . $modFunc;
+			$title       = $GLOBALS['LANG']->getLL($modFunc);
 			$description = $GLOBALS['LANG']->getLL($modFunc . '_description');
+
+			$icon = '<img src="'
+				. t3lib_iconworks::skinImg($GLOBALS['BACK_PATH'], 'MOD:tools_dbint/db.gif', '', 1)
+				. '" width="16" height="16" title="' . $title . '" alt="' . $title
+			. '" />';
+
 			$content .= '
-				<dt><a href="' . $link . '">' . $title . '</a></dt>
+				<dt><a href="' . $link . '">' . $icon . $title . '</a></dt>
 				<dd>' . $description . '</dd>
 			';
 		}
 
 		$content .= '</dl>';
-		$this->content .= $content;
+
+		$this->content .= $this->doc->section($moduleTitle, $content, false, true);
 	}
 
 
@@ -458,12 +466,12 @@ class SC_mod_tools_dbint_index {
 		if (t3lib_extMgm::isLoaded('cms'))	{
 			$codeArr[$i][]='<img' . t3lib_iconWorks::skinImg($BACK_PATH,'gfx/hidden_page.gif','width="18" height="16"') . ' hspace="4" align="top">';
 			$codeArr[$i][]=$GLOBALS['LANG']->getLL('hidden_pages');
-			$codeArr[$i][]=$admin->recStat['hidden'];
+			$codeArr[$i][] = $admin->recStats['hidden'];
 			$i++;
 		}
 		$codeArr[$i][]='<img' . t3lib_iconWorks::skinImg($BACK_PATH,'gfx/deleted_page.gif','width="18" height="16"') . ' hspace="4" align="top">';
 		$codeArr[$i][]=$GLOBALS['LANG']->getLL('deleted_pages');
-		$codeArr[$i][]=$admin->recStat['deleted'];
+		$codeArr[$i][] = count($admin->recStats['deleted']['pages']);
 
 		$this->content.=$this->doc->section($GLOBALS['LANG']->getLL('pages'), $this->doc->table($codeArr), false, true);
 
@@ -476,23 +484,23 @@ class SC_mod_tools_dbint_index {
 				if ($setup[1]!='--div--')	{
 					$codeArr[$n][] = '<img' . t3lib_iconWorks::skinImg($BACK_PATH,'gfx/i/' . ($PAGES_TYPES[$setup[1]]['icon'] ? $PAGES_TYPES[$setup[1]]['icon'] : $PAGES_TYPES['default']['icon']), 'width="18" height="16"') . ' hspace="4" align="top">';
 					$codeArr[$n][] = $GLOBALS['LANG']->sL($setup[0]) . ' (' . $setup[1] . ')';
-					$codeArr[$n][] = intval($admin->recStat[doktype][$setup[1]]);
+					$codeArr[$n][] = intval($admin->recStats['doktype'][$setup[1]]);
 				}
 			}
 			$this->content.=$this->doc->section($GLOBALS['LANG']->getLL('doktype'), $this->doc->table($codeArr), false, true);
 		}
 
 			// Tables and lost records
-		$id_list = '-1,0,'.implode(array_keys($admin->page_idArray),',');
-		$id_list = t3lib_div::rm_endcomma($id_list);
+		$id_list = '-1,0,' . implode(',', array_keys($admin->page_idArray));
+		$id_list = rtrim($id_list, ',');
 		$admin->lostRecords($id_list);
 
-		if ($admin->fixLostRecord(t3lib_div::_GET('fixLostRecords_table'),t3lib_div::_GET('fixLostRecords_uid')))	{
+		if ($admin->fixLostRecord(t3lib_div::_GET('fixLostRecords_table'), t3lib_div::_GET('fixLostRecords_uid'))) {
 			$admin = t3lib_div::makeInstance('t3lib_admin');
 			$admin->backPath = $BACK_PATH;
 			$admin->genTree(0,'');
-			$id_list = '-1,0,'.implode(array_keys($admin->page_idArray),',');
-			$id_list = t3lib_div::rm_endcomma($id_list);
+			$id_list = '-1,0,' . implode(',', array_keys($admin->page_idArray));
+			$id_list = rtrim($id_list, ',');
 			$admin->lostRecords($id_list);
 		}
 
@@ -675,8 +683,8 @@ class SC_mod_tools_dbint_index {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/lowlevel/dbint/index.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/lowlevel/dbint/index.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/lowlevel/dbint/index.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/lowlevel/dbint/index.php']);
 }
 
 

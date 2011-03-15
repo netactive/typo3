@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Starter-script for install screen
  *
- * $Id: index.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: index.php 10121 2011-01-18 20:15:30Z ohader $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
@@ -104,9 +104,9 @@ if (1==2 || !is_file($enableInstallToolFile)) {
 					case sensitive, but the file itself can simply be an empty file.
 				</li>
 				<li class="t3-install-locked-user-settings">
-					Alternatively, in the Backend, go to <a href="../sysext/setup/mod/index.php">User tools &gt; User settings</a>
+					Alternatively, in the Backend, go to <a href="javascript:top.goToModule(\'user_setup\',1);">User tools &gt; User settings</a>
 					and let TYPO3 create this file for you. When you\'re finished, you can also visit
-					<a href="../sysext/setup/mod/index.php">User tools &gt; User settings</a> and delete the file from there.
+					<a href="javascript:top.goToModule(\'user_setup\',1);">User tools &gt; User settings</a> and delete the file from there.
 				</li>
 			</ul>
 			<p>

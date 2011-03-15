@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2010 Steffen Kamper <info@sk-typo3.de>
+*  (c) 2007-2011 Steffen Kamper <info@sk-typo3.de>
 *  Based on Newloginbox (c) 2002-2004 Kasper Skårhøj <kasper@typo3.com>
 *
 *  All rights reserved
@@ -524,8 +524,8 @@ class tx_felogin_pi1 extends tslib_pibase {
 		}
 
 
-			// Permanent Login is only possible if permalogin is not deactivated (-1) and lifetime is greater than 0
-		if ($this->conf['showPermaLogin'] && t3lib_div::inList('0,1,2', $GLOBALS['TYPO3_CONF_VARS']['FE']['permalogin']) && $GLOBALS['TYPO3_CONF_VARS']['FE']['lifetime'] > 0) {
+			// The permanent login checkbox should only be shown if permalogin is not deactivated (-1), not forced to be always active (2) and lifetime is greater than 0
+		if ($this->conf['showPermaLogin'] && t3lib_div::inList('0,1', $GLOBALS['TYPO3_CONF_VARS']['FE']['permalogin']) && $GLOBALS['TYPO3_CONF_VARS']['FE']['lifetime'] > 0) {
 			$markerArray['###PERMALOGIN###'] = $this->pi_getLL('permalogin', '', 1);
 			if($GLOBALS['TYPO3_CONF_VARS']['FE']['permalogin'] == 1) {
 				$markerArray['###PERMALOGIN_HIDDENFIELD_ATTRIBUTES###'] = 'disabled="disabled"';
@@ -598,7 +598,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 								if (preg_match('/^http://([[:alnum:]._-]+)//', $url, $match)) {
 									$redirect_domain = $match[1];
 									$found = false;
-									foreach(split(',', $this->conf['domains']) as $d) {
+									foreach(t3lib_div::trimExplode(',', $this->conf['domains'], TRUE) as $d) {
 										if (preg_match('/(^|\.)/'.$d.'$', $redirect_domain)) {
 											$found = true;
 											break;
@@ -964,8 +964,8 @@ class tx_felogin_pi1 extends tslib_pibase {
 
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/felogin/pi1/class.tx_felogin_pi1.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/felogin/pi1/class.tx_felogin_pi1.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/felogin/pi1/class.tx_felogin_pi1.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/felogin/pi1/class.tx_felogin_pi1.php']);
 }
 
 ?>

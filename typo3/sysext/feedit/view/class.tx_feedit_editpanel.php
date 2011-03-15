@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2010 Jeff Segars <jeff@webempoweredchurch.org>
-*  (c) 2008-2010 David Slayback <dave@webempoweredchurch.org>
+*  (c) 2008-2011 Jeff Segars <jeff@webempoweredchurch.org>
+*  (c) 2008-2011 David Slayback <dave@webempoweredchurch.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
 /**
  * View class for the edit panels in frontend editing.
  *
- * $Id: class.tx_feedit_editpanel.php 8819 2010-09-19 14:24:39Z benni $
+ * $Id: class.tx_feedit_editpanel.php 10317 2011-01-26 00:56:49Z baschny $
  *
  * @author	Jeff Segars <jeff@webempoweredchurch.org>
  * @author	David Slayback <dave@webempoweredchurch.org>
@@ -64,7 +64,6 @@ class tx_feedit_editpanel {
 	 * @param	string		The "table:uid" of the record being shown. If empty string then $this->currentRecord is used. For new records (set by $conf['newRecordFromTable']) it's auto-generated to "[tablename]:NEW"
 	 * @param	array		Alternative data array to use. Default is $this->data
 	 * @return	string		The input content string with the editPanel appended. This function returns only an edit panel appended to the content string if a backend user is logged in (and has the correct permissions). Otherwise the content string is directly returned.
-	 * @link http://typo3.org/doc.0.html?&tx_extrepmgm_pi1[extUid]=270&tx_extrepmgm_pi1[tocEl]=375&cHash=7d8915d508
 	 */
 	public function editPanel($content, array $conf, $currentRecord='', array $dataArr=array(), $table='', $allow='', $newUID=0, array $hiddenFields=array()) {
 			// Special content is about to be shown, so the cache must be disabled.
@@ -418,8 +417,8 @@ class tx_feedit_editpanel {
 
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/feedit/view/class.tx_feedit_editpanel.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/feedit/view/class.tx_feedit_editpanel.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/feedit/view/class.tx_feedit_editpanel.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/feedit/view/class.tx_feedit_editpanel.php']);
 }
 
 ?>

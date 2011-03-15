@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * This script contains the parent class, 'pibase', providing an API with the most basic methods for frontend plugins
  *
- * $Id: class.tslib_pibase.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: class.tslib_pibase.php 10120 2011-01-18 20:03:36Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -789,7 +789,7 @@ class tslib_pibase {
 	 * @param	string		$data: CSS data
 	 * @param	string		If $selector is set to any CSS selector, eg 'P' or 'H1' or 'TABLE' then the style $data will regard those HTML-elements only
 	 * @return	void
-	 * @deprecated since TYPO3 3.6, this function will be removed in TYPO3 4.5, I think this function should not be used (and probably isn't used anywhere). It was a part of a concept which was left behind quite quickly.
+	 * @deprecated since TYPO3 3.6, this function will be removed in TYPO3 4.6, I think this function should not be used (and probably isn't used anywhere). It was a part of a concept which was left behind quite quickly.
 	 * @obsolete
 	 * @private
 	 */
@@ -1050,10 +1050,12 @@ class tslib_pibase {
 	 * @return	mixed		The query build.
 	 * @access private
 	 * @deprecated since TYPO3 3.6, this function will be removed in TYPO3 4.5, use pi_exec_query() instead!
+	 * @todo	Deprecated but still used in the Core!
 	 */
 	function pi_list_query($table,$count=0,$addWhere='',$mm_cat='',$groupBy='',$orderBy='',$query='',$returnQueryArray=FALSE)	{
+		t3lib_div::logDeprecatedFunction();
 
-			// Begin Query:
+		// Begin Query:
 		if (!$query)	{
 				// Fetches the list of PIDs to select from.
 				// TypoScript property .pidList is a comma list of pids. If blank, current page id is used.
@@ -1143,9 +1145,73 @@ class tslib_pibase {
 	 * @param	string		If set, this is taken as the first part of the query instead of what is created internally. Basically this should be a query starting with "FROM [table] WHERE ... AND ...". The $addWhere clauses and all the other stuff is still added. Only the tables and PID selecting clauses are bypassed. May be deprecated in the future!
 	 * @return	pointer		SQL result pointer
 	 */
-	function pi_exec_query($table,$count=0,$addWhere='',$mm_cat='',$groupBy='',$orderBy='',$query='')	{
-		$queryParts = $this->pi_list_query($table,$count,$addWhere,$mm_cat,$groupBy,$orderBy,$query, TRUE);
+	function pi_exec_query($table, $count=0 ,$addWhere='' ,$mm_cat='' ,$groupBy='' ,$orderBy='', $query='') {
+        		// Begin Query:
+		if (!$query) {
+				// Fetches the list of PIDs to select from.
+				// TypoScript property .pidList is a comma list of pids. If blank, current page id is used.
+				// TypoScript property .recursive is a int+ which determines how many levels down from the pids in the pid-list subpages should be included in the select.
+			$pidList = $this->pi_getPidList($this->conf['pidList'], $this->conf['recursive']);
+			if (is_array($mm_cat)) {
+				$query = 'FROM ' . $table . ',' . $mm_cat['table'] . ',' . $mm_cat['mmtable'] . LF .
+						' WHERE ' . $table . '.uid=' . $mm_cat['mmtable'] . '.uid_local AND ' . $mm_cat['table'] . '.uid=' . $mm_cat['mmtable'] . '.uid_foreign ' . LF .
+						(strcmp($mm_cat['catUidList'],'') ? ' AND ' . $mm_cat['table'] . '.uid IN (' . $mm_cat['catUidList'] . ')' : '') . LF .
+						' AND ' . $table . '.pid IN (' . $pidList . ')' . LF .
+						$this->cObj->enableFields($table) . LF;	// This adds WHERE-clauses that ensures deleted, hidden, starttime/endtime/access records are NOT selected, if they should not! Almost ALWAYS add this to your queries!
+			} else {
+				$query='FROM ' . $table . ' WHERE pid IN (' . $pidList . ')' . LF .
+						$this->cObj->enableFields($table) . LF;	// This adds WHERE-clauses that ensures deleted, hidden, starttime/endtime/access records are NOT selected, if they should not! Almost ALWAYS add this to your queries!
+			}
+		}
 
+			// Split the "FROM ... WHERE" string so we get the WHERE part and TABLE names separated...:
+		list($TABLENAMES, $WHERE) = preg_split('/WHERE/i', trim($query), 2);
+		$TABLENAMES = trim(substr(trim($TABLENAMES), 5));
+		$WHERE = trim($WHERE);
+
+			// Add '$addWhere'
+		if ($addWhere) {
+			$WHERE .= ' ' . $addWhere . LF;
+		}
+
+			// Search word:
+		if ($this->piVars['sword'] && $this->internal['searchFieldList']) {
+			$WHERE .= $this->cObj->searchWhere($this->piVars['sword'], $this->internal['searchFieldList'], $table) . LF;
+		}
+
+		if ($count) {
+			$queryParts = array(
+				'SELECT' => 'count(*)',
+				'FROM' => $TABLENAMES,
+				'WHERE' => $WHERE,
+				'GROUPBY' => '',
+				'ORDERBY' => '',
+				'LIMIT' => ''
+			);
+		} else {
+				// Order by data:
+			if (!$orderBy && $this->internal['orderBy']) {
+				if (t3lib_div::inList($this->internal['orderByList'], $this->internal['orderBy'])) {
+					$orderBy = 'ORDER BY ' . $table . '.' . $this->internal['orderBy'] . ($this->internal['descFlag'] ? ' DESC' : '');
+				}
+			}
+
+				// Limit data:
+			$pointer = $this->piVars['pointer'];
+			$pointer = intval($pointer);
+			$results_at_a_time = t3lib_div::intInRange($this->internal['results_at_a_time'], 1, 1000);
+			$LIMIT = ($pointer * $results_at_a_time) . ',' . $results_at_a_time;
+
+				// Add 'SELECT'
+			$queryParts = array(
+				'SELECT' => $this->pi_prependFieldsWithTable($table, $this->pi_listFields),
+				'FROM' => $TABLENAMES,
+				'WHERE' => $WHERE,
+				'GROUPBY' => $GLOBALS['TYPO3_DB']->stripGroupBy($groupBy),
+				'ORDERBY' => $GLOBALS['TYPO3_DB']->stripOrderBy($orderBy),
+				'LIMIT' => $LIMIT
+			);
+		}
 		return $GLOBALS['TYPO3_DB']->exec_SELECT_queryArray($queryParts);
 	}
 

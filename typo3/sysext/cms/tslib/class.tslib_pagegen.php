@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Libraries for pagegen.php
  * The script "pagegen.php" is included by "index_ts.php" when a page is not cached but needs to be rendered.
  *
- * $Id: class.tslib_pagegen.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: class.tslib_pagegen.php 10317 2011-01-26 00:56:49Z baschny $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -118,16 +118,14 @@ class TSpagegen {
 			// Base url:
 		if ($GLOBALS['TSFE']->config['config']['baseURL'])	{
 			if ($GLOBALS['TSFE']->config['config']['baseURL']==='1')	{
-					// Deprecated property, going to be dropped.
+					// Deprecated property, going to be dropped in TYPO3 4.7.
 				$error = 'Unsupported TypoScript property was found in this template: "config.baseURL="1"
 
 This setting has been deprecated in TYPO 3.8.1 due to security concerns.
 You need to change this value to the URL of your website root, otherwise TYPO3 will not work!
 
 See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.typo3.org/index.php/TYPO3_3.8.1</a> for more information.';
-
-				$GLOBALS['TSFE']->printError(nl2br($error));
-				exit;
+				throw new RuntimeException(nl2br($error));
 			} else {
 				$GLOBALS['TSFE']->baseUrl = $GLOBALS['TSFE']->config['config']['baseURL'];
 			}
@@ -213,6 +211,11 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 			$GLOBALS['TSFE']->linkVars='';
 		}
 
+		if($GLOBALS['TSFE']->config['config']['doctype'] == 'html_5') {
+			$GLOBALS['TSFE']->logDeprecatedTyposcript('config.doctype = html_5', 'It will be removed in TYPO3 4.7. Use html5 instead.');
+			$GLOBALS['TSFE']->config['config']['doctype'] = 'html5';
+		}
+		
 			// Setting XHTML-doctype from doctype
 		if (!$GLOBALS['TSFE']->config['config']['xhtmlDoctype'])	{
 			$GLOBALS['TSFE']->config['config']['xhtmlDoctype'] = $GLOBALS['TSFE']->config['config']['doctype'];
@@ -232,6 +235,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 					$GLOBALS['TSFE']->xhtmlVersion = 105;
 				break;
 				case 'xhtml_11':
+				case 'xhtml+rdfa_10':
 					$GLOBALS['TSFE']->xhtmlVersion = 110;
 				break;
 				case 'xhtml_2':
@@ -274,6 +278,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		}
 			// Include HTML mail library?
 		if ($GLOBALS['TSFE']->config['config']['incT3Lib_htmlmail'])	{
+			$GLOBALS['TSFE']->logDeprecatedTyposcript('config.incT3Lib_htmlmail');
 			$incFilesArray[] = 't3lib/class.t3lib_htmlmail.php';
 		}
 		return $incFilesArray;
@@ -390,8 +395,9 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 				$docTypeParts[] = $GLOBALS['TSFE']->config['config']['xmlprologue'];
 		}
 		// Part 2: DTD
-		if ($GLOBALS['TSFE']->config['config']['doctype']) {
-			switch ((string) $GLOBALS['TSFE']->config['config']['doctype']) {
+		$doctype = $GLOBALS['TSFE']->config['config']['doctype'];
+		if ($doctype) {
+			switch ($doctype) {
 				case 'xhtml_trans' :
 					$docTypeParts[] = '<!DOCTYPE html
      PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -422,13 +428,18 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 	PUBLIC "-//W3C//DTD XHTML 2.0//EN"
 	"http://www.w3.org/TR/xhtml2/DTD/xhtml2.dtd">';
 					break;
-				case 'html_5' :
+				case 'xhtml+rdfa_10' :
+					$docTypeParts[] = '<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+	"http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">';
+					break;
+				case 'html5' :
 					$docTypeParts[] = '<!DOCTYPE html>';
 					break;
 				case 'none' :
 					break;
 				default :
-					$docTypeParts[] = $GLOBALS['TSFE']->config['config']['doctype'];
+					$docTypeParts[] = $doctype;
 			}
 		} else {
 			$docTypeParts[] = '<!DOCTYPE html
@@ -436,12 +447,17 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		}
 
 		if ($GLOBALS['TSFE']->xhtmlVersion) {
-
-			// Setting <html> tag attributes:
-			$htmlTagAttributes['xmlns'] = 'http://www.w3.org/1999/xhtml';
 			$htmlTagAttributes['xml:lang'] = $htmlLang;
-			if ($GLOBALS['TSFE']->xhtmlVersion < 110) {
-				$htmlTagAttributes['lang'] = $htmlLang;
+		}
+		if ($GLOBALS['TSFE']->xhtmlVersion < 110 || $doctype === 'html5') {
+			$htmlTagAttributes['lang'] = $htmlLang;
+		}
+		if ($GLOBALS['TSFE']->xhtmlVersion || $doctype === 'html5') {
+			$htmlTagAttributes['xmlns'] = 'http://www.w3.org/1999/xhtml'; // We add this to HTML5 to achieve a slightly better backwards compatibility
+			if (is_array($GLOBALS['TSFE']->config['config']['namespaces.'])) {
+				foreach ($GLOBALS['TSFE']->config['config']['namespaces.'] as $prefix => $uri) {
+					$htmlTagAttributes['xmlns:' . htmlspecialchars($prefix)] = $uri; // $uri gets htmlspecialchared later
+				}
 			}
 		}
 
@@ -473,7 +489,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		$pageRenderer->addInlineComment('	This website is powered by TYPO3 - inspiring people to share!
 	TYPO3 is a free open source Content Management Framework initially created by Kasper Skaarhoj and licensed under GNU/GPL.
 	TYPO3 is copyright ' . TYPO3_copyright_year . ' of Kasper Skaarhoj. Extensions are copyright of their respective owners.
-	Information and contribution at http://typo3.com/ and http://typo3.org/
+	Information and contribution at ' . TYPO3_URL_GENERAL . ' and ' . TYPO3_URL_ORG . '
 ');
 
 		if ($GLOBALS['TSFE']->baseUrl) {
@@ -543,7 +559,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							);
 						} else {
 							$pageRenderer->addCssFile(
-								htmlspecialchars($ss),
+								$ss,
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['alternate'] ? 'alternate stylesheet' : 'stylesheet',
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['media'] ? $GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['media'] : 'all',
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['title'] ? $GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['title'] : '',
@@ -641,6 +657,16 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 
 			// Javascript Libraries
 		if (is_array($GLOBALS['TSFE']->pSetup['javascriptLibs.'])) {
+			if ($GLOBALS['TSFE']->pSetup['javascriptLibs.']['SVG']) {
+				$pageRenderer->loadSvg();
+				if ($GLOBALS['TSFE']->pSetup['javascriptLibs.']['SVG.']['debug']) {
+					$pageRenderer->enableSvgDebug();
+				}
+				if ($GLOBALS['TSFE']->pSetup['javascriptLibs.']['SVG.']['forceFlash']) {
+					$pageRenderer->svgForceFlash();
+				}
+			}
+
 			if ($GLOBALS['TSFE']->pSetup['javascriptLibs.']['Prototype']) {
 				$pageRenderer->loadPrototype();
 			}
@@ -679,9 +705,9 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							$type = 'text/javascript';
 						}
 						$pageRenderer->addJsLibrary(
-							htmlspecialchars($key),
-							htmlspecialchars($ss),
-							htmlspecialchars($type),
+							$key,
+							$ss,
+							$type,
 							$GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['compress'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['allWrap']
@@ -701,9 +727,9 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							$type = 'text/javascript';
 						}
 						$pageRenderer->addJsFooterLibrary(
-							htmlspecialchars($key),
-							htmlspecialchars($ss),
-							htmlspecialchars($type),
+							$key,
+							$ss,
+							$type,
 							$GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['compress'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['allWrap']
@@ -724,8 +750,8 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							$type = 'text/javascript';
 						}
 						$pageRenderer->addJsFile(
-							htmlspecialchars($ss),
-							htmlspecialchars($type),
+							$ss,
+							$type,
 							$GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['compress'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['allWrap']
@@ -745,8 +771,8 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							$type = 'text/javascript';
 						}
 						$pageRenderer->addJsFooterFile(
-							htmlspecialchars($ss),
-							htmlspecialchars($type),
+							$ss,
+							$type,
 							$GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['compress'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
 							$GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['allWrap']
@@ -1161,8 +1187,8 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['tslib/class.tslib_pagegen.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['tslib/class.tslib_pagegen.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['tslib/class.tslib_pagegen.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['tslib/class.tslib_pagegen.php']);
 }
 
 

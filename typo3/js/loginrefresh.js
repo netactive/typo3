@@ -147,7 +147,12 @@ Ext.ux.TYPO3.loginRefresh = Ext.extend(Ext.util.Observable, {
 			border: false,
 			modal: true,
 			draggable: false,
-			items: [loginPanel]
+			items: [loginPanel],
+			listeners: {
+				activate: function() {
+					Ext.getCmp('password').focus(false, 800);
+				}
+			}
 		});
 
 		var progressControl = new Ext.ProgressBar({
@@ -293,6 +298,7 @@ Ext.ux.TYPO3.loginRefresh = Ext.extend(Ext.util.Observable, {
 						// User is logged in
 						Ext.getCmp("loginformWindow").hide();
 						TYPO3.loginRefresh.startTimer();
+						TYPO3.ExtDirectToken = result.token;
 					} else {
 						// TODO: add failure to notification system instead of alert
 						Ext.Msg.alert(TYPO3.LLL.core.refresh_login_failed, TYPO3.LLL.core.refresh_login_failed_message);

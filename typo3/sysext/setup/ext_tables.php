@@ -48,11 +48,6 @@ $GLOBALS['TYPO3_USER_SETTINGS'] = array(
 			'label' => 'LLL:EXT:setup/mod/locallang.xml:language',
 			'csh' => 'language',
 		),
-		'condensedMode' => array(
-			'type' => 'check',
-			'label' => 'LLL:EXT:setup/mod/locallang.xml:condensedMode',
-			'csh' => 'condensedMode',
-		),
 		'startModule' => array(
 			'type' => 'select',
 			'itemsProcFunc' => 'SC_mod_user_setup_index->renderStartModuleSelect',
@@ -64,32 +59,16 @@ $GLOBALS['TYPO3_USER_SETTINGS'] = array(
 			'label' => 'LLL:EXT:setup/mod/locallang.xml:showThumbs',
 			'csh' => 'showThumbs',
 		),
-		'helpText' => array(
-			'type' => 'check',
-			'label' => 'LLL:EXT:setup/mod/locallang.xml:helpText',
-			'csh' => 'helpText',
-		),
 		'edit_wideDocument' => array(
 			'type' => 'check',
 			'label' => 'LLL:EXT:setup/mod/locallang.xml:edit_wideDocument',
 			'csh' => 'edit_wideDocument',
-		),
-		'edit_showFieldHelp' => array(
-			'type' => 'select',
-			'items' => array (
-				'0' => 'LLL:EXT:setup/mod/locallang.xml:edit_showFieldHelp_none',
-				'icon' => 'LLL:EXT:setup/mod/locallang.xml:edit_showFieldHelp_icon',
-				'text' => 'LLL:EXT:setup/mod/locallang.xml:edit_showFieldHelp_message',
-			),
-			'label' => 'LLL:EXT:setup/mod/locallang.xml:edit_showFieldHelp',
-			'csh' => 'edit_showFieldHelp',
 		),
 		'titleLen' => array(
 			'type' => 'text',
 			'label' => 'LLL:EXT:setup/mod/locallang.xml:maxTitleLen',
 			'csh' => 'maxTitleLen',
 		),
-
 		'edit_RTE' => array(
 			'type' => 'check',
 			'label' => 'LLL:EXT:setup/mod/locallang.xml:edit_RTE',
@@ -156,7 +135,7 @@ $GLOBALS['TYPO3_USER_SETTINGS'] = array(
 		),
 	),
 	'showitem' => '--div--;LLL:EXT:setup/mod/locallang.xml:personal_data,realName,email,emailMeAtLogin,password,password2,lang,
-			--div--;LLL:EXT:setup/mod/locallang.xml:opening,condensedMode,startModule,thumbnailsByDefault,helpText,edit_showFieldHelp,titleLen,
+			--div--;LLL:EXT:setup/mod/locallang.xml:opening,startModule,thumbnailsByDefault,titleLen,
 			--div--;LLL:EXT:setup/mod/locallang.xml:editFunctionsTab,edit_RTE,edit_wideDocument,edit_docModuleUpload,enableFlashUploader,resizeTextareas,resizeTextareas_MaxHeight,resizeTextareas_Flexible,disableCMlayers,copyLevels,recursiveDelete,
 			--div--;LLL:EXT:setup/mod/locallang.xml:adminFunctions,simulate,debugInWindow,installToolEnableButton'
 

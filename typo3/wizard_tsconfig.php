@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Wizard for inserting TSconfig in form fields. (page,user or TS)
  *
- * $Id: wizard_tsconfig.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: wizard_tsconfig.php 10317 2011-01-26 00:56:49Z baschny $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -303,13 +303,13 @@ class SC_wizard_tsconfig {
 			// Adding link to TSref:
 		if ($this->mode=='tsref')	{
 			$this->content.=$this->doc->section($LANG->getLL('tsprop_TSref'),'
-			<a href="'.htmlspecialchars('http://typo3.org/documentation/document-library/references/doc_core_tsref/current/view/').'" target="_blank">'.$LANG->getLL('tsprop_TSref',1).'</a>
+			<a href="'. TYPO3_URL_DOCUMENTATION_TSREF.'" target="_blank">'.$LANG->getLL('tsprop_TSref',1).'</a>
 			',0,1);
 		}
 			// Adding link to admin guides etc:
 		if ($this->mode=='page' || $this->mode=='beuser')	{
 			$this->content.=$this->doc->section($LANG->getLL('tsprop_tsconfig'),'
-			<a href="'.htmlspecialchars('http://typo3.org/documentation/document-library/references/doc_core_tsconfig/current/view/').'" target="_blank">'.$LANG->getLL('tsprop_tsconfig',1).'</a>
+			<a href="' . TYPO3_URL_DOCUMENTATION_TSCONFIG . '" target="_blank">' . $LANG->getLL('tsprop_tsconfig',1) . '</a>
 			',0,1);
 		}
 	}
@@ -639,8 +639,8 @@ class SC_wizard_tsconfig {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/wizard_tsconfig.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/wizard_tsconfig.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/wizard_tsconfig.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/wizard_tsconfig.php']);
 }
 
 

@@ -28,7 +28,7 @@ require_once(dirname(__FILE__) . '/../../Fixtures/TestViewHelper.php');
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
-class Tx_Fluid_Core_Parser_SyntaxTree_ViewHelperNodeTest extends Tx_Extbase_BaseTestCase {
+class Tx_Fluid_Tests_Unit_Core_Parser_SyntaxTree_ViewHelperNodeTest extends Tx_Extbase_Tests_Unit_BaseTestCase {
 
 	/**
 	 * Rendering Context
@@ -38,7 +38,7 @@ class Tx_Fluid_Core_Parser_SyntaxTree_ViewHelperNodeTest extends Tx_Extbase_Base
 
 	/**
 	 * Object factory mock
-	 * @var Tx_Fluid_Compatibility_ObjectManager
+	 * @var Tx_Extbase_Object_ObjectManagerInterface
 	 */
 	protected $mockObjectManager;
 
@@ -66,17 +66,17 @@ class Tx_Fluid_Core_Parser_SyntaxTree_ViewHelperNodeTest extends Tx_Extbase_Base
 	public function setUp() {
 		$this->renderingContext = new Tx_Fluid_Core_Rendering_RenderingContext();
 
-		$this->mockObjectManager = $this->getMock('Tx_Fluid_Compatibility_ObjectManager');
+		$this->mockObjectManager = $this->getMock('Tx_Extbase_Object_ObjectManagerInterface');
 		$this->renderingContext->injectObjectManager($this->mockObjectManager);
 
 		$this->templateVariableContainer = $this->getMock('Tx_Fluid_Core_ViewHelper_TemplateVariableContainer');
-		$this->renderingContext->injectTemplateVariableContainer($this->templateVariableContainer);
+		$this->renderingContext->setTemplateVariableContainer($this->templateVariableContainer);
 
 		$this->controllerContext = $this->getMock('Tx_Extbase_MVC_Controller_ControllerContext', array(), array(), '', FALSE);
 		$this->renderingContext->setControllerContext($this->controllerContext);
 
 		$this->viewHelperVariableContainer = $this->getMock('Tx_Fluid_Core_ViewHelper_ViewHelperVariableContainer');
-		$this->renderingContext->injectViewHelperVariableContainer($this->viewHelperVariableContainer);
+		$this->renderingContext->setViewHelperVariableContainer($this->viewHelperVariableContainer);
 	}
 
 	/**
@@ -84,7 +84,7 @@ class Tx_Fluid_Core_Parser_SyntaxTree_ViewHelperNodeTest extends Tx_Extbase_Base
 	 * @author Bastian Waidelich <bastian@typo3.org>
 	 */
 	public function constructorSetsViewHelperAndArguments() {
-		$viewHelper = $this->getMock('Tx_Fluid_Core_ViewHelper_ViewHelperInterface');
+		$viewHelper = $this->getMock('Tx_Fluid_Core_ViewHelper_AbstractViewHelper');
 		$arguments = array('foo' => 'bar');
 		$viewHelperNode = $this->getAccessibleMock('Tx_Fluid_Core_Parser_SyntaxTree_ViewHelperNode', array('dummy'), array($viewHelper, $arguments));
 
@@ -119,9 +119,9 @@ class Tx_Fluid_Core_Parser_SyntaxTree_ViewHelperNodeTest extends Tx_Extbase_Base
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 * @author Bastian Waidelich <bastian@typo3.org>
 	 */
-	public function validateArgumentsIsCalledByViewHelperNode() {
-		$mockViewHelper = $this->getMock('Tx_Fluid_Core_ViewHelper_AbstractViewHelper', array('render', 'validateArguments', 'prepareArguments'));
-		$mockViewHelper->expects($this->once())->method('validateArguments');
+	public function initializeArgumentsAndRenderIsCalledByViewHelperNode() {
+		$mockViewHelper = $this->getMock('Tx_Fluid_Core_ViewHelper_AbstractViewHelper', array('initializeArgumentsAndRender', 'prepareArguments'));
+		$mockViewHelper->expects($this->once())->method('initializeArgumentsAndRender');
 
 		$mockViewHelperArguments = $this->getMock('Tx_Fluid_Core_ViewHelper_Arguments', array(), array(), '', FALSE);
 
@@ -137,16 +137,16 @@ class Tx_Fluid_Core_Parser_SyntaxTree_ViewHelperNodeTest extends Tx_Extbase_Base
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 * @author Bastian Waidelich <bastian@typo3.org>
 	 */
-	public function renderMethodIsCalledWithCorrectArguments() {
+	public function initializeArgumentsAndRenderIsCalledWithCorrectArguments() {
 		$arguments = array(
 			'param0' => new Tx_Fluid_Core_ViewHelper_ArgumentDefinition('param1', 'string', 'Hallo', TRUE, null, FALSE),
 			'param1' => new Tx_Fluid_Core_ViewHelper_ArgumentDefinition('param1', 'string', 'Hallo', TRUE, null, TRUE),
 			'param2' => new Tx_Fluid_Core_ViewHelper_ArgumentDefinition('param2', 'string', 'Hallo', TRUE, null, TRUE)
 		);
 
-		$mockViewHelper = $this->getMock('Tx_Fluid_Core_ViewHelper_AbstractViewHelper', array('render', 'validateArguments', 'prepareArguments'));
+		$mockViewHelper = $this->getMock('Tx_Fluid_Core_ViewHelper_AbstractViewHelper', array('initializeArgumentsAndRender', 'prepareArguments'));
 		$mockViewHelper->expects($this->any())->method('prepareArguments')->will($this->returnValue($arguments));
-		$mockViewHelper->expects($this->once())->method('render')->with('a', 'b');
+		$mockViewHelper->expects($this->once())->method('initializeArgumentsAndRender')->with(array('param1' => 'a', 'param2' => 'b'));
 
 		$mockViewHelperArguments = $this->getMock('Tx_Fluid_Core_ViewHelper_Arguments', array(), array(), '', FALSE);
 

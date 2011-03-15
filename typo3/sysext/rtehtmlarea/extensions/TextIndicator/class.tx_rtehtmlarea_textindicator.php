@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2010-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -29,9 +29,7 @@
  * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_textindicator.php 5489 2009-05-23 15:26:20Z ohader $
  *
  */
-require_once(t3lib_extMgm::extPath('rtehtmlarea').'class.tx_rtehtmlareaapi.php');
-
-class tx_rtehtmlarea_textindicator extends tx_rtehtmlareaapi {
+class tx_rtehtmlarea_textindicator extends tx_rtehtmlarea_api {
 	protected $extensionKey = 'rtehtmlarea';	// The key of the extension that is extending htmlArea RTE
 	protected $pluginName = 'TextIndicator';	// The name of the plugin registered by the extension
 	protected $relativePathToLocallangFile = '';	// Path to this main locallang file of the extension relative to the extension dir.
@@ -60,7 +58,7 @@ class tx_rtehtmlarea_textindicator extends tx_rtehtmlareaapi {
 		return $registerRTEinJavascriptString;
 	}
 }
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/TextIndicator/class.tx_rtehtmlarea_textindicator.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/TextIndicator/class.tx_rtehtmlarea_textindicator.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/TextIndicator/class.tx_rtehtmlarea_textindicator.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/TextIndicator/class.tx_rtehtmlarea_textindicator.php']);
 }
 ?>

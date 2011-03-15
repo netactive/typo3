@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009-2010 Marcus Krause <marcus#exp2009@t3sec.info>
-*  (c) 2009-2010 Steffen Ritter <info@rs-websystems.de>
+*  (c) 2009-2011 Marcus Krause <marcus#exp2009@t3sec.info>
+*  (c) 2009-2011 Steffen Ritter <info@rs-websystems.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,7 +29,7 @@
  * Contains interface "tx_saltedpasswords_salts" to be used in
  * classes that provide salted hashing.
  *
- * $Id: interface.tx_saltedpasswords_salts.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: interface.tx_saltedpasswords_salts.php 10120 2011-01-18 20:03:36Z ohader $
  */
 
 
@@ -111,7 +111,7 @@ interface tx_saltedpasswords_salts {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/saltedpasswords/classes/salts/interfaces/interface.tx_saltedpasswords_salts.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/saltedpasswords/classes/salts/interfaces/interface.tx_saltedpasswords_salts.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/saltedpasswords/classes/salts/interfaces/interface.tx_saltedpasswords_salts.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/saltedpasswords/classes/salts/interfaces/interface.tx_saltedpasswords_salts.php']);
 }
 ?>

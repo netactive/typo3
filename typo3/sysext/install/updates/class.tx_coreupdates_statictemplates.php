@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2010  Steffen Ritter (info@rs-websystems.de)
+*  (c) 2008-2011  Steffen Ritter (info@rs-websystems.de)
 *           2009  Benjamin Mack (benni@typo3.org)
 *  All rights reserved
 *
@@ -31,10 +31,8 @@
  * @author	Steffen Ritter <info@rs-websystems.de>
  * @author      Benjamin Mack <benni@typo3.org>
  */
-class tx_coreupdates_statictemplates {
-	public $versionNumber;	// version number coming from t3lib_div::int_from_ver()
-	public $pObj;	// parent object (tx_install)
-	public $userInput;	// user input
+class tx_coreupdates_statictemplates extends Tx_Install_Updates_Base {
+	protected $title = 'Install Outsourced Static Templates (now in System Extension)';
 
 
 	/**

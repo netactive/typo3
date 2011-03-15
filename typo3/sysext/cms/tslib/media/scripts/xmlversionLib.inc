@@ -27,7 +27,7 @@
 /**
  * Example class showing how one could make XML export of page content elements in TYPO3
  *
- * $Id: xmlversionLib.inc 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: xmlversionLib.inc 9758 2010-12-05 11:25:36Z stephenking $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -124,7 +124,7 @@ class user_xmlversion {
 
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['media/scripts/xmlversionLib.inc'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['media/scripts/xmlversionLib.inc']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['media/scripts/xmlversionLib.inc'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['media/scripts/xmlversionLib.inc']);
 }
 ?>

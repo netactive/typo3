@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Module: About
  * This document shows some standard-information for TYPO3 CMS: About-text, version number and so on.
  *
- * $Id: index.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: index.php 10120 2011-01-18 20:03:36Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -98,7 +98,6 @@ class SC_mod_help_about_index {
 		// **************************
 		#$TBE_TEMPLATE->bgColor = '#cccccc';
 		$TBE_TEMPLATE->backPath = $GLOBALS['BACK_PATH'];
-		$this->content.= $TBE_TEMPLATE->startPage('About');
 
 		$minorText = sprintf($LANG->getLL('minor'), 'TYPO3 Ver. '.htmlspecialchars(TYPO3_version).', Copyright &copy; '.htmlspecialchars(TYPO3_copyright_year), 'Kasper Sk&aring;rh&oslash;j');
 
@@ -127,8 +126,12 @@ class SC_mod_help_about_index {
 				</div>
 			</div>
 		';
-		$this->content.= $content;
-		$this->content.= $TBE_TEMPLATE->endPage();
+
+			// Renders the module page
+		$this->content = $TBE_TEMPLATE->render(
+			'About',
+			$content
+		);
 	}
 
 	/**
@@ -168,8 +171,8 @@ class SC_mod_help_about_index {
 }
 
 // Include extension?
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/help/about/index.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/help/about/index.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/help/about/index.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/help/about/index.php']);
 }
 
 

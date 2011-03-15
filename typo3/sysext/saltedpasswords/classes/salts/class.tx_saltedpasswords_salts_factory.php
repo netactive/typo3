@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009-2010 Marcus Krause <marcus#exp2009@t3sec.info>
+*  (c) 2009-2011 Marcus Krause <marcus#exp2009@t3sec.info>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * Contains class "tx_saltedpasswords_salts_factory"
  * that provides a salted hashing method factory.
  *
- * $Id: class.tx_saltedpasswords_salts_factory.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id: class.tx_saltedpasswords_salts_factory.php 10120 2011-01-18 20:03:36Z ohader $
  */
 
 
@@ -95,7 +95,7 @@ class tx_saltedpasswords_salts_factory {
 	 * @param	string		$saltedHash
 	 * @return	boolean		TRUE, if salting hashing method has been found, otherwise FALSE
 	 */
-	static protected function determineSaltingHashingMethod($saltedHash) {
+	static public function determineSaltingHashingMethod($saltedHash) {
 		$methodFound = FALSE;
 		$defaultMethods = $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/saltedpasswords']['saltMethods'];
 		foreach($defaultMethods as $method) {

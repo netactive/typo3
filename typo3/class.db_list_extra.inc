@@ -28,7 +28,7 @@
  * Include file extending recordList which extended t3lib_recordList
  * Used specifically for the Web>List module (db_list.php)
  *
- * $Id: class.db_list_extra.inc 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: class.db_list_extra.inc 10315 2011-01-26 00:13:43Z baschny $
  * Revised for TYPO3 3.6 December/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -186,8 +186,8 @@ class localRecordList extends recordList {
 			if (isset($GLOBALS['SOBE']->modTSconfig['properties']['noViewWithDokTypes'])) {
 				$noViewDokTypes = t3lib_div::trimExplode(',', $GLOBALS['SOBE']->modTSconfig['properties']['noViewWithDokTypes'], true);
 			} else {
-					//default exclusion: doktype 254, 255
-				$noViewDokTypes = array('254', '255');
+					//default exclusion: doktype 254 (folder), 255 (recycler)
+				$noViewDokTypes = array(t3lib_pageSelect::DOKTYPE_SYSFOLDER, t3lib_pageSelect::DOKTYPE_RECYCLER);
 			}
 
 			if (!in_array($this->pageRow['doktype'], $noViewDokTypes)) {
@@ -469,32 +469,18 @@ class localRecordList extends recordList {
 				// Header line is drawn
 			$theData = Array();
 			if ($this->disableSingleTableView)	{
-				$theData[$titleCol] = '<span class="c-table">'.$GLOBALS['LANG']->sL($TCA[$table]['ctrl']['title'],1).'</span> ('.$this->totalItems.')';
+				$theData[$titleCol] = '<span class="c-table">' . t3lib_BEfunc::wrapInHelp($table, '', $GLOBALS['LANG']->sL($TCA[$table]['ctrl']['title'], TRUE)) . '</span> ('.$this->totalItems.')';
 			} else {
 				$theData[$titleCol] = $this->linkWrapTable($table, '<span class="c-table">' . $GLOBALS['LANG']->sL($TCA[$table]['ctrl']['title'], TRUE) . '</span> (' . $this->totalItems . ') ' .
 						($this->table ? t3lib_iconWorks::getSpriteIcon('actions-view-table-collapse', array('title' => $GLOBALS['LANG']->getLL('contractView', TRUE))) : t3lib_iconWorks::getSpriteIcon('actions-view-table-expand', array('title' => $GLOBALS['LANG']->getLL('expandView', TRUE))))
 					);
 			}
 
-				// CSH:
-			$theData[$titleCol].= t3lib_BEfunc::cshItem($table,'',$this->backPath,'',FALSE,'margin-bottom:0px; white-space: normal;');
-
 			if ($listOnlyInSingleTableMode)	{
 				$out.='
 					<tr>
-						<td class="t3-row-header" style="width:95%;">' . $theData[$titleCol] . '</td>
+						<td class="t3-row-header" style="width:95%;">' . t3lib_BEfunc::wrapInHelp($table, '', $theData[$titleCol]) . '</td>
 					</tr>';
-
-				if ($GLOBALS['BE_USER']->uc["edit_showFieldHelp"])	{
-					$GLOBALS['LANG']->loadSingleTableDescription($table);
-					if (isset($GLOBALS['TCA_DESCR'][$table]['columns']['']))	{
-						$onClick = 'vHWin=window.open(\'view_help.php?tfID='.$table.'.\',\'viewFieldHelp\',\'height=400,width=600,status=0,menubar=0,scrollbars=1\');vHWin.focus();return false;';
-						$out.='
-					<tr>
-						<td class="c-tableDescription">'.t3lib_BEfunc::helpTextIcon($table,'',$this->backPath,TRUE).$GLOBALS['TCA_DESCR'][$table]['columns']['']['description'].'</td>
-					</tr>';
-					}
-				}
 			} else {
 				// Render collapse button if in multi table mode
 				$collapseIcon = '';
@@ -593,8 +579,7 @@ class localRecordList extends recordList {
 
 					// Record navigation is added to the beginning and end of the table if in single table mode
 				if ($this->table) {
-					$pageNavigation = $this->renderListNavigation();
-					$iOut = $pageNavigation . $iOut . $pageNavigation;
+					$iOut = $this->renderListNavigation('top') . $iOut . $this->renderListNavigation('bottom');
 				} else {
 						// show that there are more records than shown
 					if ($this->totalItems > $this->itemsLimitPerTable) {
@@ -707,8 +692,9 @@ class localRecordList extends recordList {
 
 					$localizationMarkerClass = '';
 					if (isset($GLOBALS['TCA'][$table]['ctrl']['languageField'])
-					&& $row[$GLOBALS['TCA'][$table]['ctrl']['languageField']] != 0) {
-							// it's a translated record
+					&& $row[$GLOBALS['TCA'][$table]['ctrl']['languageField']] != 0
+					&& $row[$GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField']] != 0) {
+							// it's a translated record with a language parent
 						$localizationMarkerClass = ' localization';
 					}
 				} elseif ($fCol == 'pid') {
@@ -773,7 +759,7 @@ class localRecordList extends recordList {
 	 * @param	integer		Uid of current record
 	 * @return	void
 	 *
-	 * @deprecated since 4.4: Use getReferenceCount instead
+	 * @deprecated since 4.4, will be removed in TYPO3 4.6 - Use getReferenceCount instead
 	 */
 	function setReferences($table, $uid) {
 		t3lib_div::logDeprecatedFunction();
@@ -1002,10 +988,11 @@ class localRecordList extends recordList {
 	/**
 	 * Creates a page browser for tables with many records
 	 *
+	 * @param	string		Distinguish between 'top' and 'bottom' part of the navigation (above or below the records)
 	 * @return	string	Navigation HTML
 	 *
 	 */
-	protected function renderListNavigation() {
+	protected function renderListNavigation($renderPart = 'top') {
 		$totalPages = ceil($this->totalItems / $this->iLimit);
 
 		$content = '';
@@ -1061,18 +1048,17 @@ class localRecordList extends recordList {
 			}
 
 			$reload = '<a href="#" onclick="document.dblistForm.action=\''
-				. $listURL . '&pointer=\'+calculatePointer(); document.dblistForm.submit(); return true;" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_common.xml:reload', TRUE) . '">' .
+				. $listURL . '&pointer=\'+calculatePointer(document.getElementById(\'jumpPage-' . $renderPart .'\').value); document.dblistForm.submit(); return true;" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_common.xml:reload', TRUE) . '">' .
 					t3lib_iconWorks::getSpriteIcon('actions-system-refresh') .
 				'</a>';
 
-			// Add js to traverse a page select input to a pointer value
-			$content = '
+			if ($renderPart === 'top') {
+					// Add js to traverse a page select input to a pointer value
+				$content = '
 <script type="text/JavaScript">
 /*<![CDATA[*/
 
-	function calculatePointer(){
-		page = document.getElementById(\'jumpPage\').value;
-
+	function calculatePointer(page) {
 		if (page > ' . $totalPages . ') {
 			page = ' . $totalPages . ';
 		}
@@ -1089,10 +1075,10 @@ class localRecordList extends recordList {
 /*]]>*/
 </script>
 ';
-
+			}
 			$pageNumberInput = '<span>
 				<input type="text" value="' . $currentPage
-				. '" size="3" id="jumpPage" name="jumpPage" onkeyup="if (event.keyCode == Event.KEY_RETURN) { document.dblistForm.action=\'' . $listURL . '&pointer=\'+calculatePointer(); document.dblistForm.submit(); } return true;" />
+				. '" size="3" id="jumpPage-' . $renderPart . '" name="jumpPage-' . $renderPart . '" onkeyup="if (event.keyCode == Event.KEY_RETURN) { document.dblistForm.action=\'' . $listURL . '&pointer=\'+calculatePointer(this.value); document.dblistForm.submit(); } return true;" />
 				</span>';
 			$pageIndicator = '<span class="pageIndicator">'
 				. sprintf($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_web_list.xml:pageIndicator'), $pageNumberInput, $totalPages)
@@ -1224,10 +1210,17 @@ class localRecordList extends recordList {
 				}
 
 					// "Edit Perms" link:
-				if ($table=='pages' && $GLOBALS['BE_USER']->check('modules','web_perm'))	{
-					$cells['perms']='<a href="'.htmlspecialchars('mod/web/perm/index.php?id='.$row['uid'].'&return_id='.$row['uid'].'&edit=1').'" title="'.$LANG->getLL('permissions', TRUE).'">'.
-								t3lib_iconWorks::getSpriteIcon('status-status-locked') .
-							'</a>';
+				if ($table == 'pages' && $GLOBALS['BE_USER']->check('modules','web_perm') && t3lib_extMgm::isLoaded('perm'))	{
+					$cells['perms'] =
+						'<a href="' .
+							htmlspecialchars(
+								t3lib_extMgm::extRelPath('perm') . 'mod1/index.php' .
+								'?id=' . $row['uid'] . '&return_id=' . $row['uid'] . '&edit=1'
+							) .
+							'" title="' . $LANG->getLL('permissions', TRUE) .
+						'">'.
+							t3lib_iconWorks::getSpriteIcon('status-status-locked') .
+						'</a>';
 				} elseif(!$this->table && $GLOBALS['BE_USER']->check('modules','web_perm')) {
 					$cells['perms'] = $this->spaceIcon;
 				}
@@ -1475,7 +1468,7 @@ class localRecordList extends recordList {
 	 * @param	integer		UID of record
 	 * @return	string		HTML-table
 	 *
-	 * @deprecated since 4.4: Use getReferenceHTML() instead
+	 * @deprecated since 4.4, will be removed in TYPO3 4.6 - Use createReferenceHtml() instead
 	 */
 	function makeRef($table,$uid)	{
 		t3lib_div::logDeprecatedFunction();
@@ -1576,7 +1569,11 @@ class localRecordList extends recordList {
 						$url . '&justLocalized=' . rawurlencode($table . ':' . $row['uid'] . ':' . $lUid_OnPage)
 					);
 					$language = t3lib_BEfunc::getRecord('sys_language', $lUid_OnPage, 'title');
-					$lC = ($this->languageIconTitles[$lUid_OnPage]['flagIcon'] ? '<img src="'.$this->languageIconTitles[$lUid_OnPage]['flagIcon'].'" class="absmiddle" alt="" />' : $this->languageIconTitles[$lUid_OnPage]['title']);
+					if ($this->languageIconTitles[$lUid_OnPage]['flagIcon']) {
+						$lC = t3lib_iconWorks::getSpriteIcon($this->languageIconTitles[$lUid_OnPage]['flagIcon']);;
+					} else {
+						$lC = $this->languageIconTitles[$lUid_OnPage]['title'];
+					}
 					$lC = '<a href="' . htmlspecialchars($href) . '" title="' . htmlspecialchars($language['title']) . '">' . $lC . '</a> ';
 
 					$lNew.=$lC;
@@ -1584,7 +1581,7 @@ class localRecordList extends recordList {
 			}
 
 			if ($lNew)	$out[1].= $lNew;
-		} else {
+		} else if ($row['l18n_parent']) {
 			$out[0] = '&nbsp;&nbsp;&nbsp;&nbsp;'.$out[0];
 		}
 
@@ -1644,7 +1641,7 @@ class localRecordList extends recordList {
 				<!--
 					Field selector for extended table view:
 				-->
-				<table border="0" cellpadding="0" cellspacing="0" class="bgColor4" id="typo3-dblist-fieldSelect">
+				<table border="0" cellpadding="0" cellspacing="0" id="typo3-dblist-fieldSelect">
 					<tr>
 						<td>'.$lMenu.'</td>
 						<td><input type="submit" name="search" value="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.setFields',1).'" /></td>
@@ -1874,8 +1871,8 @@ class localRecordList extends recordList {
 
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/class.db_list_extra.inc'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/class.db_list_extra.inc']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/class.db_list_extra.inc'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/class.db_list_extra.inc']);
 }
 
 ?>

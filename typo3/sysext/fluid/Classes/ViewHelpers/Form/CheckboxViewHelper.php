@@ -28,29 +28,28 @@
  * <code title="Example">
  * <f:form.checkbox name="myCheckBox" value="someValue" />
  * </code>
- *
- * Output:
+ * <output>
  * <input type="checkbox" name="myCheckBox" value="someValue" />
+ * </output>
  *
  * <code title="Preselect">
  * <f:form.checkbox name="myCheckBox" value="someValue" checked="{object.value} == 5" />
  * </code>
- *
- * Output:
+ * <output>
  * <input type="checkbox" name="myCheckBox" value="someValue" checked="checked" />
  * (depending on $object)
+ * </output>
  *
  * <code title="Bind to object property">
  * <f:form.checkbox property="interests" value="TYPO3" />
  * </code>
- *
- * Output:
+ * <output>
  * <input type="checkbox" name="user[interests][]" value="TYPO3" checked="checked" />
  * (depending on property "interests")
+ * </output>
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @api
- * @scope prototype
  */
 class Tx_Fluid_ViewHelpers_Form_CheckboxViewHelper extends Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper {
 

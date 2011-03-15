@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2008-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -26,13 +26,10 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_acronym.php 7838 2010-06-08 16:10:41Z stan $
+ * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_acronym.php 10120 2011-01-18 20:03:36Z ohader $
  *
  */
-
-require_once(t3lib_extMgm::extPath('rtehtmlarea').'class.tx_rtehtmlareaapi.php');
-
-class tx_rtehtmlarea_acronym extends tx_rtehtmlareaapi {
+class tx_rtehtmlarea_acronym extends tx_rtehtmlarea_api {
 
 	protected $extensionKey = 'rtehtmlarea';		// The key of the extension that is extending htmlArea RTE
 	protected $pluginName = 'Acronym';			// The name of the plugin registered by the extension
@@ -189,7 +186,7 @@ class tx_rtehtmlarea_acronym extends tx_rtehtmlareaapi {
 		return json_encode(array('abbr' => $abbrArray, 'acronym' => $acronymArray));
 	}
 }
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/Acronym/class.tx_rtehtmlarea_acronym.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/Acronym/class.tx_rtehtmlarea_acronym.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/Acronym/class.tx_rtehtmlarea_acronym.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rtehtmlarea/extensions/Acronym/class.tx_rtehtmlarea_acronym.php']);
 }
 ?>

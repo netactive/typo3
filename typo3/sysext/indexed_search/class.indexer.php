@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2001-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 2001-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -1345,7 +1345,7 @@ class tx_indexedsearch_indexer {
 	 *
 	 * @param	array		Array of content to index, see splitHTMLContent() and splitRegularContent()
 	 * @return	array		Content input array modified so each key is not a unique array of words
-	 * @deprecated since TYPO3 4.0, this function will be removed in TYPO3 4.5.
+	 * @deprecated since TYPO3 4.0, this function will be removed in TYPO3 4.6.
 	 */
 	function procesWordsInArrays($contentArr)	{
 		t3lib_div::logDeprecatedFunction();
@@ -2143,7 +2143,7 @@ class tx_indexedsearch_indexer {
 	 *
 	 * @param	array		Array of GET parameters to encode
 	 * @return	void
-	 * @deprecated since TYPO3 4.3, this function will be removed in TYPO3 4.5, use directly t3lib_div::calculateCHash()
+	 * @deprecated since TYPO3 4.3, this function will be removed in TYPO3 4.6, use directly t3lib_div::calculateCHash()
 	 */
 	function makeCHash($paramArray)	{
 		t3lib_div::logDeprecatedFunction();
@@ -2223,7 +2223,7 @@ class tx_indexedsearch_indexer {
 	 * @param	array		Parameters from frontend
 	 * @param	object		TSFE object (reference under PHP5)
 	 * @return	void
-	 * @deprecated since TYPO3 4.3, this function will be removed in TYPO3 4.5, the method was extracted to hooks/class.tx_indexedsearch_tslib_fe_hook.php
+	 * @deprecated since TYPO3 4.3, this function will be removed in TYPO3 4.6, the method was extracted to hooks/class.tx_indexedsearch_tslib_fe_hook.php
 	 */
 	function fe_headerNoCache(&$params, $ref)	{
 		t3lib_div::logDeprecatedFunction();
@@ -2247,7 +2247,7 @@ class tx_indexedsearch_indexer {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/indexed_search/class.indexer.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/indexed_search/class.indexer.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/indexed_search/class.indexer.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/indexed_search/class.indexer.php']);
 }
 ?>

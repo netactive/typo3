@@ -1,5 +1,5 @@
 /* Scheduler BE-Styles */
-/* $Id: tx_scheduler_be.css 8639 2010-08-22 10:48:28Z francois $ */
+/* $Id: tx_scheduler_be.css 10106 2011-01-17 21:33:10Z francois $ */
 
 .tx_scheduler_mod1 a {
 	text-decoration: underline;
@@ -9,7 +9,9 @@
 	padding-right: 10px;
 }
 
-.tx_scheduler_mod1 a.typo3-csh-link {
+.tx_scheduler_mod1 a.icon,
+.tx_scheduler_mod1 a.typo3-csh-link,
+.tx_scheduler_mod1 #typo3-docheader a {
 	text-decoration: none;
 }
 
@@ -24,11 +26,11 @@
 	font-weight: bold;
 }
 .tx_scheduler_mod1 label {
-	display: block;
 	width: 200px;
 }
 .tx_scheduler_mod1 table.typo3-usersettings td {
-	padding: 2px;
+	padding-top: 2px;
+	padding-bottom: 2px;
 }
 .tx_scheduler_mod1 table.typo3-usersettings td.td-input {
 	width: 400px;

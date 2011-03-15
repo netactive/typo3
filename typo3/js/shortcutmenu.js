@@ -28,7 +28,7 @@
 /**
  * class to handle the shortcut menu
  *
- * $Id: shortcutmenu.js 8302 2010-07-27 22:21:19Z steffenk $
+ * $Id: shortcutmenu.js 10193 2011-01-21 09:26:38Z psychomieze $
  */
 var ShortcutMenu = Class.create({
 
@@ -36,10 +36,10 @@ var ShortcutMenu = Class.create({
 	 * registers for resize event listener and executes on DOM ready
 	 */
 	initialize: function() {
-		Event.observe(window, 'resize', this.positionMenu);
-
 		Ext.onReady(function() {
-			this.positionMenu();
+			Event.observe(window, 'resize', TYPO3BackendToolbarManager.positionMenu('shortcut-menu'));
+			TYPO3BackendToolbarManager.positionMenu('shortcut-menu');
+			
 			this.toolbarItemIcon = $$('#shortcut-menu .toolbar-item span.t3-icon')[0];
 
 			Event.observe($$('#shortcut-menu .toolbar-item')[0], 'click', this.toggleMenu);
@@ -86,7 +86,7 @@ var ShortcutMenu = Class.create({
 			// activate delete icon
 		$$('.shortcut-delete img').each(function(element) {
 			element.observe('click', function(event) {
-				if (confirm('Do you really want to remove this shortcut?')) {
+				if (confirm('Do you really want to remove this bookmark?')) {
 					var deleteControl = event.element();
 					var shortcutId = deleteControl.up('tr.shortcut').identify().slice(9);
 
@@ -98,37 +98,6 @@ var ShortcutMenu = Class.create({
 			}.bind(this));
 		}.bind(this));
 
-	},
-
-	/**
-	 * positions the menu below the toolbar icon, let's do some math!
-	 */
-	positionMenu: function() {
-		var calculatedOffset = 0;
-		var parentWidth      = $('shortcut-menu').getWidth();
-		var currentToolbarItemLayer = $$('#shortcut-menu .toolbar-item-menu')[0];
-		var ownWidth         = currentToolbarItemLayer.getWidth();
-		var parentSiblings   = $('shortcut-menu').previousSiblings();
-
-		parentSiblings.each(function(toolbarItem) {
-			calculatedOffset += toolbarItem.getWidth() - 1;
-			// -1 to compensate for the margin-right -1px of the list items,
-			// which itself is necessary for overlaying the separator with the active state background
-
-			if (toolbarItem.down().hasClassName('no-separator')) {
-				calculatedOffset -= 1;
-			}
-		});
-		calculatedOffset = calculatedOffset - ownWidth + parentWidth;
-
-			// border correction
-		if (currentToolbarItemLayer.getStyle('display') !== 'none') {
-			calculatedOffset += 2;
-		}
-
-		$$('#shortcut-menu .toolbar-item-menu')[0].setStyle({
-			left: calculatedOffset + 'px'
-		});
 	},
 
 	/**

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  * The script configures constants, includes libraries and does a little logic here and there in order to instantiate the right classes to create the webpage.
  * All the real data processing goes on in the "tslib/" classes which this script will include and use as needed.
  *
- * $Id: index_ts.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: index_ts.php 10120 2011-01-18 20:03:36Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -211,7 +211,7 @@ $TSFE = t3lib_div::makeInstance('tslib_fe',
 	t3lib_div::_GP('MP'),
 	t3lib_div::_GP('RDCT')
 );
-/* @var $TSFE tslib_fe */
+/** @var $TSFE tslib_fe */
 
 if($TYPO3_CONF_VARS['FE']['pageUnavailable_force'] &&
 	!t3lib_div::cmpIP(t3lib_div::getIndpEnv('REMOTE_ADDR'), $TYPO3_CONF_VARS['SYS']['devIPmask'])) {
@@ -275,6 +275,7 @@ if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tslib/index_ts.php']['preBeUser']))
 // BE_USER
 // *********
 $BE_USER = NULL;
+/** @var $BE_USER t3lib_tsfeBeUserAuth */
 if ($_COOKIE['be_typo_user']) {		// If the backend cookie is set, we proceed and checks if a backend user is logged in.
 	$TYPO3_MISC['microtime_BE_USER_start'] = microtime(true);
 	$TT->push('Back End user initialized','');
@@ -468,6 +469,7 @@ if ($TSFE->isINTincScript())		{
 // ***************
 // Output content
 // ***************
+$sendTSFEContent = false;
 if ($TSFE->isOutputting())	{
 	$TT->push('Print Content','');
 	$TSFE->processOutput();
@@ -507,7 +509,7 @@ if ($TSFE->isOutputting())	{
 
 		$TT->pull();
 	} else {
-		echo $TSFE->content;
+		$sendTSFEContent = true;
 	}
 	$TT->pull();
 }
@@ -575,7 +577,12 @@ echo $TSFE->beLoginLinkIPList();
 // Admin panel
 // *************
 if (is_object($BE_USER) && $BE_USER->isAdminPanelVisible() && $TSFE->beUserLogin) {
-	echo $BE_USER->displayAdminPanel();
+	$TSFE->content = str_ireplace('</head>',  $BE_USER->adminPanel->getAdminPanelHeaderData() . '</head>', $TSFE->content);
+	$TSFE->content = str_ireplace('</body>',  $BE_USER->displayAdminPanel() . '</body>', $TSFE->content);
+}
+
+if ($sendTSFEContent) {
+	echo $TSFE->content;
 }
 
 // *************

@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,7 +27,7 @@
 /**
  * Wizard to list records from a page id.
  *
- * $Id: wizard_list.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: wizard_list.php 10121 2011-01-18 20:15:30Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -119,21 +119,19 @@ class SC_wizard_list {
 		if (!strcmp($this->pid,'') || strcmp($this->id,''))	{	// If pid is blank OR if id is set, then return...
 			$redirectUrl = t3lib_div::sanitizeLocalUrl($this->P['returnUrl']);
 		} else {	// Otherwise, show the list:
-			$redirectUrl = t3lib_extMgm::createListViewLink(
-				$this->pid,
-				'&table=' . $this->P['params']['table'] . '&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')),
-				'',
-				'',
-				TRUE
-			);
+			$urlParameters = array();
+			$urlParameters['id'] = $this->pid;
+			$urlParameters['table'] = $this->P['params']['table'];
+			$urlParameters['returnUrl'] = t3lib_div::getIndpEnv('REQUEST_URI');
+			$redirectUrl = t3lib_BEfunc::getModuleUrl('web_list', $urlParameters);
 		}
 		t3lib_utility_Http::redirect($redirectUrl);
 	}
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/wizard_list.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/wizard_list.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/wizard_list.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/wizard_list.php']);
 }
 
 

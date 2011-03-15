@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 2005-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -182,10 +182,10 @@ class wslib {
 	 * Main function to call from cli-script
 	 *
 	 * @return	void
-	 * @deprecated since TYPO3 4.5 - This was meant for an obsolete CLI script. You shouldn't be calling this.
+	 * @deprecated since TYPO3 4.5, will be removed in TYPO3 4.7 - This was meant for an obsolete CLI script. You shouldn't be calling this.
 	 */
 	function CLI_main()	{
-		self::logDeprecatedFunction();
+		t3lib_div::logDeprecatedFunction();
 		$this->autoPublishWorkspaces();
 	}
 
@@ -239,7 +239,7 @@ class wslib {
 
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/class.wslib.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/class.wslib.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/class.wslib.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/mod/user/ws/class.wslib.php']);
 }
 ?>

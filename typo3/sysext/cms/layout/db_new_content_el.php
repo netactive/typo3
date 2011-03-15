@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 1999-2010 Kasper Skårhøj (kasperYYYY@typo3.com)
+*  (c) 1999-2011 Kasper Skårhøj (kasperYYYY@typo3.com)
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
  * New content elements wizard
  * (Part of the 'cms' extension)
  *
- * $Id: db_new_content_el.php 8742 2010-08-30 18:55:32Z baschny $
+ * $Id: db_new_content_el.php 10120 2011-01-18 20:03:36Z ohader $
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compatible.
  *
@@ -200,7 +200,6 @@ class SC_db_new_content_el {
 		$this->doc->backPath = $BACK_PATH;
 		$this->doc->setModuleTemplate('templates/db_new_content_el.html');
 		$this->doc->JScode='';
-		$this->doc->JScodeLibArray['dyntabmenu'] = $this->doc->getDynTabMenuJScode();
 		$this->doc->form='<form action="" name="editForm"><input type="hidden" name="defValues" value="" />';
 
 			// Setting up the context sensitive menu:
@@ -309,11 +308,11 @@ class SC_db_new_content_el {
 						// Radio button:
 					$oC = "document.editForm.defValues.value=unescape('".rawurlencode($wInfo['params'])."');goToalt_doc();".(!$this->onClickEvent?"window.location.hash='#sel2';":'');
 					$content .= $this->elementWrapper['wizardPart'][0] .
-						'<input type="radio" name="tempB" value="' . htmlspecialchars($k) . '" onclick="' . htmlspecialchars($this->doc->thisBlur().$oC) . '" />' .
+						'<input type="radio" name="tempB" value="' . htmlspecialchars($k) . '" onclick="' . htmlspecialchars($oC) . '" />' .
 						$this->elementWrapper['wizardPart'][1];
 
 						// Onclick action for icon/title:
-					$aOnClick = 'document.getElementsByName(\'tempB\')['.$cc.'].checked=1;'.$this->doc->thisBlur().$oC.'return false;';
+					$aOnClick = 'document.getElementsByName(\'tempB\')['.$cc.'].checked=1;'.$oC.'return false;';
 
 						// Icon:
 					$iInfo = @getimagesize($wInfo['icon']);
@@ -347,7 +346,7 @@ class SC_db_new_content_el {
 					.typo3-dyntabmenu-divs table { margin: 15px; }
 					.typo3-dyntabmenu-divs table td { padding: 3px; }
 				';
-				$code = $LANG->getLL('sel1',1) . '<br /><br />' . $this->doc->getDynTabMenu($menuItems, 'new-content-element-wizard', false, false, 100);
+				$code = $LANG->getLL('sel1', 1) . '<br /><br />' . $this->doc->getDynTabMenu($menuItems, 'new-content-element-wizard', FALSE, FALSE);
 			} else {
 				$code = $LANG->getLL('sel1',1) . '<br /><br />';
 				foreach ($menuItems as $section) {
@@ -622,8 +621,8 @@ class SC_db_new_content_el {
 }
 
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/cms/layout/db_new_content_el.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/cms/layout/db_new_content_el.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/cms/layout/db_new_content_el.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/cms/layout/db_new_content_el.php']);
 }
 
 

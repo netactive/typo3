@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Username inside the toolbar
 
-$Id: toolbar_username.css 7906 2010-06-13 14:56:44Z ohader $
+$Id: toolbar_username.css 9848 2010-12-18 08:30:53Z stephenking $
 - - - - - - - - - - - - - - - - - - - - - */
 
 #username {
@@ -11,7 +11,7 @@ $Id: toolbar_username.css 7906 2010-06-13 14:56:44Z ohader $
 }
 
 #username span {
-	padding-right: 4px;
+	margin-right: 4px;
 	vertical-align: bottom;
 }
 

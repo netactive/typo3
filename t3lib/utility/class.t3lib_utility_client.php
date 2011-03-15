@@ -2,7 +2,7 @@
 /***************************************************************
  * Copyright notice
  *
- * (c) 2009-2010 Oliver Hader <oliver@typo3.org>
+ * (c) 2009-2011 Oliver Hader <oliver@typo3.org>
  * All rights reserved
  *
  * This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@
 /**
  * Class to handle and determine browser specific information.
  *
- * $Id: class.t3lib_utility_client.php 8160 2010-07-11 17:32:12Z steffenk $
+ * $Id: class.t3lib_utility_client.php 10220 2011-01-21 18:08:15Z baschny $
  *
  * @author	Oliver Hader <oliver@typo3.org>
  */
@@ -66,12 +66,12 @@ final class t3lib_utility_Client {
 			'useragent' => $userAgent,
 		);
 
-		// Analyze the userAgent string
-		// Declare known browsers to look for
+			// Analyze the userAgent string
+			// Declare known browsers to look for
 
 		$known = array('msie', 'firefox', 'webkit', 'opera', 'netscape', 'konqueror',
-				'gecko', 'chrome', 'safari', 'seamonkey', 'navigator', 'mosaic',
-				'lynx', 'amaya', 'omniweb', 'avant', 'camino', 'flock', 'aol');
+					   'gecko', 'chrome', 'safari', 'seamonkey', 'navigator', 'mosaic',
+					   'lynx', 'amaya', 'omniweb', 'avant', 'camino', 'flock', 'aol');
 		$matches = array();
 
 		$pattern = '#(?P<browser>' . join('|', $known) . ')[/ ]+(?P<version>[0-9]+(?:\.[0-9]+)?)#';
@@ -103,30 +103,76 @@ final class t3lib_utility_Client {
 			}
 		}
 
-			// system
+			// Microsoft Documentation about Platform tokens: http://msdn.microsoft.com/en-us/library/ms537503(VS.85).aspx
+			// 'system' is deprecated, use 'all_systems' (array) in future!
 		$browserInfo['system'] = '';
+		$browserInfo['all_systems'] = '';
 		if (strstr($userAgent, 'Win')) {
 				// windows
-			if (strstr($userAgent, 'Win98') || strstr($userAgent, 'Windows 98')) {
+			if (strstr($userAgent, 'Windows NT 6.1')) {
+				$browserInfo['system'] = 'winNT'; // backwards compatible
+				$browserInfo['all_systems'][] = 'win7';
+				$browserInfo['all_systems'][] = 'winNT';
+			} elseif (strstr($userAgent, 'Windows NT 6.0')) {
+				$browserInfo['system'] = 'winNT'; // backwards compatible
+				$browserInfo['all_systems'][] = 'winVista';
+				$browserInfo['all_systems'][] = 'winNT';
+			} elseif (strstr($userAgent, 'Windows NT 5.1')) {
+				$browserInfo['system'] = 'winNT'; // backwards compatible
+				$browserInfo['all_systems'][] = 'winXP';
+				$browserInfo['all_systems'][] = 'winNT';
+			} elseif (strstr($userAgent, 'Windows NT 5.0')) {
+				$browserInfo['system'] = 'winNT'; // backwards compatible
+				$browserInfo['all_systems'][] = 'win2k';
+				$browserInfo['all_systems'][] = 'winNT';
+			} elseif (strstr($userAgent, 'Win98') || strstr($userAgent, 'Windows 98')) {
 				$browserInfo['system'] = 'win98';
+				$browserInfo['all_systems'][] = 'win98';
 			} elseif (strstr($userAgent, 'Win95') || strstr($userAgent, 'Windows 95')) {
 				$browserInfo['system'] = 'win95';
+				$browserInfo['all_systems'][] = 'win95';
 			} elseif (strstr($userAgent, 'WinNT') || strstr($userAgent, 'Windows NT')) {
 				$browserInfo['system'] = 'winNT';
+				$browserInfo['all_systems'][] = 'winNT';
 			} elseif (strstr($userAgent, 'Win16') || strstr($userAgent, 'Windows 311')) {
 				$browserInfo['system'] = 'win311';
+				$browserInfo['all_systems'][] = 'win311';
 			}
-		} elseif (strstr($userAgent,'Mac')) {
-			$browserInfo['system'] = 'mac';
-			// unixes
+		} elseif (strstr($userAgent, 'Mac')) {
+			if (strstr($userAgent, 'iPad') || strstr($userAgent, 'iPhone') || strstr($userAgent, 'iPod')) {
+				$browserInfo['system'] = 'mac'; // backwards compatible
+				$browserInfo['all_systems'][] = 'iOS';
+				$browserInfo['all_systems'][] = 'mac';
+			} else {
+				$browserInfo['system'] = 'mac';
+				$browserInfo['all_systems'][] = 'mac';
+			}
+				// unixes
 		} elseif (strstr($userAgent, 'Linux')) {
-			$browserInfo['system'] = 'linux';
+			if (strstr($userAgent, 'Android')) {
+				$browserInfo['system'] = 'linux'; // backwards compatible
+				$browserInfo['all_systems'][] = 'android';
+				$browserInfo['all_systems'][] = 'linux';
+			} else {
+				$browserInfo['system'] = 'linux';
+				$browserInfo['all_systems'][] = 'linux';
+			}
+		} elseif (strstr($userAgent, 'BSD')) {
+			$browserInfo['system'] = 'unix_bsd';
+			$browserInfo['all_systems'][] = 'unix_bsd';
 		} elseif (strstr($userAgent, 'SGI') && strstr($userAgent, ' IRIX ')) {
 			$browserInfo['system'] = 'unix_sgi';
+			$browserInfo['all_systems'][] = 'unix_sgi';
 		} elseif (strstr($userAgent, ' SunOS ')) {
 			$browserInfo['system'] = 'unix_sun';
+			$browserInfo['all_systems'][] = 'unix_sun';
 		} elseif (strstr($userAgent, ' HP-UX ')) {
 			$browserInfo['system'] = 'unix_hp';
+			$browserInfo['all_systems'][] = 'unix_hp';
+		} elseif (strstr($userAgent, 'CrOS')) {
+			$browserInfo['system'] = 'linux';
+			$browserInfo['all_systems'][] = 'chrome';
+			$browserInfo['all_systems'][] = 'linux';
 		}
 
 		return $browserInfo;
@@ -154,7 +200,7 @@ final class t3lib_utility_Client {
 		$getDeviceTypeHooks =& $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/div/class.t3lib_utility_client.php']['getDeviceType'];
 		if (is_array($getDeviceTypeHooks)) {
 			foreach ($getDeviceTypeHooks as $hookFunction) {
-				$returnResult = true;
+				$returnResult = TRUE;
 				$hookParameters = array(
 					'userAgent' => &$userAgent,
 					'returnResult' => &$returnResult,
@@ -174,13 +220,13 @@ final class t3lib_utility_Client {
 		$deviceType = '';
 
 			// pda
-		if(strstr($userAgent, 'avantgo')) {
+		if (strstr($userAgent, 'avantgo')) {
 			$deviceType = 'pda';
 		}
 			// wap
-		$browser=substr($userAgent, 0, 4);
-		$wapviwer=substr(stristr($userAgent,'wap'), 0, 3);
-		if($wapviwer == 'wap' ||
+		$browser = substr($userAgent, 0, 4);
+		$wapviwer = substr(stristr($userAgent, 'wap'), 0, 3);
+		if ($wapviwer == 'wap' ||
 			$browser == 'noki' ||
 			$browser == 'eric' ||
 			$browser == 'r380' ||
@@ -190,7 +236,7 @@ final class t3lib_utility_Client {
 			$deviceType = 'wap';
 		}
 			// grabber
-		if(strstr($userAgent, 'g.r.a.b.') ||
+		if (strstr($userAgent, 'g.r.a.b.') ||
 			strstr($userAgent, 'utilmind httpget') ||
 			strstr($userAgent, 'webcapture') ||
 			strstr($userAgent, 'teleport') ||
@@ -198,7 +244,7 @@ final class t3lib_utility_Client {
 			$deviceType = 'grabber';
 		}
 			// robots
-		if(strstr($userAgent, 'crawler') ||
+		if (strstr($userAgent, 'crawler') ||
 			strstr($userAgent, 'spider') ||
 			strstr($userAgent, 'googlebot') ||
 			strstr($userAgent, 'searchbot') ||
@@ -211,4 +257,5 @@ final class t3lib_utility_Client {
 		return $deviceType;
 	}
 }
+
 ?>
