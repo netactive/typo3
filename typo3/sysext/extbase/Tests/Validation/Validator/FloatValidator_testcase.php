@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage extbase
- * @version $Id: FloatValidator_testcase.php 2293 2010-05-25 11:11:15Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Validation_Validator_FloatValidator_testcase extends Tx_Extbase_BaseTestCase {
 

@@ -50,7 +50,7 @@
  * <input type="radio" name="user[newsletter]" value="0" /> no
  * (depending on property "newsletter")
  *
- * @version $Id: RadioViewHelper.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  * @package Fluid
  * @subpackage ViewHelpers\Form
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later

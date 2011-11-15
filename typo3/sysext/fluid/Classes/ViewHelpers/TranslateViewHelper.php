@@ -19,7 +19,7 @@
  *
  * @package TYPO3
  * @subpackage Fluid
- * @version $Id: TranslateViewHelper.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  */
 class Tx_Fluid_ViewHelpers_TranslateViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
 

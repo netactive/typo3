@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Validation
- * @version $Id: ValidatorResolver.php 1790 2010-01-18 22:27:37Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Validation_ValidatorResolver {
 

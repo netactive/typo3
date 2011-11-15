@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage MVC\Controller
- * @version $Id: ControllerContext.php 2227 2010-04-16 08:33:35Z sebastian $
+ * @version $Id$
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @scope prototype
  * @api

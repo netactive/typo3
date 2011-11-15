@@ -28,7 +28,7 @@
 /**
  * Testcase for the Request Hash Service
  *
- * @version $Id: RequestHashService_testcase.php 1729 2009-11-25 21:37:20Z stucki $
+ * @version $Id$
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser Public License, version 3 or later
  */
 class Tx_Extbase_Security_Channel_RequestHashService_testcase extends Tx_Extbase_BaseTestCase {

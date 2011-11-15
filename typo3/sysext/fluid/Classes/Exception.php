@@ -15,7 +15,7 @@
 /**
  * @package
  * @subpackage
- * @version $Id: Exception.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  */
 class Tx_Fluid_Exception extends Exception {
 

@@ -46,7 +46,7 @@
  * depending on {foo.bar.baz}
  * </output>
  *
- * @version $Id: AliasViewHelper.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  * @package Fluid
  * @subpackage ViewHelpers
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
@@ -57,7 +57,7 @@ class Tx_Fluid_ViewHelpers_AliasViewHelper extends Tx_Fluid_Core_ViewHelper_Abst
 
 	/**
 	 *
-	 * @param array $map
+	 * @param array $map 
 	 * @return string Rendered string
 	 * @author Bastian Waidelich <bastian@typo3.org>
 	 * @api

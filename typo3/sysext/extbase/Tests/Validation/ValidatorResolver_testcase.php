@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage extbase
- * @version $Id: ValidatorResolver_testcase.php 1709 2009-11-25 11:26:13Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Validation_ValidatorResolver_testcase extends Tx_Extbase_BaseTestCase {
 

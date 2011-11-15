@@ -2261,19 +2261,28 @@ final class t3lib_BEfunc {
 					}
 				break;
 				case 'input':
+						// hide value 0 for dates, but show it for everything else
 					if (isset($value)) {
 						if (t3lib_div::inList($theColConf['eval'], 'date')) {
-							$l = self::date($value) .
-								' (' .
-								($GLOBALS['EXEC_TIME'] - $value > 0 ? '-' : '') .
-								self::calcAge(abs($GLOBALS['EXEC_TIME'] - $value), $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.minutesHoursDaysYears')) .
-								')';
+							if (!empty($value)) {
+								$l = self::date($value) .
+									' (' .
+									($GLOBALS['EXEC_TIME'] - $value > 0 ? '-' : '') .
+									self::calcAge(abs($GLOBALS['EXEC_TIME'] - $value), $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.minutesHoursDaysYears')) .
+									')';
+							}
 						} elseif (t3lib_div::inList($theColConf['eval'], 'time')) {
-							$l = self::time($value, FALSE);
+							if (!empty($value)) {
+								$l = self::time($value, FALSE);
+							}
 						} elseif (t3lib_div::inList($theColConf['eval'], 'timesec')) {
-							$l = self::time($value);
+							if (!empty($value)) {
+								$l = self::time($value);
+							}
 						} elseif (t3lib_div::inList($theColConf['eval'], 'datetime')) {
-							$l = self::datetime($value);
+							if (!empty($value)) {
+								$l = self::datetime($value);
+							}
 						} else {
 							$l = $value;
 						}

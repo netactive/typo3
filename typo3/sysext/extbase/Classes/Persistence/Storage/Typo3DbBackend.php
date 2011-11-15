@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Persistence\Storage
- * @version $Id: Typo3DbBackend.php 2297 2010-05-25 15:52:18Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persistence_Storage_BackendInterface, t3lib_Singleton {
 

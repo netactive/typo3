@@ -28,7 +28,7 @@
  *
  * @package Extbase
  * @subpackage Reflection
- * @version $Id: Service.php 1789 2010-01-18 21:31:59Z jocrau $
+ * @version $Id$
  * @api
  */
 class Tx_Extbase_Reflection_Service implements t3lib_Singleton {

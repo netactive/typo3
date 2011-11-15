@@ -34,7 +34,7 @@
  * Output:
  * <input type="text" name="myTextBox" value="default value" />
  *
- * @version $Id: TextboxViewHelper.php 2043 2010-03-16 08:49:45Z sebastian $
+ * @version $Id$
  * @package Fluid
  * @subpackage ViewHelpers\Form
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later

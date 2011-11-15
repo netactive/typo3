@@ -23,7 +23,7 @@
 /**
  * The main template view. Should be used as view if you want Fluid Templating
  *
- * @version $Id: TemplateView.php 2043 2010-03-16 08:49:45Z sebastian $
+ * @version $Id$
  * @package Fluid
  * @subpackage View
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later

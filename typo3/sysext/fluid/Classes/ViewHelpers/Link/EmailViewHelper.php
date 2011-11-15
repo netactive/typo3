@@ -16,7 +16,7 @@
 /**
  * @package Fluid
  * @subpackage ViewHelpers
- * @version $Id: EmailViewHelper.php 1492 2009-10-21 16:02:16Z bwaidelich $
+ * @version $Id$
  */
 
 /**
@@ -42,7 +42,7 @@
  *
  * @package Fluid
  * @subpackage ViewHelpers
- * @version $Id: EmailViewHelper.php 1492 2009-10-21 16:02:16Z bwaidelich $
+ * @version $Id$
  */
 class Tx_Fluid_ViewHelpers_Link_EmailViewHelper extends Tx_Fluid_Core_ViewHelper_TagBasedViewHelper {
 

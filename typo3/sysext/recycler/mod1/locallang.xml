@@ -22,13 +22,13 @@
 			<label index="js.label_yes">Yes</label>
 			<label index="js.label_no">No</label>
 			<label index="js.label_sure">Are you Sure?</label>
-			<label index="js.label_crdate">Create</label>
+			<label index="js.label_crdate">Created</label>
 			<label index="js.label_owner">Owner</label>
 			<label index="js.label_tstamp">Last edit</label>
 			<label index="js.label_clear">Clear</label>
 			<label index="js.label_filter">Filter</label>
 			<label index="js.label_title_undelete">Undelete?</label>
-			<label index="js.label_text_undelete">Undelete records from tables: </label>
+			<label index="js.label_text_undelete">Undelete records from tables:</label>
 			<label index="js.label_title_delete">Delete?</label>
 			<label index="js.label_text_delete">Delete records from tables: </label>
 			<label index="js.label_boxLabel_undelete_recursive">Undelete recursively</label>

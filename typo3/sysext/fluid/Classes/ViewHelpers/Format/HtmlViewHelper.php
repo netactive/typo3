@@ -16,7 +16,7 @@
 /**
  * @package Fluid
  * @subpackage ViewHelpers
- * @version $Id: HtmlViewHelper.php 2043 2010-03-16 08:49:45Z sebastian $
+ * @version $Id$
  */
 
 /**
@@ -43,7 +43,7 @@
  *
  * @package
  * @subpackage
- * @version $Id: HtmlViewHelper.php 2043 2010-03-16 08:49:45Z sebastian $
+ * @version $Id$
  */
 class Tx_Fluid_ViewHelpers_Format_HtmlViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
 

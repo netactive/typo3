@@ -23,7 +23,7 @@
 /**
  * @package Fluid
  * @subpackage ViewHelpers
- * @version $Id: FormViewHelper.php 2049 2010-03-16 10:51:45Z sebastian $
+ * @version $Id$
  */
 
 /**
@@ -55,7 +55,7 @@
  *
  * @package Fluid
  * @subpackage ViewHelpers
- * @version $Id: FormViewHelper.php 2049 2010-03-16 10:51:45Z sebastian $
+ * @version $Id$
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License, version 2
  * @scope prototype
  */

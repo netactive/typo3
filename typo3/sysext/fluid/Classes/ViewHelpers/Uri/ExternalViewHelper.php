@@ -28,7 +28,7 @@
  *
  * @package Fluid
  * @subpackage ViewHelpers
- * @version $Id: ExternalViewHelper.php 725 2009-05-28 21:45:46Z sebastian $
+ * @version $Id$
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @scope prototype
  */

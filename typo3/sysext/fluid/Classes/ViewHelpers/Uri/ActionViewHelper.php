@@ -28,13 +28,13 @@
  *
  * @package Fluid
  * @subpackage ViewHelpers
- * @version $Id: ActionViewHelper.php 1473 2009-10-20 03:39:21Z sebastian $
+ * @version $Id$
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @scope prototype
  *
  * @package
  * @subpackage
- * @version $Id: ActionViewHelper.php 1473 2009-10-20 03:39:21Z sebastian $
+ * @version $Id$
  */
 class Tx_Fluid_ViewHelpers_Uri_ActionViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
 

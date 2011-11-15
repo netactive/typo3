@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Object
- * @version $Id: RegistryInterface.php 1729 2009-11-25 21:37:20Z stucki $
+ * @version $Id$
  */
 interface Tx_Extbase_Object_RegistryInterface {
 

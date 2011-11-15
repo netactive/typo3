@@ -17,7 +17,7 @@
  *
  * @package Extbase
  * @subpackage MVC\Web\Routing
- * @version $Id: UriBuilder.php 2184 2010-04-08 14:59:58Z jocrau $
+ * @version $Id$
  * @api
  */
 class Tx_Extbase_MVC_Web_Routing_UriBuilder {

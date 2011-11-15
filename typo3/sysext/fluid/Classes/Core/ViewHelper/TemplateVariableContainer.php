@@ -27,7 +27,7 @@
  * 1) Holds the current variables in the template
  * 2) Holds variables being set during Parsing (set in view helpers implementing the PostParse facet)
  *
- * @version $Id: TemplateVariableContainer.php 2043 2010-03-16 08:49:45Z sebastian $
+ * @version $Id$
  * @package Fluid
  * @subpackage Core\ViewHelper
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later

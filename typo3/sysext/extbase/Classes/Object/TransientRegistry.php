@@ -31,7 +31,7 @@
  *
  * @package Extbase
  * @subpackage Object
- * @version $Id: TransientRegistry.php 1729 2009-11-25 21:37:20Z stucki $
+ * @version $Id$
  */
 class Tx_Extbase_Object_TransientRegistry implements Tx_Extbase_Object_RegistryInterface {
 

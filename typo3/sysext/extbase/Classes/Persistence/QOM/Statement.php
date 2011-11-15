@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Persistence\QOM
- * @version $Id: Statement.php 1993 2010-03-09 21:44:20Z jocrau $
+ * @version $Id$
  * @scope prototype
  */
 class Tx_Extbase_Persistence_QOM_Statement {

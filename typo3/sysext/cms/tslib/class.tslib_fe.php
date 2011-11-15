@@ -1504,7 +1504,11 @@
 			$url_parts = parse_url($code);
 			if ($url_parts['host'] == '')	{
 				$url_parts['host'] = t3lib_div::getIndpEnv('HTTP_HOST');
-				$code = t3lib_div::getIndpEnv('TYPO3_REQUEST_HOST') . $code;
+				if ($code{0} === '/') {
+					$code = t3lib_div::getIndpEnv('TYPO3_REQUEST_HOST') . $code;
+				} else {
+					$code = t3lib_div::getIndpEnv('TYPO3_REQUEST_DIR') . $code;
+				}
 				$checkBaseTag = false;
 			} else {
 				$checkBaseTag = true;
@@ -2264,7 +2268,7 @@
 			$TCA = Array();
 			include (TYPO3_tables_script ? PATH_typo3conf.TYPO3_tables_script : PATH_t3lib.'stddb/tables.php');
 				// Extension additions
-			if ($GLOBALS['TYPO3_LOADED_EXT']['_CACHEFILE'])	{
+			if ($GLOBALS['TYPO3_LOADED_EXT']['_CACHEFILE'] && file_exists(PATH_typo3conf . $GLOBALS['TYPO3_LOADED_EXT']['_CACHEFILE'] . '_ext_tables.php')) {
 				include(PATH_typo3conf.$GLOBALS['TYPO3_LOADED_EXT']['_CACHEFILE'].'_ext_tables.php');
 			} else {
 				include(PATH_t3lib.'stddb/load_ext_tables.php');

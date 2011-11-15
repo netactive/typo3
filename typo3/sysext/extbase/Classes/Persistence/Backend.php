@@ -31,7 +31,7 @@
  *
  * @package Extbase
  * @subpackage Persistence
- * @version $Id: Backend.php 2292 2010-05-25 11:11:04Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendInterface, t3lib_Singleton {
 
