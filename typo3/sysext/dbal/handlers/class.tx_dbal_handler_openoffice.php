@@ -27,7 +27,7 @@
 /**
  * Contains an example DBAL handler class
  *
- * $Id: class.tx_dbal_handler_openoffice.php 40828 2010-12-05 14:55:53Z xperseguers $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasper@typo3.com>
  */

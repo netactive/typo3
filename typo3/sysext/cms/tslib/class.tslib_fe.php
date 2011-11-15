@@ -32,7 +32,7 @@
  * The class is instantiated as $GLOBALS['TSFE'] in index_ts.php.
  * The use of this class should be inspired by the order of function calls as found in index_ts.php.
  *
- * $Id: class.tslib_fe.php 10477 2011-02-17 11:06:57Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -1024,10 +1024,13 @@
 				if ($this->TYPO3_CONF_VARS['FE']['pageNotFound_handling'])	{
 					$this->pageNotFoundAndExit('The requested page does not exist!');
 				} else {
+					$title = 'Page Not Found';
 					$message = 'The requested page does not exist!';
-					header('HTTP/1.0 404 Page Not Found');
+					header(t3lib_utility_Http::HTTP_STATUS_404);
 					t3lib_div::sysLog($message, 'cms', t3lib_div::SYSLOG_SEVERITY_ERROR);
-					throw new RuntimeException($message);
+					$messagePage = t3lib_div::makeInstance('t3lib_message_ErrorpageMessage', $message, $title);
+					$messagePage->output();
+					exit;
 				}
 			}
 		}
@@ -1037,10 +1040,13 @@
 			if ($this->TYPO3_CONF_VARS['FE']['pageNotFound_handling'])	{
 				$this->pageNotFoundAndExit('The requested page does not exist!');
 			} else {
+				$title = 'Page Not Found';
 				$message = 'The requested page does not exist!';
-				header('HTTP/1.0 404 Page Not Found');
+				header(t3lib_utility_Http::HTTP_STATUS_404);
 				t3lib_div::sysLog($message, 'cms', t3lib_div::SYSLOG_SEVERITY_ERROR);
-				throw new RuntimeException($message);
+				$messagePage = t3lib_div::makeInstance('t3lib_message_ErrorpageMessage', $message, $title);
+				$messagePage->output();
+				exit;
 			}
 		}
 
@@ -1469,7 +1475,11 @@
 
 			// Create response:
 		if (gettype($code)=='boolean' || !strcmp($code,1))	{	// Simply boolean; Just shows TYPO3 error page with reason:
-			throw new RuntimeException('The page did not exist or was inaccessible.' . ($reason ? ' Reason: ' . htmlspecialchars($reason) : ''));
+			$title = 'Page Not Found';
+			$message = 'The page did not exist or was inaccessible.' . ($reason ? ' Reason: ' . htmlspecialchars($reason) : '');
+			$messagePage = t3lib_div::makeInstance('t3lib_message_ErrorpageMessage', $message, $title);
+			$messagePage->output();
+			exit;
 		} elseif (t3lib_div::isFirstPartOfStr($code,'USER_FUNCTION:')) {
 			$funcRef = trim(substr($code,14));
 			$params = array(
@@ -1569,7 +1579,10 @@
 				echo $content;	// Output the content
 			}
 		} else {
-			throw new RuntimeException($reason ? 'Reason: '.htmlspecialchars($reason) : 'Page cannot be found.');
+			$title = 'Page Not Found';
+			$message = ($reason ? 'Reason: ' . htmlspecialchars($reason) : 'Page cannot be found.');
+			$messagePage = t3lib_div::makeInstance('t3lib_message_ErrorpageMessage', $message, $title);
+			$messagePage->output();
 		}
 		exit();
 	}

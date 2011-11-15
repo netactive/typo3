@@ -51,7 +51,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_backend_memcachedbackend.php 10444 2011-02-11 22:48:05Z lolli $
+ * @version $Id$
  */
 class t3lib_cache_backend_MemcachedBackend extends t3lib_cache_backend_AbstractBackend {
 

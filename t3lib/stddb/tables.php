@@ -41,7 +41,7 @@
  * Thus you preserve backwards compatibility.
  *
  *
- * $Id: tables.php 10393 2011-02-05 21:48:01Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -586,6 +586,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'apps-filetree-root',
 	'apps-pagetree-backend-user',
 	'apps-pagetree-backend-user-hideinmenu',
+	'apps-pagetree-collapse',
 	'apps-pagetree-drag-copy-above',
 	'apps-pagetree-drag-copy-below',
 	'apps-pagetree-drag-move-above',
@@ -595,6 +596,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'apps-pagetree-drag-new-between',
 	'apps-pagetree-drag-new-inside',
 	'apps-pagetree-drag-place-denied',
+	'apps-pagetree-expand',
 	'apps-pagetree-folder-contains-approve',
 	'apps-pagetree-folder-contains-board',
 	'apps-pagetree-folder-contains-fe_users',
@@ -652,6 +654,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'mimetypes-text-js',
 	'mimetypes-text-php',
 	'mimetypes-text-text',
+	'mimetypes-word',
 	'mimetypes-x-content-divider',
 	'mimetypes-x-content-domain',
 	'mimetypes-x-content-form',
@@ -767,7 +770,10 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 
 
 
+
+
 $GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayPriorities'] = array(
+	'deleted',
 	'hidden',
 	'starttime',
 	'endtime',

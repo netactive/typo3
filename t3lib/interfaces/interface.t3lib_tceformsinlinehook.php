@@ -28,7 +28,7 @@
 /**
  * Interface for classes which hook into t3lib_TCEforms_inline.
  *
- * $Id: interface.t3lib_tceformsinlinehook.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  *
  * @author		Oliver Hader <oh@inpublica.de>
  * @package	 TYPO3

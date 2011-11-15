@@ -29,7 +29,7 @@
  *
  * Creates graphical postit notes with text on them.
  *
- * $Id: postit.inc 8742 2010-08-30 18:55:32Z baschny $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *

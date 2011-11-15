@@ -27,7 +27,7 @@
 /**
  * Example class showing how one could make XML export of page content elements in TYPO3
  *
- * $Id: xmlversionLib.inc 9758 2010-12-05 11:25:36Z stephenking $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>

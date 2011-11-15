@@ -27,7 +27,7 @@
  * @author	Julian Kleinhans <typo3@kj187.de>
  * @package	TYPO3
  * @subpackage	tx_recycler
- * @version $Id: class.tx_recycler_helper.php 10120 2011-01-18 20:03:36Z ohader $
+ * @version $Id$
  */
 class tx_recycler_helper {
 

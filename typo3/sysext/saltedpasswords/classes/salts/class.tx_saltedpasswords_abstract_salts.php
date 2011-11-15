@@ -28,7 +28,7 @@
  * Contains abstract class "tx_saltedpasswords_abstract_salts"
  * to be used in classes that provide salted hashing.
  *
- * $Id: class.tx_saltedpasswords_abstract_salts.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  */
 
 

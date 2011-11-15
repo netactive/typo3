@@ -33,7 +33,7 @@
  * initialize parts of the FE environment as needed,
  * eg. Frontend User session, Database connection etc.
  *
- * $Id: class.tslib_eidtools.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */

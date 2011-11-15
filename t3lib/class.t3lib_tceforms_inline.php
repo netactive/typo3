@@ -27,7 +27,7 @@
 /**
  * The Inline-Relational-Record-Editing (IRRE) functions as part of the TCEforms.
  *
- * $Id: class.t3lib_tceforms_inline.php 10260 2011-01-22 17:45:16Z ohader $
+ * $Id$
  *
  * @author	Oliver Hader <oliver@typo3.org>
  */
@@ -175,6 +175,8 @@ class t3lib_TCEforms_inline {
 		if ($this->checkConfiguration($PA['fieldConf']['config']) === FALSE) {
 			return FALSE;
 		}
+
+		$item = '';
 
 			// count the number of processed inline elements
 		$this->inlineCount++;
@@ -1345,6 +1347,7 @@ class t3lib_TCEforms_inline {
 	 * @return	array		An array to be used for JSON
 	 */
 	protected function getExecuteChangesJsonArray($oldItemList, $newItemList) {
+		$data = '';
 		$parent = $this->getStructureLevel(-1);
 		$current = $this->inlineStructure['unstable'];
 
@@ -2105,11 +2108,15 @@ class t3lib_TCEforms_inline {
 	 * @return	string		The wrapped HTML code
 	 */
 	function wrapFormsSection($section, $styleAttrs = array(), $tableAttrs = array()) {
+		$style = '';
+		$table = '';
 		if (!$styleAttrs['margin-right']) {
 			$styleAttrs['margin-right'] = $this->inlineStyles['margin-right'] . 'px';
 		}
 
-		foreach ($styleAttrs as $key => $value) $style .= ($style ? ' ' : '') . $key . ': ' . htmlspecialchars($value) . '; ';
+		foreach ($styleAttrs as $key => $value) {
+			$style .= ($style ? ' ' : '') . $key . ': ' . htmlspecialchars($value) . '; ';
+		}
 		if ($style) {
 			$style = ' style="' . $style . '"';
 		}
@@ -2133,7 +2140,9 @@ class t3lib_TCEforms_inline {
 			$tableAttrs['class'] = $this->borderStyle[3];
 		}
 
-		foreach ($tableAttrs as $key => $value) $table .= ($table ? ' ' : '') . $key . '="' . htmlspecialchars($value) . '"';
+		foreach ($tableAttrs as $key => $value) {
+			$table .= ($table ? ' ' : '') . $key . '="' . htmlspecialchars($value) . '"';
+		}
 
 		$out = '<table ' . $table . $style . '>' . $section . '</table>';
 		return $out;

@@ -28,7 +28,7 @@
  * Top logo frame
  * Displays the logo in the top frame (upper left corner)
  *
- * $Id: alt_toplogo.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant content
  *

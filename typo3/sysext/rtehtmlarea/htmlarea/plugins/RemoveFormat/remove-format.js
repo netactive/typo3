@@ -27,7 +27,7 @@
 /*
  * Remove Format Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: remove-format.js 10542 2011-02-22 19:19:03Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.RemoveFormat = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {

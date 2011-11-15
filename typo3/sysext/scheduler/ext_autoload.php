@@ -2,7 +2,7 @@
 /*
  * Register necessary class names with autoloader
  *
- * $Id: ext_autoload.php 9901 2010-12-26 20:35:39Z lolli $
+ * $Id$
  */
 $extensionPath = t3lib_extMgm::extPath('scheduler');
 return array(

@@ -27,7 +27,7 @@
 /**
  * Provides a simplified layer for making Constant Editor style configuration forms
  *
- * $Id: class.t3lib_tsstyleconfig.php 10325 2011-01-26 08:44:08Z stephenking $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */

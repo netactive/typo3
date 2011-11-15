@@ -1,11 +1,11 @@
 /***************************************************************
  * extJS for TCEforms
  *
- * $Id: tceforms.js 9469 2010-11-17 19:46:10Z psychomieze $
+ * $Id$
  *
  * Copyright notice
  *
- * (c) 2009-2010 Steffen Kamper <info@sk-typo3.de>
+ * (c) 2009-2011 Steffen Kamper <info@sk-typo3.de>
  * All rights reserved
  *
  * This script is part of the TYPO3 project. The TYPO3 project is
@@ -44,6 +44,7 @@ TYPO3.TCEFORMS = {
 			var format = TYPO3.settings.datePickerUSmode ? TYPO3.settings.dateFormatUS : TYPO3.settings.dateFormat;
 
 			var datepicker = element.next('span');
+			var oldValue = Date.parseDate(element.dom.value, format[index]);
 
 			// check for daterange
 			var lowerMatch = element.dom.className.match(/lower-(\d+)\b/);
@@ -54,11 +55,16 @@ TYPO3.TCEFORMS = {
 			var menu = new Ext.menu.DateMenu({
 				id:			'p' + element.dom.id,
 				format:		format[index],
-				value:		Date.parseDate(element.dom.value, format[index]),
+				value:		oldValue,
 				minDate:	minDate,
 				maxDate:	maxDate,
 				handler: 	function(picker, date){
 					var relElement = Ext.getDom(picker.ownerCt.id.substring(1));
+					if (index === 1 && oldValue !== undefined) {
+							//datetimefield, preserve time information
+						date.setHours(oldValue.getHours());
+						date.setMinutes(oldValue.getMinutes());
+					}
 					relElement.value = date.format(format[index]);
 					if (Ext.isFunction(relElement.onchange)) {
 						relElement.onchange.call(relElement);
@@ -79,7 +85,7 @@ TYPO3.TCEFORMS = {
 			});
 		});
 	},
-	
+
 	convertTextareasResizable: function() {
 		var textAreas = Ext.select("textarea[id^=tceforms-textarea-]");
 		textAreas.each(function(element) {
@@ -100,6 +106,6 @@ TYPO3.TCEFORMS = {
 			}
 		});
 	}
-	
+
 }
 Ext.onReady(TYPO3.TCEFORMS.init, TYPO3.TCEFORMS);

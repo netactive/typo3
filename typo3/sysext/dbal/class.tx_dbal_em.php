@@ -28,7 +28,7 @@
 /**
  * Hooks for TYPO3 Extension Manager.
  *
- * $Id: class.tx_dbal_em.php 43945 2011-02-21 13:52:54Z xperseguers $
+ * $Id$
  *
  * @author Xavier Perseguers <typo3@perseguers.ch>
  *
@@ -90,7 +90,7 @@ class tx_dbal_em implements tx_em_Index_CheckDatabaseUpdatesHook {
 
 		// Remapping is only mandatory for Oracle:
 		if ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['dbal']['handlerCfg']['_DEFAULT']['type'] !== 'adodb'
-				&& $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['dbal']['handlerCfg']['_DEFAULT']['config']['driver'] !== 'oci8') {
+				|| $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['dbal']['handlerCfg']['_DEFAULT']['config']['driver'] !== 'oci8') {
 
 			// Not using Oracle
 			return '';

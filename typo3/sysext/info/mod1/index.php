@@ -28,7 +28,7 @@
  * Module: Web>Info
  * Presents various page related information from extensions
  *
- * $Id: index.php 10295 2011-01-25 09:33:06Z baschny $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *

@@ -28,7 +28,7 @@
  * Generating the TypoScript based page.
  * Must be included from index_ts.php
  *
- * $Id: pagegen.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>

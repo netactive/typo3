@@ -33,7 +33,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_factory.php 10121 2011-01-18 20:15:30Z ohader $
+ * @version $Id$
  */
 class t3lib_cache_Factory implements t3lib_Singleton {
 

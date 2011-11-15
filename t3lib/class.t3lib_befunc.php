@@ -31,7 +31,7 @@
  * Call ALL methods without making an object!
  * Eg. to get a page-record 51 do this: 't3lib_BEfunc::getRecord('pages',51)'
  *
- * $Id: class.t3lib_befunc.php 10519 2011-02-21 19:09:26Z steffenk $
+ * $Id$
  * Usage counts are based on search 22/2 2003 through whole backend source of typo3/
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
@@ -2424,7 +2424,7 @@ final class t3lib_BEfunc {
 
 				// If this field is a password field, then hide the password by changing it to a random number of asterisk (*)
 			if (stristr($theColConf['eval'], 'password')) {
-				unset($l);
+				$l = '';
 				$randomNumber = rand(5, 12);
 				for ($i = 0; $i < $randomNumber; $i++) {
 					$l .= '*';
@@ -3333,7 +3333,7 @@ final class t3lib_BEfunc {
 	 */
 	public static function getUrlToken($formName = 'securityToken', $tokenName = 'formToken') {
 		$formprotection = t3lib_formprotection_Factory::get();
-		return '&' . $tokenName . '=' . $formprotection->generateToken($formName) . '-' . $formName;
+		return '&' . $tokenName . '=' . $formprotection->generateToken($formName);
 	}
 
 	/*******************************************
@@ -4549,11 +4549,14 @@ final class t3lib_BEfunc {
 					'</a>');
 			}
 
-				// Check if fileDenyPattern was changed which is dangerous on Apache
-			if ($GLOBALS['TYPO3_CONF_VARS']['BE']['fileDenyPattern'] != FILE_DENY_PATTERN_DEFAULT) {
+				// Check if parts of fileDenyPattern were removed which is dangerous on Apache
+			$defaultParts = t3lib_div::trimExplode('|', FILE_DENY_PATTERN_DEFAULT, TRUE);
+			$givenParts = t3lib_div::trimExplode('|', $GLOBALS['TYPO3_CONF_VARS']['BE']['fileDenyPattern'], TRUE);
+			$result = array_intersect($defaultParts, $givenParts);
+			if ($defaultParts !== $result) {
 				$warnings['file_deny_pattern'] = sprintf(
-					$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:warning.file_deny_pattern'),
-						'<br /><pre>' . htmlspecialchars(FILE_DENY_PATTERN_DEFAULT) . '</pre><br />');
+					$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:warning.file_deny_pattern_partsNotPresent'),
+					'<br /><pre>'.htmlspecialchars(FILE_DENY_PATTERN_DEFAULT).'</pre><br />');
 			}
 
 				// Check if fileDenyPattern allows to upload .htaccess files which is dangerous on Apache

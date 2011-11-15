@@ -6,7 +6,7 @@
 *
 *  Copyright notice
 *
-*  (c) 2006-2010 Benjamin Mack <benni@typo3.org>
+*  (c) 2006-2011 Benjamin Mack <benni@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 t3lib/ library provided by
@@ -20,7 +20,7 @@
 *
 *  This copyright notice MUST APPEAR in all copies of this script
 *
-*  TYPO3 SVN ID: $Id: tree.js 9725 2010-12-01 13:15:56Z ohader $
+*  TYPO3 SVN ID: $Id$
 *
 ***************************************************************/
 

@@ -27,7 +27,7 @@
 /**
  * Contains class for icon generation in the backend
  *
- * $Id: class.t3lib_iconworks.php 10396 2011-02-05 23:28:36Z stephenking $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -862,7 +862,12 @@ final class t3lib_iconWorks {
 					$recordType[5] = str_replace('###TYPE###', $row[$column], $GLOBALS['TCA'][$table]['ctrl']['typeicon_classes']['mask']);
 				}
 				if (isset($GLOBALS['TCA'][$table]['ctrl']['typeicon_classes']['userFunc'])) {
-					$recordType[6] = t3lib_div::callUserFunction($GLOBALS['TCA'][$table]['ctrl']['typeicon_classes']['userFunc'], array('row' => $row), $ref);
+					$parameters = array('row' => $row);
+					$recordType[6] = t3lib_div::callUserFunction(
+						$GLOBALS['TCA'][$table]['ctrl']['typeicon_classes']['userFunc'],
+						$parameters,
+						$ref
+					);
 				}
 			} else {
 				foreach ($recordType AS $key => $type) {
@@ -963,6 +968,17 @@ final class t3lib_iconWorks {
 			$status['protectedSection'] = TRUE;
 		}
 
+			// Hook: allow some other process to influence the choice of icon overlay
+			// The method called receives the table name, the current row and the current status array as parameters
+			// The status array should be passed as a reference and in order to be modified within the hook
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_iconworks.php']['overrideIconOverlay'])) {
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_iconworks.php']['overrideIconOverlay'] as $classRef) {
+				$hookObject = t3lib_div::getUserObj($classRef);
+				if (method_exists($hookObject, 'overrideIconOverlay')) {
+					$hookObject->overrideIconOverlay($table, $row, $status);
+				}
+			}
+		}
 
 			// now only show the status with the highest priority
 		$priorities = $GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayPriorities'];

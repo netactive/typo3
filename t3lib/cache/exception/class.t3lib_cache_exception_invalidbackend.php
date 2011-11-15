@@ -31,7 +31,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_exception_invalidbackend.php 10121 2011-01-18 20:15:30Z ohader $
+ * @version $Id$
  */
 class t3lib_cache_exception_InvalidBackend extends t3lib_cache_Exception {
 

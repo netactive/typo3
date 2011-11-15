@@ -27,7 +27,7 @@
 /**
  * Web>File: Upload of files
  *
- * $Id: file_upload.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>

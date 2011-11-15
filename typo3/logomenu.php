@@ -27,7 +27,7 @@
 /**
  * Logo menu
  *
- * $Id: logomenu.php 10317 2011-01-26 00:56:49Z baschny $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */

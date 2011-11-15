@@ -31,7 +31,7 @@
 /*
  * Table Operations Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: table-operations.js 10191 2011-01-21 06:06:58Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.TableOperations = HTMLArea.Plugin.extend({
 		

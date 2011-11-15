@@ -173,7 +173,6 @@ class tx_version_tcemain {
 			// by someone else before
 		if (!$recordWasDeleted) {
 			$recordWasDeleted = TRUE;
-			$id = $record['uid'];
 
 				// For Live version, try if there is a workspace version because if so, rather "delete" that instead
 				// Look, if record is an offline version, then delete directly:
@@ -223,8 +222,21 @@ class tx_version_tcemain {
 				$tcemainObj->deleteEl($table, $id);
 			} else {
 				// Otherwise, try to delete by versioning:
+				$copyMappingArray = $tcemainObj->copyMappingArray;
 				$tcemainObj->versionizeRecord($table, $id, 'DELETED!', TRUE);
-				$tcemainObj->deleteL10nOverlayRecords($table, $id);
+
+				// Determine newly created versions:
+				// (remove placeholders are copied and modified, thus they appear in the copyMappingArray)
+				$versionizedElements = t3lib_div::arrayDiffAssocRecursive(
+					$tcemainObj->copyMappingArray,
+					$copyMappingArray
+				);
+				// Delete localization overlays:
+				foreach ($versionizedElements as $versionizedTableName => $versionizedOriginalIds) {
+					foreach ($versionizedOriginalIds as $versionizedOriginalId => $_) {
+						$tcemainObj->deleteL10nOverlayRecords($versionizedTableName, $versionizedOriginalId);
+					}
+				}
 			}
 		}
 	}
@@ -1080,7 +1092,8 @@ class tx_version_tcemain {
 			if ($liveRec = t3lib_BEfunc::getLiveVersionOfRecord($table, $id, 'uid,t3ver_state')) {
 					// Clear workspace ID:
 				$updateData = array(
-					't3ver_wsid' => 0
+					't3ver_wsid' => 0,
+					't3ver_tstamp' => $GLOBALS['EXEC_TIME'],
 				);
 				$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, 'uid=' . intval($id), $updateData);
 

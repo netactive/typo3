@@ -29,7 +29,7 @@
 /*
  * Default Link Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: default-link.js 9197 2010-10-24 05:15:56Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.DefaultLink = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {

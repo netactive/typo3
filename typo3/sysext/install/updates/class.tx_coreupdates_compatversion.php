@@ -29,7 +29,7 @@
  * Contains the update class for the compatibility version. Used by the update wizard in the install tool.
  *
  * @author Sebastian Kurfürst <sebastian@garbage-group.de
- * @version $Id: class.tx_coreupdates_compatversion.php 10120 2011-01-18 20:03:36Z ohader $
+ * @version $Id$
  */
 class tx_coreupdates_compatversion extends Tx_Install_Updates_Base {
 	protected $title = 'Version Compatibility';

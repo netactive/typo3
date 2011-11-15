@@ -26,7 +26,7 @@
  * This class contains compression functions for the TYPO3 Frontend. It can be
  * used only in EXT:cms/tslib/index_ts.php
  *
- * $Id: class.tslib_fecompression.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  *
  * @author	Dmitry Dulepov <dmitry@typo3.org>
  * @package	TYPO3

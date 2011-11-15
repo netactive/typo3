@@ -29,7 +29,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_pi2.php 10503 2011-02-20 04:20:35Z stan $  *
+ * $Id$  *
  */
 class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 

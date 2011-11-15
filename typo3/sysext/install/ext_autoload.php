@@ -2,7 +2,7 @@
 /*
  * Register necessary class names with autoloader
  *
- * $Id: ext_autoload.php 9906 2010-12-27 11:54:35Z stephenking $
+ * $Id$
  */
 
 $extPath = t3lib_extMgm::extPath('install');

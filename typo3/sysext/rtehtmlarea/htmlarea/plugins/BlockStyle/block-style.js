@@ -29,7 +29,7 @@
 /*
  * Block Style Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: block-style.js 9300 2010-11-07 00:47:13Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.BlockStyle = HTMLArea.Plugin.extend({
 	constructor : function(editor, pluginName) {

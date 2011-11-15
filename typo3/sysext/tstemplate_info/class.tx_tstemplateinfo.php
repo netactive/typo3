@@ -48,7 +48,7 @@ $GLOBALS['LANG']->includeLLFile('EXT:tstemplate_info/locallang.xml');
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  *
- * $Id: class.tx_tstemplateinfo.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  */
 class tx_tstemplateinfo extends t3lib_extobjbase {
 

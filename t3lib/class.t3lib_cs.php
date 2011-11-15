@@ -24,7 +24,7 @@
 /**
  * Class for conversion between charsets.
  *
- * $Id: class.t3lib_cs.php 10330 2011-01-26 10:28:29Z steffenk $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Martin Kutschker <martin.t.kutschker@blackbox.net>

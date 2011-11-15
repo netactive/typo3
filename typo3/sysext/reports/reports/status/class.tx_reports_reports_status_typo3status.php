@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	reports
  *
- * $Id: class.tx_reports_reports_status_typo3status.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  */
 class tx_reports_reports_status_Typo3Status implements tx_reports_StatusProvider {
 

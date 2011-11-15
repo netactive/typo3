@@ -27,7 +27,7 @@
 /**
  * Module Dispatch script
  *
- * $Id: mod.php 10295 2011-01-25 09:33:06Z baschny $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */

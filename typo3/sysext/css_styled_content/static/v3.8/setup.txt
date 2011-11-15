@@ -1190,4 +1190,4 @@ tt_content.default {
 }
 
 
-# TYPO3 SVN ID: $Id: setup.txt 6536 2009-11-25 14:07:18Z stucki $
+# TYPO3 SVN ID: $Id$

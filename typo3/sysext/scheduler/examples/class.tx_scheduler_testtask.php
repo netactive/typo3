@@ -29,7 +29,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_testtask.php 10130 2011-01-18 22:45:15Z lolli $
+ * $Id$
  */
 class tx_scheduler_TestTask extends tx_scheduler_Task {
 

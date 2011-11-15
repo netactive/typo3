@@ -29,7 +29,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_testtask_additionalfieldprovider.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  */
 class tx_scheduler_TestTask_AdditionalFieldProvider implements tx_scheduler_AdditionalFieldProvider {
 

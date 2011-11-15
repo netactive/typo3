@@ -27,7 +27,7 @@
 /**
  * Core functions for cleaning and analysing
  *
- * $Id: class.tx_lowlevel_cleaner_core.php 10477 2011-02-17 11:06:57Z ohader $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */

@@ -33,7 +33,7 @@
  * @package TYPO3
  * @subpackage tx_install
  *
- * @version $Id: class.tx_install_session.php 10637 2011-02-25 16:31:22Z baschny $
+ * @version $Id$
  */
 class tx_install_session {
 

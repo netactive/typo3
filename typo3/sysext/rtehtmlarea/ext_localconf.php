@@ -29,7 +29,7 @@
  *
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: ext_localconf.php 10120 2011-01-18 20:03:36Z ohader $  *
+ * $Id$  *
  */
 
 if (!defined ("TYPO3_MODE")) 	die ('Access denied.');

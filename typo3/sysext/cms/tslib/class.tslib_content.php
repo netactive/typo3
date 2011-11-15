@@ -27,7 +27,7 @@
 /**
  * Contains classes for Content Rendering based on TypoScript Template configuration
  *
- * $Id: class.tslib_content.php 10473 2011-02-16 20:42:34Z baschny $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -1126,7 +1126,6 @@ class tslib_cObj {
 	 */
 	function PHP_SCRIPT($conf, $ext = '') {
 		if ($ext === 'INT' || $ext === 'EXT') {
-			$conf['scriptSuffix'] = $ext;
 			return $this->getContentObject('PHP_SCRIPT_INT')->render($conf);
 		} else {
 			return $this->getContentObject('PHP_SCRIPT')->render($conf);
@@ -1459,9 +1458,9 @@ class tslib_cObj {
 					// Create TARGET-attribute only if the right doctype is used
 				if (!t3lib_div::inList('xhtml_strict,xhtml_11,xhtml_2', $GLOBALS['TSFE']->xhtmlDoctype)) {
 					$target = isset($conf['target.'])
-						? $this-stdWrap($conf['target'], $conf['target.'])
+						? $this->stdWrap($conf['target'], $conf['target.'])
 						: $conf['target'];
-					if(!$target) {
+					if ($target) {
 						$target = sprintf(' target="%s"', $target);
 					} else {
 						$target = ' target="thePicture"';
@@ -3683,17 +3682,29 @@ class tslib_cObj {
 					$cropPosition = $absChars - $strLen;
 						// The snippet "&[^&\s;]{2,8};" in the RegEx below represents entities.
 					$patternMatchEntityAsSingleChar = '(&[^&\s;]{2,8};|.)';
-					if ($crop2space) {
-						$cropRegEx = $chars < 0
-							? '#(?<=\s)' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}$#ui'
-							: '#^' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}(?=\s)#ui';
+
+					$cropRegEx = $chars < 0
+						? '#' . $patternMatchEntityAsSingleChar . '{0,' . ($cropPosition + 1) . '}$#ui'
+						: '#^' . $patternMatchEntityAsSingleChar . '{0,' . ($cropPosition + 1) . '}#ui';
+					if (preg_match($cropRegEx, $tempContent, $croppedMatch)) {
+						$tempContentPlusOneCharacter = $croppedMatch[0];
 					} else {
-						$cropRegEx = $chars < 0
-							? '#' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}$#ui'
-							: '#^' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}#ui';
+						$tempContentPlusOneCharacter = FALSE;
 					}
+
+					$cropRegEx = $chars < 0
+						? '#' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}$#ui'
+						: '#^' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}#ui';
 					if (preg_match($cropRegEx, $tempContent, $croppedMatch)) {
 						$tempContent = $croppedMatch[0];
+						if (($crop2space) && ($tempContentPlusOneCharacter !== FALSE)) {
+							$cropRegEx = $chars < 0
+								? '#(?<=\s)' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}$#ui'
+								: '#^' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}(?=\s)#ui';
+							if (preg_match($cropRegEx, $tempContentPlusOneCharacter, $croppedMatch)) {
+								$tempContent = $croppedMatch[0];
+							}
+						}
 					}
 					$splittedContent[$offset] = $GLOBALS['TSFE']->csConvObj->utf8_decode($tempContent, $GLOBALS['TSFE']->renderCharset);
 					break;
@@ -5762,6 +5773,11 @@ class tslib_cObj {
 									$absoluteUrlScheme !== parse_url(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'), PHP_URL_SCHEME)) {
 								$targetDomain = $currentDomain;
 							}
+
+								// If go for an absolute link, add site_path if it's not taken care about by absRefPrefix
+							if (!$GLOBALS['TSFE']->config['config']['absRefPrefix'] && $targetDomain !== '') {
+								$targetDomain = $currentDomain . rtrim(t3lib_div::getIndpEnv('TYPO3_SITE_PATH'), '/');
+							}
 						}
 
 							// If target page has a different domain and the current domain's linking scheme (e.g. simulateStaticDocuments/RealURL/...) should not be used
@@ -6313,7 +6329,7 @@ class tslib_cObj {
 	 */
 	function callUserFunction($funcName, $conf, $content) {
 		$pre = $GLOBALS['TSFE']->TYPO3_CONF_VARS['FE']['userFuncClassPrefix'];
-		if ($pre && !t3lib_div::isFirstPartOfStr(trim($funcName), $pre) && !t3lib_div::isFirstPartOfStr(trim($funcName), 'tx_')) {
+		if ($pre && !t3lib_div::hasValidClassPrefix($funcName, array($pre))) {
 			$GLOBALS['TT']->setTSlogMessage('Function "' . $funcName . '" was not prepended with "' . $pre . '"', 3);
 			return $content;
 		}

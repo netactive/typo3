@@ -49,7 +49,7 @@ require_once(t3lib_extMgm::extPath('openid', 'sv1/class.tx_openid_store.php'));
 /**
  * Service "OpenID Authentication" for the "openid" extension.
  *
- * $Id: class.tx_openid_sv1.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  *
  * @author	Dmitry Dulepov <dmitry@typo3.org>
  * @package	TYPO3

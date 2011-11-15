@@ -28,7 +28,7 @@
 /**
  * Hooks for TYPO3 Install Tool.
  *
- * $Id: class.tx_dbal_installtool.php 40828 2010-12-05 14:55:53Z xperseguers $
+ * $Id$
  *
  * @author Xavier Perseguers <typo3@perseguers.ch>
  *
@@ -137,7 +137,8 @@ class tx_dbal_installtool {
 						break;
 					case 'mssql':
 					case 'odbc_mssql':
-						$driverConfig = '\'useNameQuote\' => TRUE';
+						$driverConfig = '\'useNameQuote\' => TRUE,'
+								. '\'quoteClob\' => FALSE';
 						break;
 					case 'mysql':
 						return;

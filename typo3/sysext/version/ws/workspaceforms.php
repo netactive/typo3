@@ -27,7 +27,7 @@
 /**
  * Module: Workspace manager
  *
- * $Id: workspaceforms.php 10222 2011-01-21 18:22:24Z tolleiv $
+ * $Id: workspaceforms.php 9122 2010-10-17 09:55:41Z benni $
  *
  * @author	Dmitry Dulepov <typo3@accio.lv>
  */

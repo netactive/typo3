@@ -27,7 +27,7 @@
 /**
  * Contains a class with Extension Management functions
  *
- * $Id: class.t3lib_extmgm.php 10484 2011-02-17 20:51:05Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -303,7 +303,7 @@ final class t3lib_extMgm {
 	public static function addToAllTCAtypes($table, $str, $specificTypesList = '', $position = '') {
 		t3lib_div::loadTCA($table);
 		$str = trim($str);
-
+		$palettesChanged = array();
 		if ($str && is_array($GLOBALS['TCA'][$table]) && is_array($GLOBALS['TCA'][$table]['types'])) {
 			foreach ($GLOBALS['TCA'][$table]['types'] as $type => &$typeDetails) {
 				if ($specificTypesList === '' || t3lib_div::inList($specificTypesList, $type)) {
@@ -315,6 +315,10 @@ final class t3lib_extMgm {
 								if (preg_match('/\b' . $palette . '\b/', $typeDetails['showitem']) > 0
 										&& preg_match('/\b' . $positionArray[1] . '\b/', $paletteDetails['showitem']) > 0) {
 									self::addFieldsToPalette($table, $palette, $str, $position);
+										// save that palette in case other types use it
+									$palettesChanged[] = $palette;
+									$fieldExists = TRUE;
+								} elseif (in_array($palette, $palettesChanged)) {
 									$fieldExists = TRUE;
 								}
 							}
@@ -879,8 +883,8 @@ final class t3lib_extMgm {
 	 * Adds a service to the global services array
 	 *
 	 * @param	string		Extension key
-	 * @param	string		Service type, cannot be prefixed "tx_"
-	 * @param	string		Service key, must be prefixed "tx_" or "user_"
+	 * @param	string		Service type, must not be prefixed "tx_" or "Tx_"
+	 * @param	string		Service key, must be prefixed "tx_", "Tx_" or "user_"
 	 * @param	array		Service description array
 	 * @return	void
 	 * @author	René Fritz <r.fritz@colorcube.de>
@@ -892,8 +896,8 @@ final class t3lib_extMgm {
 			// but maybe it's better to move non-available services to a different array??
 
 		if ($serviceType &&
-				!t3lib_div::isFirstPartOfStr($serviceType, 'tx_') &&
-				(t3lib_div::isFirstPartOfStr($serviceKey, 'tx_') || t3lib_div::isFirstPartOfStr($serviceKey, 'user_')) &&
+				!t3lib_div::hasValidClassPrefix($serviceType) &&
+				t3lib_div::hasValidClassPrefix($serviceKey, array('user_')) &&
 				is_array($info)) {
 
 			$info['priority'] = max(0, min(100, $info['priority']));
@@ -906,7 +910,7 @@ final class t3lib_extMgm {
 
 
 				// mapping a service key to a service type
-				// all service keys begin with tx_ - service types don't
+				// all service keys begin with tx_ or Tx_ - service types don't
 				// this way a selection of a special service key as service type is easy
 			$T3_SERVICES[$serviceKey][$serviceKey] = &$T3_SERVICES[$serviceType][$serviceKey];
 

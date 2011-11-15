@@ -28,7 +28,7 @@
  * Module: Advanced functions
  * Advanced Functions related to pages
  *
- * $Id: index.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *

@@ -1682,7 +1682,7 @@ class SC_mod_tools_em_index extends t3lib_SCbase {
 					$fI = t3lib_div::split_fileref($editFile);
 					if (@is_file($editFile) && t3lib_div::inList($this->editTextExtensions, ($fI['fileext'] ? $fI['fileext'] : $fI['filebody']))) {
 						if (filesize($editFile) < ($this->kbMax * 1024)) {
-							$outCode = '<form action="' . $this->script . ' method="post" name="editfileform">';
+							$outCode = '<form action="' . $this->script . '" method="post" name="editfileform">';
 							$info = '';
 							$submittedContent = t3lib_div::_POST('edit');
 							$saveFlag = 0;
@@ -2222,7 +2222,7 @@ class SC_mod_tools_em_index extends t3lib_SCbase {
 			$backUpData = $this->terConnection->makeUploadDataFromarray($uArr);
 			$filename = 'T3X_' . $extKey . '-' . str_replace('.', '_', $extInfo['EM_CONF']['version']) . '-z-' . date('YmdHi') . '.t3x';
 			if (intval($this->CMD['doBackup']) == 1) {
-				ob_end_clean();
+				t3lib_div::cleanOutputBuffers();
 				header('Content-Type: application/octet-stream');
 				header('Content-Disposition: attachment; filename=' . $filename);
 				echo $backUpData;
@@ -2440,7 +2440,8 @@ class SC_mod_tools_em_index extends t3lib_SCbase {
 		global $LANG;
 		$content = '';
 
-		if (is_file(PATH_site . 'typo3temp/extensions.xml.gz')) {
+		$count = intval(tx_em_Database::getExtensionCountFromRepository());
+		if ($count > 0) {
 			$content = $this->extensionList->showExtensionsToUpdate()
 					. t3lib_BEfunc::getFuncCheck(0, 'SET[display_installed]', $this->MOD_SETTINGS['display_installed'], '', '', 'id="checkDisplayInstalled"')
 					. '&nbsp;<label for="checkDisplayInstalled">' . $LANG->sL('LLL:EXT:lang/locallang_mod_tools_em.xml:display_nle') . '</label><br />'

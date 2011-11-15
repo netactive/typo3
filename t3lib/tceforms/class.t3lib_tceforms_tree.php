@@ -65,8 +65,13 @@ class t3lib_TCEforms_Tree {
 	 * @return string The HTML code for the TCEform field
 	 */
 	public function renderField($table, $field, $row, &$PA, $config, $possibleSelectboxItems, $noMatchLabel) {
-		$valueArray = explode(',', $PA['itemFormElValue']);
+		$valueArray = array();
 		$selectedNodes = array();
+
+		if(!empty($PA['itemFormElValue'])) {
+			$valueArray = explode(',', $PA['itemFormElValue']);
+		}
+
 		if (count($valueArray)) {
 			foreach ($valueArray as $selectedValue) {
 				$temp = explode('|', $selectedValue);
@@ -148,6 +153,7 @@ class t3lib_TCEforms_Tree {
 		$pageRenderer = $GLOBALS['SOBE']->doc->getPageRenderer();
 		$pageRenderer->loadExtJs();
 		$pageRenderer->addJsFile('../t3lib/js/extjs/tree/tree.js');
+		$pageRenderer->addInlineLanguageLabelFile(t3lib_extMgm::extPath('lang') . 'locallang_csh_corebe.xml', 'tcatree');
 		$pageRenderer->addExtOnReadyCode('
 			TYPO3.Components.Tree.StandardTreeItemData["' . $id . '"] = ' . $treeData . ';
 			var tree' . $id . ' = new TYPO3.Components.Tree.StandardTree({
@@ -181,7 +187,8 @@ class t3lib_TCEforms_Tree {
 		$PA['fieldConf']['config']['exclusiveKeys']
 				? $PA['fieldConf']['config']['exclusiveKeys'] : '') . '",
 				ucId: "' . md5($table . '|' . $field) . '",
-				selModel: TYPO3.Components.Tree.EmptySelectionModel
+				selModel: TYPO3.Components.Tree.EmptySelectionModel,
+				disabled: ' . ($PA['fieldConf']['config']['readOnly'] ? 'true' : 'false') . '
 			});' . LF .
 			($autoSizeMax
 				? 'tree' . $id . '.bodyStyle = "max-height: ' . $autoSizeMax . 'px;min-height: ' . $height . 'px;";'

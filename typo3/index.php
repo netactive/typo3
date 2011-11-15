@@ -27,7 +27,7 @@
 /**
  * Login-screen of TYPO3.
  *
- * $Id: index.php 10567 2011-02-22 22:52:18Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 December/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -393,13 +393,14 @@ class SC_index {
 				break;
 			}
 
+			$formProtection = t3lib_formprotection_Factory::get();
 				// If there is a redirect URL AND if loginRefresh is not set...
 			if (!$this->loginRefresh)	{
+				$formProtection->storeSessionTokenInRegistry();
 				t3lib_utility_Http::redirect($this->redirectToURL);
 			} else {
-				$formprotection = t3lib_formprotection_Factory::get();
-				$accessToken = $formprotection->generateToken('refreshTokens');
-				$formprotection->persistTokens();
+				$formProtection->setSessionTokenFromRegistry();
+				$formProtection->persistSessionToken();
 				$TBE_TEMPLATE->JScode.=$TBE_TEMPLATE->wrapScriptTags('
 					if (parent.opener && (parent.opener.busy || parent.opener.TYPO3.loginRefresh)) {
 						if (parent.opener.TYPO3.loginRefresh) {
@@ -407,7 +408,6 @@ class SC_index {
 						} else {
 							parent.opener.busy.loginRefreshed();
 						}
-						parent.opener.TYPO3.loginRefresh.refreshTokens("' . $accessToken . '");
 						parent.close();
 					}
 				');

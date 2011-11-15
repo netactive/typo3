@@ -905,6 +905,7 @@ class tx_em_Connection_ExtDirectServer {
 			$extPath = t3lib_div::strtolower($value['extkey']);
 			$list['results'][$key]['statevalue'] = $value['state'];
 			$list['results'][$key]['state'] = tx_em_Tools::getDefaultState(intval($value['state']));
+			$list['results'][$key]['stateCls'] = 'state-' . $list['results'][$key]['state'];
 			$list['results'][$key]['version'] = tx_em_Tools::versionFromInt($value['maxintversion']);
 			$list['results'][$key]['icon'] = '<img alt="" src="' . $mirrorUrl . $extPath{0} . '/' . $extPath{1} . '/' . $extPath . '_' . $list['results'][$key]['version'] . '.gif" />';
 
@@ -1460,10 +1461,10 @@ class tx_em_Connection_ExtDirectServer {
 				switch ($value['data']['type']) {
 					case 'list':
 						if ($value['field'] === 'statevalue') {
-							$where .= ' AND state IN(' . htmlspecialchars($value['data']['value']) . ')';
+							$where .= ' AND cache_extensions.state IN(' . htmlspecialchars($value['data']['value']) . ')';
 						}
-						if ($value['field'] === 'categoryvalue') {
-							$where .= ' AND category IN(' . htmlspecialchars($value['data']['value']) . ')';
+						if ($value['field'] === 'category') {
+							$where .= ' AND cache_extensions.category IN(' . htmlspecialchars($value['data']['value']) . ')';
 						}
 					break;
 					default:
@@ -1471,7 +1472,7 @@ class tx_em_Connection_ExtDirectServer {
 							$GLOBALS['TYPO3_DB']->quoteStr($value['data']['value'], 'cache_extensions'),
 							'cache_extensions'
 						);
-						$where .= ' AND ' . htmlspecialchars($value['field']) . ' LIKE "%' . $quotedSearch . '%"';
+						$where .= ' AND cache_extensions.' . htmlspecialchars($value['field']) . ' LIKE "%' . $quotedSearch . '%"';
 				}
 			}
 		}

@@ -27,7 +27,7 @@
 /**
  * Shows information about a database or file item
  *
- * $Id: show_item.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  * Revised for TYPO3 3.7 May/2004 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>

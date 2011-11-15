@@ -27,7 +27,7 @@
 /**
  * Contains TYPO3 autoloader
  *
- * $Id: class.t3lib_autoloader.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  *
  * @author	Dmitry Dulepov	<dmitry@typo3.org>
  * @author	Martin Kutschker <masi@typo3.org>

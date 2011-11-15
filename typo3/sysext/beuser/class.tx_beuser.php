@@ -27,7 +27,7 @@
 /**
  * Class, adding SU link to context menu
  *
- * $Id: class.tx_beuser.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */

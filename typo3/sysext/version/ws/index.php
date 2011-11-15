@@ -27,7 +27,7 @@
 /**
  * Module: Workspace manager
  *
- * $Id: index.php 10334 2011-01-26 15:02:44Z tolleiv $
+ * $Id: index.php 9427 2010-11-17 08:38:31Z benni $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Dmitry Dulepov <typo3@accio.lv>

@@ -27,7 +27,7 @@
 /**
  * Contains class which has functions that generates a difference output of a content string
  *
- * $Id: class.t3lib_diff.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML Compliant
  *

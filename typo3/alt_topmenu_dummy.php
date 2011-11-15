@@ -31,7 +31,7 @@
  * Will appear as the default document in the top frame if configured to appear.
  * This is the default menu used during "condensed mode"
  *
- * $Id: alt_topmenu_dummy.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant content
  *

@@ -27,7 +27,7 @@
 /**
  * Contains class for creating a position map.
  *
- * $Id: class.t3lib_positionmap.php 10161 2011-01-20 14:54:34Z baschny $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant (should be)
  *
@@ -120,6 +120,7 @@ class t3lib_positionMap {
 	function positionTree($id, $pageinfo, $perms_clause, $R_URI) {
 		global $LANG, $BE_USER;
 
+		$code = '';
 			// Make page tree object:
 		$t3lib_pageTree = t3lib_div::makeInstance('localPageTree');
 		$t3lib_pageTree->init(' AND ' . $perms_clause);
@@ -234,7 +235,7 @@ class t3lib_positionMap {
 	 * @return	string		<script> section
 	 */
 	function JSimgFunc($prefix = '') {
-		$code .= $GLOBALS['TBE_TEMPLATE']->wrapScriptTags('
+		$code = $GLOBALS['TBE_TEMPLATE']->wrapScriptTags('
 
 			var img_newrecord_marker=new Image();
 			img_newrecord_marker.src = "' . t3lib_iconWorks::skinImg($this->backPath, 'gfx/newrecord' . $prefix . '_marker.gif', '', 1) . '";

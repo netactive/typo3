@@ -28,7 +28,7 @@
  * Contains a class for evaluation of database integrity according to $TCA
  * Most of these functions are considered obsolete!
  *
- * $Id: class.t3lib_admin.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -674,6 +674,7 @@ class t3lib_admin {
 	 */
 	function testDBRefs($theArray) {
 		global $TCA;
+		$result = '';
 		foreach ($theArray as $table => $dbArr) {
 			if ($TCA[$table]) {
 				$idlist = array_keys($dbArr);

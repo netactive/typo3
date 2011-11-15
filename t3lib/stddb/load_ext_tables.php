@@ -6,7 +6,7 @@ if (!defined('TYPO3_MODE')) {
 /**
  * Loading the ext_tables.php files of the installed extensions when caching to "temp_CACHED_" files is NOT enabled.
  *
- * $Id: load_ext_tables.php 9611 2010-11-24 23:33:55Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>

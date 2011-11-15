@@ -30,7 +30,7 @@
  *
  * @package TYPO3
  * @subpackage t3lib_error
- * @version $Id: class.t3lib_error_abstractexceptionhandler.php 10121 2011-01-18 20:15:30Z ohader $
+ * @version $Id$
  */
 abstract class t3lib_error_AbstractExceptionHandler implements t3lib_error_ExceptionHandlerInterface, t3lib_Singleton {
 	const CONTEXT_WEB = 'WEB';

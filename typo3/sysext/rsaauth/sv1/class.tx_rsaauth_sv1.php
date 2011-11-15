@@ -24,7 +24,7 @@
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
  *
- * $Id: class.tx_rsaauth_sv1.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  */
 
 require_once(t3lib_extMgm::extPath('sv') . 'class.tx_sv_auth.php');

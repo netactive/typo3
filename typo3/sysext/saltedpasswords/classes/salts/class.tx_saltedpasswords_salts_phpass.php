@@ -36,7 +36,7 @@
  * original license: Public Domain
  * @see http://www.openwall.com/phpass/
  *
- * $Id: class.tx_saltedpasswords_salts_phpass.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  */
 
 

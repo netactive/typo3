@@ -27,7 +27,7 @@
 /**
  * Contains class with time tracking functions
  *
- * $Id: class.t3lib_timetrack.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
  *
@@ -392,7 +392,7 @@ class t3lib_timeTrack {
 
 				// key value:
 			$keyValue = $data['value'];
-			$item .= '<td class="' . $logRowClass . ' typo3-adminPanel-tsLogTime" style="' . $bgColor . '">' . $this->fw(htmlspecialchars($keyValue)) . '</td>';
+			$item .= '<td class="' . $logRowClass . ' typo3-adminPanel-tsLogTime">' . $this->fw(htmlspecialchars($keyValue)) . '</td>';
 
 			if ($this->printConf['allTime']) {
 				$item .= '<td class="' . $logRowClass . ' typo3-adminPanel-tsLogTime"> ' . $this->fw($data['starttime']) . '</td>';

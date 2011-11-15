@@ -29,7 +29,7 @@
 /**
  * class to render the menu for the cache clearing actions
  *
- * $Id: class.clearcachemenu.php 10306 2011-01-25 19:12:05Z baschny $
+ * $Id$
  *
  * @author	Ingo Renner <ingo@typo3.org>
  * @package TYPO3
@@ -114,8 +114,6 @@ class ClearCacheMenu implements backend_toolbarItem {
 				$hookObject->manipulateCacheActions($this->cacheActions, $this->optionValues);
 			}
 		}
-
-		t3lib_formprotection_Factory::get()->persistTokens();
 	}
 
 	/**

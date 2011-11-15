@@ -30,7 +30,7 @@
 /*
  * Find and Replace Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: find-replace.js 8942 2010-10-03 00:15:51Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.FindReplace = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {

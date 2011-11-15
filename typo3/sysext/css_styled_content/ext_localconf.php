@@ -1,5 +1,5 @@
 <?php
-# TYPO3 CVS ID: $Id: ext_localconf.php 9279 2010-11-04 20:03:01Z psychomieze $
+# TYPO3 CVS ID: $Id$
 
 if (!defined ('TYPO3_MODE')) 	die ('Access denied.');
 

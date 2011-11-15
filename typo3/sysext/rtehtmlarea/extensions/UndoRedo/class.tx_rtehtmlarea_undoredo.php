@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_undoredo.php 10120 2011-01-18 20:03:36Z ohader $
+ * TYPO3 SVN ID: $Id$
  *
  */
 class tx_rtehtmlarea_undoredo extends tx_rtehtmlarea_api {

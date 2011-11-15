@@ -26,7 +26,7 @@
 /**
  * Contains JavaScript for TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: jsfunc.tbe_editor.js 10631 2011-02-24 23:17:05Z steffenk $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Oliver Hader <oh@inpublica.de>
@@ -538,11 +538,7 @@ var TBE_EDITOR = {
 	rawurlencode: function(str,maxlen) {
 		var output = str;
 		if (maxlen)	output = output.substr(0,200);
-		output = escape(output);
-		output = TBE_EDITOR.str_replace("*","%2A", output);
-		output = TBE_EDITOR.str_replace("+","%2B", output);
-		output = TBE_EDITOR.str_replace("/","%2F", output);
-		output = TBE_EDITOR.str_replace("@","%40", output);
+		output = Ext.urlEncode({'' : output});
 		return output;
 	},
 	str_replace: function(match,replace,string) {

@@ -27,7 +27,7 @@
 /**
  * Module: Workspace publisher
  *
- * $Id: publish.php 10222 2011-01-21 18:22:24Z tolleiv $
+ * $Id: publish.php 8742 2010-08-30 18:55:32Z baschny $
  *
  * @author	Dmitry Dulepov <typo3@accio.lv>
  */

@@ -3,7 +3,7 @@
 #
 # Sets default Page TSConfig with maximal features for users who want to explore the features of the RTE.
 #
-# TYPO3 SVN ID: $Id: pageTSConfig.txt 6940 2010-02-21 15:56:10Z stan $
+# TYPO3 SVN ID: $Id$
 # ***************************************************************************************
 
 	## Define labels and styles to be applied to class selectors in the interface of the RTE

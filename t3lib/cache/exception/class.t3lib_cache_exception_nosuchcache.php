@@ -31,7 +31,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_exception_nosuchcache.php 10121 2011-01-18 20:15:30Z ohader $
+ * @version $Id$
  */
 class t3lib_cache_exception_NoSuchCache extends t3lib_cache_Exception {
 

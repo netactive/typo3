@@ -28,7 +28,7 @@
  * Publishing pages to static
  *
  * Is included from index_ts.php
- * $Id: publish.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3

@@ -33,7 +33,7 @@
  * @package		TYPO3
  * @subpackage	tx_reports
  *
- * $Id: interface.tx_reports_report.php 10120 2011-01-18 20:03:36Z ohader $
+ * $Id$
  */
 interface tx_reports_Report {
 

@@ -13,7 +13,7 @@
 -- Note: You may consider having a look at project mysqlcompat on http://pgfoundry.org/projects/mysqlcompat
 --       and report in DBAL bugtracker if you need another compatibility operator added.
 --
--- $Id: postgresql-compatibility.sql 35742 2010-07-16 13:22:56Z xperseguers $
+-- $Id$
 -- R. van Twisk <typo3@rvt.dds.nl>
 
 

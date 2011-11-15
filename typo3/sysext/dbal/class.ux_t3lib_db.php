@@ -29,7 +29,7 @@
 /**
  * Contains a database abstraction layer class for TYPO3
  *
- * $Id: class.ux_t3lib_db.php 43948 2011-02-21 14:22:46Z xperseguers $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasper@typo3.com>
  * @author	Karsten Dambekalns <k.dambekalns@fishfarm.de>
@@ -177,7 +177,8 @@ class ux_t3lib_DB extends t3lib_DB {
 				'database' => '', // Set by default (overridden)
 				'driver' => '', // ONLY "adodb" type; eg. "mysql"
 				'sequenceStart' => 1, // ONLY "adodb", first number in sequences/serials/...
-				'useNameQuote' => 0 // ONLY "adodb", whether to use NameQuote() method from ADOdb to quote names
+				'useNameQuote' => 0, // ONLY "adodb", whether to use NameQuote() method from ADOdb to quote names
+				'quoteClob' => FALSE // ONLY "adodb", whether CLOB content field should be quoted before being sent to the DB
 			)
 		),
 	);
@@ -920,7 +921,7 @@ class ux_t3lib_DB extends t3lib_DB {
 				$whereClause = isset($queryParts['WHERE']) ? $this->SQLparser->compileWhereClause($queryParts['WHERE']) : '1=1';
 				$groupBy = isset($queryParts['GROUPBY']) ? $this->SQLparser->compileFieldList($queryParts['GROUPBY']) : '';
 				$orderBy = isset($queryParts['ORDERBY']) ? $this->SQLparser->compileFieldList($queryParts['ORDERBY']) : '';
-				$limit = isset($queryParts['LIMIT']) ? $this->SQLparser->compileWhereClause($queryParts['LIMIT']) : '';
+				$limit = isset($queryParts['LIMIT']) ? $queryParts['LIMIT'] : '';
 				return $this->exec_SELECTquery($selectFields, $fromTables, $whereClause, $groupBy, $orderBy, $limit);
 
 			case 'UPDATE':
@@ -987,20 +988,22 @@ class ux_t3lib_DB extends t3lib_DB {
 
 			$blobfields = array();
 			$nArr = array();
+			$handlerKey = $this->handler_getFromTableList($table);
+			$quoteClob = isset($this->handlerCfg[$handlerKey]['config']['quoteClob']) ? $this->handlerCfg[$handlerKey]['config']['quoteClob'] : FALSE;
 			foreach ($fields_values as $k => $v) {
 				if (!$this->runningNative() && $this->sql_field_metatype($table, $k) == 'B') {
 					// we skip the field in the regular INSERT statement, it is only in blobfields
 					$blobfields[$this->quoteFieldNames($k)] = $v;
 				} elseif (!$this->runningNative() && $this->sql_field_metatype($table, $k) == 'XL') {
 					// we skip the field in the regular INSERT statement, it is only in clobfields
-					$clobfields[$this->quoteFieldNames($k)] = $v;
+					$clobfields[$this->quoteFieldNames($k)] = ($quoteClob ? $this->quoteStr($v, $table) : $v);
 				} else {
 					// Add slashes old-school:
 					// cast numerical values
 					$mt = $this->sql_field_metatype($table, $k);
 					if ($mt{0} == 'I') {
 						$v = (int) $v;
-					} else if ($mt{0} == 'F') {
+					} elseif ($mt{0} == 'F') {
 						$v = (double) $v;
 					}
 
@@ -1097,20 +1100,22 @@ class ux_t3lib_DB extends t3lib_DB {
 				}
 
 				$nArr = array();
+				$handlerKey = $this->handler_getFromTableList($table);
+				$quoteClob = isset($this->handlerCfg[$handlerKey]['config']['quoteClob']) ? $this->handlerCfg[$handlerKey]['config']['quoteClob'] : FALSE;
 				foreach ($fields_values as $k => $v) {
 					if (!$this->runningNative() && $this->sql_field_metatype($table, $k) == 'B') {
 						// we skip the field in the regular UPDATE statement, it is only in blobfields
 						$blobfields[$this->quoteFieldNames($k)] = $v;
 					} elseif (!$this->runningNative() && $this->sql_field_metatype($table, $k) == 'XL') {
 						// we skip the field in the regular UPDATE statement, it is only in clobfields
-						$clobfields[$this->quoteFieldNames($k)] = $v;
+						$clobfields[$this->quoteFieldNames($k)] = ($quoteClob ? $this->quoteStr($v, $table) : $v);
 					} else {
 						// Add slashes old-school:
 						// cast numeric values
 						$mt = $this->sql_field_metatype($table, $k);
 						if ($mt{0} == 'I') {
 							$v = (int) $v;
-						} else if ($mt{0} == 'F') {
+						} elseif ($mt{0} == 'F') {
 							$v = (double) $v;
 						}
 						$nArr[] = $this->quoteFieldNames($k) . '=' . ((!in_array($k, $no_quote_fields)) ? $this->fullQuoteStr($v, $table) : $v);
@@ -1921,8 +1926,11 @@ class ux_t3lib_DB extends t3lib_DB {
 	 */
 	protected function _quoteOrderBy(array $orderBy) {
 		foreach ($orderBy as $k => $v) {
+			if ($orderBy[$k]['table'] === '' && $v['field'] !== '' && ctype_digit($v['field'])) {
+				continue;
+			}
 			$orderBy[$k]['field'] = $this->quoteName($orderBy[$k]['field']);
-			if ($orderBy[$k]['table'] != '') {
+			if ($orderBy[$k]['table'] !== '') {
 				$orderBy[$k]['table'] = $this->quoteName($orderBy[$k]['table']);
 			}
 		}
@@ -1994,6 +2002,10 @@ class ux_t3lib_DB extends t3lib_DB {
 		$handlerKey = $handlerKey ? $handlerKey : $this->lastHandlerKey;
 		$useNameQuote = isset($this->handlerCfg[$handlerKey]['config']['useNameQuote']) ? $this->handlerCfg[$handlerKey]['config']['useNameQuote'] : FALSE;
 		if ($useNameQuote) {
+			// Sometimes DataDictionary is not properly instantiated
+			if (!is_object($this->handlerInstance[$handlerKey]->DataDictionary)) {
+				$this->handlerInstance[$handlerKey]->DataDictionary = NewDataDictionary($this->handlerInstance[$handlerKey]);
+			}
 			return $this->handlerInstance[$handlerKey]->DataDictionary->NameQuote($name);
 		} else {
 			$quote = $useBackticks ? '`' : $this->handlerInstance[$handlerKey]->nameQuote;
@@ -2190,7 +2202,7 @@ class ux_t3lib_DB extends t3lib_DB {
 	 */
 	public function sql_num_rows(&$res) {
 		if ($res === FALSE) {
-			return 0;
+			return FALSE;
 		}
 
 		$handlerType = is_object($res) ? $res->TYPO3_DBAL_handlerType : 'native';
@@ -2215,7 +2227,7 @@ class ux_t3lib_DB extends t3lib_DB {
 	 * @return	array		Associative array of result row.
 	 */
 	public function sql_fetch_assoc(&$res) {
-		$output = array();
+		$output = FALSE;
 
 		$handlerType = is_object($res) ? $res->TYPO3_DBAL_handlerType : (is_resource($res) ? 'native' : FALSE);
 		switch ($handlerType) {
@@ -2278,6 +2290,8 @@ class ux_t3lib_DB extends t3lib_DB {
 	 * @return	array		Array with result rows.
 	 */
 	public function sql_fetch_row(&$res) {
+		$output = FALSE;
+
 		$handlerType = is_object($res) ? $res->TYPO3_DBAL_handlerType : 'native';
 		switch ($handlerType) {
 			case 'native':
@@ -2452,7 +2466,7 @@ class ux_t3lib_DB extends t3lib_DB {
 	 * @return	string		Returns the type of the specified field index
 	 */
 	public function sql_field_type(&$res, $pointer) {
-		if ($res === null) {
+		if ($res === NULL) {
 			debug(array('no res in sql_field_type!'));
 			return 'text';
 		}

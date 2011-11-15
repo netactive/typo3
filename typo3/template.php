@@ -27,7 +27,7 @@
 /**
  * Contains class with layout/output function for TYPO3 Backend Scripts
  *
- * $Id: template.php 10510 2011-02-21 00:30:42Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML-trans compliant
  *
@@ -921,7 +921,6 @@ $str.=$this->docBodyTagBegin().
 
 <!-- Wrapping DIV-section for whole page END -->
 </div>':'') . $this->endOfPageJsBlock ;
-			t3lib_formprotection_Factory::get()->persistTokens();
 		}
 
 

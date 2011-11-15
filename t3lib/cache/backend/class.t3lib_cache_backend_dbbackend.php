@@ -29,7 +29,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_backend_dbbackend.php 10128 2011-01-18 21:56:30Z lolli $
+ * @version $Id$
  */
 class t3lib_cache_backend_DbBackend extends t3lib_cache_backend_AbstractBackend {
 

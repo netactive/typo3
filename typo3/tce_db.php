@@ -29,7 +29,7 @@
  * This script is a gateway for POST forms to class.t3lib_TCEmain that manipulates all information in the database!!
  * For syntax and API information, see the document 'TYPO3 Core APIs'
  *
- * $Id: tce_db.php 10306 2011-01-25 19:12:05Z baschny $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -251,18 +251,7 @@ $formprotection = t3lib_formprotection_Factory::get();
 if ($formprotection->validateToken(t3lib_div::_GP('formToken'), 'tceAction')) {
 	$SOBE->initClipboard();
 	$SOBE->main();
-
-		// This is done for the clear cache menu, so that it gets a new token
-		// making it possible to clear cache several times.
-	if (t3lib_div::_GP('ajaxCall')) {
-		$token = array();
-		$token['value'] = $formprotection->generateToken('tceAction');
-		$token['name'] = 'formToken';
-			// This will be used by clearcachemenu.js to replace the token for the next call
-		echo t3lib_BEfunc::getUrlToken('tceAction');
-	}
 }
-$formprotection->persistTokens();
 $SOBE->finish();
 
 ?>

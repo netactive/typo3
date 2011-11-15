@@ -29,7 +29,7 @@
  * module but also can be used from extensions. Originally 99.9%% of the code
  * was written by Kasper and only transfered here by Dmitry.
  *
- * $Id: class.wslib_gui.php 10222 2011-01-21 18:22:24Z tolleiv $
+ * $Id: class.wslib_gui.php 9652 2010-11-26 18:07:50Z lolli $
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Dmitry Dulepov <dmitry@typo3.org>

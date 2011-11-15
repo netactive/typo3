@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: scheduler_cli_dispatch.php 8084 2010-07-04 07:55:53Z francois $
+ * $Id$
  */
 if ((TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) && basename(PATH_thisScript) == 'cli_dispatch.phpsh') {
 	$hasTask = true;

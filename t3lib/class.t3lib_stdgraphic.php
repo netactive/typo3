@@ -27,7 +27,7 @@
 /**
  * Standard graphical functions
  *
- * $Id: class.t3lib_stdgraphic.php 10126 2011-01-18 21:32:37Z lolli $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>

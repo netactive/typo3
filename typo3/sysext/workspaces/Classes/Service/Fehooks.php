@@ -37,19 +37,28 @@ class tx_Workspaces_Service_Fehooks {
 	 * @return void
 	 */
 	public function hook_eofe($params, $pObj) {
-		if ($pObj->fePreview != 2) {
+		if ($pObj->fePreview != 2 || $pObj->whichWorkspace() === 0) {
 			return;
 		}
 
-		echo $GLOBALS['TSFE']->cObj->cObjGetSingle(
+		if(!$GLOBALS['BE_USER']->getSessionData('workspaces.backend_domain')) {
+			$backendDomain = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
+		} else {
+			$backendDomain = $GLOBALS['BE_USER']->getSessionData('workspaces.backend_domain');
+		}
+
+		$previewParts = $GLOBALS['TSFE']->cObj->cObjGetSingle(
 			'FLUIDTEMPLATE',
 			array(
 				'file' => 'EXT:workspaces/Resources/Private/Templates/Preview/Preview.html',
 				'variables.' => array(
 					'backendDomain' => 'TEXT',
-					'backendDomain.' => array('value' => $GLOBALS['BE_USER']->getSessionData('workspaces.backend_domain'))
+					'backendDomain.' => array('value' => $backendDomain)
 				)
 			)
 		);
+		$GLOBALS['TSFE']->content = str_ireplace('</body>',  $previewParts . '</body>', $GLOBALS['TSFE']->content);
+
 	}
 }
+?>

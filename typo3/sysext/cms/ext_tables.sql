@@ -1,5 +1,5 @@
 #
-# TYPO3 SVN ID: $Id: ext_tables.sql 10200 2011-01-21 11:19:19Z flyguide $
+# TYPO3 SVN ID: $Id$
 #
 
 

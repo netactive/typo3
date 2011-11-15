@@ -33,7 +33,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_execution.php 9901 2010-12-26 20:35:39Z lolli $
+ * $Id$
  */
 class tx_scheduler_Execution {
 

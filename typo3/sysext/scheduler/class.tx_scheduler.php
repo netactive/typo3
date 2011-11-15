@@ -32,7 +32,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler.php 9758 2010-12-05 11:25:36Z stephenking $
+ * $Id$
  */
 
 class tx_scheduler implements t3lib_Singleton {

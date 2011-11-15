@@ -27,7 +27,7 @@
 /**
  * Class for TYPO3 backend user authentication in the TSFE frontend
  *
- * $Id: class.t3lib_tsfebeuserauth.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
  *

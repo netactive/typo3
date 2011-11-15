@@ -27,7 +27,7 @@
 /**
  * Contains the base class for 'Extension Objects' in backend modules.
  *
- * $Id: class.t3lib_extobjbase.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>

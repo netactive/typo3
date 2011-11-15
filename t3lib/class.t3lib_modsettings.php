@@ -30,7 +30,7 @@
  *
  * inspired by t3lib_fullsearch
  *
- * $Id: class.t3lib_modsettings.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  *
  * @author	René Fritz <r.fritz@colorcube.de>
  */

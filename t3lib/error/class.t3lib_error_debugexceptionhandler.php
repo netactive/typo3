@@ -32,7 +32,7 @@
  *
  * @package TYPO3
  * @subpackage t3lib_error
- * @version $Id: class.t3lib_error_debugexceptionhandler.php 10317 2011-01-26 00:56:49Z baschny $
+ * @version $Id$
  */
 class t3lib_error_DebugExceptionHandler extends t3lib_error_AbstractExceptionHandler {
 

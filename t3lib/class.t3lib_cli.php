@@ -27,7 +27,7 @@
 /**
  * Contains base class for TYPO3 cli scripts
  *
- * $Id: class.t3lib_cli.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */

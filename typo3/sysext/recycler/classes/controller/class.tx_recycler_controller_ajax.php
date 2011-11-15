@@ -35,7 +35,7 @@ require_once(t3lib_extMgm::extPath('recycler', 'classes/helper/class.tx_recycler
  * @author  	Erik Frister <erik_frister@otq-solutions.com>
  * @package		TYPO3
  * @subpackage	tx_recycler
- * @version 	$Id: class.tx_recycler_controller_ajax.php 10120 2011-01-18 20:03:36Z ohader $
+ * @version 	$Id$
  */
 class tx_recycler_controller_ajax {
 		/**

@@ -27,7 +27,7 @@
 /*
  * EditorMode Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: editor-mode.js 7300 2010-04-12 05:49:17Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.EditorMode = HTMLArea.Plugin.extend({
 	constructor : function(editor, pluginName) {

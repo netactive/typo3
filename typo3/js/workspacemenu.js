@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2010 Ingo Renner <ingo@typo3.org>
+*  (c) 2008-2011 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,7 @@ Ext.ns('TYPO3', 'TYPO3.configuration');
 /**
  * class to handle the workspace menu
  *
- * $Id: workspacemenu.js 10193 2011-01-21 09:26:38Z psychomieze $
+ * $Id$
  */
 var WorkspaceMenu = Class.create({
 

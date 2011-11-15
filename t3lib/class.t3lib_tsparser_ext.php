@@ -27,7 +27,7 @@
 /**
  * TSParser extension class to t3lib_TStemplate
  *
- * $Id: class.t3lib_tsparser_ext.php 10121 2011-01-18 20:15:30Z ohader $
+ * $Id$
  * Contains functions for the TS module in TYPO3 backend
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
