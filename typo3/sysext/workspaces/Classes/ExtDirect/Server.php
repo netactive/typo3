@@ -120,24 +120,36 @@ class tx_Workspaces_ExtDirect_Server extends tx_Workspaces_ExtDirect_AbstractHan
 						$liveThumb = t3lib_BEfunc::thumbCode($liveRecord, $parameter->table, $fieldName, '');
 
 						$diffReturnArray[] = array(
+							'field' => $fieldName,
 							'label' => $fieldTitle,
 							'content' => $versionThumb
 						);
 						$liveReturnArray[] = array(
+							'field' => $fieldName,
 							'label' => $fieldTitle,
 							'content' => $liveThumb
 						);
 					} else {
 						$diffReturnArray[] = array(
+							'field' => $fieldName,
 							'label' => $fieldTitle,
 							'content' => $t3lib_diff->makeDiffDisplay($liveRecord[$fieldName], $versionRecord[$fieldName]) // call diff class to get diff
 						);
 						$liveReturnArray[] = array(
+							'field' => $fieldName,
 							'label' => $fieldTitle,
 							'content' => $liveRecord[$fieldName]
 						);
 					}
 				}
+			}
+		}
+			// Hook for modifying the difference and live arrays
+			// (this may be used by custom or dynamically-defined fields)
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['workspaces']['modifyDifferenceArray'])) {
+			foreach($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['workspaces']['modifyDifferenceArray'] as $className) {
+				$hookObject = &t3lib_div::getUserObj($className);
+				$hookObject->modifyDifferenceArray($parameter, $diffReturnArray, $liveReturnArray, $t3lib_diff);
 			}
 		}
 

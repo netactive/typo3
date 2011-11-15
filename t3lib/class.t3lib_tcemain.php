@@ -858,6 +858,7 @@ class t3lib_TCEmain {
 									$newVersion_placeholderFieldArray[$TCA[$table]['ctrl']['tstamp']] = $GLOBALS['EXEC_TIME'];
 								}
 							}
+								// Set stage to "Editing" to make sure we restart the workflow
 							if ($TCA[$table]['ctrl']['versioningWS']) {
 								$fieldArray['t3ver_stage'] = 0;
 							}
@@ -5603,7 +5604,7 @@ class t3lib_TCEmain {
 			t3lib_BEfunc::fixVersioningPid($table, $row);
 
 			$out = array(
-				'header' => $row[$TCA[$table]['ctrl']['label']],
+				'header' => t3lib_BEfunc::getRecordTitle($table, $row),
 				'pid' => $row['pid'],
 				'event_pid' => $this->eventPid($table, isset($row['_ORIG_pid']) ? $row['t3ver_oid'] : $row['uid'], $row['pid']),
 				't3ver_state' => $TCA[$table]['ctrl']['versioningWS'] ? $row['t3ver_state'] : '',
@@ -7000,7 +7001,7 @@ class t3lib_TCEmain {
 			$log_data = unserialize($row['log_data']);
 			$msg = $row['error'] . ': ' . sprintf($row['details'], $log_data[0], $log_data[1], $log_data[2], $log_data[3], $log_data[4]);
 			$flashMessage = t3lib_div::makeInstance('t3lib_FlashMessage',
-													$msg,
+													htmlspecialchars($msg),
 													'',
 													t3lib_FlashMessage::ERROR,
 													TRUE
@@ -7125,7 +7126,7 @@ class t3lib_TCEmain {
 	 */
 	protected function getOuterMostInstance() {
 		if (!isset($this->outerMostInstance)) {
-			$stack = array_reverse(debug_backtrace(TRUE));
+			$stack = array_reverse(debug_backtrace());
 
 			foreach ($stack as $stackItem) {
 				if (isset($stackItem['object']) && $stackItem['object'] instanceof t3lib_TCEmain) {

@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Utility
- * @version $Id: Cache.php 1729 2009-11-25 21:37:20Z stucki $
+ * @version $Id$
  */
 class Tx_Extbase_Utility_Cache {
 

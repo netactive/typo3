@@ -324,7 +324,7 @@ class Tx_Extbase_MVC_Controller_Argument {
 	 * @api
 	 */
 	public function getValidator() {
- 		return $this->validator;
+		return $this->validator;
 	}
 
 	/**
@@ -345,8 +345,11 @@ class Tx_Extbase_MVC_Controller_Argument {
 	 * @throws Tx_Extbase_MVC_Exception_InvalidArgumentValue if the argument is not a valid object of type $dataType
 	 */
 	public function setValue($value) {
-		$this->value = $this->transformValue($value);
-
+		if ($value === NULL || (is_object($value) && $value instanceof $this->dataType)) {
+			$this->value = $value;
+		} else {
+			$this->value = $this->transformValue($value);
+		}
 		return $this;
 	}
 
@@ -361,9 +364,6 @@ class Tx_Extbase_MVC_Controller_Argument {
 	 * @return mixed
 	 */
 	protected function transformValue($value) {
-		if ($value === NULL) {
-			return NULL;
-		}
 		if (!class_exists($this->dataType)) {
 			return $value;
 		}
@@ -385,8 +385,15 @@ class Tx_Extbase_MVC_Controller_Argument {
 			$transformedValue = $this->propertyMapper->map(array_keys($value), $value, $this->dataType);
 		}
 
-		if (!($transformedValue instanceof $this->dataType) && !($transformedValue === NULL && !$this->isRequired())) {
-			throw new Tx_Extbase_MVC_Exception_InvalidArgumentValue('The value must be of type "' . $this->dataType . '", but was of type "' . (is_object($transformedValue) ? get_class($transformedValue) : gettype($transformedValue)) . '".', 1251730701);
+		if (!($transformedValue instanceof $this->dataType) && ($transformedValue !== NULL || $this->isRequired())) {
+			throw new Tx_Extbase_MVC_Exception_InvalidArgumentValue(
+				'The value must be of type "' . $this->dataType . '", but was of type "'
+					. (is_object($transformedValue) ? get_class($transformedValue) : gettype($transformedValue)) . '".'
+						// add mappingResult errors to exception
+					. ($this->propertyMapper->getMappingResults()->hasErrors()
+						? '<p>' . implode('<br />', $this->propertyMapper->getMappingResults()->getErrors()) . '</p>'
+						: ''),
+				1251730701);
 		}
 		return $transformedValue;
 	}

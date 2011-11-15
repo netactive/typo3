@@ -17,7 +17,7 @@
  *
  * @package Extbase
  * @subpackage MVC\Web\Routing
- * @version $Id: UriBuilder.php 2184 2010-04-08 14:59:58Z jocrau $
+ * @version $Id$
  * @api
  */
 class Tx_Extbase_MVC_Web_Routing_UriBuilder {
@@ -466,12 +466,6 @@ class Tx_Extbase_MVC_Web_Routing_UriBuilder {
 			$prefixedControllerArguments = array($pluginNamespace => $controllerArguments);
 		}
 		$this->arguments = t3lib_div::array_merge_recursive_overrule($this->arguments, $prefixedControllerArguments);
-
-		if ($actionName !== NULL
-			&& $this->useCacheHash === TRUE
-			&& !Tx_Extbase_Utility_Extension::isActionCacheable($extensionName, $pluginName, $controllerArguments['controller'], $actionName)) {
-				$this->setUseCacheHash(FALSE);
-		}
 
 		return $this->build();
 	}

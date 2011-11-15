@@ -484,7 +484,7 @@ class template {
 		global $TCA;
 		if (is_array($row) && $row['uid'])	{
 			$iconImgTag=t3lib_iconWorks::getSpriteIconForRecord($table, $row , array('title' => htmlspecialchars($path)));
-			$title= strip_tags($row[$TCA[$table]['ctrl']['label']]);
+			$title = strip_tags(t3lib_BEfunc::getRecordTitle($table, $row));
 			$viewPage = $noViewPageIcon ? '' : $this->viewPageIcon($row['uid'],$this->backPath,'');
 			if ($table=='pages')	$path.=' - '.t3lib_BEfunc::titleAttribForPages($row,'',0);
 		} else {
@@ -761,9 +761,10 @@ class template {
 				$headerStart = '<!DOCTYPE html
      PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">';
-				// The fallthrough is intended as HTML5, as this is the default for the BE since TYPO3 4.5
+				break;
 			case 'html5':
 			default:
+					// The fallthrough is intended as HTML5, as this is the default for the BE since TYPO3 4.5
 				$headerStart = '<!DOCTYPE html>' . LF;
 				$htmlTag = '<html>';
 				// disable rendering of XHTML tags
@@ -794,7 +795,7 @@ class template {
 		$xmlStylesheet = '<?xml-stylesheet href="#internalStyle" type="text/css"?>';
 
 			// Add the XML prologue for XHTML doctypes
-		if (strpos($this->doctype, 'xhtml') !== FALSE) {
+		if (strpos($this->docType, 'xhtml') !== FALSE) {
 				// Put the XML prologue before or after the doctype declaration according to browser
 			if ($browserInfo['browser'] === 'msie' && $browserInfo['version'] < 7) {
 				$headerStart = $headerStart . LF . $xmlPrologue;
@@ -812,6 +813,7 @@ class template {
 		$this->pageRenderer->setHeadTag('<head>' . LF. '<!-- TYPO3 Script ID: '.htmlspecialchars($this->scriptID).' -->');
 		$this->pageRenderer->setCharSet($this->charset);
 		$this->pageRenderer->addMetaTag($this->generator());
+		$this->pageRenderer->addMetaTag('<meta name="robots" content="noindex,follow" />');
 		if ($this->useCompatibilityTag) {
 			$this->pageRenderer->addMetaTag($this->xUaCompatible());
 		}

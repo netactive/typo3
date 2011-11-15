@@ -102,7 +102,7 @@ $TYPO3_CONF_VARS = array(
 		'enableDeprecationLog' => 'file',		// Commalist: Enables the logging of deprecated methods and functions. Default is 'file'. The following options are allowed: 'file': The log file will be written to typo3conf/deprecation_[hash-value].log  'devlog': The log will be written to the development log  'console': The log will be displayed in the Backend's Debug Console. The logging options can be combined by comma-separating them.
 		'maxFileNameLength' => 60,				// Integer: This is the maximum file name length. The value will be taken into account by basic file operations like renaming or creation of files and folders.
 		'UTF8filesystem' => FALSE,				// Boolean: If true and <a href="#BE-forceCharset">[BE][forceCharset]</a> is set to utf-8, then TYPO3 uses utf-8 to store file names. This allows for accented Latin letters as well as any other non-latin characters like Cyrillic and Chinese.
-		'systemLocale' => '',					// String: locale used for certain system related functions; for example escaping shell commands.
+		'systemLocale' => '',					// String: locale used for certain system related functions, e.g. escaping shell commands. If problems with filenames containing special characters occur, the value of this option is probably wrong. See <a href="http://php.net/manual/en/function.setlocale.php" target="_blank">setlocale()</a>.
 		'lockingMode' => 'simple',					// String: Define which locking mode is used to control requests to pages being generated. Can be one of either "disable" (no locking), "simple" (checks for file existance), "flock" (using PHPs <a href="http://php.net/flock" target="_blank">flock()</a> function), "semaphore" (using PHPs <a href="http://php.net/sem-acquire" target="_blank">sem_acquire()</a> function). Default is "disable".
 		'reverseProxyIP' => '',					// String: list of IP addresses. If TYPO3 is behind one or more (intransparent) reverese proxies the IP addresses must be added here.
 		'reverseProxyHeaderMultiValue' => 'none',		// String: "none","first","last": defines which values of a proxy header (eg HTTP_X_FORWARDED_FOR) to use, if more than one is found. "none" discards the value, "first" and "last" use the first/last of the values in the list.
@@ -158,7 +158,7 @@ $TYPO3_CONF_VARS = array(
 		'debugExceptionHandler' => 't3lib_error_DebugExceptionHandler',				// String: Classname to handle exceptions that might happen in the TYPO3-code. Leave empty to disable exception handling. Default: "t3lib_error_DebugExceptionHandler". This exception handler displays the complete stack trace of any encountered exception. The error message and the stack trace  is logged to the configured logs. Note: The configured "debugExceptionHandler" is used if displayErrors is set to "1" and if displayErrors is "-1"  or "2" and the devIPmask matches the users IP.
 		'errorHandler' => 't3lib_error_ErrorHandler',	// String: Classname to handle PHP errors. E.g.: t3lib_error_ErrorHandler. This class displays and logs all errors that are registered as "errorHandlerErrors" (<a href="#SYS-errorHandlerErrors">[SYS][errorHandlerErrors]</a>). Leave empty to disable error handling. Errors can be logged to syslog (see: <a href="#SYS-systemLog">[SYS][systemLog]</a>) to the installed developer log and to the "syslog" table. If an error is registered in "exceptionalErrors" ([SYS][exceptionalErrors]) it will be turned into an exception to be handled by the configured exceptionHandler.
 		'errorHandlerErrors'=> E_ALL ^ E_NOTICE,	// Integer: The E_* constant that will be handled by the errorhandler. Default is "E_ALL ^ E_NOTICE".
-		'exceptionalErrors' => E_ALL ^ E_NOTICE ^ E_WARNING ^ E_USER_ERROR ^ E_USER_NOTICE ^ E_USER_WARNING,	// Integer: The E_* constant that will be handled as an exception by t3lib_error_ErrorHandler. Default is "E_ALL ^ E_NOTICE ^ E_WARNING ^ E_USER_ERROR ^ E_USER_NOTICE ^ E_USER_WARNING" (4341) and "0" if displayError=0. Some values for errors: E_ALL=6143, E_ALL ^ E_NOTICE ^ E_WARNING=6133. See php documentation for more details on this integer.
+		'exceptionalErrors' => E_ALL ^ E_NOTICE ^ E_DEPRECATED ^ E_WARNING ^ E_USER_ERROR ^ E_USER_NOTICE ^ E_USER_WARNING,	// Integer: The E_* constant that will be handled as an exception by t3lib_error_ErrorHandler. Default is <tt>E_ALL ^ E_NOTICE ^ E_DEPRECATED ^ E_WARNING ^ E_USER_ERROR ^ E_USER_NOTICE ^ E_USER_WARNING</tt> (20725) and "0" if <tt>displayErrors=0</tt> (see <a href="http://php.net/manual/en/errorfunc.constants.php" target="_blank">PHP documentation</a>).
 		'enable_errorDLOG' => 0,				// Boolean: If set, errors are written to the developer log (requires an installed *devlog* extension).
 		'enable_exceptionDLOG' => 0,			// Boolean: If set, exceptions are written to the developer log (requires an installed *devlog* extension).
 		'syslogErrorReporting' => E_ALL ^ E_NOTICE,	// Integer: Configures which PHP errors should be logged to the configured syslogs (see: [SYS][systemLog]). If set to "0" no PHP errors are logged to the syslog. Default is "E_ALL ^ E_NOTICE" (6135).
@@ -306,7 +306,7 @@ $TYPO3_CONF_VARS = array(
 							500 {
 								name = edit
 								label = LLL:EXT:lang/locallang_core.xml:cm.edit
-								spriteIcon = actions-document-open
+								spriteIcon = actions-page-open
 								displayCondition = canBeEdited != 0
 								callbackAction = editPageProperties
 							}
@@ -613,15 +613,6 @@ $TYPO3_CONF_VARS = array(
 				'default' => 't3lib/class.t3lib_frontendedit.php:t3lib_frontendedit'
 			)
 		),
-		'ExtDirect' => array(	// array of key value pairs (provider -> location:className) that holds the classes for the ExtDirect functionality
-			'TYPO3.CSH.ExtDirect' => 't3lib/extjs/dataprovider/class.extdirect_dataprovider_contexthelp.php:extDirect_DataProvider_ContextHelp',
-			'TYPO3.LiveSearchActions.ExtDirect' => 't3lib/extjs/dataprovider/class.extdirect_dataprovider_backendlivesearch.php:extDirect_DataProvider_BackendLiveSearch',
-			'TYPO3.BackendUserSettings.ExtDirect' => 't3lib/extjs/dataprovider/class.extdirect_dataprovider_beusersettings.php:extDirect_DataProvider_BackendUserSettings',
-			'TYPO3.ExtDirectStateProvider.ExtDirect' => 't3lib/extjs/dataprovider/class.extdirect_dataprovider_state.php:extDirect_DataProvider_State',
-			'TYPO3.Components.PageTree.DataProvider' => 't3lib/tree/pagetree/extdirect/class.t3lib_tree_pagetree_extdirect_tree.php:t3lib_tree_pagetree_extdirect_Tree',
-			'TYPO3.Components.PageTree.Commands' => 't3lib/tree/pagetree/extdirect/class.t3lib_tree_pagetree_extdirect_tree.php:t3lib_tree_pagetree_extdirect_Commands',
-			'TYPO3.Components.PageTree.ContextMenuDataProvider' => 't3lib/contextmenu/pagetree/extdirect/class.t3lib_contextmenu_pagetree_extdirect_contextmenu.php:t3lib_contextmenu_pagetree_extdirect_ContextMenu',
-		),
 	),
 	'EXTCONF' => array(		// Here you may add manually set configuration options for your extensions. Eg. $TYPO3_CONF_VARS['EXTCONF']['my_extension_key']['my_option'] = 'my_value';
 //		'--key--' => array()
@@ -632,10 +623,56 @@ $TYPO3_CONF_VARS = array(
 //		Eg.  ...['service_type']['service_key']['my_option'] = 'my_value';
 	)
 );
+
+if (TYPO3_MODE === 'BE') {
+	t3lib_extMgm::registerExtDirectComponent(
+		'TYPO3.Components.PageTree.DataProvider',
+		PATH_t3lib . 'tree/pagetree/extdirect/class.t3lib_tree_pagetree_extdirect_tree.php:t3lib_tree_pagetree_extdirect_Tree',
+		'web',
+		'user,group'
+	);
+
+	t3lib_extMgm::registerExtDirectComponent(
+		'TYPO3.Components.PageTree.Commands',
+		PATH_t3lib . 'tree/pagetree/extdirect/class.t3lib_tree_pagetree_extdirect_tree.php:t3lib_tree_pagetree_extdirect_Commands',
+		'web',
+		'user,group'
+	);
+
+	t3lib_extMgm::registerExtDirectComponent(
+		'TYPO3.Components.PageTree.ContextMenuDataProvider',
+		PATH_t3lib . 'contextmenu/pagetree/extdirect/class.t3lib_contextmenu_pagetree_extdirect_contextmenu.php:t3lib_contextmenu_pagetree_extdirect_ContextMenu',
+		'web',
+		'user,group'
+	);
+
+	t3lib_extMgm::registerExtDirectComponent(
+		'TYPO3.LiveSearchActions.ExtDirect',
+		PATH_t3lib . 'extjs/dataprovider/class.extdirect_dataprovider_backendlivesearch.php:extDirect_DataProvider_BackendLiveSearch',
+		'web_list',
+		'user,group'
+	);
+
+	t3lib_extMgm::registerExtDirectComponent(
+		'TYPO3.BackendUserSettings.ExtDirect',
+		PATH_t3lib . 'extjs/dataprovider/class.extdirect_dataprovider_beusersettings.php:extDirect_DataProvider_BackendUserSettings'
+	);
+
+	t3lib_extMgm::registerExtDirectComponent(
+		'TYPO3.CSH.ExtDirect',
+		PATH_t3lib . 'extjs/dataprovider/class.extdirect_dataprovider_contexthelp.php:extDirect_DataProvider_ContextHelp'
+	);
+
+	t3lib_extMgm::registerExtDirectComponent(
+		'TYPO3.ExtDirectStateProvider.ExtDirect',
+		PATH_t3lib . 'extjs/dataprovider/class.extdirect_dataprovider_state.php:extDirect_DataProvider_State'
+	);
+}
+
 $T3_VAR = array();	// Initialize.
 
 	// TYPO3 version
-$TYPO_VERSION = '4.5.3';	// deprecated: use the constants defined below
+$TYPO_VERSION = '4.5.4';	// deprecated: use the constants defined below
 define('TYPO3_version', $TYPO_VERSION);
 define('TYPO3_branch', '4.5');
 define('TYPO3_copyright_year', '1998-2011');
@@ -729,7 +766,7 @@ if ($TYPO3_CONF_VARS['SYS']['setDBinit'] == '-1' && $typo_db) {
 
 
 
-$timeZone = $GLOBALS['TYPO3_CONF_VARS']['phpTimeZone'];
+$timeZone = $GLOBALS['TYPO3_CONF_VARS']['SYS']['phpTimeZone'];
 if (empty($timeZone)) {
 		// time zone from the server environment (TZ env or OS query)
 	$defaultTimeZone = @date_default_timezone_get();

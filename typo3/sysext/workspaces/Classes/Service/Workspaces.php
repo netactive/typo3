@@ -123,7 +123,7 @@ class tx_Workspaces_Service_Workspaces {
 			}
 
 				// Select all versions to swap:
-			$versions = $this->selectVersionsInWorkspace($wsid, 0, $stage, ($pageId ? $pageId : -1));
+			$versions = $this->selectVersionsInWorkspace($wsid, 0, $stage, ($pageId ? $pageId : -1), 0, 'tables_modify');
 
 				// Traverse the selection to build CMD array:
 			foreach ($versions as $table => $records) {
@@ -155,7 +155,7 @@ class tx_Workspaces_Service_Workspaces {
 			$stage = -99;
 
 				// Select all versions to swap:
-			$versions = $this->selectVersionsInWorkspace($wsid, 0, $stage, ($pageId ? $pageId : -1));
+			$versions = $this->selectVersionsInWorkspace($wsid, 0, $stage, ($pageId ? $pageId : -1), 0, 'tables_modify');
 
 				// Traverse the selection to build CMD array:
 			foreach ($versions as $table => $records) {
@@ -179,9 +179,10 @@ class tx_Workspaces_Service_Workspaces {
 	 * @param	integer		Stage filter: -99 means no filtering, otherwise it will be used to select only elements with that stage. For publishing, that would be "10"
 	 * @param	integer		Page id: Live page for which to find versions in workspace!
 	 * @param	integer		Recursion Level - select versions recursive - parameter is only relevant if $pageId != -1
+	 * @param	string		How to collect records for "listing" or "modify" these tables. Support the permissions of each type of record (@see t3lib_userAuthGroup::check).
 	 * @return	array		Array of all records uids etc. First key is table name, second key incremental integer. Records are associative arrays with uid, t3ver_oid and t3ver_swapmode fields. The pid of the online record is found as "livepid" the pid of the offline record is found in "wspid"
 	 */
-	public function selectVersionsInWorkspace($wsid, $filter = 0, $stage = -99, $pageId = -1, $recursionLevel = 0) {
+	public function selectVersionsInWorkspace($wsid, $filter = 0, $stage = -99, $pageId = -1, $recursionLevel = 0, $selectionType = 'tables_select') {
 
 		$wsid = intval($wsid);
 		$filter = intval($filter);
@@ -198,6 +199,12 @@ class tx_Workspaces_Service_Workspaces {
 
 			// Traversing all tables supporting versioning:
 		foreach ($GLOBALS['TCA'] as $table => $cfg) {
+
+				// we do not collect records from tables without permissions on them.
+			if (! $GLOBALS['BE_USER']->check($selectionType, $table)) {
+				continue;
+			}
+
 			if ($GLOBALS['TCA'][$table]['ctrl']['versioningWS']) {
 
 				$recs = $this->selectAllVersionsFromPages($table, $pageList, $wsid, $filter, $stage);
@@ -432,7 +439,7 @@ class tx_Workspaces_Service_Workspaces {
 		if (is_array($recs)) {
 			foreach ($recs as $rec) {
 				$page = t3lib_beFunc::getRecord('pages', $rec[$checkField], 'uid,pid,perms_userid,perms_user,perms_groupid,perms_group,perms_everybody');
-				if ($GLOBALS['BE_USER']->doesUserHaveAccess($page, 1)) {
+				if ($GLOBALS['BE_USER']->doesUserHaveAccess($page, 1) && $this->isLanguageAccessibleForCurrentUser($table, $rec)) {
 					$permittedElements[] = $rec;
 				}
 			}
@@ -440,6 +447,22 @@ class tx_Workspaces_Service_Workspaces {
 		return $permittedElements;
 	}
 
+	/**
+	* Check current be users language access on given record.
+	*
+	* @param string $table Name of the table
+	* @param array $record Record row to be checked
+	* @return boolean
+	*/
+	protected function isLanguageAccessibleForCurrentUser($table, array $record) {
+		$languageUid = 0;
+
+		if (t3lib_BEfunc::isTableLocalizable($table)) {
+			$languageUid = $record[$GLOBALS['TCA'][$table]['ctrl']['languageField']];
+		}
+
+		return $GLOBALS['BE_USER']->checkLanguageAccess($languageUid);
+	}
 
 	/**
 	 * Trivial check to see if the user already migrated his workspaces

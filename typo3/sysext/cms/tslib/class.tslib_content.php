@@ -2039,7 +2039,7 @@ class tslib_cObj {
 					}
 					// check if key is still containing something, since it might have been changed by next level stdWrap before
 					if ((isset($conf[$functionName]) || $conf[$functionProperties]) &&
-							!($functionType == 'boolean' && $conf[$functionName] === '0')) {
+							!($functionType == 'boolean' && !$conf[$functionName])) {
 						//add both keys - with and without the dot - to the set of executed functions
 						$isExecuted[$functionName] = true;
 						$isExecuted[$functionProperties] = true;
@@ -2049,6 +2049,10 @@ class tslib_cObj {
 							$content,
 							$singleConf
 						);
+					// for booleans we have to mark the function as executed in any case, even if it has been 0, '' or false to avoid a second call based on the functionProperties, which would always be true
+					} elseif($functionType == 'boolean' && !$conf[$functionName]) {
+						$isExecuted[$functionName] = TRUE;
+						$isExecuted[$functionProperties] = TRUE;
 					}
 				}
 			}
@@ -3100,9 +3104,9 @@ class tslib_cObj {
 				: $conf['offsetWrap.']['tableParams'];
 		}
 		if ($conf['offsetWrap.']['tdParams'] || $conf['offsetWrap.']['tdParams.']) {
-			$controlTable->tdParams = ' ' . isset($conf['offsetWrap.']['tdParams.'])
+			$controlTable->tdParams = ' ' . (isset($conf['offsetWrap.']['tdParams.'])
 				? $this->stdWrap($conf['offsetWrap.']['tdParams'], $conf['offsetWrap.']['tdParams.'])
-				: $conf['offsetWrap.']['tdParams'];
+				: $conf['offsetWrap.']['tdParams']);
 		}
 		$content = $controlTable->start($content, $conf['offsetWrap']);
 		if ($conf['offsetWrap.']['stdWrap.']) {
@@ -4060,9 +4064,9 @@ class tslib_cObj {
 						if ($GLOBALS['TYPO3_CONF_VARS']['GFX']['thumbnails']) {
 							$thumbSize = '';
 							if ($conf['icon_thumbSize'] || $conf['icon_thumbSize.']) {
-								$thumbSize = '&size=' . isset($conf['icon_thumbSize.'])
+								$thumbSize = '&size=' . (isset($conf['icon_thumbSize.'])
 									? $this->stdWrap($conf['icon_thumbSize'], $conf['icon_thumbSize.'])
-									: $conf['icon_thumbSize'];
+									: $conf['icon_thumbSize']);
 							}
 							$check = basename($theFile) . ':' . filemtime($theFile) . ':' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'];
 							$md5sum = '&md5sum=' . t3lib_div::shortMD5($check);
@@ -5898,8 +5902,8 @@ class tslib_cObj {
 					$target = '';
 				}
 
-				$onClick = "vHWin=window.open('" . $GLOBALS['TSFE']->baseUrlWrap($finalTagParts['url']) .
-					"','FEopenLink','" . $JSwindowParams . "');vHWin.focus();return false;";
+				$onClick = "vHWin=window.open(" . t3lib_div::quoteJSvalue($GLOBALS['TSFE']->baseUrlWrap($finalTagParts['url'])) .
+					",'FEopenLink','" . $JSwindowParams . "');vHWin.focus();return false;";
 				$res = '<a href="' . htmlspecialchars($finalTagParts['url']) . '"' .
 					$target . ' onclick="' . htmlspecialchars($onClick) . '"' .
 					($title ? ' title="' . $title . '"' : '') .
@@ -6234,7 +6238,7 @@ class tslib_cObj {
 			$newQueryArray = t3lib_div::array_merge_recursive_overrule($newQueryArray, $overruleQueryArguments, TRUE);
 		}
 
-		return t3lib_div::implodeArrayForUrl('', $newQueryArray);
+		return t3lib_div::implodeArrayForUrl('', $newQueryArray, '', FALSE, TRUE);
 	}
 
 

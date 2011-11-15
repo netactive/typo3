@@ -603,6 +603,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						'How to configure TYPO3',
 						$this->generallyAboutConfiguration()
 					);
+					$isPhpCgi = (PHP_SAPI == 'fpm-fcgi' || PHP_SAPI == 'cgi' || PHP_SAPI == 'isapi' || PHP_SAPI == 'cgi-fcgi');
 					$this->message(
 						'System Information',
 						'Your system has the following configuration',
@@ -610,8 +611,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							<dl id="systemInformation">
 								<dt>OS detected:</dt>
 								<dd>' . (TYPO3_OS == 'WIN' ? 'WIN' : 'UNIX') .'</dd>
-								<dt>UNIX/CGI detected:</dt>
-								<dd>' . (PHP_SAPI == 'cgi' ? 'YES' : 'NO') . '</dd>
+								<dt>CGI detected:</dt>
+								<dd>' . ($isPhpCgi ? 'YES' : 'NO') . '</dd>
 								<dt>PATH_thisScript:</dt>
 								<dd>' . PATH_thisScript . '</dd>
 							</dl>
@@ -2571,21 +2572,21 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 
 			// Check availability of PHP session support
 		if (extension_loaded('session')) {
-			$this->message($ext, 'PHP sessions availiable', '
+			$this->message($ext, 'PHP sessions available', '
 				<p>
-					<em>PHP Sessions availiabe</em>
+					<em>PHP Sessions available</em>
 					<br />
 					PHP is compiled with session support and session support is
 					available.
 				</p>
 			', -1);
 		} else {
-			$this->message($ext, 'PHP Sessions not availiabe', '
+			$this->message($ext, 'PHP Sessions not available', '
 				<p>
 					PHP is not compiled with session support, or session support
 					is disabled in php.ini.
 					<br />
-					TYPO3 needs session support
+					TYPO3 needs session support.
 				</p>
 			', 3);
 		}

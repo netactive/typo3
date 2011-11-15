@@ -31,7 +31,7 @@
  *
  * @package Extbase
  * @subpackage Persistence
- * @version $Id: Typo3QuerySettings.php 1972 2010-03-08 16:59:20Z jocrau $
+ * @version $Id$
  * @api
  */
 class Tx_Extbase_Persistence_Typo3QuerySettings implements Tx_Extbase_Persistence_QuerySettingsInterface {

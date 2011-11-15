@@ -99,6 +99,7 @@ class tx_Workspaces_Service_GridData {
 
 			foreach ($versions as $table => $records) {
 				$versionArray = array('table' => $table);
+				$isRecordTypeAllowedToModify = $GLOBALS['BE_USER']->check('tables_modify', $table);
 
 				foreach ($records as $record) {
 
@@ -116,8 +117,8 @@ class tx_Workspaces_Service_GridData {
 					$pctChange = $this->calculateChangePercentage($table, $origRecord, $versionRecord);
 					$versionArray['uid'] = $record['uid'];
 					$versionArray['workspace'] = $versionRecord['t3ver_id'];
-					$versionArray['label_Workspace'] = htmlspecialchars($versionRecord[$GLOBALS['TCA'][$table]['ctrl']['label']]);
-					$versionArray['label_Live'] = htmlspecialchars($origRecord[$GLOBALS['TCA'][$table]['ctrl']['label']]);
+					$versionArray['label_Workspace'] = htmlspecialchars(t3lib_befunc::getRecordTitle($table, $versionRecord));
+					$versionArray['label_Live'] = htmlspecialchars(t3lib_befunc::getRecordTitle($table, $origRecord));
 					$versionArray['label_Stage'] = htmlspecialchars($stagesObj->getStageTitle($versionRecord['t3ver_stage']));
 					$versionArray['change'] = $pctChange;
 					$versionArray['path_Live'] = htmlspecialchars(t3lib_BEfunc::getRecordPath($record['livepid'], '', 999));
@@ -132,21 +133,21 @@ class tx_Workspaces_Service_GridData {
 					$versionArray['icon_Live'] = t3lib_iconWorks::mapRecordTypeToSpriteIconClass($table, $origRecord);
 					$versionArray['icon_Workspace'] = t3lib_iconWorks::mapRecordTypeToSpriteIconClass($table, $versionRecord);
 
-					$versionArray['allowedAction_nextStage'] = $stagesObj->isNextStageAllowedForUser($versionRecord['t3ver_stage']);
-					$versionArray['allowedAction_prevStage'] = $stagesObj->isPrevStageAllowedForUser($versionRecord['t3ver_stage']);
+					$versionArray['allowedAction_nextStage'] = $isRecordTypeAllowedToModify && $stagesObj->isNextStageAllowedForUser($versionRecord['t3ver_stage']);
+					$versionArray['allowedAction_prevStage'] = $isRecordTypeAllowedToModify && $stagesObj->isPrevStageAllowedForUser($versionRecord['t3ver_stage']);
 
 					if ($swapAccess && $swapStage != 0 && $versionRecord['t3ver_stage'] == $swapStage) {
-						$versionArray['allowedAction_swap'] = $stagesObj->isNextStageAllowedForUser($swapStage);
-					} else if ($swapAccess && $swapStage == 0) {
-						$versionArray['allowedAction_swap'] = TRUE;
+						$versionArray['allowedAction_swap'] = $isRecordTypeAllowedToModify && $stagesObj->isNextStageAllowedForUser($swapStage);
+					} elseif ($swapAccess && $swapStage == 0) {
+						$versionArray['allowedAction_swap'] = $isRecordTypeAllowedToModify;
 					} else {
 						$versionArray['allowedAction_swap'] = FALSE;
 					}
-					$versionArray['allowedAction_delete'] = TRUE;
+					$versionArray['allowedAction_delete'] = $isRecordTypeAllowedToModify;
 						// preview and editing of a deleted page won't work ;)
 					$versionArray['allowedAction_view'] = !$isDeletedPage && $viewUrl;
-					$versionArray['allowedAction_edit'] = !$isDeletedPage;
-					$versionArray['allowedAction_editVersionedPage'] = !$isDeletedPage;
+					$versionArray['allowedAction_edit'] = $isRecordTypeAllowedToModify && !$isDeletedPage;
+					$versionArray['allowedAction_editVersionedPage'] = $isRecordTypeAllowedToModify && !$isDeletedPage;
 
 					$versionArray['state_Workspace'] = $recordState;
 
@@ -270,23 +271,27 @@ class tx_Workspaces_Service_GridData {
 	 * @return void
 	 */
 	protected function sortDataArray() {
-		switch ($this->sort) {
-			case 'uid';
-			case 'change';
-			case 'workspace_Tstamp';
-			case 't3ver_oid';
-			case 'liveid';
-			case 'livepid':
-				usort($this->dataArray, array($this, 'intSort'));
-				break;
-			case 'label_Workspace';
-			case 'label_Live';
-			case 'label_Stage';
-			case 'workspace_Title';
-			case 'path_Live':
-					// case 'path_Workspace': This is the first sorting attribute
-				usort($this->dataArray, array($this, 'stringSort'));
-				break;
+		if (is_array($this->dataArray)) {
+			switch ($this->sort) {
+				case 'uid';
+				case 'change';
+				case 'workspace_Tstamp';
+				case 't3ver_oid';
+				case 'liveid';
+				case 'livepid':
+					usort($this->dataArray, array($this, 'intSort'));
+					break;
+				case 'label_Workspace';
+				case 'label_Live';
+				case 'label_Stage';
+				case 'workspace_Title';
+				case 'path_Live':
+						// case 'path_Workspace': This is the first sorting attribute
+					usort($this->dataArray, array($this, 'stringSort'));
+					break;
+			}
+		} else {
+			t3lib_div::sysLog('Try to sort "' . $this->sort . '" in "tx_Workspaces_Service_GridData::sortDataArray" but $this->dataArray is empty! This might be the Bug #26422 which could not reproduced yet.', 3);
 		}
 	}
 

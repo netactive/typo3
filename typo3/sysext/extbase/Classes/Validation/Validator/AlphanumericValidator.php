@@ -5,7 +5,7 @@
 *  (c) 2009 Jochen Rau <jochen.rau@typoplanet.de>
 *  All rights reserved
 *
-*  This class is a backport of the corresponding class of FLOW3.
+*  This class is a backport of the corresponding class of FLOW3. 
 *  All credits go to the v5 team.
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Validation\Validator
- * @version $Id: AlphanumericValidator.php 1789 2010-01-18 21:31:59Z jocrau $
+ * @version $Id$
  * @scope prototype
  */
 class Tx_Extbase_Validation_Validator_AlphanumericValidator extends Tx_Extbase_Validation_Validator_AbstractValidator {

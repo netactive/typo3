@@ -83,7 +83,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_AbstractFormFieldViewHelperTest exten
 		$actual = $formViewHelper->_call('getName');
 		$this->assertSame($expected, $actual);
 	}
-
+	
 	/**
 	 * @test
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
@@ -371,7 +371,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_AbstractFormFieldViewHelperTest exten
 
 		$formViewHelper->_call('setErrorClassAttribute');
 	}
-
+	
 	/**
 	 * @test
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
@@ -384,7 +384,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_AbstractFormFieldViewHelperTest exten
 		$formFieldViewHelper->_set('arguments', $arguments);
 		$formFieldViewHelper->_call('addAdditionalIdentityPropertiesIfNeeded');
 	}
-
+	
 	/**
 	 * @test
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
@@ -405,19 +405,19 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_AbstractFormFieldViewHelperTest exten
 		$property = 'value.something';
 		$objectName = 'myObject';
 		$expectedProperty = 'myObject[value]';
-
+		
 		$formFieldViewHelper = $this->getAccessibleMock('Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper', array('renderHiddenIdentityField'), array(), '', FALSE);
 		$this->injectDependenciesIntoViewHelper($formFieldViewHelper);
 		$arguments = new Tx_Fluid_Core_ViewHelper_Arguments(array('property' => $property));
 		$formFieldViewHelper->_set('arguments', $arguments);
 		$this->viewHelperVariableContainer->expects($this->at(0))->method('get')->with('Tx_Fluid_ViewHelpers_FormViewHelper', 'formObject')->will($this->returnValue($mockFormObject));
 		$this->viewHelperVariableContainer->expects($this->at(1))->method('get')->with('Tx_Fluid_ViewHelpers_FormViewHelper', 'formObjectName')->will($this->returnValue($objectName));
-
+		
 		$formFieldViewHelper->expects($this->once())->method('renderHiddenIdentityField')->with($mockFormObject, $expectedProperty);
-
+		
 		$formFieldViewHelper->_call('addAdditionalIdentityPropertiesIfNeeded');
 	}
-
+	
 	/**
 	 * @test
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
@@ -439,17 +439,17 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_AbstractFormFieldViewHelperTest exten
 		$objectName = 'myObject';
 		$expectedProperty1 = 'myObject[value]';
 		$expectedProperty2 = 'myObject[value][value]';
-
+		
 		$formFieldViewHelper = $this->getAccessibleMock('Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper', array('renderHiddenIdentityField'), array(), '', FALSE);
 		$this->injectDependenciesIntoViewHelper($formFieldViewHelper);
 		$arguments = new Tx_Fluid_Core_ViewHelper_Arguments(array('property' => $property));
 		$formFieldViewHelper->_set('arguments', $arguments);
 		$this->viewHelperVariableContainer->expects($this->at(0))->method('get')->with('Tx_Fluid_ViewHelpers_FormViewHelper', 'formObject')->will($this->returnValue($mockFormObject));
 		$this->viewHelperVariableContainer->expects($this->at(1))->method('get')->with('Tx_Fluid_ViewHelpers_FormViewHelper', 'formObjectName')->will($this->returnValue($objectName));
-
+		
 		$formFieldViewHelper->expects($this->at(0))->method('renderHiddenIdentityField')->with($mockFormObject, $expectedProperty1);
 		$formFieldViewHelper->expects($this->at(1))->method('renderHiddenIdentityField')->with($mockFormObject, $expectedProperty2);
-
+		
 		$formFieldViewHelper->_call('addAdditionalIdentityPropertiesIfNeeded');
 	}
 

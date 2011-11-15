@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Validation
- * @version $Id: ValidatorResolver.php 1790 2010-01-18 22:27:37Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Validation_ValidatorResolver implements t3lib_Singleton {
 
@@ -280,7 +280,7 @@ class Tx_Extbase_Validation_ValidatorResolver implements t3lib_Singleton {
 	/**
 	 * Removes escapings from a given argument string and trims the outermost
 	 * quotes.
-	 *
+	 * 
 	 * This method is meant as a helper for regular expression results.
 	 *
 	 * @param string &$quotedValue Value to unquote

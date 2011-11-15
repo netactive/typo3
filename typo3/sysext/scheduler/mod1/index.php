@@ -143,6 +143,7 @@ class tx_scheduler_Module extends t3lib_SCbase {
 					}
 				</script>
 			';
+			$this->doc->getPageRenderer()->addInlineSetting('scheduler', 'runningIcon', t3lib_extMgm::extRelPath('scheduler') . 'res/gfx/status_running.png');
 
 				// Prepare main content
 			$this->content  = $this->doc->header(
@@ -1049,7 +1050,6 @@ class tx_scheduler_Module extends t3lib_SCbase {
 				$lastExecution = '-';
 				$isRunning = false;
 				$executionStatus = 'scheduled';
-				$executionStatusDetail = '';
 				$executionStatusOutput = '';
 				$name = '';
 				$nextDate = '-';
@@ -1157,7 +1157,7 @@ class tx_scheduler_Module extends t3lib_SCbase {
 
 						// Format the execution status,
 						// including failure feedback, if any
-					$executionStatusOutput = '<img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_' . $executionStatus . '.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.' . $executionStatus)) . '" title="' . htmlspecialchars($executionStatusDetail) . '" />' . $failureOutput;
+					$executionStatusOutput = '<img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_' . $executionStatus . '.png') . ' id="executionstatus_' . $schedulerRecord['uid'] . '" alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.' . $executionStatus)) . '" title="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.legend.' . $executionStatus)) . '" />' . $failureOutput;
 
 					$table[$tr][] = $startExecutionElement;
 					$table[$tr][] = $actions;
@@ -1194,7 +1194,7 @@ class tx_scheduler_Module extends t3lib_SCbase {
 				// Render table
 			$content .= $this->doc->table($table, $tableLayout);
 
-			$content .= '<input type="submit" class="button" name="go" value="' . $GLOBALS['LANG']->getLL('label.executeSelected') . '" />';
+			$content .= '<input type="submit" class="button" name="go" id="scheduler_executeselected" value="' . $GLOBALS['LANG']->getLL('label.executeSelected') . '" />';
 		}
 
 		if (count($registeredClasses) > 0) {
@@ -1220,11 +1220,11 @@ class tx_scheduler_Module extends t3lib_SCbase {
 			$content .= $this->doc->spacer(20);
 			$content .= '<h4>' . $GLOBALS['LANG']->getLL('status.legend') . '</h4>
 			<ul>
-				<li><img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_failure.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.failure')) . '" /> ' . $GLOBALS['LANG']->getLL('status.legend.failure') . '</li>
-				<li><img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_late.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.late')) . '" /> ' . $GLOBALS['LANG']->getLL('status.legend.late') . '</li>
-				<li><img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_running.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.running')) . '" /> ' . $GLOBALS['LANG']->getLL('status.legend.running') . '</li>
-				<li><img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_scheduled.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.scheduled')) . '" /> ' . $GLOBALS['LANG']->getLL('status.legend.scheduled') . '</li>
-				<li><img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_disabled.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.disabled')) . '" /> ' . $GLOBALS['LANG']->getLL('status.legend.disabled') . '</li>
+				<li><img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_failure.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.failure')) . '" title="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.failure')) . '" /> ' . $GLOBALS['LANG']->getLL('status.legend.failure') . '</li>
+				<li><img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_late.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.late')) . '" title="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.late')) . '" /> ' . $GLOBALS['LANG']->getLL('status.legend.late') . '</li>
+				<li><img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_running.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.running')) . '" title="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.running')) . '" /> ' . $GLOBALS['LANG']->getLL('status.legend.running') . '</li>
+				<li><img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_scheduled.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.scheduled')) . '" title="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.scheduled')) . '" /> ' . $GLOBALS['LANG']->getLL('status.legend.scheduled') . '</li>
+				<li><img ' . t3lib_iconWorks::skinImg(t3lib_extMgm::extRelPath('scheduler'), 'res/gfx/status_disabled.png') . ' alt="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.disabled')) . '" title="' . htmlspecialchars($GLOBALS['LANG']->getLL('status.disabled')) . '" /> ' . $GLOBALS['LANG']->getLL('status.legend.disabled') . '</li>
 			</ul>';
 			$content .= $this->doc->spacer(10);
 			$content .= $this->displayServerTime();

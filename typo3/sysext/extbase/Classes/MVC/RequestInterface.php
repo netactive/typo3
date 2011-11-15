@@ -28,7 +28,7 @@
 /**
  * Contract for a request.
  *
- * @version $Id: RequestInterface.php 1729 2009-11-25 21:37:20Z stucki $
+ * @version $Id$
  * @scope prototype
  * @api
  */

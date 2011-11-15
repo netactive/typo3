@@ -252,14 +252,18 @@ abstract class Tx_Extbase_MVC_Controller_AbstractController implements Tx_Extbas
 	}
 
 	/**
-	 * Forwards the request to another controller.
+	 * Forwards the request to another action and / or controller.
+	 *
+	 * Request is directly transfered to the other action / controller
+	 * without the need for a new request.
 	 *
 	 * @param string $actionName Name of the action to forward to
 	 * @param string $controllerName Unqualified object name of the controller to forward to. If not specified, the current controller is used.
 	 * @param string $extensionName Name of the extension containing the controller to forward to. If not specified, the current extension is assumed.
-	 * @param Tx_Extbase_MVC_Controller_Arguments $arguments Arguments to pass to the target action
+	 * @param array $arguments Arguments to pass to the target action
 	 * @return void
 	 * @throws Tx_Extbase_MVC_Exception_StopAction
+	 * @see redirect()
 	 * @api
 	 */
 	public function forward($actionName, $controllerName = NULL, $extensionName = NULL, array $arguments = NULL) {
@@ -272,7 +276,9 @@ abstract class Tx_Extbase_MVC_Controller_AbstractController implements Tx_Extbas
 	}
 
 	/**
-	 * Forwards the request to another action and / or controller.
+	 * Redirects the request to another action and / or controller.
+	 *
+	 * Redirect will be sent to the client which then performs another request to the new URI.
 	 *
 	 * NOTE: This method only supports web requests and will thrown an exception
 	 * if used with other request types.
@@ -280,13 +286,14 @@ abstract class Tx_Extbase_MVC_Controller_AbstractController implements Tx_Extbas
 	 * @param string $actionName Name of the action to forward to
 	 * @param string $controllerName Unqualified object name of the controller to forward to. If not specified, the current controller is used.
 	 * @param string $extensionName Name of the extension containing the controller to forward to. If not specified, the current extension is assumed.
-	 * @param Tx_Extbase_MVC_Controller_Arguments $arguments Arguments to pass to the target action
+	 * @param array $arguments Arguments to pass to the target action
 	 * @param integer $pageUid Target page uid. If NULL, the current page uid is used
 	 * @param integer $delay (optional) The delay in seconds. Default is no delay.
 	 * @param integer $statusCode (optional) The HTTP status code for the redirect. Default is "303 See Other"
 	 * @return void
 	 * @throws Tx_Extbase_MVC_Exception_UnsupportedRequestType If the request is not a web request
 	 * @throws Tx_Extbase_MVC_Exception_StopAction
+	 * @see forward()
 	 * @api
 	 */
 	protected function redirect($actionName, $controllerName = NULL, $extensionName = NULL, array $arguments = NULL, $pageUid = NULL, $delay = 0, $statusCode = 303) {
@@ -334,7 +341,7 @@ abstract class Tx_Extbase_MVC_Controller_AbstractController implements Tx_Extbas
 	 */
 	protected function addBaseUriIfNecessary($uri) {
 		$baseUri = $this->request->getBaseURI();
-		if(stripos($uri, $baseUri) !== 0) {
+		if(stripos($uri, 'http://') !== 0 && stripos($uri, 'https://') !== 0) {
 			$uri = $baseUri . (string)$uri;
 		}
 		return $uri;

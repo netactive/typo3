@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Persistence\QOM
- * @version $Id: Statement.php 1993 2010-03-09 21:44:20Z jocrau $
+ * @version $Id$
  * @scope prototype
  */
 class Tx_Extbase_Persistence_QOM_Statement {
@@ -49,7 +49,7 @@ class Tx_Extbase_Persistence_QOM_Statement {
 	 * @var array
 	 */
 	protected $boundVariables = array();
-
+	
 	/**
 	 * @var string
 	 */
@@ -76,7 +76,7 @@ class Tx_Extbase_Persistence_QOM_Statement {
 	public function getStatement() {
 		return $this->statement;
 	}
-
+	
 	/**
 	 * Gets the bound variables
 	 *
@@ -85,7 +85,7 @@ class Tx_Extbase_Persistence_QOM_Statement {
 	public function getBoundVariables() {
 		return $this->boundVariables;
 	}
-
+	
 	/**
 	 * Gets the language.
 	 *
