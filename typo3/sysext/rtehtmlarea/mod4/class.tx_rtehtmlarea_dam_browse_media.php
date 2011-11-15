@@ -31,7 +31,7 @@
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * $Id: class.tx_rtehtmlarea_dam_browse_media.php 7840 2010-06-08 23:11:03Z stan $  *
+ * $Id$  *
  */
 require_once(t3lib_extMgm::extPath('dam').'class.tx_dam_browse_media.php');
 

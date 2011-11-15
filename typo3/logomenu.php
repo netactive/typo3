@@ -27,7 +27,7 @@
 /**
  * Logo menu
  *
- * $Id: logomenu.php 5761 2009-08-05 10:05:29Z rupi $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

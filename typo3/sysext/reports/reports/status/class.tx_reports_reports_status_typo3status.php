@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	reports
  *
- * $Id: class.tx_reports_reports_status_typo3status.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id$
  */
 class tx_reports_reports_status_Typo3Status implements tx_reports_StatusProvider {
 

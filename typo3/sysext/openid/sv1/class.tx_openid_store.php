@@ -22,7 +22,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /**
- * $Id: class.tx_openid_store.php 7249 2010-04-06 12:39:16Z dmitry $
+ * $Id$
  */
 
 require_once(t3lib_extMgm::extPath('openid', 'lib/php-openid/Auth/OpenID/Interface.php'));

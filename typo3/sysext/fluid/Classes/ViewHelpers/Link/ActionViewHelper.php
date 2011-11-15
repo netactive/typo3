@@ -28,7 +28,7 @@
  *
  * @package Fluid
  * @subpackage ViewHelpers
- * @version $Id: ActionViewHelper.php 1492 2009-10-21 16:02:16Z bwaidelich $
+ * @version $Id$
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @scope prototype
  */

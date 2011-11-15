@@ -27,7 +27,7 @@
 /**
  * Index search frontend
  *
- * $Id: class.tx_indexedsearch.php 8163 2010-07-12 13:24:08Z dmitry $
+ * $Id$
  *
  * Creates a searchform for indexed search. Indexing must be enabled
  * for this to make sense.

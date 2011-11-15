@@ -33,7 +33,7 @@
  * @package TYPO3
  * @subpackage tx_install
  *
- * @version $Id: class.tx_install_session.php 8475 2010-08-03 15:39:25Z ohader $
+ * @version $Id$
  */
 class tx_install_session {
 

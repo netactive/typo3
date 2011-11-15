@@ -31,7 +31,7 @@
 /*
  * Main script of TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: htmlarea.js 9002 2010-10-07 02:28:07Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 
 /***************************************************

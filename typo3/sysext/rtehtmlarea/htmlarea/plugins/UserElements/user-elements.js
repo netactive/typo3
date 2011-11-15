@@ -26,7 +26,7 @@
 /*
  * User Elements Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: user-elements.js 5165 2009-03-09 18:28:59Z ohader $
+ * TYPO3 SVN ID: $Id$
  */
 UserElements = HTMLArea.Plugin.extend({
 	

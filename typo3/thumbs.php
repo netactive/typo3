@@ -27,7 +27,7 @@
 /**
  * Generates a thumbnail and returns an image stream, either GIF/PNG or JPG
  *
- * $Id: thumbs.php 6460 2009-11-17 19:02:55Z rupi $
+ * $Id$
  *
  * @author		René Fritz <r.fritz@colorcube.de>
  */

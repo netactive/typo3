@@ -27,7 +27,7 @@
 /**
  * Contains base class for creating a browsable array/page/folder tree in HTML
  *
- * $Id: class.t3lib_treeview.php 5482 2009-05-22 19:08:30Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

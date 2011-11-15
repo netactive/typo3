@@ -27,7 +27,7 @@
 /**
  * Contains class with basic file management functions
  *
- * $Id: class.t3lib_basicfilefunc.php 5947 2009-09-16 17:57:09Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

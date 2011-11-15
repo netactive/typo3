@@ -28,7 +28,7 @@
 /**
  * View class for the admin panel in frontend editing.
  *
- * $Id: class.tslib_adminpanel.php 8992 2010-10-06 16:18:49Z steffenk $
+ * $Id$
  *
  * @author	Jeff Segars <jeff@webempoweredchurch.org>
  * @author	David Slayback <dave@webempoweredchurch.org>
@@ -303,7 +303,7 @@ class tslib_AdminPanel {
 		$row = '<img src="' . TYPO3_mainDir . 'gfx/ol/blank.gif" width="18" height="16" align="absmiddle" border="0" alt="" />';
 		$row .= '<img src="' . TYPO3_mainDir . 'gfx/ol/' . ($GLOBALS['BE_USER']->uc['TSFE_adminConfig']['display_top']?'minus':'plus') . 'bullet.gif" width="18" height="16" align="absmiddle" border="0" alt="" />';
 		$row .= '<strong>' . $this->extFw($this->extGetLL('adminOptions')) . '</strong>';
-		$row .= $this->extFw(': ' . $GLOBALS['BE_USER']->user['username']);
+		$row .= $this->extFw(': ' . htmlspecialchars($GLOBALS['BE_USER']->user['username']));
 
 		$header = '
 			<tr class="typo3-adminPanel-hRow" style="background-color: #9ba1a8; cursor: move;">

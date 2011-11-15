@@ -21,7 +21,7 @@
  *                                                                        */
 
 /**
- * @version $Id: DateViewHelperTest_testcase.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  */
 class Tx_Fluid_ViewHelpers_Format_DateViewHelperTest_testcase extends Tx_Extbase_BaseTestCase {
 

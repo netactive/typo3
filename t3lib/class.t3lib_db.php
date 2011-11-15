@@ -30,7 +30,7 @@
  * interaction.
  * This class is instantiated globally as $TYPO3_DB in TYPO3 scripts.
  *
- * $Id: class.t3lib_db.php 9777 2010-12-16 13:38:36Z ohader $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

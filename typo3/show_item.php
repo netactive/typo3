@@ -27,7 +27,7 @@
 /**
  * Shows information about a database or file item
  *
- * $Id: show_item.php 8840 2010-09-21 19:56:38Z benni $
+ * $Id$
  * Revised for TYPO3 3.7 May/2004 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

@@ -28,7 +28,7 @@
  * Include file extending t3lib_recordList
  * Shared between Web>List (db_list.php) and Web>Page (sysext/cms/layout/db_layout.php)
  *
- * $Id: class.db_list.inc 9781 2010-12-16 13:39:08Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

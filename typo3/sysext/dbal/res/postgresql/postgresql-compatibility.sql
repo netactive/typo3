@@ -10,7 +10,7 @@
 -- 
 -- The functions add compatibility operators for PostgreSQL to make sure comparison is possible and the SQL doesn't return an error.
 --
--- $Id: postgresql-compatibility.sql 25943 2009-10-28 13:26:30Z xperseguers $
+-- $Id$
 -- R. van Twisk <typo3@rvt.dds.nl>
 
 

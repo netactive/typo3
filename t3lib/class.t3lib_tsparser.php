@@ -27,7 +27,7 @@
 /**
  * Contains the TypoScript parser class
  *
- * $Id: class.t3lib_tsparser.php 9773 2010-12-16 13:37:59Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

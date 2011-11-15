@@ -30,7 +30,7 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
- * @version $Id: class.t3lib_cache_frontend_variablefrontend.php 5595 2009-06-15 21:40:01Z flyguide $
+ * @version $Id$
  */
 class t3lib_cache_frontend_VariableFrontend extends t3lib_cache_frontend_AbstractFrontend {
 

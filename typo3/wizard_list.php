@@ -27,7 +27,7 @@
 /**
  * Wizard to list records from a page id.
  *
- * $Id: wizard_list.php 8428 2010-07-28 09:18:27Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

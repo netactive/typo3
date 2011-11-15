@@ -27,7 +27,7 @@
 /**
  * Web > Functions module plugin for cleaning up.
  *
- * $Id: class.tx_lowlevel_cleaner.php 5526 2009-06-02 13:52:04Z benni $
+ * $Id$
  *
  * XHTML compliant
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>

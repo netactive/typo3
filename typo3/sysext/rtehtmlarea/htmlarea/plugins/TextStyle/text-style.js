@@ -27,7 +27,7 @@
 /*
  * Text Style Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: text-style.js 7843 2010-06-09 01:06:08Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 /*
  * Creation of the class of TextStyle plugins

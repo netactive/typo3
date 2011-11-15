@@ -29,7 +29,7 @@
  * Will display the list of main- and sub-modules available to the user.
  * Each module will be show with description and a link to the module.
  *
- * $Id: alt_intro.php 5526 2009-06-02 13:52:04Z benni $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

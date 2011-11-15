@@ -29,7 +29,7 @@
 /**
  * PHP SQL engine
  *
- * $Id: class.ux_t3lib_sqlparser.php 36761 2010-08-14 16:00:33Z xperseguers $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Karsten Dambekalns <k.dambekalns@fishfarm.de>

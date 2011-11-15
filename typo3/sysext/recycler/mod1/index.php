@@ -31,7 +31,7 @@ $BE_USER->modAccess($MCONF, 1);	// This checks permissions and exits if the user
  * @author	Julian Kleinhans <typo3@kj187.de>
  * @package	TYPO3
  * @subpackage	tx_recycler
- * @version $Id: index.php 6582 2009-11-29 15:44:50Z ohader $
+ * @version $Id$
  */
 class  tx_recycler_module1 extends t3lib_SCbase {
 	/**

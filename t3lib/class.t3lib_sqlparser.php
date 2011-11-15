@@ -27,7 +27,7 @@
 /**
  * TYPO3 SQL parser
  *
- * $Id: class.t3lib_sqlparser.php 9691 2010-11-30 15:22:57Z xperseguers $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

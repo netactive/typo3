@@ -29,7 +29,7 @@
  *
  * @package TYPO3
  * @subpackage t3lib_error
- * @version $Id: class.t3lib_exception.php 6536 2009-11-25 14:07:18Z stucki $
+ * @version $Id$
  */
 class t3lib_exception extends Exception {
 

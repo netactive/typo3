@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_croncmd.php 9826 2010-12-17 14:02:17Z francois $
+ * $Id$
  */
 class tx_scheduler_CronCmd {
 

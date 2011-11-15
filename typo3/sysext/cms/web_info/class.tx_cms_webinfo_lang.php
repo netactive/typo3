@@ -27,7 +27,7 @@
 /**
  * Contains a class with functions for page related overview of translations.
  *
- * $Id: class.tx_cms_webinfo_lang.php 5761 2009-08-05 10:05:29Z rupi $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

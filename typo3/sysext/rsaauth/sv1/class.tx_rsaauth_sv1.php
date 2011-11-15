@@ -24,7 +24,7 @@
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
  *
- * $Id: class.tx_rsaauth_sv1.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id$
  */
 
 require_once(t3lib_extMgm::extPath('sv') . 'class.tx_sv_auth.php');

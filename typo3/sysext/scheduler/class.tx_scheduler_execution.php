@@ -33,7 +33,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_execution.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id$
  */
 class tx_scheduler_Execution {
 

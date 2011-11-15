@@ -28,7 +28,7 @@
  * Form-data processing
  * included from index_ts.php
  *
- * $Id: class.tslib_fetce.php 5978 2009-09-18 12:47:26Z rupi $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

@@ -16,14 +16,14 @@
 /**
  * @package Fluid
  * @subpackage Tests
- * @version $Id: TranslateViewHelperTest_testcase.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  */
 /**
  * Testcase for TranslateViewHelper
  *
  * @package Fluid
  * @subpackage Tests
- * @version $Id: TranslateViewHelperTest_testcase.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License, version 2
  */
 require_once('ViewHelperBaseTestcase.php');

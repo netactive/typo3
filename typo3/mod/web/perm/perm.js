@@ -33,7 +33,7 @@
  * @author		Benjamin Mack <www.xnos.org>
  * @package		TYPO3
  * @subpackage	core
- * @version 	$Id: perm.js 6539 2009-11-25 14:49:14Z stucki $
+ * @version 	$Id$
  */
 
 // TYPO3 code extracted from index.php

@@ -29,7 +29,7 @@
  * By sending certain parameters to this script you can bring up a form
  * which allows the user to edit the content of one or more database records.
  *
- * $Id: alt_doc.php 9697 2010-11-30 23:40:00Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

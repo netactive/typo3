@@ -31,7 +31,7 @@
  * @package		TYPO3
  * @subpackage	sv
  *
- * $Id: class.tx_sv_reports_serviceslist.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id$
  */
 class tx_sv_reports_ServicesList implements tx_reports_Report {
 	/**

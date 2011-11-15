@@ -30,7 +30,7 @@
  * Provides links to registered shortcuts
  * If the 'cms' extension is loaded you will also have a field for entering page id/alias which will be found/edited
  *
- * $Id: alt_shortcut.php 8378 2010-07-28 09:05:57Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant output
  *

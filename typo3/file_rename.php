@@ -27,7 +27,7 @@
 /**
  * Web>File: Renaming files and folders
  *
- * $Id: file_rename.php 8428 2010-07-28 09:18:27Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

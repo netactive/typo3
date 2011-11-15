@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Utility
- * @version $Id: ClassLoader.php 2469 2010-07-26 09:30:14Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Utility_ClassLoader {
 	

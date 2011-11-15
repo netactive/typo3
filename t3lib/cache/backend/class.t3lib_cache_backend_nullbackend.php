@@ -30,7 +30,7 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
- * @version $Id: class.t3lib_cache_backend_nullbackend.php 5149 2009-03-08 15:39:26Z flyguide $
+ * @version $Id$
  */
 class t3lib_cache_backend_NullBackend extends t3lib_cache_backend_AbstractBackend {
 

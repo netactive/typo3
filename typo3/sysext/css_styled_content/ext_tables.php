@@ -1,5 +1,5 @@
 <?php
-# TYPO3 SVN ID: $Id: ext_tables.php 7544 2010-05-06 16:26:35Z psychomieze $
+# TYPO3 SVN ID: $Id$
 if (!defined ('TYPO3_MODE')) 	die ('Access denied.');
 
 	// add flexform

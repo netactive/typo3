@@ -31,7 +31,7 @@
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * $Id: class.tx_rtehtmlarea_user.php 5557 2009-06-05 07:45:33Z patrick $  *
+ * $Id$  *
  */
 
 class tx_rtehtmlarea_user {

@@ -32,7 +32,7 @@
  *
  * @package Extbase
  * @subpackage Reflection
- * @version $Id: ObjectAccess.php 2149 2010-03-30 09:28:54Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Reflection_ObjectAccess {
 

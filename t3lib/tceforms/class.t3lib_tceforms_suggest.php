@@ -27,7 +27,7 @@
 /**
  * TCEforms wizard for rendering an AJAX selector for records
  *
- * $Id: class.t3lib_tceforms_suggest.php 6915 2010-02-19 17:11:00Z benni $
+ * $Id$
  *
  * @author Andreas Wolf <andreas.wolf@ikt-werk.de>
  * @author Benjamin Mack <benni@typo3.org>

@@ -27,7 +27,7 @@
 /**
  * Contains class with functions for parsing HTML code.
  *
- * $Id: class.t3lib_parsehtml.php 10015 2011-01-09 19:59:16Z stan $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

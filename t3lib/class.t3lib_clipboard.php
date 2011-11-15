@@ -27,7 +27,7 @@
 /**
  * Contains class for TYPO3 clipboard for records and files
  *
- * $Id: class.t3lib_clipboard.php 6607 2009-11-30 17:16:13Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

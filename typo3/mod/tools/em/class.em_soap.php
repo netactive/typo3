@@ -25,7 +25,7 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
-/* $Id: class.em_soap.php 5449 2009-05-19 13:52:53Z ohader $ */
+/* $Id$ */
 
 /**
  * Enter description here...

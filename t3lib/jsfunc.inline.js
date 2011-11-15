@@ -3,7 +3,7 @@
 /***************************************************************
 *  Inline-Relational-Record Editing
 *
-* $Id: jsfunc.inline.js 9135 2010-10-18 02:21:18Z stan $
+* $Id$
 *
 *
 *

@@ -27,7 +27,7 @@
 /**
  * Folder tree in the File main module.
  *
- * $Id: alt_file_navframe.php 6167 2009-10-19 11:59:31Z rupi $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

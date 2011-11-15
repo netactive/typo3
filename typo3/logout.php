@@ -28,7 +28,7 @@
  * Logout script for the backend
  * This script saves the interface positions and calls the closeTypo3Windows in the frameset
  *
- * $Id: logout.php 8428 2010-07-28 09:18:27Z ohader $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

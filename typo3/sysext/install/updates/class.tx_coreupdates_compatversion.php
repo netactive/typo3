@@ -29,7 +29,7 @@
  * Contains the update class for the compatibility version. Used by the update wizard in the install tool.
  *
  * @author Sebastian Kurfuerst <sebastian@garbage-group.de
- * @version $Id: class.tx_coreupdates_compatversion.php 9769 2010-12-16 13:37:08Z ohader $
+ * @version $Id$
  */
 class tx_coreupdates_compatversion {
 	var $versionNumber;	// version number coming from t3lib_div::int_from_ver()

@@ -27,7 +27,7 @@
 /**
  * Contains the TYPO3 Core Engine
  *
- * $Id: class.t3lib_tcemain.php 9256 2010-11-03 17:34:30Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.9 October 2005 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -7579,7 +7579,7 @@ State was change by %s (username: %s)
 			$msg = $row['error'] . ': ' . sprintf($row['details'], $log_data[0], $log_data[1], $log_data[2], $log_data[3], $log_data[4]);
 			$flashMessage = t3lib_div::makeInstance(
 						't3lib_FlashMessage',
-						$msg,
+						htmlspecialchars($msg),
 						'',
 						t3lib_FlashMessage::ERROR,
 						TRUE

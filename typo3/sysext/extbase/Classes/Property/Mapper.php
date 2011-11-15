@@ -47,7 +47,7 @@
  *
  * @package Extbase
  * @subpackage Property
- * @version $Id: Mapper.php 2240 2010-04-21 09:45:32Z jocrau $
+ * @version $Id$
  * @api
  */
 class Tx_Extbase_Property_Mapper {

@@ -27,7 +27,7 @@
 /**
  * Generates a thumbnail and returns an image stream, either GIF/PNG or JPG
  *
- * $Id: thumbs.php 9863 2010-12-20 19:42:03Z tolleiv $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author		Kasper Skaarhoj	<kasperYYYY@typo3.com>

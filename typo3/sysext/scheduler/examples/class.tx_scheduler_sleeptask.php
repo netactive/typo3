@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_sleeptask.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id$
  */
 class tx_scheduler_SleepTask extends tx_scheduler_Task {
 

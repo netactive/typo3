@@ -27,7 +27,7 @@
 /**
  * Module: Workspace manager
  *
- * $Id: index.php 8807 2010-09-18 10:57:56Z benni $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Dmitry Dulepov <typo3@accio.lv>

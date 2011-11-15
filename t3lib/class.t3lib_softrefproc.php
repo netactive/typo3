@@ -30,7 +30,7 @@
  * which are default for most TYPO3 installations. Soft References can also be userdefined.
  * The Soft Reference parsers are used by the system to find these references and process them accordingly in import/export actions and copy operations.
  *
- * $Id: class.t3lib_softrefproc.php 5482 2009-05-22 19:08:30Z ohader $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

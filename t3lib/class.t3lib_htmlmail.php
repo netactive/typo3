@@ -27,7 +27,7 @@
 /**
  * HTML mail class
  *
- * $Id: class.t3lib_htmlmail.php 9970 2010-12-30 16:24:12Z lolli $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

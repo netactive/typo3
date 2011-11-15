@@ -32,7 +32,7 @@
  * @package TYPO3
  * @subpackage t3lib_error
  * @author Rupert Germann <rupi@gmx.li>
- * @version $Id: class.t3lib_error_errorhandler.php 8751 2010-09-03 21:14:00Z steffenk $
+ * @version $Id$
  */
 class t3lib_error_ErrorHandler implements t3lib_error_ErrorHandlerInterface {
 

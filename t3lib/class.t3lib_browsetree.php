@@ -27,7 +27,7 @@
 /**
  * Generate a page-tree, browsable.
  *
- * $Id: class.t3lib_browsetree.php 8569 2010-08-11 19:46:05Z stephenking $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

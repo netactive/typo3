@@ -29,7 +29,7 @@
 /**
  * Contains the update class for adding the system extension "simulate static".
  *
- * $Id: class.tx_coreupdates_installversioning.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id$
  *
  * @author  Rupert Germann
  */

@@ -27,7 +27,7 @@
 /**
  * Contains an extension class specifically for authentication/initialization of backend users in TYPO3
  *
- * $Id: class.t3lib_userauthgroup.php 6948 2010-02-21 18:52:16Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

@@ -26,7 +26,7 @@
 /**
  * Module: Extension manager
  *
- * $Id: class.em_unzip.php 9789 2010-12-16 13:40:55Z ohader $
+ * $Id$
  *
  * @author	Vincent Blavet <vincent@phpconcept.net>
  * @author	Karsten Dambekalns <karsten@typo3.org>

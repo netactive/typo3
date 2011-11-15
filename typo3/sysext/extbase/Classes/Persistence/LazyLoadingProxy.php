@@ -31,7 +31,7 @@
  *
  * @package Extbase
  * @subpackage Persistence
- * @version $Id: LazyLoadingProxy.php 2442 2010-07-26 09:27:29Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Persistence_LazyLoadingProxy implements Iterator, Tx_Extbase_Persistence_LoadingStrategyInterface {
 

@@ -32,7 +32,7 @@
  *
  * @package Extbase
  * @subpackage Persistence\QOM
- * @version $Id: QueryObjectModelFactoryInterface.php 1971 2010-03-08 16:59:04Z jocrau $
+ * @version $Id$
  */
 interface Tx_Extbase_Persistence_QOM_QueryObjectModelFactoryInterface extends Tx_Extbase_Persistence_QOM_QueryObjectModelConstantsInterface {
 

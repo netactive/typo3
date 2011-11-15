@@ -27,7 +27,7 @@
 /**
  * Web>File: Editing documents
  *
- * $Id: file_edit.php 8428 2010-07-28 09:18:27Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant (except textarea field)
  *

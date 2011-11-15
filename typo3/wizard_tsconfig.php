@@ -27,7 +27,7 @@
 /**
  * Wizard for inserting TSconfig in form fields. (page,user or TS)
  *
- * $Id: wizard_tsconfig.php 8401 2010-07-28 09:12:31Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -640,7 +640,7 @@ class SC_wizard_tsconfig {
 	protected function areFieldChangeFunctionsValid() {
 		return (
 			isset($this->P['fieldChangeFunc']) && is_array($this->P['fieldChangeFunc']) && isset($this->P['fieldChangeFuncHash'])
-			&& $this->P['fieldChangeFuncHash'] == t3lib_div::hmac(serialize($this->P['fieldChangeFunc']))
+			&& $this->P['fieldChangeFuncHash'] === t3lib_div::hmac(serialize($this->P['fieldChangeFunc']))
 		);
 	}
 }

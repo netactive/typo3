@@ -28,7 +28,7 @@
 /**
  * This class is the OpenID return script for the TYPO3 Backend (used in the user-settings module).
  *
- * $Id: class.tx_openid_mod_setup.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id$
  *
  * @author	Steffen Gebert <steffen@steffen-gebert.de>
  */

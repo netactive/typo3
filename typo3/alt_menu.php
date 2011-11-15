@@ -27,7 +27,7 @@
 /**
  * Displays the vertical menu in the left most frame of TYPO3s backend
  *
- * $Id: alt_menu.php 5799 2009-08-18 12:49:48Z francois $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *

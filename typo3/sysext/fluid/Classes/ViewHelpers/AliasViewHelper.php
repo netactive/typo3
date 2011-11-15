@@ -46,7 +46,7 @@
  * depending on {foo.bar.baz}
  * </output>
  *
- * @version $Id: AliasViewHelper.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  * @package Fluid
  * @subpackage ViewHelpers
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later

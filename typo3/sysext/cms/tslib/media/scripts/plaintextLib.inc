@@ -27,7 +27,7 @@
 /**
  * Generating plain text content of content elements for Direct Mails
  *
- * $Id: plaintextLib.inc 9057 2010-10-14 09:04:16Z benni $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

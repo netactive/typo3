@@ -26,7 +26,7 @@
  *
  * @author	Francois Suter <francois@typo3.org>
  *
- * $Id: tx_scheduler_be.js 6539 2009-11-25 14:49:14Z stucki $
+ * $Id$
  */
 
 /**

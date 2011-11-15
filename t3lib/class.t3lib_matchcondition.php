@@ -27,7 +27,7 @@
 /**
  * Contains class for Matching TypoScript conditions
  *
- * $Id: class.t3lib_matchcondition.php 6354 2009-11-06 10:14:38Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

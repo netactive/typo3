@@ -27,7 +27,7 @@
 /**
  * class to handle the backend search
  *
- * $Id: backendsearch.js 6539 2009-11-25 14:49:14Z stucki $
+ * $Id$
  */
 var BackendSearch = Class.create({
 

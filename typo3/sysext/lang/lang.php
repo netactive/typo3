@@ -27,7 +27,7 @@
 /**
  * Contains the TYPO3 Backend Language class
  *
- * $Id: lang.php 9886 2010-12-23 11:42:13Z jigal $
+ * $Id$
  * Revised for TYPO3 3.6.0
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

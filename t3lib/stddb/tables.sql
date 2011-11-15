@@ -1,5 +1,5 @@
 #
-# TYPO3 SVN ID: $Id: tables.sql 6525 2009-11-25 11:27:34Z steffenk $
+# TYPO3 SVN ID: $Id$
 #
 
 #

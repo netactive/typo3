@@ -29,7 +29,7 @@
 /*
  * Default Color Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: default-color.js 6539 2009-11-25 14:49:14Z stucki $
+ * TYPO3 SVN ID: $Id$
  */
 DefaultColor = HTMLArea.Plugin.extend({
 	

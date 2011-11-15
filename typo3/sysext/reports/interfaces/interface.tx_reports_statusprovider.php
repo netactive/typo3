@@ -33,7 +33,7 @@
  * @package		TYPO3
  * @subpackage	tx_reports
  *
- * $Id: interface.tx_reports_statusprovider.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id$
  */
 interface tx_reports_StatusProvider {
 

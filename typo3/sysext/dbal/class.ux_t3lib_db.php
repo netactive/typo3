@@ -29,7 +29,7 @@
 /**
  * Contains a database abstraction layer class for TYPO3
  *
- * $Id: class.ux_t3lib_db.php 36761 2010-08-14 16:00:33Z xperseguers $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  * @author	Karsten Dambekalns <k.dambekalns@fishfarm.de>
@@ -257,7 +257,7 @@ class ux_t3lib_DB extends t3lib_DB {
 			t3lib_div::writeFile(PATH_typo3conf . 'temp_fieldInfo.php', $cachedFieldInfo);
 
 			if (strcmp(t3lib_div::getUrl(PATH_typo3conf . 'temp_fieldInfo.php'), $cachedFieldInfo)) {
-				die('typo3temp/temp_incfields.php was NOT updated properly (written content didn\'t match file content) - maybe write access problem?');
+				die('typo3conf/temp_fieldInfo.php was NOT updated properly (written content didn\'t match file content) - maybe write access problem?');
 			}
 		}
 	}
@@ -389,6 +389,8 @@ class ux_t3lib_DB extends t3lib_DB {
 					$sqlResult = mysql_query($this->lastQuery, $this->handlerInstance[$this->lastHandlerKey]['link']);
 				} else {
 					$sqlResult = mysql_query($this->lastQuery[0], $this->handlerInstance[$this->lastHandlerKey]['link']);
+					$new_id = $this->sql_insert_id();
+					$where = $this->cache_autoIncFields[$table] . '=' . $new_id;
 					foreach ($this->lastQuery[1] as $field => $content) {
 						mysql_query('UPDATE ' . $this->quoteFromTables($table) . ' SET ' . $this->quoteFromTables($field) . '=' . $this->fullQuoteStr($content, $table) . ' WHERE ' . $this->quoteWhereClause($where), $this->handlerInstance[$this->lastHandlerKey]['link']);
 					}
@@ -1878,7 +1880,7 @@ class ux_t3lib_DB extends t3lib_DB {
 				$tables_result = mysql_query('SHOW TABLE STATUS FROM `' . TYPO3_db . '`', $this->handlerInstance['_DEFAULT']['link']);
 				if (!$this->sql_error()) {
 					while ($theTable = $this->sql_fetch_assoc($tables_result)) {
-						$whichTables[current($theTable)] = current($theTable);
+						$whichTables[$theTable['Name']] = $theTable;
 					}
 				}
 				break;
@@ -1900,14 +1902,18 @@ class ux_t3lib_DB extends t3lib_DB {
 				// Mapping table names in reverse, first getting list of real table names:
 			$tMap = array();
 			foreach ($this->mapping as $tN => $tMapInfo) {
-				if (isset($tMapInfo['mapTableName']))	$tMap[$tMapInfo['mapTableName']]=$tN;
+				if (isset($tMapInfo['mapTableName'])) {
+					$tMap[$tMapInfo['mapTableName']] = $tN;
+				}
 			}
 
 				// Do mapping:
 			$newList=array();
-			foreach ($whichTables as $tN) {
-				if (isset($tMap[$tN]))	$tN = $tMap[$tN];
-				$newList[$tN] = $tN;
+			foreach ($whichTables as $tN => $tDefinition) {
+				if (isset($tMap[$tN])) {
+					$tN = $tMap[$tN];
+				}
+				$newList[$tN] = $tDefinition;
 			}
 
 			$whichTables = $newList;
@@ -2150,10 +2156,10 @@ class ux_t3lib_DB extends t3lib_DB {
 						// Compiling query:
 					$compiledQuery =  $this->SQLparser->compileSQL($this->lastParsedAndMappedQueryArray);
 
-					if ($this->lastParsedAndMappedQueryArray['type']=='INSERT') {
+					if ($this->lastParsedAndMappedQueryArray['type'] == 'INSERT') {
 						return mysql_query($compiledQuery, $this->link);
 					}
-					return mysql_query($compiledQuery[0], $this->link);
+					return mysql_query(is_array($compiledQuery) ? $compiledQuery[0] : $compiledQuery, $this->link);
 					break;
 				case 'adodb':
 						// Compiling query:
@@ -2733,7 +2739,7 @@ class ux_t3lib_DB extends t3lib_DB {
 					$this->mapping[$mappingKey]['mapTableName'] =& $this->mapping[$v['table']]['mapTableName'];
 				}
 			}
-			if ($mapping !== $v['table']) {
+			if ($mappingKey !== $v['table']) {
 				$this->mapping[$mappingKey]['mapFieldNames'] =& $this->mapping[$v['table']]['mapFieldNames'];
 			}
 		}

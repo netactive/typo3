@@ -27,7 +27,7 @@
  *
  * @package Extbase
  * @subpackage Persistence
- * @version $Id: QueryFactory.php 1789 2010-01-18 21:31:59Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Persistence_QueryFactory implements Tx_Extbase_Persistence_QueryFactoryInterface, t3lib_Singleton {
 

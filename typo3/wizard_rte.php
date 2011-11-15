@@ -27,7 +27,7 @@
 /**
  * Wizard to display the RTE in "full screen" mode
  *
- * $Id: wizard_rte.php 8428 2010-07-28 09:18:27Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

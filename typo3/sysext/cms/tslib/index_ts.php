@@ -30,7 +30,7 @@
  * The script configures constants, includes libraries and does a little logic here and there in order to instantiate the right classes to create the webpage.
  * All the real data processing goes on in the "tslib/" classes which this script will include and use as needed.
  *
- * $Id: index_ts.php 7263 2010-04-09 08:46:26Z stucki $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

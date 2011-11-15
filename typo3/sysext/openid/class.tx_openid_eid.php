@@ -37,7 +37,7 @@
 /**
  * This class is the OpenID return script for the TYPO3 Frontend.
  *
- * $Id: class.tx_openid_eid.php 6469 2009-11-17 23:56:35Z benni $
+ * $Id$
  *
  * @author	Dmitry Dulepov <dmitry@typo3.org>
  */

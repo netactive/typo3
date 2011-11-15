@@ -27,7 +27,7 @@
 /**
  * Displays the secondary-options palette for the TCEFORMs wherever they are shown.
  *
- * $Id: alt_palette.php 6244 2009-10-22 08:30:40Z baschny $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

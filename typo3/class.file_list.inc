@@ -27,7 +27,7 @@
 /**
  * Include file extending t3lib_recordList
  *
- * $Id: class.file_list.inc 7454 2010-04-30 10:20:26Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

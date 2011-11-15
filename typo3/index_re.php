@@ -33,7 +33,7 @@
  * 		RewriteRule   ^typo3$  typo3/index_re.php
  * ... and this document will redirect to the right script.
  *
- * $Id: index_re.php 6469 2009-11-17 23:56:35Z benni $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @package TYPO3

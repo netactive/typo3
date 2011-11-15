@@ -27,7 +27,7 @@
 /**
  * Contains class for creating a position map.
  *
- * $Id: class.t3lib_positionmap.php 5175 2009-03-10 20:36:07Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant (should be)
  *

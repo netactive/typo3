@@ -1473,4 +1473,4 @@ plugin.tx_cssstyledcontent._CSS_DEFAULT_STYLE (
 )
 
 
-# TYPO3 SVN ID: $Id: setup.txt 7190 2010-03-26 16:36:41Z lolli $
+# TYPO3 SVN ID: $Id$

@@ -1,7 +1,7 @@
 /***************************************************************
  * extJS for TCEforms
  *
- * $Id: tceforms.js 8022 2010-06-21 21:59:22Z steffenk $
+ * $Id$
  *
  * Copyright notice
  *

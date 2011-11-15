@@ -31,7 +31,7 @@
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_select_image.php 8316 2010-07-28 08:51:24Z ohader $  *
+ * $Id$  *
  */
 require_once(PATH_typo3.'class.browse_links.php');
 

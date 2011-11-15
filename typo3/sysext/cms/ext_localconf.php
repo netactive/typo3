@@ -1,5 +1,5 @@
 <?php
-# TYPO3 SVN ID: $Id: ext_localconf.php 6770 2010-01-14 08:29:16Z steffenk $
+# TYPO3 SVN ID: $Id$
 if (!defined ('TYPO3_MODE')) 	die ('Access denied.');
 
 t3lib_extMgm::addUserTSConfig('

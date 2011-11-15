@@ -28,7 +28,7 @@
  * Super Admin class has functions for the administration of multiple TYPO3 sites in folders
  * See 'misc/superadmin.php' for details on how to use!
  *
- * $Id: class.t3lib_superadmin.php 6460 2009-11-17 19:02:55Z rupi $
+ * $Id$
  * Revised for TYPO3 3.6 February/2004 by Kasper Skaarhoj
  * XHTML Compliant
  *

@@ -27,7 +27,7 @@
 /**
  * Contains a base class for authentication of users in TYPO3, both frontend and backend.
  *
- * $Id: class.t3lib_userauth.php 9207 2010-10-27 15:55:31Z stephenking $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -251,6 +251,9 @@ class t3lib_userAuth {
 		}
 			// Make certain that NO user is set initially
 		$this->user = '';
+
+			// We need a PHP session session for most login levels
+		session_start();
 
 			// Check to see if anyone has submitted login-information and if so register the user with the session. $this->user[uid] may be used to write log...
 		$this->checkAuthentication();
@@ -1205,7 +1208,6 @@ class t3lib_userAuth {
 
 					// Check challenge stored in cookie:
 				if ($this->challengeStoredInCookie)	{
-					session_start();
 					if ($_SESSION['login_challenge'] !== $loginData['chalvalue']) {
 						if ($this->writeDevLog) 	t3lib_div::devLog('PHP Session stored challenge "'.$_SESSION['login_challenge'].'" and submitted challenge "'.$loginData['chalvalue'].'" did not match, so authentication failed!', 't3lib_userAuth', 2);
 						$this->logoff();

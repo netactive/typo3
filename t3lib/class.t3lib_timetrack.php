@@ -27,7 +27,7 @@
 /**
 * Contains class with time tracking functions
 *
-* $Id: class.t3lib_timetrack.php 6339 2009-11-05 21:21:54Z masi $
+* $Id$
 * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
 * XHTML compliant
 *

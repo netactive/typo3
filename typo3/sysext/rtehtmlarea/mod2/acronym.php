@@ -29,7 +29,7 @@
  *
  * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * $Id: acronym.php 5165 2009-03-09 18:28:59Z ohader $  *
+ * $Id$  *
  */
 
 error_reporting (E_ALL ^ E_NOTICE);

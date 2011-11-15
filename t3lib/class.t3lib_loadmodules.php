@@ -27,7 +27,7 @@
 /**
  * This document provides a class that loads the modules for the TYPO3 interface.
  *
- * $Id: class.t3lib_loadmodules.php 6134 2009-10-11 13:05:54Z steffenk $
+ * $Id$
  * Modifications by Rene Fritz, 2001
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *

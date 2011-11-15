@@ -27,7 +27,7 @@
 /**
  * Wizard to edit records from group/select lists in TCEforms
  *
- * $Id: wizard_edit.php 6469 2009-11-17 23:56:35Z benni $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

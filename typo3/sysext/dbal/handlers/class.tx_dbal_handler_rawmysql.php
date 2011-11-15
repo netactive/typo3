@@ -27,7 +27,7 @@
 /**
  * Contains an example DBAL handler class
  *
- * $Id: class.tx_dbal_handler_rawmysql.php 35525 2010-07-11 14:05:40Z xperseguers $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  */

@@ -27,7 +27,7 @@
 /**
  * Contains class for TYPO3 backend user authentication
  *
- * $Id: class.t3lib_beuserauth.php 6469 2009-11-17 23:56:35Z benni $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

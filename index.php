@@ -28,7 +28,7 @@
  * This is the MAIN DOCUMENT of the TypoScript driven standard front-end (from the "cms" extension)
  * Basically this is the "index.php" script which all requests for TYPO3 delivered pages goes to in the frontend (the website)
  *
- * $Id: index.php 6985 2010-02-23 10:04:05Z ohader $
+ * $Id$
  *
  * @author	René Fritz <r.fritz@colorcube.de>
  * @package TYPO3

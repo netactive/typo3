@@ -1,7 +1,7 @@
 /***************************************************************
  * TYPO3 Element Browser
  *
- * $Id: browse_links.js 5165 2009-03-09 18:28:59Z ohader $
+ * $Id$
  *
  *
  * Copyright notice

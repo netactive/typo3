@@ -27,7 +27,7 @@
 /**
  * Typo Link PopUp EXAMPLE!
  *
- * $Id: example_typolinkpop.php 5165 2009-03-09 18:28:59Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

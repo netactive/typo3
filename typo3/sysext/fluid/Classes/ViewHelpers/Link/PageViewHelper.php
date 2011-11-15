@@ -36,7 +36,7 @@
  *
  * @package Fluid
  * @subpackage ViewHelpers
- * @version $Id: PageViewHelper.php 1230 2009-09-13 18:59:22Z sebastian $
+ * @version $Id$
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @scope prototype
  */

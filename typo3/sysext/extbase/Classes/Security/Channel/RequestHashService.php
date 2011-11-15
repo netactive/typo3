@@ -41,7 +41,7 @@
  *
  * Note: It is crucially important that a private key is computed into the hash value! This is done inside the HashService.
  *
- * @version $Id: RequestHashService.php 2457 2010-07-26 09:29:01Z jocrau $
+ * @version $Id$
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
 class Tx_Extbase_Security_Channel_RequestHashService implements t3lib_singleton {

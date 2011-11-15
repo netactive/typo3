@@ -27,7 +27,7 @@
 /**
  * Contains translation tools
  *
- * $Id: class.t3lib_transl8tools.php 6190 2009-10-20 17:44:02Z ohader $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

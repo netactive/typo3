@@ -27,7 +27,7 @@
 /**
  * Web>File: File listing
  *
- * $Id: file_list.php 6720 2010-01-04 19:17:21Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

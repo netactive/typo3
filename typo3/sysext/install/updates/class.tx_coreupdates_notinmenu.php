@@ -30,7 +30,7 @@
  *
  * @author Sebastian Kurfuerst <sebastian@garbage-group.de>
  * @author Steffen Kamper <info@sk-typo3.de>
- * @version $Id: class.tx_coreupdates_notinmenu.php 5489 2009-05-23 15:26:20Z ohader $
+ * @version $Id$
  */
 class tx_coreupdates_notinmenu {
 	var $versionNumber;	// version number coming from t3lib_div::int_from_ver()

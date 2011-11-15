@@ -27,7 +27,7 @@
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
  *
- * $Id: class.tx_tstemplateobjbrowser.php 8170 2010-07-13 14:51:44Z steffenk $
+ * $Id$
  */
 
 $GLOBALS['LANG']->includeLLFile('EXT:tstemplate_objbrowser/locallang.xml');

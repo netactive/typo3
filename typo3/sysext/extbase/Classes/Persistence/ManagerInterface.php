@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Persistence
- * @version $Id: ManagerInterface.php 1729 2009-11-25 21:37:20Z stucki $
+ * @version $Id$
  * @api
  */
 interface Tx_Extbase_Persistence_ManagerInterface {

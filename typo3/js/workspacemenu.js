@@ -28,7 +28,7 @@
 /**
  * class to handle the workspace menu
  *
- * $Id: workspacemenu.js 8530 2010-08-08 13:02:47Z psychomieze $
+ * $Id$
  */
 var WorkspaceMenu = Class.create({
 

@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage extbase
- * @version $Id: StringLengthValidator_testcase.php 1408 2009-10-08 13:15:09Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Validation_Validator_StringLengthValidator_testcase extends Tx_Extbase_BaseTestCase {
 

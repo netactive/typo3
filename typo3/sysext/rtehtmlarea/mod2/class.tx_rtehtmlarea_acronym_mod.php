@@ -29,7 +29,7 @@
  *
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_acronym_mod.php 9003 2010-10-07 02:47:25Z stan $  *
+ * $Id$  *
  */
 
 class tx_rtehtmlarea_acronym_mod {

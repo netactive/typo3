@@ -27,7 +27,7 @@
 /**
  * Redirects to real module if shortcut pressed
  *
- * $Id: listframe_loader.php 5174 2009-03-10 20:23:43Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML-trans compliant
  *

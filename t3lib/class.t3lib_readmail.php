@@ -27,7 +27,7 @@
 /**
  * Contains a class with functions used to read email content
  *
- * $Id: class.t3lib_readmail.php 5424 2009-05-15 23:12:32Z k-fish $
+ * $Id$
  * Revised for TYPO3 3.6 May 2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

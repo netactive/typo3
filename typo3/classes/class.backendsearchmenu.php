@@ -29,7 +29,7 @@
 /**
  * class to render the backend search toolbar item menu
  *
- * $Id: class.backendsearchmenu.php 5165 2009-03-09 18:28:59Z ohader $
+ * $Id$
  *
  * @author	Ingo Renner <ingo@typo3.org>
  * @package TYPO3

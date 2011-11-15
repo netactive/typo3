@@ -27,7 +27,7 @@
 /**
  * Contains the dynamic configuation of the fields in the core tables of TYPO3: be_users, be_groups, sys_filemounts and sys_workspace
  *
- * $Id: tbl_be.php 6430 2009-11-16 16:31:24Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

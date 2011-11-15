@@ -27,7 +27,7 @@
 /**
  * Class for displaying an array as a tree
  *
- * $Id: class.t3lib_arraybrowser.php 6876 2010-02-07 23:14:14Z lolli $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

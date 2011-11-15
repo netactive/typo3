@@ -27,7 +27,7 @@
 /**
  * Class with template object that is responsible for generating the template
  *
- * $Id: class.t3lib_tstemplate.php 8773 2010-09-09 09:21:59Z dmitry $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -1470,7 +1470,7 @@ class t3lib_TStemplate	{
 			// linkVars
 		if ($GLOBALS['TSFE']->config['config']['uniqueLinkVars']) {
 			if ($addParams) {
-				$LD['linkVars'] = t3lib_div::implodeArrayForUrl('',t3lib_div::explodeUrl2Array($GLOBALS['TSFE']->linkVars.$addParams));
+				$LD['linkVars'] = t3lib_div::implodeArrayForUrl('', t3lib_div::explodeUrl2Array($GLOBALS['TSFE']->linkVars . $addParams), '', FALSE, TRUE);
 			} else {
 				$LD['linkVars'] = $GLOBALS['TSFE']->linkVars;
 			}

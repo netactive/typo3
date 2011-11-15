@@ -28,7 +28,7 @@
 /**
  * Module: Extension manager
  *
- * $Id: index.php 5165 2009-03-09 18:28:59Z ohader $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Karsten Dambekalns <karsten@typo3.org>

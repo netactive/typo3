@@ -32,7 +32,7 @@
  * The class is instantiated as $GLOBALS['TSFE'] in index_ts.php.
  * The use of this class should be inspired by the order of function calls as found in index_ts.php.
  *
- * $Id: class.tslib_fe.php 8980 2010-10-06 08:17:16Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -2257,7 +2257,7 @@
 			$TCA = Array();
 			include (TYPO3_tables_script ? PATH_typo3conf.TYPO3_tables_script : PATH_t3lib.'stddb/tables.php');
 				// Extension additions
-			if ($GLOBALS['TYPO3_LOADED_EXT']['_CACHEFILE'])	{
+			if ($GLOBALS['TYPO3_LOADED_EXT']['_CACHEFILE'] && file_exists(PATH_typo3conf . $GLOBALS['TYPO3_LOADED_EXT']['_CACHEFILE'] . '_ext_tables.php')) {
 				include(PATH_typo3conf.$GLOBALS['TYPO3_LOADED_EXT']['_CACHEFILE'].'_ext_tables.php');
 			} else {
 				include(PATH_t3lib.'stddb/load_ext_tables.php');

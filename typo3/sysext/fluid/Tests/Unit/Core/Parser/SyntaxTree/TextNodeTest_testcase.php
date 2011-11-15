@@ -23,7 +23,7 @@
 /**
  * Testcase for TextNode
  *
- * @version $Id: TextNodeTest_testcase.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
 class Tx_Fluid_Core_Parser_SyntaxTree_TextNodeTest_testcase extends Tx_Extbase_BaseTestCase {

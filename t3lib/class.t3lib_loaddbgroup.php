@@ -27,7 +27,7 @@
 /**
  * Contains class for loading database groups
  *
- * $Id: class.t3lib_loaddbgroup.php 6928 2010-02-21 12:37:16Z xperseguers $
+ * $Id$
  * Revised for TYPO3 3.6 September/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

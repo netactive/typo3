@@ -28,7 +28,7 @@
  * Move element wizard:
  * Moving pages or content elements (tt_content) around in the system via a page tree navigation.
  *
- * $Id: move_el.php 8428 2010-07-28 09:18:27Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compatible.
  *

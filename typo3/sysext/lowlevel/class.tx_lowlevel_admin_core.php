@@ -27,7 +27,7 @@
 /**
  * Core functions for admin
  *
- * $Id: class.tx_lowlevel_admin_core.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */

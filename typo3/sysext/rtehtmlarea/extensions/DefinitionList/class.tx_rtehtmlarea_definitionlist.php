@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_definitionlist.php 5489 2009-05-23 15:26:20Z ohader $
+ * TYPO3 SVN ID: $Id$
  *
  */
 

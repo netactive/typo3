@@ -27,7 +27,7 @@
 /**
  * Contains the parent class for 'ScriptClasses' in backend modules.
  *
- * $Id: class.t3lib_scbase.php 5947 2009-09-16 17:57:09Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

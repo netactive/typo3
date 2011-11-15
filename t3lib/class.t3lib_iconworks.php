@@ -27,7 +27,7 @@
 /**
  * Contains class for icon generation in the backend
  *
- * $Id: class.t3lib_iconworks.php 9863 2010-12-20 19:42:03Z tolleiv $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

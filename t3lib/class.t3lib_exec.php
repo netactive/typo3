@@ -24,7 +24,7 @@
 /**
  * t3lib_exec finds executables (programs) on Unix and Windows without knowing where they are
  *
- * $Id: class.t3lib_exec.php 6521 2009-11-25 09:36:55Z francois $
+ * $Id$
  *
  * @author	René Fritz <r.fritz@colorcube.de>
  */

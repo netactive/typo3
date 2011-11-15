@@ -26,7 +26,7 @@
 /**
  * Contains JavaScript for TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: jsfunc.tbe_editor.js 7113 2010-03-15 20:20:56Z etobi.de $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Oliver Hader <oh@inpublica.de>

@@ -41,7 +41,7 @@
  * Thus you preserve backwards compatibility.
  *
  *
- * $Id: tables.php 5917 2009-09-12 09:36:04Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

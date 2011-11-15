@@ -30,7 +30,7 @@
 /*
  * Insert Smiley Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: insert-smiley.js 5166 2009-03-09 23:46:55Z ohader $
+ * TYPO3 SVN ID: $Id$
  */
 
 InsertSmiley = HTMLArea.Plugin.extend({

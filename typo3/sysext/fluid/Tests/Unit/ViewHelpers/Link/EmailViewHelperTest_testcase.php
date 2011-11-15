@@ -16,7 +16,7 @@
 require_once(dirname(__FILE__) . '/../ViewHelperBaseTestcase.php');
 
 /**
- * @version $Id: EmailViewHelperTest_testcase.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License, version 2
  */
 class Tx_Fluid_ViewHelpers_Link_EmailViewHelperTest_testcase extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {

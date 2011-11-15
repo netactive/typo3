@@ -27,7 +27,7 @@
 /**
  * Index search crawler hook example
  *
- * $Id: class.crawlerhook.php 5947 2009-09-16 17:57:09Z ohader $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */

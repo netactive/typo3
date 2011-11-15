@@ -27,7 +27,7 @@
 /**
  * Parent class for "Services" classes
  *
- * $Id: class.t3lib_svbase.php 5482 2009-05-22 19:08:30Z ohader $
+ * $Id$
  * TODO: temp files are not removed
  *
  * @author	Rene Fritz <r.fritz@colorcube.de>

@@ -28,7 +28,7 @@
  * Front End session user. Login and session data
  * Included from index_ts.php
  *
- * $Id: class.tslib_feuserauth.php 6804 2010-01-18 16:06:31Z benni $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

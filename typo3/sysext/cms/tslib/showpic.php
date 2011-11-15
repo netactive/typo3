@@ -28,7 +28,7 @@
  * Shows a picture from uploads/* in enlarged format in a separate window.
  * Picture file and settings is supplied by GET-parameters: file, width, height, sample, alternativeTempPath, effects, frame, bodyTag, title, wrap, md5
  *
- * $Id: showpic.php 9792 2010-12-16 13:41:33Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author		Kasper Skaarhoj	<kasperYYYY@typo3.com>
@@ -162,7 +162,7 @@ class SC_tslib_showpic {
 			)
 		);
 
-		if ($md5_value!=$this->md5) {
+		if ($md5_value !== $this->md5) {
 			die('Parameter Error: Wrong parameters sent.');
 		}
 

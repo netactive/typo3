@@ -28,7 +28,7 @@
  * Document for viewing the online help texts, also known as TCA_DESCR.
  * See Inside TYPO3 for details.
  *
- * $Id: view_help.php 6537 2009-11-25 14:13:52Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.7 5/2004 by Kasper Skaarhoj
  * XHTML-trans compliant
  *

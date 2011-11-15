@@ -27,7 +27,7 @@
 /**
  * Dynamic configuation of the system-related tables, typ. sys_* series
  *
- * $Id: tbl_cms.php 6430 2009-11-16 16:31:24Z ohader $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

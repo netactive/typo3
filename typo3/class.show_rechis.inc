@@ -28,7 +28,7 @@
 /**
  * Class for the record history display script (show_rechis.php)
  *
- * $Id: class.show_rechis.inc 8428 2010-07-28 09:18:27Z ohader $
+ * $Id$
  * XHTML Compliant
  *
  * @author	Sebastian Kurfuerst <sebastian@garbage-group.de>

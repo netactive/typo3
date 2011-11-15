@@ -29,7 +29,7 @@
 /**
  * class to render the menu for the cache clearing actions
  *
- * $Id: class.clearcachemenu.php 5947 2009-09-16 17:57:09Z ohader $
+ * $Id$
  *
  * @author	Ingo Renner <ingo@typo3.org>
  * @package TYPO3

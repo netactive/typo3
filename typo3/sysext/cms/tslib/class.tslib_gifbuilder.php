@@ -28,7 +28,7 @@
  * Generating gif/png-files from TypoScript
  * Used by the menu-objects and imgResource in TypoScript.
  *
- * $Id: class.tslib_gifbuilder.php 5424 2009-05-15 23:12:32Z k-fish $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

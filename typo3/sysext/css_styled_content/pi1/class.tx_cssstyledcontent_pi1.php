@@ -27,7 +27,7 @@
 /**
  * Plugin 'Content rendering' for the 'css_styled_content' extension.
  *
- * $Id: class.tx_cssstyledcontent_pi1.php 9838 2010-12-17 21:16:16Z psychomieze $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

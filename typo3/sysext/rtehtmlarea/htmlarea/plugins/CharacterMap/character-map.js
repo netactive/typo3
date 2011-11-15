@@ -31,7 +31,7 @@
 /*
  * Character Map Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: character-map.js 5306 2009-04-09 16:57:19Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 CharacterMap = HTMLArea.Plugin.extend({
 

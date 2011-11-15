@@ -32,7 +32,7 @@
  *
  * Adapted for htmlArea RTE by Stanislas Rolland
  *
- * $Id: browse_links.php 5165 2009-03-09 18:28:59Z ohader $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>

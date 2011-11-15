@@ -37,7 +37,7 @@
  *
  *
  *
- * $Id: alt_main.php 6241 2009-10-22 08:24:10Z baschny $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML Compliant (almost)
  *

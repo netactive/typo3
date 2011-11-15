@@ -27,7 +27,7 @@
 /**
  * Functions for parsing HTML, specially for TYPO3 processing in relation to TCEmain and Rich Text Editor (RTE)
  *
- * $Id: class.t3lib_parsehtml_proc.php 8271 2010-07-26 07:53:51Z dmitry $
+ * $Id$
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compatible.
  *

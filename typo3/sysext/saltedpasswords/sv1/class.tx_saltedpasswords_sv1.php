@@ -28,7 +28,7 @@
 /**
  * Contains authentication service class for salted hashed passwords.
  *
- * $Id: class.tx_saltedpasswords_sv1.php 9335 2010-11-11 14:57:40Z lolli $
+ * $Id$
  */
 
 

@@ -27,7 +27,7 @@
 /**
  * Contains a class with functions for page related statistics added to the backend Info module
  *
- * $Id: class.tx_cms_webinfo.php 5526 2009-06-02 13:52:04Z benni $
+ * $Id$
  * Revised for TYPO3 3.6 5/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

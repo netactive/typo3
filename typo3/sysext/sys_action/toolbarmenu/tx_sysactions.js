@@ -27,7 +27,7 @@
 /**
  * class to handle the dev links menu
  *
- * $Id: tx_sysactions.js 6539 2009-11-25 14:49:14Z stucki $
+ * $Id$
  */
 var SysActionMenu = Class.create({
 

@@ -17,7 +17,7 @@
 /**
  * @package
  * @subpackage
- * @version $Id: TemplateParserBuilder.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  */
 /**
  * Build a template parser.

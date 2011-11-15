@@ -31,7 +31,7 @@
  *
  * @package Extbase
  * @subpackage Persistence
- * @version $Id: LazyObjectStorage.php 2208 2010-04-14 13:41:14Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Persistence_LazyObjectStorage extends Tx_Extbase_Persistence_ObjectStorage implements Tx_Extbase_Persistence_LoadingStrategyInterface {
 

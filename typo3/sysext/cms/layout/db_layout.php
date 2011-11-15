@@ -29,7 +29,7 @@
  *
  * This module lets you view a page in a more Content Management like style than the ordinary record-list
  *
- * $Id: db_layout.php 8428 2010-07-28 09:18:27Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

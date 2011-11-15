@@ -27,7 +27,7 @@
 /**
  * Contains a class for various syntax highlighting.
  *
- * $Id: class.t3lib_syntaxhl.php 5482 2009-05-22 19:08:30Z ohader $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

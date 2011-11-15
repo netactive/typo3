@@ -27,7 +27,7 @@
 /**
  * Module: Workspace publisher
  *
- * $Id: publish.php 5526 2009-06-02 13:52:04Z benni $
+ * $Id$
  *
  * @author	Dmitry Dulepov <typo3@accio.lv>
  */

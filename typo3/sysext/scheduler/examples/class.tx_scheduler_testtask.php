@@ -31,7 +31,7 @@ require_once(PATH_t3lib . 'class.t3lib_htmlmail.php');
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_testtask.php 7237 2010-04-03 14:30:24Z francois $
+ * $Id$
  */
 class tx_scheduler_TestTask extends tx_scheduler_Task {
 

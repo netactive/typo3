@@ -1,7 +1,7 @@
 /***************************************************************
  * Admin Panel drag and drop
  *
- * $Id: adminpanel.js 6539 2009-11-25 14:49:14Z stucki $
+ * $Id$
  *
  * Copyright notice
  *

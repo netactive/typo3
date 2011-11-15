@@ -28,7 +28,7 @@
  * Contains class "tx_saltedpasswords_salts_blowfish"
  * that provides Blowfish salted hashing.
  *
- * $Id: class.tx_saltedpasswords_salts_blowfish.php 6536 2009-11-25 14:07:18Z stucki $
+ * $Id$
  */
 
 

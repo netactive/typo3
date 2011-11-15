@@ -30,7 +30,7 @@
  *
  * inspired by t3lib_fullsearch
  *
- * $Id: class.t3lib_modsettings.php 5761 2009-08-05 10:05:29Z rupi $
+ * $Id$
  *
  * @author	René Fritz <r.fritz@colorcube.de>
  */

@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_spellchecker.php 5046 2009-02-21 05:27:57Z stan $
+ * TYPO3 SVN ID: $Id$
  *
  */
 

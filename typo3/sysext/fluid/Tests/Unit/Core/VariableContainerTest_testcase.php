@@ -14,12 +14,12 @@
  *                                                                        */
 
 /**
- * @version $Id: VariableContainerTest_testcase.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  */
 /**
  * Testcase for VariableContainer
  *
- * @version $Id: VariableContainerTest_testcase.php 1734 2009-11-25 21:53:57Z stucki $
+ * @version $Id$
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License, version 2
  */
 class Tx_Fluid_Core_VariableContainerTest_testcase extends Tx_Extbase_BaseTestCase {

@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Persistence
- * @version $Id: QueryInterface.php 2036 2010-03-15 20:53:40Z jocrau $
+ * @version $Id$
  * @api
  */
 interface Tx_Extbase_Persistence_QueryInterface {

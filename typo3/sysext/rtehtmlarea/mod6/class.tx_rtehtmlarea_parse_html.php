@@ -29,7 +29,7 @@
  *
  * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * $Id: class.tx_rtehtmlarea_parse_html.php 8888 2010-09-25 06:22:05Z stan $  *
+ * $Id$  *
  */
 
 class tx_rtehtmlarea_parse_html {

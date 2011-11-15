@@ -2,7 +2,7 @@
 *
 *  JavaScript menu
 *
-* $Id: jsfunc.menu.js 5175 2009-03-10 20:36:07Z ohader $
+* $Id$
 *
 *
 *

@@ -28,7 +28,7 @@
  * Contains a class for evaluation of database integrity according to $TCA
  * Most of these functions are considered obsolete!
  *
- * $Id: class.t3lib_admin.php 5744 2009-08-01 18:11:03Z lolli $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

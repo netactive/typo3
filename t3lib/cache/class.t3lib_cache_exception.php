@@ -30,7 +30,7 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
- * @version $Id: class.t3lib_cache_exception.php 5165 2009-03-09 18:28:59Z ohader $
+ * @version $Id$
  */
 class t3lib_cache_Exception extends Exception {
 

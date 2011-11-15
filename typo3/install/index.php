@@ -27,7 +27,7 @@
 /**
  * Starter-script for install screen
  *
- * $Id: index.php 7613 2010-05-14 19:24:22Z baschny $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @package TYPO3

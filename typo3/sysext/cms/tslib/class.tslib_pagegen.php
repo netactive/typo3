@@ -28,7 +28,7 @@
  * Libraries for pagegen.php
  * The script "pagegen.php" is included by "index_ts.php" when a page is not cached but needs to be rendered.
  *
- * $Id: class.tslib_pagegen.php 8293 2010-07-27 21:12:39Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

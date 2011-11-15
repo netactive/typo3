@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_editormode.php 6536 2009-11-25 14:07:18Z stucki $
+ * TYPO3 SVN ID: $Id$
  *
  */
 

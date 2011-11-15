@@ -27,7 +27,7 @@
 /**
  * Library with a single function addElement that returns tablerows based on some input.
  *
- * $Id: class.t3lib_recordlist.php 7454 2010-04-30 10:20:26Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

@@ -2,7 +2,7 @@
 *
 *  Universal formupdate-function
 *
-* $Id: jsfunc.updateform.js 5175 2009-03-10 20:36:07Z ohader $
+* $Id$
 *
 *
 *

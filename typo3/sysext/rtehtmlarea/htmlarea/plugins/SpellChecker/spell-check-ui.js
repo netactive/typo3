@@ -30,7 +30,7 @@
 /*
  * Spell Checker Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: spell-check-ui.js 6439 2009-11-16 23:16:43Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 var dialog = window.opener.HTMLArea.Dialog.SpellChecker;
 var frame = null;

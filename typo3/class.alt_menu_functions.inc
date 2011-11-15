@@ -29,7 +29,7 @@
  * Will make the vertical, horizontal, selectorbox based menus AND the "about modules" display.
  * Basically it traverses the module structure and generates output based on that.
  *
- * $Id: class.alt_menu_functions.inc 5871 2009-09-01 17:19:02Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant content
  *

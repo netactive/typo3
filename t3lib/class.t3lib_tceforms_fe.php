@@ -44,7 +44,7 @@
 /**
  * Contains a frontend version of the TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: class.t3lib_tceforms_fe.php 7109 2010-03-14 20:27:32Z ohader $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

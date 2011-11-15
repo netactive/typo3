@@ -28,7 +28,7 @@
  * Include file extending recordList which extended t3lib_recordList
  * Used specifically for the Web>List module (db_list.php)
  *
- * $Id: class.db_list_extra.inc 7454 2010-04-30 10:20:26Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 December/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
