@@ -1451,6 +1451,8 @@ class SC_mod_tools_em_index extends t3lib_SCbase {
 			// Fetch extension from TER:
 			if (!strlen($version)) {
 				$versions = array_keys($this->xmlHandler->extensionsXML[$extKey]['versions']);
+					// sort version numbers ascending to pick the highest version
+				natsort($versions);
 				$version = end($versions);
 			}
 			$fetchData = $this->terConnection->fetchExtension($extKey, $version, $this->xmlHandler->extensionsXML[$extKey]['versions'][$version]['t3xfilemd5'], $this->getMirrorURL());
@@ -1666,7 +1668,7 @@ class SC_mod_tools_em_index extends t3lib_SCbase {
 			} elseif ($this->CMD['downloadFile'] && !in_array($extKey, $this->requiredExt)) {
 
 				// Link for downloading extension has been clicked - deliver content stream:
-				$dlFile = $this->CMD['downloadFile'];
+				$dlFile = urldecode($this->CMD['downloadFile']);
 				if (t3lib_div::isAllowedAbsPath($dlFile) && t3lib_div::isFirstPartOfStr($dlFile, PATH_site) && t3lib_div::isFirstPartOfStr($dlFile, $absPath) && @is_file($dlFile)) {
 					$mimeType = 'application/octet-stream';
 					Header('Content-Type: ' . $mimeType);
