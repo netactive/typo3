@@ -627,6 +627,10 @@
 			$fe_sParts = explode('-',t3lib_div::_GP('FE_SESSION_KEY'));
 			if (!strcmp(md5($fe_sParts[0].'/'.$this->TYPO3_CONF_VARS['SYS']['encryptionKey']), $fe_sParts[1]))	{	// If the session key hash check is OK:
 				$_COOKIE[$this->fe_user->name] = $fe_sParts[0];
+				if (isset($_SERVER['HTTP_COOKIE'])) {
+						// See http://forge.typo3.org/issues/27740
+					$_SERVER['HTTP_COOKIE'] .= ';' . $this->fe_user->name . '=' . $fe_sParts[0];
+				}
 				$this->fe_user->forceSetCookie = 1;
 			}
 		}
@@ -1798,7 +1802,7 @@
 				if ($this->TYPO3_CONF_VARS['FE']['pageNotFoundOnCHashError']) {
 					$this->pageNotFoundAndExit('Request parameters could not be validated (&cHash comparison failed)');
 				} else {
-					$this->set_no_cache();
+					$this->disableCache();
 					$GLOBALS['TT']->setTSlogMessage('The incoming cHash "'.$this->cHash.'" and calculated cHash "'.$cHash_calc.'" did not match, so caching was disabled. The fieldlist used was "'.implode(',',array_keys($this->cHash_array)).'"',2);
 				}
 			}
@@ -1818,7 +1822,7 @@
 				if ($this->tempContent)	{ $this->clearPageCacheContent(); }
 				$this->pageNotFoundAndExit('Request parameters could not be validated (&cHash empty)');
 			} else {
-				$this->set_no_cache();
+				$this->disableCache();
 				$GLOBALS['TT']->setTSlogMessage('TSFE->reqCHash(): No &cHash parameter was sent for GET vars though required so caching is disabled',2);
 			}
 		}

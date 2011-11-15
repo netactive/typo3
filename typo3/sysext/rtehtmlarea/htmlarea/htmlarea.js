@@ -825,20 +825,15 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 	/*
 	 * The editor iframe may become hidden with style.display = "none" on some parent div
 	 * This breaks the editor in Firefox: the designMode attribute needs to be reset after the style.display of the container div is reset to "block"
-	 * In all browsers, it breaks the evaluation of the framework dimensions
+	 * In all browsers, it breaks the evaluation of the framework dimensions: see HTMLArea.Framework.render and HTMLArea.Framework.doLayout
 	 */
 	initStyleChangeEventListener: function () {
-		if (this.isNested  && !Ext.isWebKit) {
+		if (this.isNested  && Ext.isGecko) {
 			var options = {
-				stopEvent: true
+				stopEvent: true,
+				delay: 50
 			};
-			if (Ext.isGecko) {
-				options.delay = 50;
-			}
 			Ext.each(this.nestedParentElements.sorted, function (nested) {
-				if (!Ext.isGecko) {
-					options.target = Ext.get(nested);
-				}
 				this.mon(
 					Ext.get(nested),
 					Ext.isIE ? 'propertychange' : 'DOMAttrModified',
@@ -996,8 +991,13 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		} else {
 				// Test if the styleSheets array is at all accessible
 			if (Ext.isIE) {
-				try { 
-					rules = this.document.styleSheets[0].rules;
+				try {
+					var rules = this.document.styleSheets[0].rules;
+					var imports = this.document.styleSheets[0].imports;
+					if (!rules.length && !imports.length) {
+						stylesAreLoaded = false;
+						errorText = 'Empty rules and imports arrays';
+					}
 				} catch(e) {
 					stylesAreLoaded = false;
 					errorText = e;
@@ -1012,18 +1012,37 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 			}
 				// Then test if all stylesheets are accessible
 			if (stylesAreLoaded) {
-				if (this.document.styleSheets.length) {
-					Ext.each(this.document.styleSheets, function (styleSheet) {
+					// Expecting 3 stylesheets...
+				if (this.document.styleSheets.length > 2) {
+					Ext.each(this.document.styleSheets, function (styleSheet, index) {
 						if (Ext.isIE) {
-							try { rules = styleSheet.rules; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
-							try { rules = styleSheet.imports; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
+							try { 
+								var rules = styleSheet.rules;
+								var imports = styleSheet.imports;
+									// Default page style may contain only a comment
+								if (!rules.length && !imports.length && index != 1) {
+									stylesAreLoaded = false;
+									errorText = 'Empty rules and imports arrays of styleSheets[' + index + ']';
+									return false;
+								}
+							} catch(e) {
+								stylesAreLoaded = false;
+								errorText = e;
+								return false;
+							}
 						} else {
-							try { rules = styleSheet.cssRules; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
+							try {
+								var rules = styleSheet.cssRules;
+							} catch(e) {
+								stylesAreLoaded = false;
+								errorText = e;
+								return false;
+							}
 						}
 					});
 				} else {
 					stylesAreLoaded = false;
-					errorText = 'Empty stylesheets array';
+					errorText = 'Empty stylesheets array or missing linked stylesheets';
 				}
 			}
 		}
@@ -1721,7 +1740,7 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 		var editor = this.getEditor();
 		element.blur();
 		if (!Ext.isIE) {
-			if (/^(img)$/i.test(element.ancestor.nodeName)) {
+			if (/^(img|table)$/i.test(element.ancestor.nodeName)) {
 				editor.selectNode(element.ancestor);
 			} else {
 				editor.selectNodeContents(element.ancestor);
@@ -1895,6 +1914,19 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 		}
 	},
 	/*
+	 * onLayout will fail if inside a hidden tab or inline element
+	 */
+	onLayout: function () {
+		if (!this.isNested || HTMLArea.util.TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
+			HTMLArea.Framework.superclass.onLayout.call(this);
+		} else {
+				// Clone the array of nested tabs and inline levels instead of using a reference as HTMLArea.util.TYPO3.accessParentElements will modify the array
+			var parentElements = [].concat(this.nestedParentElements.sorted);
+				// Walk through all nested tabs and inline levels to get correct sizes
+				HTMLArea.util.TYPO3.accessParentElements(parentElements, 'HTMLArea.Framework.superclass.onLayout.call(args[0])', [this]);
+		}
+	},
+	/*
 	 * Make the framework resizable, if configured
 	 */
 	makeResizable: function () {
@@ -1953,18 +1985,14 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 			this.resizer.resizeTo(frameworkWidth, frameworkHeight);
 		} else {
 			this.setSize(frameworkWidth, frameworkHeight);
+			this.doLayout();
 		}
 	},
 	/*
 	 * Resize the framework components
 	 */
 	onFrameworkResize: function () {
-			// For unknown reason, in Chrome 7, this following is the only way to set the height of the iframe
-		if (Ext.isChrome) {
-			this.iframe.getResizeEl().dom.setAttribute('style', 'width:' + this.getInnerWidth() + 'px; height:' + this.getInnerHeight() + 'px;');
-		} else {
-			this.iframe.setSize(this.getInnerWidth(), this.getInnerHeight());
-		}
+		this.iframe.setSize(this.getInnerWidth(), this.getInnerHeight());
 		this.textArea.setSize(this.getInnerWidth(), this.getInnerHeight());
 	},
 	/*
@@ -1981,12 +2009,7 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 		if (this.getInnerHeight() <= 0) {
 			this.onWindowResize();
 		} else {
-				// For unknown reason, in Chrome 7, this following is the only way to set the height of the iframe
-			if (Ext.isChrome) {
-				this.iframe.getResizeEl().dom.setAttribute('style', 'width:' + this.getInnerWidth() + 'px; height:' + this.getInnerHeight() + 'px;');
-			} else {
-				this.iframe.setHeight(this.getInnerHeight());
-			}
+			this.iframe.setHeight(this.getInnerHeight());
 			this.textArea.setHeight(this.getInnerHeight());
 		}
 	},
@@ -3323,18 +3346,21 @@ HTMLArea.DOM = function () {
 		 */
 		addBaseUrl: function (url, baseUrl) {
 			var absoluteUrl = url;
-			var base = baseUrl;
-			while (absoluteUrl.match(/^\.\.\/(.*)/)) {
-					// Remove leading ../ from url
-				absoluteUrl = RegExp.$1;
-				base.match(/(.*\:\/\/.*\/)[^\/]+\/$/);
-					// Remove lowest directory level from base
-				base = RegExp.$1;
-				absoluteUrl = base + absoluteUrl;
-			}
-				// If the url is still not absolute...
-			if (!/^.*\:\/\//.test(absoluteUrl)) {
-				absoluteUrl = baseUrl + absoluteUrl;
+				// If the url has no scheme...
+			if (!/^[a-z0-9_]{2,}\:/i.test(absoluteUrl)) {
+				var base = baseUrl;
+				while (absoluteUrl.match(/^\.\.\/(.*)/)) {
+						// Remove leading ../ from url
+					absoluteUrl = RegExp.$1;
+					base.match(/(.*\:\/\/.*\/)[^\/]+\/$/);
+						// Remove lowest directory level from base
+					base = RegExp.$1;
+					absoluteUrl = base + absoluteUrl;
+				}
+					// If the url is still not absolute...
+				if (!/^.*\:\/\//.test(absoluteUrl)) {
+					absoluteUrl = baseUrl + absoluteUrl;
+				}
 			}
 			return absoluteUrl;
 		}
