@@ -28,7 +28,7 @@
 /**
  * View class for the admin panel in frontend editing.
  *
- * $Id: class.tslib_adminpanel.php 8975 2010-10-06 08:16:06Z ohader $
+ * $Id$
  *
  * @author	Jeff Segars <jeff@webempoweredchurch.org>
  * @author	David Slayback <dave@webempoweredchurch.org>

@@ -27,7 +27,7 @@
 /**
  * Class for providing locking features in TYPO3
  *
- * $Id: class.t3lib_lock.php 9862 2010-12-20 19:39:08Z tolleiv $
+ * $Id$
  *
  * @author	Michael Stucki <michael@typo3.org>
  */

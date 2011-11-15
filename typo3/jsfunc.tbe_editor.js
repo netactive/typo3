@@ -26,7 +26,7 @@
 /**
  * Contains JavaScript for TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id: jsfunc.tbe_editor.js 9165 2010-10-19 14:00:18Z psychomieze $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Oliver Hader <oh@inpublica.de>
@@ -195,15 +195,16 @@ var TBE_EDITOR = {
 		if (type) {
 			if (type == 'required') {
 				form = document[TBE_EDITOR.formname][elementName];
-					// Check if we are within a deleted inline element
-				var testNode = $(form.parentNode);
-				while(testNode) {
-					if (testNode.hasClassName && testNode.hasClassName('inlineIsDeletedRecord')) {
-						return result;
-					}
-					testNode = $(testNode.parentNode);
-				}
 				if (form) {
+						// Check if we are within a deleted inline element
+					var testNode = $(form.parentNode);
+					while(testNode) {
+						if (testNode.hasClassName && testNode.hasClassName('inlineIsDeletedRecord')) {
+							return result;
+						}
+						testNode = $(testNode.parentNode);
+					}
+
 					var value = form.value;
 					if (!value || elementData.additional && elementData.additional.isPositiveNumber && (isNaN(value) || Number(value) <= 0)) {
 						result = 0;
@@ -534,11 +535,7 @@ var TBE_EDITOR = {
 	rawurlencode: function(str,maxlen) {
 		var output = str;
 		if (maxlen)	output = output.substr(0,200);
-		output = escape(output);
-		output = TBE_EDITOR.str_replace("*","%2A", output);
-		output = TBE_EDITOR.str_replace("+","%2B", output);
-		output = TBE_EDITOR.str_replace("/","%2F", output);
-		output = TBE_EDITOR.str_replace("@","%40", output);
+		output = Ext.urlEncode({'' : output});
 		return output;
 	},
 	str_replace: function(match,replace,string) {

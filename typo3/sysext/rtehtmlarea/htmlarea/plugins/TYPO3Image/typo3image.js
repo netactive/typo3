@@ -27,7 +27,7 @@
 /*
  * TYPO3Image plugin for htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: typo3image.js 9633 2010-11-25 22:14:31Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.TYPO3Image = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {

@@ -28,7 +28,7 @@
 /**
  * class to handle the shortcut menu
  *
- * $Id: shortcutmenu.js 8301 2010-07-27 22:20:40Z steffenk $
+ * $Id$
  */
 var ShortcutMenu = Class.create({
 

@@ -27,7 +27,7 @@
 /*
  * TYPO3 Color Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: typo3color.js 9703 2010-12-01 05:47:19Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.TYPO3Color = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {

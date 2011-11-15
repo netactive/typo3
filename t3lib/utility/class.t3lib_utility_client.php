@@ -28,7 +28,7 @@
 /**
  * Class to handle and determine browser specific information.
  *
- * $Id: class.t3lib_utility_client.php 8159 2010-07-11 17:31:15Z steffenk $
+ * $Id$
  *
  * @author	Oliver Hader <oliver@typo3.org>
  */

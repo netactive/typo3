@@ -24,7 +24,7 @@
 /**
  * Backend user switchback
  *
- * $Id: class.tx_beuser_switchbackuser.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  *
  * @author	Sebastian Kurfuerst <sebastian@garbage-group.de>
  */

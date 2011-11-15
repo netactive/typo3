@@ -27,7 +27,7 @@
 /**
  * Module: Permission setting
  *
- * $Id: index.php 8157 2010-07-11 12:45:16Z psychomieze $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *
@@ -88,7 +88,7 @@ $BE_USER->modAccess($MCONF,1);
  * @author	Andreas Kundoch <typo3@mehrwert.de>
  * @package	TYPO3
  * @subpackage	core
- * @version	$Id: index.php 8157 2010-07-11 12:45:16Z psychomieze $
+ * @version	$Id$
  */
 class SC_mod_web_perm_index {
 

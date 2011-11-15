@@ -27,7 +27,7 @@
 /**
  * Contains class for creating WAP pages for TYPO3
  *
- * $Id: wapversionLib.inc 7601 2010-05-13 17:12:58Z baschny $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

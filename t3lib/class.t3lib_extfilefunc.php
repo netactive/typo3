@@ -27,7 +27,7 @@
 /**
  * extending class to class t3lib_basicFileFunctions
  *
- * $Id: class.t3lib_extfilefunc.php 8157 2010-07-11 12:45:16Z psychomieze $
+ * $Id$
  * Revised for TYPO3 3.6 May/2004 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

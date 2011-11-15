@@ -27,7 +27,7 @@
 /*
  * BlockElements Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: block-elements.js 9757 2010-12-05 03:04:14Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.BlockElements = HTMLArea.Plugin.extend({
 		

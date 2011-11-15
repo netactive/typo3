@@ -31,7 +31,7 @@
  * Call ALL methods without making an object!
  * Eg. to get a page-record 51 do this: 't3lib_BEfunc::getRecord('pages',51)'
  *
- * $Id: class.t3lib_befunc.php 9509 2010-11-23 09:45:25Z nxpthx $
+ * $Id$
  * Usage counts are based on search 22/2 2003 through whole backend source of typo3/
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
@@ -2628,6 +2628,16 @@ final class t3lib_BEfunc {
 	 * @return	string
 	 */
 	public static function viewOnClick($id, $backPath = '', $rootLine = '', $anchor = '', $altUrl = '', $addGetVars = '', $switchFocus = TRUE) {
+
+			// Check if we are previewing some page's overlay
+			// If yes, we want to preview the original page and not the overlay
+			// (the rest of the TYPO3 core takes care of proper overlaying)
+		if (t3lib_extMgm::isLoaded('version') && !empty($GLOBALS['BE_USER']->workspace)) {
+			$record = self::getRecord('pages', $id);
+			if (!empty($record['t3ver_oid'])) {
+				$id = $record['t3ver_oid'];
+			}
+		}
 
 		$viewScriptPreviewDisabled = '/' . TYPO3_mainDir . 'mod/user/ws/wsol_preview.php?id=';
 		$viewScriptPreviewEnabled = '/index.php?id=';

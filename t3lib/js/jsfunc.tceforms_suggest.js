@@ -1,7 +1,7 @@
 /***************************************************************
 *  AJAX selectors for TCEforms
 *
-* $Id: jsfunc.tceforms_suggest.js 7905 2010-06-13 14:42:33Z ohader $
+* $Id$
 *
 *  Copyright notice
 *

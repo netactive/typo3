@@ -48,7 +48,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_backend_apcbackend.php 8799 2010-09-16 16:15:43Z lolli $
+ * @version $Id$
  */
 class t3lib_cache_backend_ApcBackend extends t3lib_cache_backend_AbstractBackend {
 

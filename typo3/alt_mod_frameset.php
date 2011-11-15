@@ -27,7 +27,7 @@
 /**
  * Creates the frameset for 'Frameset modules' like Web>* and File>*
  *
- * $Id: alt_mod_frameset.php 8157 2010-07-11 12:45:16Z psychomieze $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  * XHTML compliant content (with exception of a few attributes for the <frameset> tags)
  *

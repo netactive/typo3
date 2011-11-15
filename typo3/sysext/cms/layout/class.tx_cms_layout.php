@@ -27,7 +27,7 @@
 /**
  * Include file extending db_list.inc for use with the web_layout module
  *
- * $Id: class.tx_cms_layout.php 8702 2010-08-27 08:01:28Z baschny $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

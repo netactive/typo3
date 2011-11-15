@@ -27,7 +27,7 @@
 /**
  * Index search frontend example hook
  *
- * $Id: class.pihook.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */

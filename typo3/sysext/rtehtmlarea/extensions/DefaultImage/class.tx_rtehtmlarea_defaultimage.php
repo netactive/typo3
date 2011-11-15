@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_defaultimage.php 7905 2010-06-13 14:42:33Z ohader $
+ * TYPO3 SVN ID: $Id$
  *
  */
 

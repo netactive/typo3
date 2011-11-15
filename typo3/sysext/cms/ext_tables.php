@@ -1,5 +1,5 @@
 <?php
-# TYPO3 SVN ID: $Id: ext_tables.php 8269 2010-07-25 18:16:39Z psychomieze $
+# TYPO3 SVN ID: $Id$
 if (!defined ('TYPO3_MODE'))	die ('Access denied.');
 
 

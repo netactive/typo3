@@ -41,7 +41,7 @@
  * Thus you preserve backwards compatibility.
  *
  *
- * $Id: tables.php 9126 2010-10-17 10:49:57Z steffenk $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
@@ -836,7 +836,8 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'status-warning-lock'
 );
 
-$GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayPriorities'] = array('hidden', 'starttime', 'endtime', 'futureendtime', 'fe_group', 'protectedSection');
+$GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayPriorities'] = array('deleted', 'hidden', 'starttime', 'endtime', 'futureendtime', 'fe_group', 'protectedSection');
+
 $GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayNames'] = array(
 	'hidden'           => 'status-overlay-hidden',
 	'fe_group'         => 'status-overlay-access-restricted',

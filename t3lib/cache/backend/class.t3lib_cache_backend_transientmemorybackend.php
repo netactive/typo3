@@ -31,7 +31,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_backend_transientmemorybackend.php 7905 2010-06-13 14:42:33Z ohader $
+ * @version $Id$
  */
 class t3lib_cache_backend_TransientMemoryBackend extends t3lib_cache_backend_AbstractBackend {
 

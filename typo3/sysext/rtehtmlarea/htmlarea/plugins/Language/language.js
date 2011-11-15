@@ -27,7 +27,7 @@
 /*
  * Language Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: language.js 10501 2011-02-20 03:03:58Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.Language = HTMLArea.Plugin.extend({
 

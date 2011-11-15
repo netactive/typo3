@@ -2,7 +2,7 @@
 /*
  * Register necessary class names with autoloader
  *
- * $Id: ext_autoload.php 8157 2010-07-11 12:45:16Z psychomieze $
+ * $Id$
  */
 $extensionPath = t3lib_extMgm::extPath('reports');
 return array(

@@ -21,7 +21,7 @@
  * 2005-12-09  Peter Niederlag  <peter@niederlag.de>
  *	- Fixed bug #1976: PHP5 type-conversion of string 'true' and boolean
  *
- * $Id: class.gzip_encode.php 7307 2010-04-12 16:17:20Z benni $
+ * $Id$
  *
  * @author	Sandy McArthur, Jr. <leknor@leknor.com>
  * @deprecated since TYPO3 4.3, this function will be removed in TYPO3 4.5, we're using the "ob_gzhandler" for compression now.

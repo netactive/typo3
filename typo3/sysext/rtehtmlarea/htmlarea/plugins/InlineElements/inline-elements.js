@@ -27,7 +27,7 @@
 /*
  * Inline Elements Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: inline-elements.js 7301 2010-04-12 07:10:34Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 /*
  * Creation of the class of InlineElements plugins

@@ -33,7 +33,7 @@
  * @author		Benjamin Mack <www.xnos.org>
  * @package		TYPO3
  * @subpackage	core
- * @version 	$Id: perm.js 7905 2010-06-13 14:42:33Z ohader $
+ * @version 	$Id$
  */
 
 // TYPO3 code extracted from index.php

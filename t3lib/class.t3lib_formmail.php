@@ -27,7 +27,7 @@
 /**
  * Contains a class for formmail
  *
- * $Id: class.t3lib_formmail.php 8420 2010-07-28 09:15:53Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

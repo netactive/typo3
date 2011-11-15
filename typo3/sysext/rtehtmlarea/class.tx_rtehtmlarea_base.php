@@ -32,7 +32,7 @@
  * @author	Philipp Borgmann <philipp.borgmann@gmx.de>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_base.php 10514 2011-02-21 02:21:53Z stan $  *
+ * $Id$  *
  */
 
 class tx_rtehtmlarea_base extends t3lib_rteapi {

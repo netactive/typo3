@@ -38,7 +38,7 @@ if(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_AJAX) {
 /**
  * class to render the shortcut menu
  *
- * $Id: class.shortcutmenu.php 8379 2010-07-28 09:06:11Z ohader $
+ * $Id$
  *
  * @author	Ingo Renner <ingo@typo3.org>
  * @package TYPO3

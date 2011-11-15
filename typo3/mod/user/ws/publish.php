@@ -27,7 +27,7 @@
 /**
  * Module: Workspace publisher
  *
- * $Id: publish.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  *
  * @author	Dmitry Dulepov <typo3@accio.lv>
  */

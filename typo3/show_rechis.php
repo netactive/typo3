@@ -27,7 +27,7 @@
 /**
  * Shows information about a database or file item
  *
- * $Id: show_rechis.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML Compliant
  *

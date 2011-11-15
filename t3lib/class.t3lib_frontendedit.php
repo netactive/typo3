@@ -28,7 +28,7 @@
 /**
  * Controller class for frontend editing.
  *
- * $Id: class.t3lib_frontendedit.php 9678 2010-11-29 21:41:44Z jsegars $
+ * $Id$
  *
  * @author	Jeff Segars <jeff@webempoweredchurch.org>
  * @author	David Slayback <dave@webempoweredchurch.org>

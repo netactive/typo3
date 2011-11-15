@@ -28,7 +28,7 @@
  * No-document script
  * This is used by eg. the Doc module if no documents is registered as "open" (a concept which is better known from the "classic backend"...)
  *
- * $Id: alt_doc_nodoc.php 8522 2010-08-08 09:18:18Z psychomieze $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

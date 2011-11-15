@@ -28,7 +28,7 @@ Ext.ns('TYPO3', 'TYPO3.configuration');
 /**
  * class to handle the workspace menu
  *
- * $Id: workspacemenu.js 8827 2010-09-20 14:08:46Z francois $
+ * $Id$
  */
 var WorkspaceMenu = Class.create({
 

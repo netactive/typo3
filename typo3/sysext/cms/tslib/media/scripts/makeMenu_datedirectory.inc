@@ -28,7 +28,7 @@
  * Date directory
  * Can be used with the HMENU cObject, special property set to "userdefined".
  *
- * $Id: makeMenu_datedirectory.inc 7601 2010-05-13 17:12:58Z baschny $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Olaf.Schuemann@erz.be.ch

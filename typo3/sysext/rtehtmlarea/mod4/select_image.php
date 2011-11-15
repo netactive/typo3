@@ -31,7 +31,7 @@
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)jbr.ca>
  *
- * $Id: select_image.php 7905 2010-06-13 14:42:33Z ohader $  *
+ * $Id$  *
  */
 
 error_reporting (E_ALL ^ E_NOTICE);

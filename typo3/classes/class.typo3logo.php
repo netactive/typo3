@@ -29,7 +29,7 @@
 /**
  * class to render the TYPO3 logo in the backend
  *
- * $Id: class.typo3logo.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  *
  * @author	Ingo Renner <ingo@typo3.org>
  * @package TYPO3

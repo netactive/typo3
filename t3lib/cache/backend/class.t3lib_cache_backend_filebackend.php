@@ -31,7 +31,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_backend_filebackend.php 9990 2011-01-05 12:38:37Z steffenk $
+ * @version $Id$
  */
 class t3lib_cache_backend_FileBackend extends t3lib_cache_backend_AbstractBackend implements t3lib_cache_backend_PhpCapableBackend {
 

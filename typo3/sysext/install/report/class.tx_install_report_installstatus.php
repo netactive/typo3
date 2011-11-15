@@ -33,7 +33,7 @@ require_once(t3lib_extMgm::extPath('install', 'requirements.php'));
  * @package		TYPO3
  * @subpackage	tx_install
  *
- * $Id: class.tx_install_report_installstatus.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  */
 class tx_install_report_InstallStatus implements tx_reports_StatusProvider {
 

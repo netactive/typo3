@@ -31,7 +31,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id: class.t3lib_cache_frontend_stringfrontend.php 9023 2010-10-10 10:26:44Z steffenk $
+ * @version $Id$
  */
 class t3lib_cache_frontend_StringFrontend extends t3lib_cache_frontend_AbstractFrontend {
 

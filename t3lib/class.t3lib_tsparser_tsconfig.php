@@ -28,7 +28,7 @@
 /**
  * A TS-Config parsing class which performs condition evaluation
  *
- * $Id: class.t3lib_tsparser_tsconfig.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  *
  * @author	Kraft Bernhard <kraftb@kraftb.at>
  */

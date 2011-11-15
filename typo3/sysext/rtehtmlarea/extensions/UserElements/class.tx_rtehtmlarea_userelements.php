@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_userelements.php 7270 2010-04-10 04:51:04Z stan $
+ * TYPO3 SVN ID: $Id$
  *
  */
 

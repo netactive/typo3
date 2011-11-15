@@ -29,7 +29,7 @@
 /*
  * Undo Redo Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: undo-redo.js 7393 2010-04-19 16:29:58Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.UndoRedo = HTMLArea.Plugin.extend({
 	constructor: function (editor, pluginName) {

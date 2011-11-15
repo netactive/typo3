@@ -27,7 +27,7 @@
 /**
  * Matching TypoScript conditions
  *
- * $Id: class.t3lib_matchcondition_abstract.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  *
  * Used with the TypoScript parser.
  * Matches browserinfo, IPnumbers for use with templates

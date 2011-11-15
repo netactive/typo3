@@ -29,7 +29,7 @@
  * Class that does the simulatestatic feature (Speaking URLs)
  * Was extracted for TYPO3 4.3 from the core
  *
- * $Id: class.tx_simulatestatic.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Benjamin Mack <benni . typo3 . o)rg>

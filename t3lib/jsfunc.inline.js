@@ -3,7 +3,7 @@
 /***************************************************************
 *  Inline-Relational-Record Editing
 *
-* $Id: jsfunc.inline.js 9165 2010-10-19 14:00:18Z psychomieze $
+* $Id$
 *
 *
 *

@@ -30,7 +30,7 @@
 /*
  * Quick Tag Editor Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: quick-tag.js 7808 2010-06-05 13:13:05Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.QuickTag = HTMLArea.Plugin.extend({
 	constructor : function(editor, pluginName) {

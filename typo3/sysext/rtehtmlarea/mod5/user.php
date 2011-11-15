@@ -31,7 +31,7 @@
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * $Id: user.php 7905 2010-06-13 14:42:33Z ohader $  *
+ * $Id$  *
  */
 
 error_reporting (E_ALL ^ E_NOTICE);

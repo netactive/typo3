@@ -29,7 +29,7 @@
  * Contains the update class for merging advanced and normal pagetype.
  *
  * @author Steffen Kamper <info@sk-typo3.de>
- * @version $Id: class.tx_coreupdates_mergeadvanced.php 7905 2010-06-13 14:42:33Z ohader $
+ * @version $Id$
  */
 class tx_coreupdates_mergeadvanced {
 	var $versionNumber;	// version number coming from t3lib_div::int_from_ver()

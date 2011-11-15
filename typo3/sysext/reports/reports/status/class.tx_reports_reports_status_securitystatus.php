@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	reports
  *
- * $Id: class.tx_reports_reports_status_securitystatus.php 9506 2010-11-23 08:34:15Z nxpthx $
+ * $Id$
  */
 class tx_reports_reports_status_SecurityStatus implements tx_reports_StatusProvider {
 

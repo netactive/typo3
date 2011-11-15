@@ -29,7 +29,7 @@
 /**
  * Contains the update class for adding the system extension "simulate static".
  *
- * $Id: class.tx_coreupdates_installnewsysexts.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  *
  * @author  Benjamin Mack <benni@typo3.org>
  * @author  Steffen Kamper <info@sk-typo3.de>

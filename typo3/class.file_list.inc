@@ -27,7 +27,7 @@
 /**
  * Include file extending t3lib_recordList
  *
- * $Id: class.file_list.inc 7896 2010-06-12 15:51:26Z psychomieze $
+ * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

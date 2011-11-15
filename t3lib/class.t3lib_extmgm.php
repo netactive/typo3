@@ -27,7 +27,7 @@
 /**
  * Contains a class with Extension Management functions
  *
- * $Id: class.t3lib_extmgm.php 8817 2010-09-19 14:04:48Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

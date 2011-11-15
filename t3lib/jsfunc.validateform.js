@@ -2,7 +2,7 @@
 *
 *  Universal validate-form
 *
-* $Id: jsfunc.validateform.js 7905 2010-06-13 14:42:33Z ohader $
+* $Id$
 *
 *  Copyright notice
 *

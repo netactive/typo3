@@ -27,7 +27,7 @@
 /*
  * Copy Paste for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: copy-paste.js 9314 2010-11-09 05:51:33Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.CopyPaste = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {

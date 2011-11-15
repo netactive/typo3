@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 TYPO3 styles for basic elements
 
-$Id: main_content.css 7978 2010-06-20 11:09:24Z psychomieze $
+$Id$
 - - - - - - - - - - - - - - - - - - - - - */
 
 h1,
@@ -267,7 +267,7 @@ input elements
 input,
 textarea,
 select,
-submit {
+button {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 11px;
 	line-height: 16px;

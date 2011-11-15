@@ -29,7 +29,7 @@
  * Contains the update class for the split of css styled content templates. Used by the update wizard in the install tool.
  *
  * @author Susanne Moog <typo3@susanne-moog.de>
- * @version $Id: class.tx_coreupdates_cscsplit.php 7905 2010-06-13 14:42:33Z ohader $
+ * @version $Id$
  */
 class tx_coreupdates_cscsplit {
 

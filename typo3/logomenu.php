@@ -27,7 +27,7 @@
 /**
  * Logo menu
  *
- * $Id: logomenu.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

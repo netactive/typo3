@@ -28,7 +28,7 @@
  * Contains class "tx_saltedpasswords_salts_factory"
  * that provides a salted hashing method factory.
  *
- * $Id: class.tx_saltedpasswords_salts_factory.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  */
 
 

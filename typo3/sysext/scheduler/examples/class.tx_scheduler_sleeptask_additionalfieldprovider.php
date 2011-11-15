@@ -29,7 +29,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: class.tx_scheduler_sleeptask_additionalfieldprovider.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  */
 class tx_scheduler_SleepTask_AdditionalFieldProvider implements tx_scheduler_AdditionalFieldProvider {
 

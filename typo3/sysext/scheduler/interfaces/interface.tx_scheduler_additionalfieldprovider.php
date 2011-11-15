@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	tx_scheduler
  *
- * $Id: interface.tx_scheduler_additionalfieldprovider.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  */
 interface tx_scheduler_AdditionalFieldProvider {
 

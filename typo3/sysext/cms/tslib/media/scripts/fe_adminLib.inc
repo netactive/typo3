@@ -27,7 +27,7 @@
 /**
  * FE admin lib
  *
- * $Id: fe_adminLib.inc 8934 2010-09-30 16:04:30Z stephenking $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

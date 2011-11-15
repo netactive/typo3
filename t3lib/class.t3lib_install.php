@@ -27,7 +27,7 @@
 /**
  * Class to setup values in localconf.php and verify the TYPO3 DB tables/fields
  *
- * $Id: class.t3lib_install.php 7473 2010-04-30 18:56:27Z xperseguers $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  */

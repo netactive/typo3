@@ -27,7 +27,7 @@
 /*
  * DefinitionList Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: definition-list.js 7855 2010-06-09 17:43:44Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.DefinitionList = HTMLArea.BlockElements.extend({
 		

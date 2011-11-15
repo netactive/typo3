@@ -27,7 +27,7 @@
 /**
  * Contains class for creating XML output from records
  *
- * $Id: class.t3lib_xml.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

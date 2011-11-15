@@ -29,7 +29,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * $Id: class.tx_rtehtmlarea_pi2.php 10504 2011-02-20 04:29:12Z stan $  *
+ * $Id$  *
  */
 require_once(t3lib_extMgm::extPath('rtehtmlarea').'class.tx_rtehtmlarea_base.php');
 class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {

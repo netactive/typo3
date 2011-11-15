@@ -30,7 +30,7 @@
  *
  * @author	Kasper Skaarhoj <kasper@typo3.com>
  *
- * $Id: class.tx_rtehtmlarea_dam_browse_media.php 7905 2010-06-13 14:42:33Z ohader $  *
+ * $Id$  *
  */
 require_once(t3lib_extMgm::extPath('dam').'class.tx_dam_browse_media.php');
 

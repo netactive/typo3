@@ -30,7 +30,7 @@
 /*
  * Context Menu Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: context-menu.js 10134 2011-01-18 23:49:09Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 	constructor : function(editor, pluginName) {

@@ -28,7 +28,7 @@
  * Contains class "tx_saltedpasswords_salts_md5"
  * that provides MD5 salted hashing.
  *
- * $Id: class.tx_saltedpasswords_salts_md5.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  */
 
 

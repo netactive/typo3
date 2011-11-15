@@ -29,7 +29,7 @@
  *
  * @package TYPO3
  * @subpackage t3lib_error
- * @version $Id: class.t3lib_exception.php 7905 2010-06-13 14:42:33Z ohader $
+ * @version $Id$
  */
 class t3lib_exception extends Exception {
 

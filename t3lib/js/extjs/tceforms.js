@@ -1,7 +1,7 @@
 /***************************************************************
  * extJS for TCEforms
  *
- * $Id: tceforms.js 8012 2010-06-21 17:16:42Z steffenk $
+ * $Id$
  *
  * Copyright notice
  *
@@ -44,13 +44,19 @@ TYPO3.TCEFORMS = {
 			var format = TYPO3.settings.datePickerUSmode ? TYPO3.settings.dateFormatUS : TYPO3.settings.dateFormat;
 
 			var datepicker = element.next('span');
+			var oldValue = Date.parseDate(element.dom.value, format[index]);
 
 			var menu = new Ext.menu.DateMenu({
 				id:			'p' + element.dom.id,
 				format:		format[index],
-				value:		Date.parseDate(element.dom.value, format[index]),
+				value:		oldValue,
 				handler: 	function(picker, date){
 					var relElement = Ext.getDom(picker.ownerCt.id.substring(1));
+					if (index === 1) {
+							//datetimefield, preserve time information
+						date.setHours(oldValue.getHours());
+						date.setMinutes(oldValue.getMinutes());
+					}
 					relElement.value = date.format(format[index]);
 					if (Ext.isFunction(relElement.onchange)) {
 						relElement.onchange.call(relElement);
@@ -71,7 +77,7 @@ TYPO3.TCEFORMS = {
 			});
 		});
 	},
-	
+
 	convertTextareasResizable: function() {
 		var textAreas = Ext.select("textarea[id^=tceforms-textarea-]");
 		textAreas.each(function(element) {
@@ -92,6 +98,6 @@ TYPO3.TCEFORMS = {
 			}
 		});
 	}
-	
+
 }
 Ext.onReady(TYPO3.TCEFORMS.init, TYPO3.TCEFORMS);

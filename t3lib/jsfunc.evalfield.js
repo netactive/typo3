@@ -2,7 +2,7 @@
 *
 *  Evaluation of TYPO3 form field content
 *
-* $Id: jsfunc.evalfield.js 8884 2010-09-24 22:36:00Z stephenking $
+* $Id$
 *
 *
 *

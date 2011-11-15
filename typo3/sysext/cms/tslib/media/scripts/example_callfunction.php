@@ -30,7 +30,7 @@
  * This is an example of how to use your own functions and classes directly from TYPO3.
  * Used in the "testsite" package
  *
- * $Id: example_callfunction.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

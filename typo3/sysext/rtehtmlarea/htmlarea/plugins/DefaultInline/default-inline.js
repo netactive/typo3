@@ -27,7 +27,7 @@
 /*
  * Default Inline Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: default-inline.js 7300 2010-04-12 05:49:17Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.DefaultInline = HTMLArea.Plugin.extend({
 		

@@ -29,7 +29,7 @@
 /*
  * Image Plugin for TYPO3 htmlArea RTE
  *
- * TYPO3 SVN ID: $Id: default-image.js 8253 2010-07-23 16:09:26Z stan $
+ * TYPO3 SVN ID: $Id$
  */
 HTMLArea.DefaultImage = HTMLArea.Plugin.extend({
 	constructor: function(editor, pluginName) {

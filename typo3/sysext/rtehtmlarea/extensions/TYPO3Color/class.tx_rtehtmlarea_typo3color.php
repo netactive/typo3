@@ -26,7 +26,7 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_typo3color.php 7802 2010-06-03 21:41:58Z stan $
+ * TYPO3 SVN ID: $Id$
  *
  */
 

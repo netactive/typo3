@@ -33,7 +33,7 @@
  * @package		TYPO3
  * @subpackage	tx_reports
  *
- * $Id: interface.tx_reports_statusprovider.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  */
 interface tx_reports_StatusProvider {
 

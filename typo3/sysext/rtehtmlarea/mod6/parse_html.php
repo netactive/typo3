@@ -29,7 +29,7 @@
  *
  * @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  *
- * $Id: parse_html.php 7905 2010-06-13 14:42:33Z ohader $  *
+ * $Id$  *
  */
 
 error_reporting (E_ALL ^ E_NOTICE);

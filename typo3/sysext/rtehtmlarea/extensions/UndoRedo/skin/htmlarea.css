@@ -1,5 +1,5 @@
 /* Selectors for the Undo Redo plugin of htmlArea RTE */
-/* TYPO3 SVN ID: $Id: htmlarea.css 8282 2010-07-26 23:25:02Z stan $ */
+/* TYPO3 SVN ID: $Id$ */
 .htmlarea-action-redo {
 	background-image: url('images/redo.gif') !important;
 }

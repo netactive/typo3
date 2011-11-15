@@ -32,7 +32,7 @@
  *
  * Adapted for htmlArea RTE by Stanislas Rolland
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_dam_browse_links.php 7905 2010-06-13 14:42:33Z ohader $
+ * TYPO3 SVN ID: $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>

@@ -27,7 +27,7 @@
 /**
  * Wizard for inserting TSconfig in form fields. (page,user or TS)
  *
- * $Id: wizard_tsconfig.php 8402 2010-07-28 09:12:41Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

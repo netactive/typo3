@@ -32,7 +32,7 @@
  * @author	Steffen Kamper <info@sk-typo3.de>
  * @package TYPO3
  * @subpackage t3lib
- * $Id: class.t3lib_pagerenderer.php 9693 2010-11-30 19:59:49Z stephenking $
+ * $Id$
  */
 class t3lib_PageRenderer implements t3lib_Singleton {
 

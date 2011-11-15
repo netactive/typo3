@@ -27,7 +27,7 @@
 /**
  * Contains the GMENU_FOLDOUT extension class, tslib_gmenu_foldout
  *
- * $Id: gmenu_foldout.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

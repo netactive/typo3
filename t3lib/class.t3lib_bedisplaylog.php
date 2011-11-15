@@ -27,7 +27,7 @@
 /**
  * Contains class for display of backend log
  *
- * $Id: class.t3lib_bedisplaylog.php 8348 2010-07-28 08:57:59Z ohader $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  * XHTML compliant
  *

@@ -27,7 +27,7 @@
 /**
  * Standard graphical functions
  *
- * $Id: class.t3lib_stdgraphic.php 7939 2010-06-16 19:33:38Z psychomieze $
+ * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skaarhoj
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>

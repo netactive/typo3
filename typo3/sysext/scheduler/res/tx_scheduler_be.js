@@ -26,7 +26,7 @@
  *
  * @author	Francois Suter <francois@typo3.org>
  *
- * $Id: tx_scheduler_be.js 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  */
 
 /**

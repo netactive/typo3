@@ -28,7 +28,7 @@
  * PHP SQL engine
  * EXPERIMENTAL!
  *
- * $Id: class.t3lib_sqlengine.php 7905 2010-06-13 14:42:33Z ohader $
+ * $Id$
  *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @deprecated since TYPO3 4.3, this class will be removed in TYPO3 4.5, it has been integrated to extension DBAL.
