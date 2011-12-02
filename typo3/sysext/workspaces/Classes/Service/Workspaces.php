@@ -245,6 +245,9 @@ class Tx_Workspaces_Service_Workspaces implements t3lib_Singleton {
 	protected function selectAllVersionsFromPages($table, $pageList, $wsid, $filter, $stage) {
 
 		$fields = 'A.uid, A.t3ver_oid, A.t3ver_stage, ' . ($table==='pages' ? ' A.t3ver_swapmode,' : '') . 'B.pid AS wspid, B.pid AS livepid';
+		if (t3lib_BEfunc::isTableLocalizable($table)) {
+			$fields .= ', A.' . $GLOBALS['TCA'][$table]['ctrl']['languageField'];
+		}
 		$from = $table . ' A,' . $table . ' B';
 
 			// Table A is the offline version and pid=-1 defines offline
@@ -473,6 +476,8 @@ class Tx_Workspaces_Service_Workspaces implements t3lib_Singleton {
 
 		if (t3lib_BEfunc::isTableLocalizable($table)) {
 			$languageUid = $record[$GLOBALS['TCA'][$table]['ctrl']['languageField']];
+		} else {
+			return TRUE;
 		}
 
 		return $GLOBALS['BE_USER']->checkLanguageAccess($languageUid);
@@ -550,7 +555,8 @@ class Tx_Workspaces_Service_Workspaces implements t3lib_Singleton {
 			if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['workspaces']['viewSingleRecord'])) {
 				$_params = array('table' => $table, 'uid' => $uid, 'record' => $record);
 				$_funcRef = $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['workspaces']['viewSingleRecord'];
-				$viewUrl = t3lib_div::callUserFunction($_funcRef, $_params, NULL);
+				$null = NULL;
+				$viewUrl = t3lib_div::callUserFunction($_funcRef, $_params, $null);
 			}
 		}
 		return $viewUrl;

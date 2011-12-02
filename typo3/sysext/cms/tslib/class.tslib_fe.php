@@ -1184,7 +1184,7 @@
 
 			// If the actual page has no fe_group, check the rootline for
 			// inherited fe_group due to extendToSubpage-property
-		if (intval($row['fe_group']) === 0) {
+		if (isset($row['uid']) && intval($row['fe_group']) === 0) {
 			$rootLine = $this->sys_page->getRootLine($row['uid']);
 			foreach ($rootLine as $pageConf) {
 				if ($pageConf['fe_group'] != '' && $pageConf['extendToSubpages'] == 1) {
@@ -4563,6 +4563,11 @@ if (version == "n3") {
 	 * @return	string		Label value, if any.
 	 */
 	function sL($input)	{
+		if (substr($input, 0, 4) !== 'LLL:') {
+				// Not a label, return the key as this
+			return $input;
+		}
+
 			// If cached label
 		if (!isset($this->LL_labels_cache[$this->lang][$input])) {
 			$restStr = trim(substr($input,4));
