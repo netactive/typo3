@@ -3848,6 +3848,8 @@ class tslib_cObj {
 				if ((string)$conf['char']!=''){$content=chr(intval($conf['char']));}
 				if ($conf['intval']){$content=intval($content);}
 				if ($conf['date']) {
+						// check for zero length string to mimic default case of date/gmdate.
+					$content = $content == '' ? $GLOBALS['EXEC_TIME'] : intval($content);
 					$content = ($conf['date.']['GMT'] ? gmdate($conf['date'], $content) : date($conf['date'], $content));
 				}
 				if ($conf['strftime']) {
@@ -4836,7 +4838,7 @@ class tslib_cObj {
 	 */
 	function splitObj($value, $conf)	{
 		$conf['token']=$this->stdWrap($conf['token'],$conf['token.']);
-		if (!$conf['token'])	{
+		if ($conf['token'] === '') {
 			return $value;
 		}
 		$conf['max']=intval($this->stdWrap($conf['max'],$conf['max.']));
