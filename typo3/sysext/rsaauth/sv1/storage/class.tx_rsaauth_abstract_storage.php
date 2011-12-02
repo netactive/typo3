@@ -22,12 +22,6 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- * $Id: class.tx_rsaauth_abstract_storage.php 10120 2011-01-18 20:03:36Z ohader $
- */
-
 
 /**
  * This class contains the abstract storage for the RSA private keys
@@ -41,7 +35,7 @@ abstract class tx_rsaauth_abstract_storage {
 	/**
 	 * Retrieves the key from the storage
 	 *
-	 * @return	string	The key or null
+	 * @return	string	The key or NULL
 	 */
 	abstract public function get();
 

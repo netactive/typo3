@@ -32,6 +32,19 @@
 abstract class Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper extends Tx_Fluid_ViewHelpers_Form_AbstractFormViewHelper {
 
 	/**
+	 * @var Tx_Extbase_Configuration_ConfigurationManagerInterface
+	 */
+	protected $configurationManager;
+
+	/**
+	 * @param Tx_Extbase_Configuration_ConfigurationManagerInterface $configurationManager
+	 * @return void
+	 */
+	public function injectConfigurationManager(Tx_Extbase_Configuration_ConfigurationManagerInterface $configurationManager) {
+		$this->configurationManager = $configurationManager;
+	}
+
+	/**
 	 * Initialize arguments.
 	 *
 	 * @return void
@@ -58,6 +71,20 @@ abstract class Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper extends Tx_
 	 * @author Bastian Waidelich <bastian@typo3.org>
 	 */
 	protected function getName() {
+		$name = $this->getNameWithoutPrefix();
+		return $this->prefixFieldName($name);
+	}
+
+	/**
+	 * Get the name of this form element, without prefix.
+	 *
+	 * @return string name
+	 * @author Sebastian Kurfürst <sebastian@typo3.org>
+	 * @author Robert Lemke <robert@typo3.org>
+	 * @author Karsten Dambekalns <karsten@typo3.org>
+	 * @author Bastian Waidelich <bastian@typo3.org>
+	 */
+	protected function getNameWithoutPrefix() {
 		if ($this->isObjectAccessorMode()) {
 			$formObjectName = $this->viewHelperVariableContainer->get('Tx_Fluid_ViewHelpers_FormViewHelper', 'formObjectName');
 			if (!empty($formObjectName)) {
@@ -73,13 +100,14 @@ abstract class Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper extends Tx_
 		} else {
 			$name = $this->arguments['name'];
 		}
-		if ($this->arguments->hasArgument('value') && is_object($this->arguments['value'])) {
-			if (NULL !== $this->persistenceManager->getBackend()->getIdentifierByObject($this->arguments['value'])
+		if ($this->hasArgument('value') && is_object($this->arguments['value'])) {
+			if (NULL !== $this->persistenceManager->getIdentifierByObject($this->arguments['value'])
 				&& (!$this->persistenceManager->getBackend()->isNewObject($this->arguments['value']))) {
 				$name .= '[__identity]';
 			}
 		}
-		return $this->prefixFieldName($name);
+
+		return $name;
 	}
 
 	/**
@@ -93,18 +121,41 @@ abstract class Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper extends Tx_
 	 */
 	protected function getValue() {
 		$value = NULL;
-		if ($this->arguments->hasArgument('value')) {
+		if ($this->hasArgument('value')) {
 			$value = $this->arguments['value'];
+		} elseif ($this->configurationManager->isFeatureEnabled('rewrittenPropertyMapper') && $this->hasMappingErrorOccured()) {
+			$value = $this->getLastSubmittedFormData();
 		} elseif ($this->isObjectAccessorMode() && $this->viewHelperVariableContainer->exists('Tx_Fluid_ViewHelpers_FormViewHelper', 'formObject')) {
 			$this->addAdditionalIdentityPropertiesIfNeeded();
 			$value = $this->getPropertyValue();
 		}
 		if (is_object($value)) {
-			$identifier = $this->persistenceManager->getBackend()->getIdentifierByObject($value);
+			$identifier = $this->persistenceManager->getIdentifierByObject($value);
 			if ($identifier !== NULL) {
 				$value = $identifier;
 			}
 		}
+		return $value;
+	}
+
+	/**
+	 * Checks if a property mapping error has occured in the last request.
+	 *
+	 * @return boolean TRUE if a mapping error occured, FALSE otherwise
+	 */
+	protected function hasMappingErrorOccured() {
+		return ($this->controllerContext->getRequest()->getOriginalRequest() !== NULL);
+	}
+
+	/**
+	 * Get the form data which has last been submitted; only returns valid data in case
+	 * a property mapping error has occured. Check with hasMappingErrorOccured() before!
+	 *
+	 * @return mixed
+	 */
+	protected function getLastSubmittedFormData() {
+		$propertyPath = rtrim(preg_replace('/(\]\[|\[|\])/', '.', $this->getNameWithoutPrefix()), '.');
+		$value = Tx_Extbase_Reflection_ObjectAccess::getPropertyPath($this->controllerContext->getRequest()->getOriginalRequest()->getArguments(), $propertyPath);
 		return $value;
 	}
 
@@ -143,6 +194,7 @@ abstract class Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper extends Tx_
 	 * @author Bastian Waidelich <bastian@typo3.org>
 	 */
 	protected function getPropertyValue() {
+
 		$formObject = $this->viewHelperVariableContainer->get('Tx_Fluid_ViewHelpers_FormViewHelper', 'formObject');
 		$propertyName = $this->arguments['property'];
 
@@ -159,7 +211,7 @@ abstract class Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper extends Tx_
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 */
 	protected function isObjectAccessorMode() {
-		return $this->arguments->hasArgument('property')
+		return $this->hasArgument('property')
 			&& $this->viewHelperVariableContainer->exists('Tx_Fluid_ViewHelpers_FormViewHelper', 'formObjectName');
 	}
 
@@ -171,20 +223,52 @@ abstract class Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper extends Tx_
 	 * @author Bastian Waidelich <bastian@typo3.org>
 	 */
 	protected function setErrorClassAttribute() {
-		if ($this->arguments->hasArgument('class')) {
+		if ($this->hasArgument('class')) {
 			$cssClass = $this->arguments['class'] . ' ';
 		} else {
 			$cssClass = '';
 		}
-		$errors = $this->getErrorsForProperty();
-		if (count($errors) > 0) {
-			if ($this->arguments->hasArgument('errorClass')) {
-				$cssClass .= $this->arguments['errorClass'];
-			} else {
-				$cssClass .= 'error';
+
+		if ($this->configurationManager->isFeatureEnabled('rewrittenPropertyMapper')) {
+			$mappingResultsForProperty = $this->getMappingResultsForProperty();
+			if ($mappingResultsForProperty->hasErrors()) {
+				if ($this->hasArgument('errorClass')) {
+					$cssClass .= $this->arguments['errorClass'];
+				} else {
+					$cssClass .= 'error';
+				}
+				$this->tag->addAttribute('class', $cssClass);
 			}
-			$this->tag->addAttribute('class', $cssClass);
+		} else {
+				// @deprecated since Extbase 1.4.0, will be removed in Extbase 1.6.0.
+			$errors = $this->getErrorsForProperty();
+			if (count($errors) > 0) {
+				if ($this->hasArgument('errorClass')) {
+					$cssClass .= $this->arguments['errorClass'];
+				} else {
+					$cssClass .= 'error';
+				}
+				$this->tag->addAttribute('class', $cssClass);
+			}
 		}
+	}
+
+	/**
+	 * Get errors for the property and form name of this view helper
+	 *
+	 * @return array<Tx_Extbase_Error_Result> Array of errors
+	 * @author Christopher Hlubek <hlubek@networkteam.com>
+	 * @author Bastian Waidelich <bastian@typo3.org>
+	 * @author Sebastian Kurfürst <sebastian@typo3.org>
+	 */
+	protected function getMappingResultsForProperty() {
+		if (!$this->isObjectAccessorMode()) {
+			return new Tx_Extbase_Error_Result();
+		}
+		$originalRequestMappingResults = $this->controllerContext->getRequest()->getOriginalRequestMappingResults();
+		$formObjectName = $this->viewHelperVariableContainer->get('Tx_Fluid_ViewHelpers_FormViewHelper', 'formObjectName');
+
+		return $originalRequestMappingResults->forProperty($formObjectName)->forProperty($this->arguments['property']);
 	}
 
 	/**
@@ -193,6 +277,7 @@ abstract class Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper extends Tx_
 	 * @return array An array of Tx_Fluid_Error_Error objects
 	 * @author Christopher Hlubek <hlubek@networkteam.com>
 	 * @author Bastian Waidelich <bastian@typo3.org>
+	 * @deprecated since Extbase 1.4.0, will be removed in Extbase 1.6.0.
 	 */
 	protected function getErrorsForProperty() {
 		if (!$this->isObjectAccessorMode()) {

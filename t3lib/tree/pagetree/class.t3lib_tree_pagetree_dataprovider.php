@@ -55,13 +55,20 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 	protected $hiddenRecords = array();
 
 	/**
+	 * Process collection hook objects
+	 *
+	 * @var array<t3lib_tree_pagetree_interfaces_collectionprocessor>
+	 */
+	protected $processCollectionHookObjects = array();
+
+	/**
 	 * Constructor
 	 *
 	 * @param int $nodeLimit (optional)
 	 */
 	public function __construct($nodeLimit = NULL) {
 		if ($nodeLimit === NULL) {
-			$nodeLimit = $GLOBALS['BE']['pageTree']['preloadLimit'];
+			$nodeLimit = $GLOBALS['TYPO3_CONF_VARS']['BE']['pageTree']['preloadLimit'];
 		}
 		$this->nodeLimit = abs(intval($nodeLimit));
 
@@ -69,6 +76,17 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 			',',
 			$GLOBALS['BE_USER']->getTSConfigVal('options.hideRecords.pages')
 		);
+
+		$hookElements = $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/tree/pagetree/class.t3lib_tree_pagetree_dataprovider.php']['postProcessCollections'];
+		if (is_array($hookElements)) {
+			foreach ($hookElements as $classRef) {
+				/** @var $hookObject t3lib_tree_pagetree_interfaces_collectionprocessor */
+				$hookObject = t3lib_div::getUserObj($classRef);
+				if ($hookObject instanceof t3lib_tree_pagetree_interfaces_collectionprocessor) {
+					$this->processCollectionHookObjects[] = $hookObject;
+				}
+			}
+		}
 	}
 
 	/**
@@ -80,7 +98,7 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 		/** @var $node t3lib_tree_pagetree_Node */
 		$node = t3lib_div::makeInstance('t3lib_tree_pagetree_Node');
 		$node->setId('root');
-		$node->setExpanded(true);
+		$node->setExpanded(TRUE);
 
 		return $node;
 	}
@@ -96,6 +114,7 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 	 public function getNodes(t3lib_tree_Node $node, $mountPoint = 0, $level = 0) {
 		/** @var $nodeCollection t3lib_tree_pagetree_NodeCollection */
 		$nodeCollection = t3lib_div::makeInstance('t3lib_tree_pagetree_NodeCollection');
+
 		if ($level >= 99) {
 			return $nodeCollection;
 		}
@@ -127,6 +146,11 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 			$nodeCollection->append($subNode);
 		}
 
+		foreach ($this->processCollectionHookObjects as $hookObject) {
+			/** @var $hookObject t3lib_tree_pagetree_interfaces_collectionprocessor */
+			$hookObject->postProcessGetNodes($node, $mountPoint, $level, $nodeCollection);
+		}
+
 		return $nodeCollection;
 	}
 
@@ -144,6 +168,8 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 
 		$records = $this->getSubpages(-1, $searchFilter);
 		if (!is_array($records) || !count($records)) {
+			return $nodeCollection;
+		} elseif (count($records) > 500) {
 			return $nodeCollection;
 		}
 
@@ -176,51 +202,59 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 
 				$rootlineElement = t3lib_tree_pagetree_Commands::getNodeRecord($rootlineElement['uid']);
 				$ident = intval($rootlineElement['sorting']) . intval($rootlineElement['uid']);
-				if ($reference->offsetExists($ident)) {
+				if ($reference && $reference->offsetExists($ident)) {
 					/** @var $refNode t3lib_tree_pagetree_Node */
 					$refNode = $reference->offsetGet($ident);
 					$refNode->setExpanded(TRUE);
 					$refNode->setLeaf(FALSE);
 
 					$reference = $refNode->getChildNodes();
-					continue;
-				}
-
-				$refNode = t3lib_tree_pagetree_Commands::getNewNode($rootlineElement, $mountPoint);
-				$replacement = '<span class="typo3-pagetree-filteringTree-highlight">$1</span>';
-				if ($isNumericSearchFilter && intval($rootlineElement['uid']) === intval($searchFilter)) {
-					$text = str_replace('$1', $refNode->getText(), $replacement);
-				} else {
-					$text = preg_replace('/(' . $searchFilter . ')/i', $replacement, $refNode->getText());
-				}
-
-				$refNode->setText(
-					$text,
-					$refNode->getTextSourceField(),
-					$refNode->getPrefix(),
-					$refNode->getSuffix()
-				);
-
-				/** @var $childCollection t3lib_tree_pagetree_NodeCollection */
-				$childCollection = t3lib_div::makeInstance('t3lib_tree_pagetree_NodeCollection');
-
-				if (($i +1) >= $amountOfRootlineElements) {
-					$childNodes = $this->getNodes($refNode, $mountPoint);
-					foreach ($childNodes as $childNode) {
-						/** @var $childNode t3lib_tree_pagetree_Node */
-						$childRecord = $childNode->getRecord();
-						$childIdent = intval($childRecord['sorting']) . intval($childRecord['uid']);
-						$childCollection->offsetSet($childIdent, $childNode);
+					if ($reference == NULL) {
+						$reference = t3lib_div::makeInstance('t3lib_tree_pagetree_NodeCollection');
+						$refNode->setChildNodes($reference);
 					}
-					$refNode->setChildNodes($childNodes);
+				} else {
+					$refNode = t3lib_tree_pagetree_Commands::getNewNode($rootlineElement, $mountPoint);
+					$replacement = '<span class="typo3-pagetree-filteringTree-highlight">$1</span>';
+					if ($isNumericSearchFilter && intval($rootlineElement['uid']) === intval($searchFilter)) {
+						$text = str_replace('$1', $refNode->getText(), $replacement);
+					} else {
+						$text = preg_replace('/(' . $searchFilter . ')/i', $replacement, $refNode->getText());
+					}
+
+					$refNode->setText(
+						$text,
+						$refNode->getTextSourceField(),
+						$refNode->getPrefix(),
+						$refNode->getSuffix()
+					);
+
+					/** @var $childCollection t3lib_tree_pagetree_NodeCollection */
+					$childCollection = t3lib_div::makeInstance('t3lib_tree_pagetree_NodeCollection');
+
+					if (($i +1) >= $amountOfRootlineElements) {
+						$childNodes = $this->getNodes($refNode, $mountPoint);
+						foreach ($childNodes as $childNode) {
+							/** @var $childNode t3lib_tree_pagetree_Node */
+							$childRecord = $childNode->getRecord();
+							$childIdent = intval($childRecord['sorting']) . intval($childRecord['uid']);
+							$childCollection->offsetSet($childIdent, $childNode);
+						}
+						$refNode->setChildNodes($childNodes);
+					}
+
+					$refNode->setChildNodes($childCollection);
+					$reference->offsetSet($ident, $refNode);
+					$reference->ksort();
+
+					$reference = $childCollection;
 				}
-
-				$refNode->setChildNodes($childCollection);
-				$reference->offsetSet($ident, $refNode);
-				$reference->ksort();
-
-				$reference = $childCollection;
 			}
+		}
+
+		foreach ($this->processCollectionHookObjects as $hookObject) {
+			/** @var $hookObject t3lib_tree_pagetree_interfaces_collectionprocessor */
+			$hookObject->postProcessFilteredNodes($node, $searchFilter, $mountPoint, $nodeCollection);
 		}
 
 		return $nodeCollection;
@@ -304,6 +338,11 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 			$nodeCollection->append($subNode);
 		}
 
+		foreach ($this->processCollectionHookObjects as $hookObject) {
+			/** @var $hookObject t3lib_tree_pagetree_interfaces_collectionprocessor */
+			$hookObject->postProcessGetTreeMounts($searchFilter, $nodeCollection);
+		}
+
 		return $nodeCollection;
 	}
 
@@ -361,7 +400,7 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 	}
 
 	/**
-	 * Returns true if the node has child's
+	 * Returns TRUE if the node has child's
 	 *
 	 * @param int $id
 	 * @return bool

@@ -28,9 +28,9 @@
 /**
  * An identity mapper to map nodes to objects
  *
- * @version $Id: IdentityMap.php 1814 2010-02-06 20:25:48Z jocrau $
+ * @version $Id$
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
- * @see \F3\TYPO3CR\FLOW3\Persistence\DataMapper, \F3\TYPO3CR\FLOW3\Persistence\Backend
+ * @see Tx_Extbase_Persistence_Mapper_DataMapper , Tx_Extbase_Persistence_Backend
  */
 class Tx_Extbase_Persistence_IdentityMap implements t3lib_Singleton {
 

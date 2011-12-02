@@ -22,12 +22,6 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- * $Id: class.tx_rsaauth_keypair.php 10120 2011-01-18 20:03:36Z ohader $
- */
-
 
 /**
  * This class contain an RSA keypair class. Its purpose is to keep to keys

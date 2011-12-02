@@ -25,9 +25,9 @@
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
-class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
+class Tx_Fluid_Core_Parser_TemplateParser {
 
-	public static $SCAN_PATTERN_NAMESPACEDECLARATION = '/(?<!\\\\){namespace\s*([a-zA-Z]+[a-zA-Z0-9]*)\s*=\s*((?:F3|Tx|t3lib|tslib)(?:FLUID_NAMESPACE_SEPARATOR\w+)+)\s*}/m';
+	public static $SCAN_PATTERN_NAMESPACEDECLARATION = '/(?<!\\\\){namespace\s*([a-zA-Z]+[a-zA-Z0-9]*)\s*=\s*((?:Tx|t3lib|tslib)(?:FLUID_NAMESPACE_SEPARATOR\w+)+)\s*}/m';
 
 	/**
 	 * This regular expression splits the input string at all dynamic tags, AND
@@ -288,6 +288,8 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 	}
 
 	/**
+	 * Inject object factory
+	 *
 	 * @param Tx_Extbase_Object_ObjectManagerInterface $objectManager
 	 * @return void
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
@@ -308,12 +310,16 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 	}
 
 	/**
-	 * Parses a given template and returns a parsed template object.
+	 * Parses a given template string and returns a parsed template object.
+	 *
+	 * The resulting ParsedTemplate can then be rendered by calling evaluate() on it.
+	 *
+	 * Normally, you should use a subclass of AbstractTemplateView instead of calling the
+	 * TemplateParser directly.
 	 *
 	 * @param string $templateString The template to parse as a string
 	 * @return Tx_Fluid_Core_Parser_ParsedTemplateInterface Parsed template
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
-	 * @todo Refine doc comment
 	 */
 	public function parse($templateString) {
 		if (!is_string($templateString)) throw new Tx_Fluid_Core_Parser_Exception('Parse requires a template string as argument, ' . gettype($templateString) . ' given.', 1224237899);
@@ -323,6 +329,11 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 		$templateString = $this->extractNamespaceDefinitions($templateString);
 		$splitTemplate = $this->splitTemplateAtDynamicTags($templateString);
 		$parsingState = $this->buildObjectTree($splitTemplate);
+
+		$variableContainer = $parsingState->getVariableContainer();
+		if ($variableContainer !== NULL && $variableContainer->exists('layoutName')) {
+			$parsingState->setLayoutNameNode($variableContainer->get('layoutName'));
+		}
 
 		return $parsingState;
 	}
@@ -402,8 +413,6 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 		$state->setRootNode($rootNode);
 		$state->pushNodeToStack($rootNode);
 
-		$state->setVariableContainer($this->objectManager->create('Tx_Fluid_Core_ViewHelper_TemplateVariableContainer'));
-
 		foreach ($splitTemplate as $templateElement) {
 			$matchedVariables = array();
 			if (preg_match(self::$SCAN_PATTERN_CDATA, $templateElement, $matchedVariables) > 0) {
@@ -440,7 +449,7 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 
 		if ($selfclosing) {
 			$node = $state->popNodeFromStack();
-			$this->callInterceptor($node, Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_CLOSING_VIEWHELPER);
+			$this->callInterceptor($node, Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_CLOSING_VIEWHELPER, $state);
 		}
 	}
 
@@ -460,26 +469,32 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 		if (!array_key_exists($namespaceIdentifier, $this->namespaces)) {
 			throw new Tx_Fluid_Core_Parser_Exception('Namespace could not be resolved. This exception should never be thrown!', 1224254792);
 		}
+		$viewHelper = $this->objectManager->get($this->resolveViewHelperName($namespaceIdentifier, $methodIdentifier));
 
-		$viewHelper = $this->objectManager->create($this->resolveViewHelperName($namespaceIdentifier, $methodIdentifier));
+			// The following three checks are only done *in an uncached template*, and not needed anymore in the cached version
 		$expectedViewHelperArguments = $viewHelper->prepareArguments();
 		$this->abortIfUnregisteredArgumentsExist($expectedViewHelperArguments, $argumentsObjectTree);
 		$this->abortIfRequiredArgumentsAreMissing($expectedViewHelperArguments, $argumentsObjectTree);
+		$this->rewriteBooleanNodesInArgumentsObjectTree($expectedViewHelperArguments, $argumentsObjectTree);
 
-		$currentDynamicNode = $this->objectManager->create('Tx_Fluid_Core_Parser_SyntaxTree_ViewHelperNode', $viewHelper, $argumentsObjectTree);
+		$currentViewHelperNode = $this->objectManager->create('Tx_Fluid_Core_Parser_SyntaxTree_ViewHelperNode', $viewHelper, $argumentsObjectTree);
 
-		$state->getNodeFromStack()->addChildNode($currentDynamicNode);
+		$state->getNodeFromStack()->addChildNode($currentViewHelperNode);
+
+		if ($viewHelper instanceof Tx_Fluid_Core_ViewHelper_Facets_ChildNodeAccessInterface && !($viewHelper instanceof Tx_Fluid_Core_ViewHelper_Facets_CompilableInterface)) {
+			$state->setCompilable(FALSE);
+		}
 
 			// PostParse Facet
 		if ($viewHelper instanceof Tx_Fluid_Core_ViewHelper_Facets_PostParseInterface) {
 			// Don't just use $viewHelper::postParseEvent(...),
 			// as this will break with PHP < 5.3.
-			call_user_func(array($viewHelper, 'postParseEvent'), $currentDynamicNode, $argumentsObjectTree, $state->getVariableContainer());
+			call_user_func(array($viewHelper, 'postParseEvent'), $currentViewHelperNode, $argumentsObjectTree, $state->getVariableContainer());
 		}
 
-		$this->callInterceptor($currentDynamicNode, Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_OPENING_VIEWHELPER);
+		$this->callInterceptor($currentViewHelperNode, Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_OPENING_VIEWHELPER, $state);
 
-		$state->pushNodeToStack($currentDynamicNode);
+		$state->pushNodeToStack($currentViewHelperNode);
 	}
 
 	/**
@@ -517,6 +532,21 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 		foreach ($expectedArguments as $expectedArgument) {
 			if ($expectedArgument->isRequired() && !in_array($expectedArgument->getName(), $actualArgumentNames)) {
 				throw new Tx_Fluid_Core_Parser_Exception('Required argument "' . $expectedArgument->getName() . '" was not supplied.', 1237823699);
+			}
+		}
+	}
+
+	/**
+	 * Wraps the argument tree, if a node is boolean, into a Boolean syntax tree node
+	 *
+	 * @param array $argumentDefinitions the argument definitions, key is the argument name, value is the ArgumentDefinition object
+	 * @param array $argumentsObjectTree the arguments syntax tree, key is the argument name, value is an AbstractNode
+	 * @return void
+	 */
+	protected function rewriteBooleanNodesInArgumentsObjectTree($argumentDefinitions, &$argumentsObjectTree) {
+		foreach ($argumentDefinitions as $argumentName => $argumentDefinition) {
+			if ($argumentDefinition->getType() === 'boolean' && isset($argumentsObjectTree[$argumentName])) {
+				$argumentsObjectTree[$argumentName] = new Tx_Fluid_Core_Parser_SyntaxTree_BooleanNode($argumentsObjectTree[$argumentName]);
 			}
 		}
 	}
@@ -565,7 +595,7 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 		if ($lastStackElement->getViewHelperClassName() != $this->resolveViewHelperName($namespaceIdentifier, $methodIdentifier)) {
 			throw new Tx_Fluid_Core_Parser_Exception('Templating tags not properly nested. Expected: ' . $lastStackElement->getViewHelperClassName() . '; Actual: ' . $this->resolveViewHelperName($namespaceIdentifier, $methodIdentifier), 1224485398);
 		}
-		$this->callInterceptor($lastStackElement, Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_CLOSING_VIEWHELPER);
+		$this->callInterceptor($lastStackElement, Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_CLOSING_VIEWHELPER, $state);
 	}
 
 	/**
@@ -614,7 +644,7 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 		if (strlen($objectAccessorString) > 0) {
 
 			$node = $this->objectManager->create('Tx_Fluid_Core_Parser_SyntaxTree_ObjectAccessorNode', $objectAccessorString);
-			$this->callInterceptor($node, Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_OBJECTACCESSOR);
+			$this->callInterceptor($node, Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_OBJECTACCESSOR, $state);
 
 			$state->getNodeFromStack()->addChildNode($node);
 		}
@@ -622,7 +652,7 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 			// Close ViewHelper Tags if needed.
 		for ($i=0; $i<$numberOfViewHelpers; $i++) {
 			$node = $state->popNodeFromStack();
-			$this->callInterceptor($node, Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_CLOSING_VIEWHELPER);
+			$this->callInterceptor($node, Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_CLOSING_VIEWHELPER, $state);
 		}
 	}
 
@@ -631,10 +661,11 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 	 *
 	 * @param Tx_Fluid_Core_Parser_SyntaxTree_NodeInterface $node The syntax tree node which can be modified by the interceptors.
 	 * @param integer $interceptionPoint the interception point. One of the Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_* constants.
+	 * @param Tx_Fluid_Core_Parser_ParsingState the parsing state
 	 * @return void
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 */
-	protected function callInterceptor(Tx_Fluid_Core_Parser_SyntaxTree_NodeInterface &$node, $interceptionPoint) {
+	protected function callInterceptor(Tx_Fluid_Core_Parser_SyntaxTree_NodeInterface &$node, $interceptionPoint, Tx_Fluid_Core_Parser_ParsingState $state) {
 		if ($this->configuration !== NULL) {
 			// $this->configuration is UNSET inside the arguments of a ViewHelper.
 			// That's why the interceptors are only called if the object accesor is not inside a ViewHelper Argument
@@ -643,7 +674,7 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 			$interceptors = $this->configuration->getInterceptors($interceptionPoint);
 			if (count($interceptors) > 0) {
 				foreach($interceptors as $interceptor) {
-					$node = $interceptor->process($node, $interceptionPoint);
+					$node = $interceptor->process($node, $interceptionPoint, $state);
 				}
 			}
 		}
@@ -705,7 +736,7 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 */
 	protected function buildArgumentObjectTree($argumentString) {
-		if (strstr($argumentString, '{') === FALSE && strstr($argumentString, '<') === FALSE) {
+		if (strpos($argumentString, '{') === FALSE && strpos($argumentString, '<') === FALSE) {
 			return $this->objectManager->create('Tx_Fluid_Core_Parser_SyntaxTree_TextNode', $argumentString);
 		}
 		$splitArgument = $this->splitTemplateAtDynamicTags($argumentString);
@@ -839,7 +870,7 @@ class Tx_Fluid_Core_Parser_TemplateParser implements t3lib_Singleton {
 	 */
 	protected function textHandler(Tx_Fluid_Core_Parser_ParsingState $state, $text) {
 		$node = $this->objectManager->create('Tx_Fluid_Core_Parser_SyntaxTree_TextNode', $text);
-		$this->callInterceptor($node, Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_TEXT);
+		$this->callInterceptor($node, Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_TEXT, $state);
 
 		$state->getNodeFromStack()->addChildNode($node);
 	}

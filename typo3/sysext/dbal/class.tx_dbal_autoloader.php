@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2010 Xavier Perseguers <typo3@perseguers.ch>
+ *  (c) 2010-2011 Xavier Perseguers <xavier@typo3.org>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,9 +29,7 @@
  * Autoloader included from Install Tool that lets DBAL load itself
  * if it makes sense.
  *
- * $Id: class.tx_dbal_autoloader.php 40866 2010-12-06 14:26:13Z xperseguers $
- *
- * @author Xavier Perseguers <typo3@perseguers.ch>
+ * @author Xavier Perseguers <xavier@typo3.org>
  *
  * @package TYPO3
  * @subpackage dbal
@@ -96,6 +94,7 @@ class tx_dbal_autoloader {
 			$extList[] = 'dbal';
 		}
 		$this->updateExtensionList(implode(',', $extList));
+		$GLOBALS['typo3CacheManager']->getCache('cache_phpcode')->flushByTag('t3lib_autoloader');
 	}
 
 	/**

@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Persistence\Storage
- * @version $Id: Typo3DbBackend.php 2297 2010-05-25 15:52:18Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persistence_Storage_BackendInterface, t3lib_Singleton {
 
@@ -45,7 +45,7 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 	protected $databaseHandle;
 
 	/**
-	 * @var Tx_Extbase_Persistence_DataMapper
+	 * @var Tx_Extbase_Persistence_Mapper_DataMapper
 	 */
 	protected $dataMapper;
 
@@ -76,6 +76,11 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 	protected $configurationManager;
 
 	/**
+	 * @var Tx_Extbase_Service_CacheService
+	 */
+	protected $cacheService;
+
+	/**
 	 * Constructor. takes the database handle from $GLOBALS['TYPO3_DB']
 	 */
 	public function __construct() {
@@ -98,6 +103,14 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 	 */
 	public function injectDataMapper(Tx_Extbase_Persistence_Mapper_DataMapper $dataMapper) {
 		$this->dataMapper = $dataMapper;
+	}
+
+	/**
+	 * @param Tx_Extbase_Service_CacheService $cacheService
+	 * @return void
+	 */
+	public function injectCacheService(Tx_Extbase_Service_CacheService $cacheService) {
+		$this->cacheService = $cacheService;
 	}
 
 	/**
@@ -139,7 +152,7 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 	 * @param string $tableName The database table name
 	 * @param array $row The row to be updated
 	 * @param boolean $isRelation TRUE if we are currently inserting into a relation table, FALSE by default
-	 * @return void
+	 * @return bool
 	 */
 	public function updateRow($tableName, array $row, $isRelation = FALSE) {
 		if (!isset($row['uid'])) throw new InvalidArgumentException('The given row must contain a value for "uid".');
@@ -170,7 +183,7 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 	 * @param string $tableName The database table name
 	 * @param array $identifier An array of identifier array('fieldname' => value). This array will be transformed to a WHERE clause
 	 * @param boolean $isRelation TRUE if we are currently manipulating a relation table, FALSE by default
-	 * @return void
+	 * @return bool
 	 */
 	public function removeRow($tableName, array $identifier, $isRelation = FALSE) {
 		$statement = 'DELETE FROM ' . $tableName . ' WHERE ' . $this->parseIdentifier($identifier);
@@ -266,6 +279,10 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 			$count = $this->databaseHandle->sql_num_rows($result);
 		} else {
 			$statementParts['fields'] = array('COUNT(*)');
+			if (isset($statementParts['keywords']['distinct'])) {
+				unset($statementParts['keywords']['distinct']);
+				$statementParts['fields'] = array('COUNT(DISTINCT ' . reset($statementParts['tables']) . '.uid)');
+			}
 			$statement = $this->buildQuery($statementParts, $parameters);
 			$this->replacePlaceholders($statement, $parameters);
 			$result = $this->databaseHandle->sql_query($statement);
@@ -274,7 +291,7 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 			$count = current(current($rows));
 		}
 		$this->databaseHandle->sql_free_result($result);
-		return $count;
+		return (int)$count;
 	}
 
 	/**
@@ -340,7 +357,7 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 	 * Checks if a Value Object equal to the given Object exists in the data base
 	 *
 	 * @param Tx_Extbase_DomainObject_AbstractValueObject $object The Value Object
-	 * @return array The matching uid
+	 * @return mixed The matching uid if an object was found, else FALSE
 	 */
 	public function getUidOfAlreadyPersistedValueObject(Tx_Extbase_DomainObject_AbstractValueObject $object) {
 		$fields = array();
@@ -517,8 +534,12 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 		$operand1 = $comparison->getOperand1();
 		$operator = $comparison->getOperator();
 		$operand2 = $comparison->getOperand2();
+
+			/**
+			 * This if enables equals() to behave like in(). Use in() instead.
+			 * @deprecated since Extbase 1.3; will be removed in Extbase 1.5
+			 */
 		if (($operator === Tx_Extbase_Persistence_QueryInterface::OPERATOR_EQUAL_TO) && (is_array($operand2) || ($operand2 instanceof ArrayAccess) || ($operand2 instanceof Traversable))) {
-			// this else branch enables equals() to behave like in(). This behavior is deprecated and will be removed in future. Use in() instead.
 			$operator = Tx_Extbase_Persistence_QueryInterface::OPERATOR_IN;
 		}
 
@@ -670,8 +691,8 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 			$className = $this->dataMapper->getType($className, $propertyName);
 		} elseif ($columnMap->getTypeOfRelation() === Tx_Extbase_Persistence_Mapper_ColumnMap::RELATION_HAS_AND_BELONGS_TO_MANY) {
 			$relationTableName = $columnMap->getRelationTableName();
-			$sql['unions'][$relationTableName] = 'LEFT JOIN ' . $relationTableName . ' ON ' . $tableName . '.uid=' . $relationTableName . '.uid_local';
-			$sql['unions'][$childTableName] = 'LEFT JOIN ' . $childTableName . ' ON ' . $relationTableName . '.uid_foreign=' . $childTableName . '.uid';
+			$sql['unions'][$relationTableName] = 'LEFT JOIN ' . $relationTableName . ' ON ' . $tableName . '.uid=' . $relationTableName . '.' . $columnMap->getParentKeyFieldName();
+			$sql['unions'][$childTableName] = 'LEFT JOIN ' . $childTableName . ' ON ' . $relationTableName . '.'.  $columnMap->getChildKeyFieldName() . '=' . $childTableName . '.uid';
 			$className = $this->dataMapper->getType($className, $propertyName);
 		} else {
 			throw new Tx_Extbase_Persistence_Exception('Could not determine type of relation.', 1252502725);
@@ -768,16 +789,14 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 	 * @return void
 	 */
 	protected function addAdditionalWhereClause(Tx_Extbase_Persistence_QuerySettingsInterface $querySettings, $tableName, &$sql) {
-		if ($querySettings instanceof Tx_Extbase_Persistence_Typo3QuerySettings) {
-			if ($querySettings->getRespectEnableFields()) {
-				$this->addEnableFieldsStatement($tableName, $sql);
-			}
-			if ($querySettings->getRespectSysLanguage()) {
-				$this->addSysLanguageStatement($tableName, $sql);
-			}
-			if ($querySettings->getRespectStoragePage()) {
-				$this->addPageIdStatement($tableName, $sql, $querySettings->getStoragePageIds());
-			}
+		if ($querySettings->getRespectEnableFields()) {
+			$this->addEnableFieldsStatement($tableName, $sql);
+		}
+		if ($querySettings->getRespectSysLanguage()) {
+			$this->addSysLanguageStatement($tableName, $sql);
+		}
+		if ($querySettings->getRespectStoragePage()) {
+			$this->addPageIdStatement($tableName, $sql, $querySettings->getStoragePageIds());
 		}
 	}
 
@@ -937,7 +956,8 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 			}
 			if (is_object($GLOBALS['TSFE'])) {
 				if ($languageUid === NULL) {
-					$languageUid = $GLOBALS['TSFE']->sys_language_uid;
+						// get the language UID of the content that should be output
+					$languageUid = $GLOBALS['TSFE']->sys_language_content;
 					$languageMode = $GLOBALS['TSFE']->sys_language_mode;
 				}
 				if ($workspaceUid !== NULL) {
@@ -1033,14 +1053,14 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 			$clearCacheCommands = t3lib_div::trimExplode(',',strtolower($this->pageTSConfigCache[$storagePage]['TCEMAIN.']['clearCacheCmd']),1);
 			$clearCacheCommands = array_unique($clearCacheCommands);
 			foreach ($clearCacheCommands as $clearCacheCommand)	{
-				if (t3lib_div::testInt($clearCacheCommand))	{
+				if (t3lib_utility_Math::canBeInterpretedAsInteger($clearCacheCommand))	{
 					$pageIdsToClear[] = $clearCacheCommand;
 				}
 			}
 		}
 
 		// TODO check if we can hand this over to the Dispatcher to clear the page only once, this will save around 10% time while inserting and updating
-		Tx_Extbase_Utility_Cache::clearPageCache($pageIdsToClear);
+		$this->cacheService->clearPageCache($pageIdsToClear);
 	}
 }
 

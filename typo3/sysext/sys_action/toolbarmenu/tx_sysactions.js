@@ -26,8 +26,6 @@
 
 /**
  * class to handle the dev links menu
- *
- * $Id: tx_sysactions.js 10193 2011-01-21 09:26:38Z psychomieze $
  */
 var SysActionMenu = Class.create({
 
@@ -37,7 +35,10 @@ var SysActionMenu = Class.create({
 	initialize: function() {
 
 		Ext.onReady(function() {
-			Event.observe(window, 'resize', TYPO3BackendToolbarManager.positionMenu('tx-sys-action-menu'));
+			Event.observe(
+				window, 'resize',
+				function() { TYPO3BackendToolbarManager.positionMenu('tx-sys-action-menu'); }
+			);
 			TYPO3BackendToolbarManager.positionMenu('tx-sys-action-menu');
 			this.toolbarItemIcon = $$('#tx-sys-action-menu .toolbar-item span')[0].src;
 

@@ -1,11 +1,9 @@
 /***************************************************************
  * Admin Panel drag and drop
  *
- * $Id: adminpanel.js 9924 2010-12-27 19:31:04Z jsegars $
- *
  * Copyright notice
  *
- * (c) 2010 Dmitry Dulepov <dmitry@typo3.org>
+ * (c) 2010-2011 Dmitry Dulepov <dmitry@typo3.org>
  * All rights reserved
  *
  * This script is part of the TYPO3 project. The TYPO3 project is

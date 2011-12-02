@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Validation
- * @version $Id: ValidatorResolver.php 1790 2010-01-18 22:27:37Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Validation_ValidatorResolver implements t3lib_Singleton {
 
@@ -113,12 +113,14 @@ class Tx_Extbase_Validation_ValidatorResolver implements t3lib_Singleton {
 	public function createValidator($validatorName, array $validatorOptions = array()) {
 		$validatorClassName = $this->resolveValidatorObjectName($validatorName);
 		if ($validatorClassName === FALSE) return NULL;
-		$validator = $this->objectManager->get($validatorClassName);
+		$validator = $this->objectManager->get($validatorClassName, $validatorOptions);
 		if (!($validator instanceof Tx_Extbase_Validation_Validator_ValidatorInterface)) {
 			return NULL;
 		}
-
-		$validator->setOptions($validatorOptions);
+		if (method_exists($validator, 'setOptions')) {
+				// @deprecated since Extbase 1.4.0, will be removed in Extbase 1.6.0.
+			$validator->setOptions($validatorOptions);
+		}
 		return $validator;
 	}
 
@@ -199,7 +201,7 @@ class Tx_Extbase_Validation_ValidatorResolver implements t3lib_Singleton {
 		$validatorConjunction = $this->objectManager->get('Tx_Extbase_Validation_Validator_ConjunctionValidator');
 
 		// Model based validator
-		if (strstr($dataType, '_') !== FALSE && class_exists($dataType)) {
+		if (strpos($dataType, '_') !== FALSE && class_exists($dataType)) {
 			$validatorCount = 0;
 			$objectValidator = $this->createValidator('GenericObject');
 
@@ -307,7 +309,7 @@ class Tx_Extbase_Validation_ValidatorResolver implements t3lib_Singleton {
 	 * @return string Name of the validator object or FALSE
 	 */
 	protected function resolveValidatorObjectName($validatorName) {
-		if (strstr($validatorName, '_') !== FALSE && class_exists($validatorName)) return $validatorName;
+		if (strpos($validatorName, '_') !== FALSE && class_exists($validatorName)) return $validatorName;
 
 		$possibleClassName = 'Tx_Extbase_Validation_Validator_' . $this->unifyDataType($validatorName) . 'Validator';
 		if (class_exists($possibleClassName)) return $possibleClassName;

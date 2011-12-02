@@ -33,9 +33,9 @@
  *   </f:for>
  * </f:groupedFor>
  * </code>
- *
- * Output:
+ * <output>
  * apple cherry strawberry banana
+ * </output>
  *
  * <code title="Two dimensional list">
  * <ul>
@@ -66,7 +66,7 @@
  *       <li>3: strawberry</li>
  *     </ul>
  *   </li>
-  *   <li>yellow fruits
+ *   <li>yellow fruits
  *     <ul>
  *       <li>2: banana</li>
  *     </ul>

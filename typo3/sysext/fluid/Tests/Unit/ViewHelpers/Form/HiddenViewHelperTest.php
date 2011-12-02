@@ -20,14 +20,14 @@
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
-require_once(dirname(__FILE__) . '/../ViewHelperBaseTestcase.php');
+require_once(dirname(__FILE__) . '/FormFieldViewHelperBaseTestcase.php');
 
 /**
  * Test for the "Hidden" Form view helper
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
-class Tx_Fluid_Tests_Unit_ViewHelpers_Form_HiddenViewHelperTest extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {
+class Tx_Fluid_Tests_Unit_ViewHelpers_Form_HiddenViewHelperTest extends Tx_Fluid_Tests_Unit_ViewHelpers_Form_FormFieldViewHelperBaseTestcase {
 
 	/**
 	 * var Tx_Fluid_ViewHelpers_Form_HiddenViewHelper
@@ -55,7 +55,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_HiddenViewHelperTest extends Tx_Fluid
 
 		$this->viewHelper->expects($this->once())->method('getName')->will($this->returnValue('foo'));
 		$this->viewHelper->expects($this->once())->method('getValue')->will($this->returnValue('bar'));
-		$this->viewHelper->_set('tag', $mockTagBuilder);
+		$this->viewHelper->injectTagBuilder($mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render();

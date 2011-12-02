@@ -6,7 +6,7 @@
 *
 *  Copyright notice
 *
-*  (c) 2006-2010 Benjamin Mack <benni@typo3.org>
+*  (c) 2006-2011 Benjamin Mack <benni@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 t3lib/ library provided by
@@ -19,8 +19,6 @@
 *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 *
 *  This copyright notice MUST APPEAR in all copies of this script
-*
-*  TYPO3 SVN ID: $Id: tree.js 9725 2010-12-01 13:15:56Z ohader $
 *
 ***************************************************************/
 
@@ -301,7 +299,6 @@ var PageTreeFilter = Class.create({
 
 // Call this function, refresh_nav(), from another script in the backend if you want
 // to refresh the navigation frame (eg. after having changed a page title or moved pages etc.)
-//		See t3lib_BEfunc::getSetUpdateSignal()
 // please use the function in the "Tree" object for future implementations
 function refresh_nav() {
 	window.setTimeout('Tree.refresh();',0);
@@ -310,6 +307,7 @@ function refresh_nav() {
 // Deprecated since 4.1.
 // Another JS function, for highlighting rows in the page tree, kept alive for backwards
 // compatibility. Please use the function in the "Tree" object for future implementations.
+// Still used in Core file_list.inc::linkWrapDir()
 function hilight_row(frameSetModule, highLightID) {
 	Tree.highlightActiveItem(frameSetModule, highLightID);
 }

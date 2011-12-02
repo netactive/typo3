@@ -41,7 +41,7 @@
  *
  * Note: It is crucially important that a private key is computed into the hash value! This is done inside the HashService.
  *
- * @version $Id: RequestHashService.php 1729 2009-11-25 21:37:20Z stucki $
+ * @version $Id$
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
 class Tx_Extbase_Security_Channel_RequestHashService implements t3lib_singleton {
@@ -52,7 +52,7 @@ class Tx_Extbase_Security_Channel_RequestHashService implements t3lib_singleton 
 	protected $hashService;
 
 	/**
-	 * @param Tx_Extbase_Security_Cryptography_HashService $hashService 
+	 * @param Tx_Extbase_Security_Cryptography_HashService $hashService
 	 * @return void
 	 */
 	public function injectHashService(Tx_Extbase_Security_Cryptography_HashService $hashService) {
@@ -124,16 +124,16 @@ class Tx_Extbase_Security_Channel_RequestHashService implements t3lib_singleton 
 	 * Verify the request. Checks if there is an __hmac argument, and if yes, tries to validate and verify it.
 	 *
 	 * In the end, $request->setHmacVerified is set depending on the value.
-	 * @param \F3\FLOW3\MVC\Web\Request $request The request to verify
+	 * @param Tx_Extbase_MVC_Web_Request $request The request to verify
 	 * @return void
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 */
 	public function verifyRequest(Tx_Extbase_MVC_Web_Request $request) {
-		if (!$request->hasArgument('__hmac')) {
+		if (!$request->getInternalArgument('__hmac')) {
 			$request->setHmacVerified(FALSE);
 			return;
 		}
-		$hmac = $request->getArgument('__hmac');
+		$hmac = $request->getInternalArgument('__hmac');
 		if (strlen($hmac) < 40) {
 			throw new Tx_Extbase_Security_Exception_SyntacticallyWrongRequestHash('Request hash too short. This is a probably manipulation attempt!', 1255089361);
 		}

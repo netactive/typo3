@@ -29,7 +29,6 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /*
- * TYPO3 SVN ID: $Id: htmlarea-ie.js 7281 2010-04-10 23:54:05Z stan $
  */
 
 /***************************************************

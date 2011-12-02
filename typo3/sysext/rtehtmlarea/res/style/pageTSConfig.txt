@@ -2,8 +2,6 @@
 # Default proc options in Page TSconfig for htmlArea RTE formatting with style attribute
 #
 # @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
-#
-# TYPO3 SVN ID: $Id: pageTSConfig.txt 4382 2008-10-29 13:50:51Z ingmars $
 # ***************************************************************************************
 
 	## Default RTE processing rules

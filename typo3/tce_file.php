@@ -31,25 +31,9 @@
  *
  * For syntax and API information, see the document 'TYPO3 Core APIs'
  *
- * $Id: tce_file.php 10121 2011-01-18 20:15:30Z ohader $
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   77: class SC_tce_file
- *   97:     function init()
- *  117:     function initClipboard()
- *  138:     function main()
- *  164:     function finish()
- *
- * TOTAL FUNCTIONS: 4
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 require_once('init.php');

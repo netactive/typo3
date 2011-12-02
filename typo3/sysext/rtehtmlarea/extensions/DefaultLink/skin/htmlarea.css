@@ -1,5 +1,4 @@
 /* Selectors for the Default Link plugin of htmlArea RTE */
-/* TYPO3 SVN ID: $Id: htmlarea.css 8281 2010-07-26 23:18:50Z stan $ */
 .htmlarea-action-link-edit {
 	background-image: url('images/link.gif') !important;
 }

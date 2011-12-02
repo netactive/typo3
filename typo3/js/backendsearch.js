@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2010 Ingo Renner <ingo@typo3.org>
+*  (c) 2007-2011 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -26,8 +26,6 @@
 
 /**
  * class to handle the backend search
- *
- * $Id: backendsearch.js 10193 2011-01-21 09:26:38Z psychomieze $
  */
 var BackendSearch = Class.create({
 
@@ -36,7 +34,10 @@ var BackendSearch = Class.create({
 	 */
 	initialize: function() {
 		Ext.onReady(function() {
-			Event.observe(window, 'resize', TYPO3BackendToolbarManager.positionMenu('backend-search-menu'));
+			Event.observe(
+				window, 'resize',
+				function() { TYPO3BackendToolbarManager.positionMenu('backend-search-menu'); }
+			);
 			TYPO3BackendToolbarManager.positionMenu('backend-search-menu');
 			this.toolbarItemIcon = $$('#backend-search-menu .toolbar-item span.t3-icon')[0];
 
@@ -116,7 +117,7 @@ var BackendSearch = Class.create({
 						break;
 					case 'search':
 						this.jump(
-							unescape(TYPO3.configuration.listModulePath + 'db_list.php?id=' + jsonResponse.firstMountPoint + '&search_field=' + jsonResponse.searchFor + '&search_levels=4'),
+							unescape(TYPO3.configuration.listModulePath + 'db_list.php?id=' + jsonResponse.firstMountPoint + '&search_field=' + jsonResponse.searchFor + '&search_levels=' + (jsonResponse.firstMountPoint > 0 ? '4' : '-1')),
 							'web_list',
 							'web'
 						);

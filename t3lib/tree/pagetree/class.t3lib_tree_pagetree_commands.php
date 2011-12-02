@@ -170,7 +170,7 @@ final class t3lib_tree_pagetree_Commands {
 		$tce = t3lib_div::makeInstance('t3lib_TCEmain');
 		$tce->stripslashes_values = 0;
 		$tce->start($data, $cmd);
-		$tce->copyTree = t3lib_div::intInRange($GLOBALS['BE_USER']->uc['copyLevels'], 0, 100);
+		$tce->copyTree = t3lib_utility_Math::forceIntegerInRange($GLOBALS['BE_USER']->uc['copyLevels'], 0, 100);
 
 		if (count($cmd)) {
 			$tce->process_cmdmap();
@@ -330,13 +330,22 @@ final class t3lib_tree_pagetree_Commands {
 			);
 		}
 
+			// Call stats information hook
+		$stat = '';
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['recStatInfoHooks'])) {
+			$_params = array('pages', $record['uid']);
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['recStatInfoHooks'] as $_funcRef) {
+				$stat .= t3lib_div::callUserFunction($_funcRef, $_params, $this);
+			}
+		}
+
 		$prefix .= htmlspecialchars($addIdAsPrefix ? '[' . $record['uid'] . '] ' : '');
 		$subNode->setEditableText($text);
 		$subNode->setText(
 			htmlspecialchars($visibleText),
 			$field,
 			$prefix,
-			htmlspecialchars($suffix)
+			htmlspecialchars($suffix) . $stat
 		);
 
 		$subNode->setQTip($qtip);

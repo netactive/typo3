@@ -1,8 +1,6 @@
 <?php
 /*
  * Register necessary class names with autoloader
- *
- * $Id: ext_autoload.php 8156 2010-07-11 12:42:05Z psychomieze $
  */
 $extensionPath = t3lib_extMgm::extPath('sv');
 return array(

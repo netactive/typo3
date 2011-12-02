@@ -1,6 +1,5 @@
 *******************************************************************************
 INSTALLING TYPO3
-$Id: INSTALL_tgz.txt 2389 2011-01-26 17:42:42Z ohader $
 *******************************************************************************
 
 This document is a part of the TYPO3 project. TYPO3 is an open source web
@@ -22,19 +21,22 @@ cover using TYPO3 with other databases or web servers.
 
 The following configuration is the minimum required:
 - a web server capable of running PHP
-- PHP 5.2.0 or newer with the following extensions:
+- PHP 5.3.0 or newer with the following extensions:
 	- filter
 	- GD2
 	- JSON
 	- mysql
+	- openssl
 	- pcre
 	- session
+	- SOAP
 	- SPL
 	- standard
 	- xml
+	- zlib
 	Some extensions can be optionally compiled into PHP. A list of loaded
 	extensions can be checked using the phpinfo() function.
-- memory_limit set to at least to 64M in php.ini
+- memory_limit set to at least 64M in php.ini
 - MySQL 5.0 or newer
 - 200 MB of disk space
 - AllowOverride in the Apache configuration includes "Indexes" and "FileInfo"
@@ -43,27 +45,39 @@ The following configuration is the minimum required:
 The following configuration is recommended:
 - Apache 2.x
 - mod_expires and mod_rewrite enabled in the Apache configuration
-- PHP 5.2.0 or newer with the following extensions:
+- PHP 5.3.0 or newer with the following extensions:
 	- cURL
 	- filter
 	- GD2
+	- hash
 	- JSON
 	- mbstring
 	- mysql
+	- openssl
 	- pcre
 	- session
+	- SOAP
 	- SPL
 	- standard
 	- xml
+	- zlib
 	Some extensions can be optionally compiled into PHP. A list of loaded
 	extensions can be checked using the phpinfo() function.
+- Safe mode is not supported, thus it must not be activated
+- Magic Quotes is deprecated, thus it should be deactivated
 - memory_limit set to 128M or more in php.ini
 - MySQL 5.1 or newer
-- GraphicsMagick
+- GraphicsMagick or ImageMagick v6 or newer
 - 200 MB or more of disk space
 - AllowOverride in the Apache configuration includes "Indexes" and "FileInfo"
   (see FAQ below)
 
+TYPO3 uses /dev/urandom or /dev/random on Unix-like platforms for security
+purposes. Access to these files is highly recommended and increases TYPO3
+security. Make sure to add "/dev/random:/dev/urandom" to open_basedir
+settings if you use it. If these paths are unavailable, TYPO3 will attempt to
+simulate random number generation. This is less secure, causes performance
+issues and warnings in the TYPO3 system log.
 
 ===============================================================================
 Obtaining TYPO3
@@ -89,8 +103,8 @@ the web server.
 
 To install TYPO3, unpack the source package locally. Unpacking will produce a
 directory with a name like typo3_src-x.y.z, where x, y and z correspond to the
-TYPO3 version. For example, the TYPO3 4.5.0 source package will create a
-directory named typo3_src-4.5.0.
+TYPO3 version. For example, the TYPO3 x.y.z source package will create a
+directory named typo3_src-x.y.z.
 
 Next unpack the dummy package. This will create a directory with the name
 dummy-x.y.z. Now create a new directory and copy all files and folders from
@@ -116,8 +130,8 @@ Installation: recommended
 To install TYPO3, unpack the source package outside of the web site root
 directory on your server. The location must be accessible to the web server.
 Unpacking will produce a directory with a name like typo3_src-x.y.z, where x,
-y and z correspond to the TYPO3 version. For example, the TYPO3 4.5.0 source
-package will create a directory named typo3_src-4.5.0.
+y and z correspond to the TYPO3 version. For example, the TYPO3 4.6.0 source
+package will create a directory named typo3_src-4.6.0.
 
 Unpack the dummy package in the temporary location on the server. This will
 create a dummy-x.y.z directory. Move all files and directories from the
@@ -133,14 +147,14 @@ packages.
 
 On Linux, Unix or Mac OS X systems create a symbolic link named typo3_src
 pointing to the source package:
-	ln -s /var/www/typo3_src-4.5.0 /var/www/example.com/typo3_src
+	ln -s /var/www/typo3_src-4.6.0 /var/www/example.com/typo3_src
 
 On Windows Vista or Windows 7 create a symbolic link named typo3_src
 pointing to the source package:
-	mklink /D C:\<dir>\typo3_src-4.5.0 C:\<dir>\example.com\typo3_src
+	mklink /D C:\<dir>\typo3_src-4.6.0 C:\<dir>\example.com\typo3_src
 
-Users of Windows XP/2000 can use the "junction" program by Marc Russinovich to
-create links. The program can be obtained at:
+Users of Windows XP/2000 or newer can use the "junction" program by
+Marc Russinovich to create links. The program can be obtained at:
 	http://technet.microsoft.com/en-us/sysinternals/bb896768.aspx
 
 Next create links for the typo3/ and t3lib/ directories:
@@ -158,7 +172,7 @@ Change permissions and ownership of the directories. This usually requires the
 "sudo" command. Assuming that the web server user is in the group named
 "apache", execute the following commands in the web site root directory:
 	sudo chgrp -R apache fileadmin typo3temp typo3conf uploads
-	sudo chmod g+rwX,o-w fileadmin typo3temp typo3conf uploads
+	sudo chmod -R g+rwX,o-w fileadmin typo3temp typo3conf uploads
 
 If "sudo" is not available, ask your hosting company to change the permissions.
 
@@ -200,6 +214,11 @@ A:	Make sure that AllowOverride allows "Indexes" and "FileInfo" in the Apache
 	/var/log/httpd. Check with your hosting provider if you are in doubt where
 	the logs are located.
 
+Q:	Backend or Installer looks strange, no images just black and white?
+A:	Maybe you missed some configuration in your .htaccess file.
+	Have a look at typo3_src/misc/advanced.htaccess to find the options
+	you might need.
+
 Q:	I went through the setup process and created an admin user. Why can't I log
 	in now?
 A:	If you use MySQL 5.x or newer, try setting it to "compatible" mode. Open the
@@ -207,3 +226,17 @@ A:	If you use MySQL 5.x or newer, try setting it to "compatible" mode. Open the
 	is the web site domain), navigate to "All configuration". find "setDBinit",
 	and add this line to the top of the input field:
 		SET SESSION sql_mode='MYSQL40'
+
+Q:	What do I have to do regarding security?
+A:	You have to make sure that you keep your TYPO3-core and the extensions
+	up to date.
+	* Subscribe to the announcement mailing list. This will inform you about new
+	  releases of the TYPO3 core and security bulletins of core and community
+	  extensions.
+	  http://lists.typo3.org/cgi-bin/mailman/listinfo/typo3-announce
+	* Use the scheduler task "Update Extension List (em)" to update the list of
+	  available extensions regularly. You should check regularly, if new versions
+	  of these extensions are available and install them respectively.
+	* For further reading regarding securing TYPO3, please read the TYPO3 security
+	  cookbook and other resources. Please visit
+	  http://typo3.org/teams/security/resources/

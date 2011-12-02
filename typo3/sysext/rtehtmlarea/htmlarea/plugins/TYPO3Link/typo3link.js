@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2005-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2005-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -26,17 +26,12 @@
 ***************************************************************/
 /*
  * TYPO3Link plugin for htmlArea RTE
- *
- * TYPO3 SVN ID: $Id: typo3link.js 10233 2011-01-22 00:06:38Z stan $
  */
-HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
-	constructor: function(editor, pluginName) {
-		this.base(editor, pluginName);
-	},
+HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
-	configurePlugin: function(editor) {
+	configurePlugin: function (editor) {
 		this.pageTSConfiguration = this.editorConfiguration.buttons.link;
 		this.modulePath = this.pageTSConfiguration.pathLinkModule;
 		this.classesAnchorUrl = this.pageTSConfiguration.classesAnchorUrl;
@@ -44,7 +39,7 @@ HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 		 * Registering plugin "About" information
 		 */
 		var pluginInformation = {
-			version		: '2.1',
+			version		: '2.2',
 			developer	: 'Stanislas Rolland',
 			developerUrl	: 'http://www.sjbr.ca/',
 			copyrightOwner	: 'Stanislas Rolland',
@@ -92,10 +87,9 @@ HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 					try {
 						if (typeof(HTMLArea.classesAnchorSetup) === 'undefined') {
 							eval(response.responseText);
-							this.appendToLog('ongenerate', 'Javascript file successfully evaluated: ' + this.classesAnchorUrl);
 						}
 					} catch(e) {
-						this.appendToLog('ongenerate', 'Error evaluating contents of Javascript file: ' + this.classesAnchorUrl);
+						this.appendToLog('ongenerate', 'Error evaluating contents of Javascript file: ' + this.classesAnchorUrl, 'error');
 					}
 				}
 			});
@@ -121,11 +115,10 @@ HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 					try {
 						if (typeof(HTMLArea.classesAnchorSetup) === 'undefined') {
 							eval(response.responseText);
-							this.appendToLog('onButtonPress', 'Javascript file successfully evaluated: ' + this.classesAnchorUrl);
 						}
 						this.onButtonPress(editor, id, target);
 					} catch(e) {
-						this.appendToLog('onButtonPress', 'Error evaluating contents of Javascript file: ' + this.classesAnchorUrl);
+						this.appendToLog('onButtonPress', 'Error evaluating contents of Javascript file: ' + this.classesAnchorUrl, 'error');
 					}
 				}
 			});
@@ -213,36 +206,35 @@ HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 				}
 			}
 		}
-		if (!Ext.isIE && node != null && /^a$/i.test(node.nodeName)) {
-				// Update existing link in non-IE
+		if (node != null && /^a$/i.test(node.nodeName)) {
+				// Update existing link
 			this.editor.selectNode(node);
 			selection = this.editor._getSelection();
 			range = this.editor._createRange(selection);
-				// Clean images
+				// Clean images, keep links
 			if (HTMLArea.classesAnchorSetup) {
 				this.cleanAllLinks(node, range, true);
 			}
 				// Update link href
+				// In IE, setting href may update the content of the element. We don't want this feature.
+			if (Ext.isIE) {
+				var content = node.innerHTML;
+			}
 			node.href = Ext.isGecko ? encodeURI(theLink) : theLink;
+			if (Ext.isIE) {
+				node.innerHTML = content;
+			}
 				// Update link attributes
 			this.setLinkAttributes(node, range, cur_target, cur_class, cur_title, imageNode, addIconAfterLink, additionalValues);
 		} else {
 				// Create new link
-				// Update links in IE
 			selection = this.editor._getSelection();
 			range = this.editor._createRange(selection);
-			if (Ext.isIE) {
-					// Clean images, keep links
-				if (HTMLArea.classesAnchorSetup) {
-					this.cleanAllLinks(node, range, true);
-				}
-			} else {
-					// Clean existing anchors otherwise Mozilla may create nested anchors
-					// Selection may be lost when cleaning links
-				var bookmark = this.editor.getBookmark(range);
-				this.cleanAllLinks(node, range);
-				this.editor.selectRange(this.editor.moveToBookmark(bookmark));
-			}
+				// Clean existing anchors otherwise Mozilla may create nested anchors while IE may update exisitng link
+				// Selection may be lost when cleaning links
+			var bookmark = this.editor.getBookmark(range);
+			this.cleanAllLinks(node, range);
+			this.editor.selectRange(this.editor.moveToBookmark(bookmark));
 			if (Ext.isGecko) {
 				this.editor.document.execCommand('CreateLink', false, encodeURI(theLink));
 			} else {
@@ -351,11 +343,14 @@ HTMLArea.TYPO3Link = HTMLArea.Plugin.extend({
 					else node.removeAttribute("target");
 				if (cur_class.trim()) {
 					node.className = cur_class.trim();
-				} else { 
-					if (!Ext.isIE) {
+				} else {
+					if (!Ext.isOpera) {
 						node.removeAttribute('class');
+						if (Ext.isIE) {
+							node.removeAttribute('className');
+						}
 					} else {
-						node.removeAttribute('className');
+						node.className = '';
 					}
 				}
 				if (cur_title.trim()) {

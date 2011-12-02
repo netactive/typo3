@@ -47,6 +47,8 @@ class Tx_Fluid_Core_Parser_Interceptor_Escape implements Tx_Fluid_Core_Parser_In
 	protected $objectManager;
 
 	/**
+	 * Inject object manager
+	 *
 	 * @param Tx_Extbase_Object_ObjectManagerInterface $objectManager
 	 * @return void
 	 * @author Karsten Dambekalns <karsten@typo3.org>
@@ -56,16 +58,18 @@ class Tx_Fluid_Core_Parser_Interceptor_Escape implements Tx_Fluid_Core_Parser_In
 	}
 
 	/**
-	 * Adds a ViewHelper node using the EscapeViewHelper to the given node.
+	 * Adds a ViewHelper node using the Format\HtmlspecialcharsViewHelper to the given node.
 	 * If "escapingInterceptorEnabled" in the ViewHelper is FALSE, will disable itself inside the ViewHelpers body.
 	 *
 	 * @param Tx_Fluid_Core_Parser_SyntaxTree_NodeInterface $node
 	 * @param integer $interceptorPosition One of the INTERCEPT_* constants for the current interception point
+	 * @param Tx_Fluid_Core_Parser_ParsingState $parsingState the current parsing state. Not needed in this interceptor.
 	 * @return Tx_Fluid_Core_Parser_SyntaxTree_NodeInterface
 	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
+	 * @author Bastian Waidelich <bastian@typo3.org>
 	 */
-	public function process(Tx_Fluid_Core_Parser_SyntaxTree_NodeInterface $node, $interceptorPosition) {
+	public function process(Tx_Fluid_Core_Parser_SyntaxTree_NodeInterface $node, $interceptorPosition, Tx_Fluid_Core_Parser_ParsingState $parsingState) {
 		if ($interceptorPosition === Tx_Fluid_Core_Parser_InterceptorInterface::INTERCEPT_OPENING_VIEWHELPER) {
 			if (!$node->getUninitializedViewHelper()->isEscapingInterceptorEnabled()) {
 				$this->interceptorEnabled = FALSE;
@@ -79,9 +83,10 @@ class Tx_Fluid_Core_Parser_Interceptor_Escape implements Tx_Fluid_Core_Parser_In
 				}
 			}
 		} elseif ($this->interceptorEnabled && $node instanceof Tx_Fluid_Core_Parser_SyntaxTree_ObjectAccessorNode) {
+			$escapeViewHelper = $this->objectManager->get('Tx_Fluid_ViewHelpers_Format_HtmlspecialcharsViewHelper');
 			$node = $this->objectManager->create(
 				'Tx_Fluid_Core_Parser_SyntaxTree_ViewHelperNode',
-				$this->objectManager->create('Tx_Fluid_ViewHelpers_EscapeViewHelper'),
+				$escapeViewHelper,
 				array('value' => $node)
 			);
 		}

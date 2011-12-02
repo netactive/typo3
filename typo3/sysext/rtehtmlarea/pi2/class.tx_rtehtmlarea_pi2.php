@@ -28,8 +28,6 @@
  * Front end RTE based on htmlArea
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
- *
- * $Id: class.tx_rtehtmlarea_pi2.php 10503 2011-02-20 04:20:35Z stan $  *
  */
 class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 
@@ -75,7 +73,7 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 
 		$this->TCEform = $parentObject;
 		$this->client = $this->clientInfo();
-		$this->typoVersion = t3lib_div::int_from_ver(TYPO3_version);
+		$this->typoVersion = t3lib_utility_VersionNumber::convertVersionNumberToInteger(TYPO3_version);
 
 		/* =======================================
 		 * INIT THE EDITOR-SETTINGS
@@ -105,7 +103,7 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 
 		if (is_array($thisConfig) && !empty($thisConfig)) {
 			$this->thisConfig = $thisConfig;
-		} else if (is_array($this->RTEsetup['default.']) && is_array($this->RTEsetup['default.']['FE.'])) {
+		} elseif (is_array($this->RTEsetup['default.']) && is_array($this->RTEsetup['default.']['FE.'])) {
 			$this->thisConfig = $this->RTEsetup['default.']['FE.'];
 		}
 
@@ -229,9 +227,9 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 				$pageRenderer->enableExtJsDebug();
 			}
 		}
-		$pageRenderer->addCssFile($this->siteURL . 't3lib/js/extjs/ux/resize.css');
-		$pageRenderer->addJsFile($this->siteURL . 't3lib/js/extjs/ux/ext.resizable.js');
-		$pageRenderer->addJsFile($this->siteURL . '/t3lib/js/extjs/notifications.js');
+		$pageRenderer->addCssFile('t3lib/js/extjs/ux/resize.css');
+		$pageRenderer->addJsFile('t3lib/js/extjs/ux/ext.resizable.js');
+		$pageRenderer->addJsFile('t3lib/js/extjs/notifications.js');
 		if ($this->TCEform->RTEcounter == 1) {
 			$this->TCEform->additionalJS_pre['rtehtmlarea-loadJScode'] = $this->wrapCDATA($this->loadJScode($this->TCEform->RTEcounter));
 		}
@@ -257,8 +255,7 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 			<div id="pleasewait' . $textAreaId . '" class="pleasewait" style="display: block;" >' . $TSFE->csConvObj->conv($TSFE->getLLL('Please wait',$this->LOCAL_LANG), $this->charset, $TSFE->renderCharset) . '</div>
 			<div id="editorWrap' . $textAreaId . '" class="editorWrap" style="visibility: hidden; '. htmlspecialchars($this->RTEWrapStyle). '">
 			<textarea id="RTEarea' . $textAreaId . '" name="'.htmlspecialchars($PA['itemFormElName']).'" rows="0" cols="0" style="'.htmlspecialchars($this->RTEdivStyle).'">'.t3lib_div::formatForTextarea($value).'</textarea>
-			</div>' . ($TYPO3_CONF_VARS['EXTCONF'][$this->ID]['enableDebugMode'] ? '<div id="HTMLAreaLog"></div>' : '') . '
-			';
+			</div>' . LF;
 		return $item;
 	}
 	/**

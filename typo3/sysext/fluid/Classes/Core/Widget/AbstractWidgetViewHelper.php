@@ -56,6 +56,11 @@ abstract class Tx_Fluid_Core_Widget_AbstractWidgetViewHelper extends Tx_Fluid_Co
 	private $objectManager;
 
 	/**
+	 * @var Tx_Extbase_Service_ExtensionService
+	 */
+	protected $extensionService;
+
+	/**
 	 * @var Tx_Fluid_Core_Widget_WidgetContext
 	 */
 	private $widgetContext;
@@ -80,18 +85,25 @@ abstract class Tx_Fluid_Core_Widget_AbstractWidgetViewHelper extends Tx_Fluid_Co
 	}
 
 	/**
+	 * @param Tx_Extbase_Service_ExtensionService $extensionService
+	 * @return void
+	 */
+	public function injectExtensionService(Tx_Extbase_Service_ExtensionService $extensionService) {
+		$this->extensionService = $extensionService;
+	}
+
+	/**
 	 * Initialize the arguments of the ViewHelper, and call the render() method of the ViewHelper.
 	 *
-	 * @param array $renderMethodParameters the parameters of the render() method.
 	 * @return string the rendered ViewHelper.
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 */
-	public function initializeArgumentsAndRender(array $renderMethodParameters) {
+	public function initializeArgumentsAndRender() {
 		$this->validateArguments();
 		$this->initialize();
 		$this->initializeWidgetContext();
 
-		return $this->callRenderMethod($renderMethodParameters);
+		return $this->callRenderMethod();
 	}
 
 	/**
@@ -111,7 +123,7 @@ abstract class Tx_Fluid_Core_Widget_AbstractWidgetViewHelper extends Tx_Fluid_Co
 		$pluginName = $this->controllerContext->getRequest()->getPluginName();
 		$this->widgetContext->setParentExtensionName($extensionName);
 		$this->widgetContext->setParentPluginName($pluginName);
-		$pluginNamespace = Tx_Extbase_Utility_Extension::getPluginNamespace($extensionName, $pluginName);
+		$pluginNamespace = $this->extensionService->getPluginNamespace($extensionName, $pluginName);
 		$this->widgetContext->setParentPluginNamespace($pluginNamespace);
 
 		$this->widgetContext->setWidgetViewHelperClassName(get_class($this));
@@ -133,7 +145,7 @@ abstract class Tx_Fluid_Core_Widget_AbstractWidgetViewHelper extends Tx_Fluid_Co
 		foreach ($childNodes as $childNode) {
 			$rootNode->addChildNode($childNode);
 		}
-		$this->widgetContext->setViewHelperChildNodes($rootNode, $this->getRenderingContext());
+		$this->widgetContext->setViewHelperChildNodes($rootNode, $this->renderingContext);
 	}
 
 	/**
@@ -151,7 +163,7 @@ abstract class Tx_Fluid_Core_Widget_AbstractWidgetViewHelper extends Tx_Fluid_Co
 	 * Initiate a sub request to $this->controller. Make sure to fill $this->controller
 	 * via Dependency Injection.
 	 *
-	 * @return Tx_Extbase_MVC_Response the response of this request.
+	 * @return Tx_Extbase_MVC_ResponseInterface the response of this request.
 	 * @api
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 */
@@ -206,7 +218,7 @@ abstract class Tx_Fluid_Core_Widget_AbstractWidgetViewHelper extends Tx_Fluid_Co
 		} else {
 			$widgetCounter = $this->viewHelperVariableContainer->get('Tx_Fluid_Core_Widget_AbstractWidgetViewHelper', 'nextWidgetNumber');
 		}
-		$widgetIdentifier = '__widget_' . $widgetCounter;
+		$widgetIdentifier = '@widget_' . $widgetCounter;
 		$this->viewHelperVariableContainer->addOrUpdate('Tx_Fluid_Core_Widget_AbstractWidgetViewHelper', 'nextWidgetNumber', $widgetCounter + 1);
 
 		$this->widgetContext->setWidgetIdentifier($widgetIdentifier);

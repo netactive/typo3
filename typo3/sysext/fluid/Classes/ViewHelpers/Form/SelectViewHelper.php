@@ -71,7 +71,7 @@ class Tx_Fluid_ViewHelpers_Form_SelectViewHelper extends Tx_Fluid_ViewHelpers_Fo
 	protected $tagName = 'select';
 
 	/**
-	 * @var mixed the selected value
+	 * @var mixed
 	 */
 	protected $selectedValue = NULL;
 
@@ -106,7 +106,7 @@ class Tx_Fluid_ViewHelpers_Form_SelectViewHelper extends Tx_Fluid_ViewHelpers_Fo
 	 */
 	public function render() {
 		$name = $this->getName();
-		if ($this->arguments->hasArgument('multiple')) {
+		if ($this->hasArgument('multiple')) {
 			$name .= '[]';
 		}
 
@@ -125,7 +125,7 @@ class Tx_Fluid_ViewHelpers_Form_SelectViewHelper extends Tx_Fluid_ViewHelpers_Fo
 			// register field name for token generation.
 			// in case it is a multi-select, we need to register the field name
 			// as often as there are elements in the box
-		if ($this->arguments->hasArgument('multiple') && $this->arguments['multiple'] !== '') {
+		if ($this->hasArgument('multiple') && $this->arguments['multiple'] !== '') {
 			$content .= $this->renderHiddenFieldForEmptyValue();
 			for ($i=0; $i<count($options); $i++) {
 				$this->registerFieldNameForFormTokenGeneration($name);
@@ -171,8 +171,8 @@ class Tx_Fluid_ViewHelpers_Form_SelectViewHelper extends Tx_Fluid_ViewHelpers_Fo
 		foreach ($optionsArgument as $key => $value) {
 			if (is_object($value)) {
 
-				if ($this->arguments->hasArgument('optionValueField')) {
-					$key = Tx_Extbase_Reflection_ObjectAccess::getProperty($value, $this->arguments['optionValueField']);
+				if ($this->hasArgument('optionValueField')) {
+					$key = Tx_Extbase_Reflection_ObjectAccess::getPropertyPath($value, $this->arguments['optionValueField']);
 					if (is_object($key)) {
 						if (method_exists($key, '__toString')) {
 							$key = (string)$key;
@@ -188,8 +188,8 @@ class Tx_Fluid_ViewHelpers_Form_SelectViewHelper extends Tx_Fluid_ViewHelpers_Fo
 					throw new Tx_Fluid_Core_ViewHelper_Exception('No identifying value for object of class "' . get_class($value) . '" found.' , 1247826696);
 				}
 
-				if ($this->arguments->hasArgument('optionLabelField')) {
-					$value = Tx_Extbase_Reflection_ObjectAccess::getProperty($value, $this->arguments['optionLabelField']);
+				if ($this->hasArgument('optionLabelField')) {
+					$value = Tx_Extbase_Reflection_ObjectAccess::getPropertyPath($value, $this->arguments['optionLabelField']);
 					if (is_object($value)) {
 						if (method_exists($value, '__toString')) {
 							$value = (string)$value;
@@ -214,6 +214,7 @@ class Tx_Fluid_ViewHelpers_Form_SelectViewHelper extends Tx_Fluid_ViewHelpers_Fo
 	/**
 	 * Render the option tags.
 	 *
+	 * @param mixed $value Value to check for
 	 * @return boolean TRUE if the value should be marked a s selected; FALSE otherwise
 	 * @author Bastian Waidelich <bastian@typo3.org>
 	 * @author Jochen Rau <jochen.rau@typoplanet.de>
@@ -223,7 +224,7 @@ class Tx_Fluid_ViewHelpers_Form_SelectViewHelper extends Tx_Fluid_ViewHelpers_Fo
 		if ($value === $selectedValue || (string)$value === $selectedValue) {
 			return TRUE;
 		}
-		if ($this->arguments->hasArgument('multiple')) {
+		if ($this->hasArgument('multiple')) {
 			if (is_null($selectedValue) && $this->arguments['selectAllByDefault'] === TRUE) {
 				return TRUE;
 			} elseif (is_array($selectedValue) && in_array($value, $selectedValue)) {
@@ -241,12 +242,12 @@ class Tx_Fluid_ViewHelpers_Form_SelectViewHelper extends Tx_Fluid_ViewHelpers_Fo
 	 */
 	protected function getSelectedValue() {
 		$value = $this->getValue();
-		if (!$this->arguments->hasArgument('optionValueField')) {
+		if (!$this->hasArgument('optionValueField')) {
 			return $value;
 		}
 		if (!is_array($value) && !($value instanceof Iterator)) {
 			if (is_object($value)) {
-				return Tx_Extbase_Reflection_ObjectAccess::getProperty($value, $this->arguments['optionValueField']);
+				return Tx_Extbase_Reflection_ObjectAccess::getPropertyPath($value, $this->arguments['optionValueField']);
 			} else {
 				return $value;
 			}
@@ -254,7 +255,7 @@ class Tx_Fluid_ViewHelpers_Form_SelectViewHelper extends Tx_Fluid_ViewHelpers_Fo
 		$selectedValues = array();
 		foreach($value as $selectedValueElement) {
 			if (is_object($selectedValueElement)) {
-				$selectedValues[] = Tx_Extbase_Reflection_ObjectAccess::getProperty($selectedValueElement, $this->arguments['optionValueField']);
+				$selectedValues[] = Tx_Extbase_Reflection_ObjectAccess::getPropertyPath($selectedValueElement, $this->arguments['optionValueField']);
 			} else {
 				$selectedValues[] = $selectedValueElement;
 			}

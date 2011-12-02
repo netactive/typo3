@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Persistence\QOM
- * @version $Id: QueryObjectModelFactory.php 1972 2010-03-08 16:59:20Z jocrau $
+ * @version $Id$
  * @scope prototype
  */
 class Tx_Extbase_Persistence_QOM_QueryObjectModelFactory implements t3lib_Singleton {
@@ -62,7 +62,7 @@ class Tx_Extbase_Persistence_QOM_QueryObjectModelFactory implements t3lib_Single
 		}
 		return $this->objectManager->create('Tx_Extbase_Persistence_QOM_Selector', $selectorName, $nodeTypeName);
 	}
-
+	
 	/**
 	 * Sets a statement as constraint. This is not part of the JCR 2.0 Specification!
 	 *
@@ -137,7 +137,7 @@ class Tx_Extbase_Persistence_QOM_QueryObjectModelFactory implements t3lib_Single
 	public function not(Tx_Extbase_Persistence_QOM_ConstraintInterface $constraint) {
 		return $this->objectManager->create('Tx_Extbase_Persistence_QOM_LogicalNot', $constraint);
 	}
-
+	
 	/**
 	 * Filters node-tuples based on the outcome of a binary operation.
 	 *
@@ -150,7 +150,7 @@ class Tx_Extbase_Persistence_QOM_QueryObjectModelFactory implements t3lib_Single
 	public function comparison(Tx_Extbase_Persistence_QOM_DynamicOperandInterface $operand1, $operator, $operand2) {
 		return $this->objectManager->create('Tx_Extbase_Persistence_QOM_Comparison', $operand1, $operator, $operand2);
 	}
-
+	
 	/**
 	 * Evaluates to the value (or values, if multi-valued) of a property in the specified or default selector.
 	 *
@@ -162,7 +162,7 @@ class Tx_Extbase_Persistence_QOM_QueryObjectModelFactory implements t3lib_Single
 	public function propertyValue($propertyName, $selectorName = '') {
 		return $this->objectManager->create('Tx_Extbase_Persistence_QOM_PropertyValue', $propertyName, $selectorName);
 	}
-
+	
 	/**
 	 * Evaluates to the lower-case string value (or values, if multi-valued) of an operand.
 	 *
@@ -184,7 +184,7 @@ class Tx_Extbase_Persistence_QOM_QueryObjectModelFactory implements t3lib_Single
 	public function upperCase(Tx_Extbase_Persistence_QOM_DynamicOperandInterface $operand) {
 		return $this->objectManager->create('Tx_Extbase_Persistence_QOM_UpperCase', $operand);
 	}
-
+	
 	/**
 	 * Orders by the value of the specified operand, in ascending order.
 	 *
@@ -210,7 +210,7 @@ class Tx_Extbase_Persistence_QOM_QueryObjectModelFactory implements t3lib_Single
 	public function descending(Tx_Extbase_Persistence_QOM_DynamicOperandInterface $operand) {
 		return $this->objectManager->create('Tx_Extbase_Persistence_QOM_Ordering', $operand, Tx_Extbase_Persistence_QOM_QueryObjectModelConstantsInterface::JCR_ORDER_DESCENDING);
 	}
-
+	
 	/**
 	 * Evaluates to the value of a bind variable.
 	 *
@@ -221,6 +221,6 @@ class Tx_Extbase_Persistence_QOM_QueryObjectModelFactory implements t3lib_Single
 	public function bindVariable($bindVariableName) {
 		return $this->objectManager->create('Tx_Extbase_Persistence_QOM_BindVariableValue', $bindVariableName);
 	}
-
+	
 }
 ?>

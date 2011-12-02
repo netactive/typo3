@@ -48,9 +48,9 @@
  * </output>
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
- * @api
+ * @deprecated since Extbase 1.4.0; will be removed in Extbase 1.6.0. Please use the <f:format.*> ViewHelpers instead.
  */
-class Tx_Fluid_ViewHelpers_EscapeViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
+class Tx_Fluid_ViewHelpers_EscapeViewHelper extends Tx_Fluid_ViewHelpers_Format_AbstractEncodingViewHelper {
 
 	/**
 	 * Escapes special characters with their escaped counterparts as needed.
@@ -60,9 +60,9 @@ class Tx_Fluid_ViewHelpers_EscapeViewHelper extends Tx_Fluid_Core_ViewHelper_Abs
 	 * @param string $encoding
 	 * @return string the altered string.
 	 * @author Karsten Dambekalns <karsten@typo3.org>
-	 * @api
 	 */
 	public function render($value = NULL, $type = 'html', $encoding = NULL) {
+		t3lib_div::logDeprecatedFunction('<f:escape> is deprecated. Please use the <f:format.*> ViewHelpers instead.');
 		if ($value === NULL) {
 			$value = $this->renderChildren();
 		}
@@ -87,24 +87,6 @@ class Tx_Fluid_ViewHelpers_EscapeViewHelper extends Tx_Fluid_Core_ViewHelper_Abs
 			default:
 				return $value;
 			break;
-		}
-	}
-
-	/**
-	 * Resolve the default encoding. If none is set in Frontend or Backend, uses UTF-8.
-	 *
-	 * @return string the encoding
-	 */
-	protected function resolveDefaultEncoding() {
-		if (TYPO3_MODE === 'BE') {
-			$encoding = strtoupper($GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset']);
-
-			if ($encoding === NULL) {
-				$encoding = 'UTF-8';
-			}
-			return $encoding;
-		} else {
-			return strtoupper($GLOBALS['TSFE']->renderCharset);
 		}
 	}
 }

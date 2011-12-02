@@ -46,6 +46,16 @@ class Tx_Extbase_Object_ObjectManager implements Tx_Extbase_Object_ObjectManager
 	}
 
 	/**
+	 * Returns TRUE if an object with the given name is registered
+	 *
+	 * @param  string $objectName Name of the object
+	 * @return boolean TRUE if the object has been registered, otherwise FALSE
+	 */
+	public function isRegistered($objectName) {
+		return class_exists($objectName, TRUE);
+	}
+
+	/**
 	 * Returns a fresh or existing instance of the object specified by $objectName.
 	 *
 	 * Important:
@@ -89,5 +99,4 @@ class Tx_Extbase_Object_ObjectManager implements Tx_Extbase_Object_ObjectManager
 		return $instance;
 	}
 }
-
 ?>

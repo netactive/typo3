@@ -1,7 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 TCEforms
 
-$Id: element_tceforms.css 10213 2011-01-21 15:23:41Z jsegars $
 - - - - - - - - - - - - - - - - - - - - - */
 
 table.typo3-TCEforms {
@@ -170,7 +169,8 @@ table.typo3-TCEforms optgroup option {
 }
 
 table.typo3-TCEforms div.typo3-TCEforms-originalLanguageValue {
-	background-color: #bbccbb;
+	background-color: #dadada;
+	border: 1px solid #c0c0c0;
 }
 
 table.typo3-TCEforms div.typo3-TCEforms-diffBox {
@@ -353,7 +353,7 @@ TCEforms Flexforms
 	border-top: 1px solid #c0c0c0;
 }
 
-.t3-form-field-container:first-child .t3-form-field-label-flex {
+div.t3-form-field-container:first-child .t3-form-field-label-flex {
 	border-top: 0;
 }
 

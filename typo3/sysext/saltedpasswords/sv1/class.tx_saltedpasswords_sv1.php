@@ -27,8 +27,6 @@
 ***************************************************************/
 /**
  * Contains authentication service class for salted hashed passwords.
- *
- * $Id: class.tx_saltedpasswords_sv1.php 9758 2010-12-05 11:25:36Z stephenking $
  */
 
 
@@ -99,7 +97,14 @@ class tx_saltedpasswords_sv1 extends tx_sv_authbase {
 	public function init() {
 		$available = FALSE;
 
-		if (tx_saltedpasswords_div::isUsageEnabled()) {
+		$mode = TYPO3_MODE;
+		if ($this->info['requestedServiceSubType'] === 'authUserBE') {
+			$mode = 'BE';
+		} elseif ($this->info['requestedServiceSubType'] === 'authUserFE') {
+			$mode = 'FE';
+		}
+
+		if (tx_saltedpasswords_div::isUsageEnabled($mode)) {
 			$available = TRUE;
 			$this->extConf = tx_saltedpasswords_div::returnExtConf();
 		}
@@ -121,7 +126,7 @@ class tx_saltedpasswords_sv1 extends tx_sv_authbase {
 			// could be merged; still here to clarify
 		if (!strcmp(TYPO3_MODE, 'BE')) {
 			$password = $loginData['uident_text'];
-		} else if (!strcmp(TYPO3_MODE, 'FE')) {
+		} elseif (!strcmp(TYPO3_MODE, 'FE')) {
 			$password = $loginData['uident_text'];
 		}
 
@@ -158,7 +163,7 @@ class tx_saltedpasswords_sv1 extends tx_sv_authbase {
 				);
 			}
 			// we process also clear-text, md5 and passwords updated by Portable PHP password hashing framework
-		} else if (!intval($this->extConf['forceSalted'])) {
+		} elseif (!intval($this->extConf['forceSalted'])) {
 
 				// stored password is in deprecated salted hashing method
 			if (t3lib_div::inList('C$,M$', substr($user['password'], 0, 2))) {
@@ -179,7 +184,7 @@ class tx_saltedpasswords_sv1 extends tx_sv_authbase {
 				}
 
 				// password is stored as md5
-			} else if (preg_match('/[0-9abcdef]{32,32}/', $user['password'])) {
+			} elseif (preg_match('/[0-9abcdef]{32,32}/', $user['password'])) {
 				$validPasswd = (!strcmp(md5($password), $user['password']) ? TRUE : FALSE);
 
 					// skip further authentication methods
@@ -221,9 +226,6 @@ class tx_saltedpasswords_sv1 extends tx_sv_authbase {
 		$validPasswd = FALSE;
 
 		if ($this->pObj->security_level == 'rsa' && t3lib_extMgm::isLoaded('rsaauth')) {
-			require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/backends/class.tx_rsaauth_backendfactory.php');
-			require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/storage/class.tx_rsaauth_storagefactory.php');
-
 			$backend = tx_rsaauth_backendfactory::getBackend();
 			$storage = tx_rsaauth_storagefactory::getStorage();
 				// Preprocess the password
@@ -244,28 +246,80 @@ class tx_saltedpasswords_sv1 extends tx_sv_authbase {
 				);
 			}
 
-			if (!$validPasswd && (intval($this->extConf['onlyAuthService']) || $this->authenticationFailed)) {
-					// Failed login attempt (wrong password) - no delegation to further services
-				$this->writeLog(
-					TYPO3_MODE . ' Authentication failed - wrong password for username \'%s\'',
-					$this->login['uname']
-				);
-				$OK = 0;
-			} else if(!$validPasswd) {
+			if (!$validPasswd) {
 					// Failed login attempt (wrong password)
-				$this->writeLog(
-					"Login-attempt from %s, username '%s', password not accepted!",
-					$this->authInfo['REMOTE_ADDR'], $this->login['uname']
+				$errorMessage = 'Login-attempt from %s (%s), username \'%s\', password not accepted!';
+					// no delegation to further services
+				if (intval($this->extConf['onlyAuthService']) || $this->authenticationFailed) {
+					$this->writeLogMessage(
+						TYPO3_MODE . ' Authentication failed - wrong password for username \'%s\'',
+						$this->login['uname']
+					);
+				} else {
+					$this->writeLogMessage(
+						$errorMessage,
+						$this->authInfo['REMOTE_ADDR'],
+						$this->authInfo['REMOTE_HOST'],
+						$this->login['uname']
+					);
+				}
+				$this->writelog(255, 3, 3, 1,
+					$errorMessage,
+					array(
+						$this->authInfo['REMOTE_ADDR'],
+						$this->authInfo['REMOTE_HOST'],
+						$this->login['uname']
+					)
 				);
-			} else if ($validPasswd && $user['lockToDomain'] && strcasecmp($user['lockToDomain'], $this->authInfo['HTTP_HOST'])) {
+				t3lib_div::sysLog(
+					sprintf(
+						$errorMessage,
+						$this->authInfo['REMOTE_ADDR'],
+						$this->authInfo['REMOTE_HOST'],
+						$this->login['uname']
+					),
+					'Core',
+					0
+				);
+				if (intval($this->extConf['onlyAuthService']) || $this->authenticationFailed) {
+					$OK = 0;
+				}
+			} elseif ($validPasswd && $user['lockToDomain'] && strcasecmp($user['lockToDomain'], $this->authInfo['HTTP_HOST'])) {
 					// Lock domain didn't match, so error:
-				$this->writeLog(
-					"Login-attempt from %s, username '%s', locked domain '%s' did not match '%s'!",
-					$this->authInfo['REMOTE_ADDR'], $this->login['uname'], $user['lockToDomain'], $this->authInfo['HTTP_HOST']
+				$errorMessage = 'Login-attempt from %s (%s), username \'%s\', locked domain \'%s\' did not match \'%s\'!';
+				$this->writeLogMessage(
+					$errorMessage,
+					$this->authInfo['REMOTE_ADDR'],
+					$this->authInfo['REMOTE_HOST'],
+					$this->login['uname'],
+					$user['lockToDomain'],
+					$this->authInfo['HTTP_HOST']
+				);
+				$this->writelog(255, 3, 3, 1,
+					$errorMessage,
+					array(
+						$this->authInfo['REMOTE_ADDR'],
+						$this->authInfo['REMOTE_HOST'],
+						$user[$this->db_user['username_column']],
+						$user['lockToDomain'],
+						$this->authInfo['HTTP_HOST']
+					)
+				);
+				t3lib_div::sysLog(
+					sprintf(
+						$errorMessage,
+						$this->authInfo['REMOTE_ADDR'],
+						$this->authInfo['REMOTE_HOST'],
+						$user[$this->db_user['username_column']],
+						$user['lockToDomain'],
+						$this->authInfo['HTTP_HOST']
+					),
+					'Core',
+					0
 				);
 				$OK = 0;
-			} else if ($validPasswd) {
-				$this->writeLog(
+			} elseif ($validPasswd) {
+				$this->writeLogMessage(
 					TYPO3_MODE . ' Authentication successful for username \'%s\'',
 					$this->login['uname']
 				);
@@ -284,13 +338,8 @@ class tx_saltedpasswords_sv1 extends tx_sv_authbase {
 	 * @return	void
 	 */
 	protected function updatePassword($uid, $updateFields) {
-		if (TYPO3_MODE === 'BE') {
-			$GLOBALS['TYPO3_DB']->exec_UPDATEquery( 'be_users', sprintf('uid = %u', $uid), $updateFields);
-		} else {
-			$GLOBALS['TYPO3_DB']->exec_UPDATEquery( 'fe_users', sprintf('uid = %u', $uid), $updateFields);
-		}
-
-		t3lib_div::devLog(sprintf('Automatic password update for %s user with uid %u', TYPO3_MODE, $uid), $this->extKey, 1);
+		$GLOBALS['TYPO3_DB']->exec_UPDATEquery($this->pObj->user_table, sprintf('uid = %u', $uid), $updateFields);
+		t3lib_div::devLog(sprintf('Automatic password update for user record in %s with uid %u', $this->pObj->user_table, $uid), $this->extKey, 1);
 	}
 
 	/**
@@ -309,7 +358,7 @@ class tx_saltedpasswords_sv1 extends tx_sv_authbase {
 	 * @see	t3lib_div::sysLog()
 	 * @see	t3lib_timeTrack::setTSlogMessage()
 	 */
-	function writeLog($message) {
+	function writeLogMessage($message) {
 		if (func_num_args() > 1) {
 			$params = func_get_args();
 			array_shift($params);

@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Validation\Validator
- * @version $Id: RawValidator.php 1789 2010-01-18 21:31:59Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Validation_Validator_RawValidator implements Tx_Extbase_Validation_Validator_ValidatorInterface {
 
@@ -39,6 +39,7 @@ class Tx_Extbase_Validation_Validator_RawValidator implements Tx_Extbase_Validat
 	 *
 	 * @param mixed $value The value that should be validated
 	 * @return boolean TRUE
+	 * @deprecated since Extbase 1.4.0, will be removed in Extbase 1.6.0
 	 */
 	public function isValid($value) {
 		return TRUE;
@@ -49,6 +50,7 @@ class Tx_Extbase_Validation_Validator_RawValidator implements Tx_Extbase_Validat
 	 *
 	 * @param array $options Not used
 	 * @return void
+	 * @deprecated since Extbase 1.4.0, will be removed in Extbase 1.6.0
 	 */
 	public function setOptions(array $options) {
 	}
@@ -57,9 +59,22 @@ class Tx_Extbase_Validation_Validator_RawValidator implements Tx_Extbase_Validat
 	 * Returns an array of errors which occurred during the last isValid() call.
 	 *
 	 * @return array An array of error messages or an empty array if no errors occurred.
+	 * @deprecated since Extbase 1.4.0, will be removed in Extbase 1.6.0
 	 */
 	public function getErrors() {
 		return array();
+	}
+
+	/**
+	 * Always returns TRUE
+	 *
+	 * @param mixed $value The value that should be validated
+	 * @return Tx_Extbase_Error_Result
+	 * @author Robert Lemke <robert@typo3.org>
+	 * @api
+	 */
+	public function validate($value) {
+		return new Tx_Extbase_Error_Result();
 	}
 
 }

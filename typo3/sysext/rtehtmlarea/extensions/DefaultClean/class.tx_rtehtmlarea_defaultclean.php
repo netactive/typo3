@@ -26,8 +26,6 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_defaultclean.php 10120 2011-01-18 20:03:36Z ohader $
- *
  */
 class tx_rtehtmlarea_defaultclean extends tx_rtehtmlarea_api {
 

@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage MVC\View
- * @version $Id: EmptyView.php 1729 2009-11-25 21:37:20Z stucki $
+ * @version $Id$
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
 final class Tx_Extbase_MVC_View_EmptyView implements Tx_Extbase_MVC_View_ViewInterface {
@@ -98,6 +98,17 @@ final class Tx_Extbase_MVC_View_EmptyView implements Tx_Extbase_MVC_View_ViewInt
 	 * @return void
 	 */
 	public function __call($methodName, array $arguments) {
+	}
+
+	/**
+	 * Initializes this view.
+	 *
+	 * Override this method for initializing your concrete view implementation.
+	 *
+	 * @return void
+	 * @api
+	 */
+	public function initializeView() {
 	}
 }
 ?>

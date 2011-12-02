@@ -28,8 +28,6 @@
 /**
  * Class to handle php environment specific options / functions
  *
- * $Id$
- *
  * @author	 Christian Kuhn <lolli@schwarzbu.ch>
  * @package TYPO3
  * @subpackage t3lib
@@ -42,6 +40,21 @@ final class t3lib_utility_PhpOptions {
 	 */
 	public static function isSafeModeEnabled() {
 		return self::getIniValueBoolean('safe_mode');
+	}
+
+	/**
+	 * Check if php magic_quotes_gpc is enabled
+	 *
+	 * @return boolean TRUE if magic_quotes_gpc is enabled, FALSE if disabled
+	 */
+	public static function isMagicQuotesGpcEnabled() {
+		// TODO: Once PHP 5.4.0 is out, check if magic_quotes_gpc was really removed
+		//if (version_compare(phpversion(), '5.4', '<')) {
+		//	return self::getIniValueBoolean('magic_quotes_gpc');
+		//} else {
+		//	return FALSE;
+		//}
+		return self::getIniValueBoolean('magic_quotes_gpc');
 	}
 
 	/**

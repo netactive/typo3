@@ -30,7 +30,8 @@
  *
  * @package Extbase
  * @subpackage Validation\Validator
- * @version $Id: ObjectValidatorInterface.php 1052 2009-08-05 21:51:32Z sebastian $
+ * @version $Id$
+ * @deprecated since Extbase 1.4.0, will be removed in Extbase 1.6.0
  */
 interface Tx_Extbase_Validation_Validator_ObjectValidatorInterface extends Tx_Extbase_Validation_Validator_ValidatorInterface {
 

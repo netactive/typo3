@@ -4,7 +4,7 @@
  *
  *  (c) 2004-2009 Kasper Skårhøj (kasperYYYY@typo3.com)
  *  (c) 2004-2009 Karsten Dambekalns <karsten@typo3.org>
- *  (c) 2009-2010 Xavier Perseguers <typo3@perseguers.ch>
+ *  (c) 2009-2011 Xavier Perseguers <xavier@typo3.org>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,24 +27,95 @@
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 /**
- * PHP SQL engine
- *
- * $Id: class.ux_t3lib_sqlparser.php 42538 2011-01-24 15:04:19Z xperseguers $
- *
- * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- * @author	Karsten Dambekalns <k.dambekalns@fishfarm.de>
- * @author	Xavier Perseguers <typo3@perseguers.ch>
- */
-
-
-/**
  * PHP SQL engine / server
  *
- * @author	Kasper Skårhøj <kasper@typo3.com>
+ * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
+ * @author	Karsten Dambekalns <karsten@typo3.org>
+ * @author	Xavier Perseguers <xavier@typo3.org>
+ *
  * @package TYPO3
- * @subpackage t3lib
+ * @subpackage dbal
  */
 class ux_t3lib_sqlparser extends t3lib_sqlparser {
+
+	/**
+	 * Gets value in quotes from $parseString.
+	 *
+	 * @param string $parseString String from which to find value in quotes. Notice that $parseString is passed by reference and is shortened by the output of this function.
+	 * @param string $quote The quote used; input either " or '
+	 * @return string The value, passed through parseStripslashes()!
+	 */
+	protected function getValueInQuotes(&$parseString, $quote) {
+		switch ((string) $GLOBALS['TYPO3_DB']->handlerCfg[$GLOBALS['TYPO3_DB']->lastHandlerKey]['type']) {
+			case 'adodb':
+				if ($GLOBALS['TYPO3_DB']->runningADOdbDriver('mssql')) {
+					$value = $this->getValueInQuotesMssql($parseString, $quote);
+				} else {
+					$value = parent::getValueInQuotes($parseString, $quote);
+				}
+				break;
+			default:
+				$value = parent::getValueInQuotes($parseString, $quote);
+				break;
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Gets value in quotes from $parseString. This method targets MSSQL exclusively.
+	 *
+	 * @param string $parseString String from which to find value in quotes. Notice that $parseString is passed by reference and is shortened by the output of this function.
+	 * @param $quote The quote used; input either " or '
+	 * @return string
+	 */
+	protected function getValueInQuotesMssql(&$parseString, $quote) {
+		$previousIsQuote = FALSE;
+		$inQuote = FALSE;
+
+		// Go through the whole string
+		for ($c = 0; $c < strlen($parseString); $c++) {
+			// If the parsed string character is the quote string
+			if ($parseString{$c} === $quote) {
+				// If we are already in a quote
+				if ($inQuote) {
+					// Was the previous a quote?
+					if ($previousIsQuote) {
+						// If yes, replace it by a \
+						$parseString{$c - 1} = '\\';
+					}
+					// Invert the state
+					$previousIsQuote = !$previousIsQuote;
+				} else {
+					// So we are in a quote since now
+					$inQuote = TRUE;
+				}
+				// So the parsed character is not a quote char and the previous char was a quote? so we are not in a quote anymore
+			} elseif ($inQuote && $previousIsQuote) {
+				$inQuote = FALSE;
+				$previousIsQuote = FALSE;
+				// So we are still in a quote and the previous is not a quote
+			} else {
+				$previousIsQuote = FALSE;
+			}
+		}
+
+		$parts = explode($quote, substr($parseString, 1));
+
+		$buffer = '';
+		foreach ($parts as $k => $v) {
+			$buffer .= $v;
+
+			$reg = array();
+			preg_match('/\\\\$/', $v, $reg);
+			if ($reg && strlen($reg[0]) % 2) {
+				$buffer .= $quote;
+			} else {
+				$parseString = ltrim(substr($parseString, strlen($buffer) + 2));
+				return $this->parseStripslashes($buffer);
+			}
+		}
+	}
 
 	/**
 	 * Compiles a "SELECT [output] FROM..:" field list based on input array (made with ->parseFieldList())
@@ -662,13 +733,13 @@ class ux_t3lib_sqlparser extends t3lib_sqlparser {
 												}
 												$output .= ' (' . trim(implode(',', $valueBuffer)) . ')';
 											}
-										} else if (t3lib_div::inList('BETWEEN,NOT BETWEEN', $v['comparator'])) {
+										} elseif (t3lib_div::inList('BETWEEN,NOT BETWEEN', $v['comparator'])) {
 											$lbound = $v['values'][0];
 											$ubound = $v['values'][1];
 											$output .= ' ' . $lbound[1] . $this->compileAddslashes($lbound[0]) . $lbound[1];
 											$output .= ' AND ';
 											$output .= $ubound[1] . $this->compileAddslashes($ubound[0]) . $ubound[1];
-										} else if (isset($v['value']['operator'])) {
+										} elseif (isset($v['value']['operator'])) {
 											$values = array();
 											foreach ($v['value']['args'] as $fieldDef) {
 												$values[] = ($fieldDef['table'] ? $fieldDef['table'] . '.' : '') . $fieldDef['field'];

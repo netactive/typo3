@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 Steffen Kamper <steffen@typo3.org>
+*  (c) 2010-2011 Steffen Kamper <steffen@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -50,6 +50,19 @@ TYPO3.ModuleMenu.Store = new Ext.data.JsonStore({
 	url: 'ajax.php?ajaxID=ModuleMenu::getData',
 	baseParams: {
 		'action': 'getModules'
+	},
+	listeners: {
+		beforeload: function(store) {
+			this.loaded = false;
+		},
+		load: function(store) {
+			this.loaded = true;
+		}
+	},
+	// Custom indicator for loaded store:
+	loaded: false,
+	isLoaded: function() {
+		return this.loaded;
 	}
 
 });
@@ -198,7 +211,7 @@ TYPO3.ModuleMenu.App = {
 
 	showModule: function(mod, params) {
 		params = params || '';
-		this.selecteModule = mod;
+		this.selectedModule = mod;
 
 		params = this.includeId(mod, params);
 		var record = this.getRecordFromName(mod);
@@ -213,7 +226,13 @@ TYPO3.ModuleMenu.App = {
 
 	loadFirstAvailableModule: function(params) {
 		params = params || '';
-		if (TYPO3.ModuleMenu.Store.getCount() === 0) {
+		if (TYPO3.ModuleMenu.Store.isLoaded() === false) {
+			new Ext.util.DelayedTask(
+				this.loadFirstAvailableModule,
+				this,
+				[params]
+			).delay(250);
+		} else if (TYPO3.ModuleMenu.Store.getCount() === 0) {
 				// Store is empty, something went wrong
 			TYPO3.Flashmessage.display(TYPO3.Severity.error, 'Module loader', 'No module found. If this is a temporary error, please reload the Backend!', 50000);
 		} else {

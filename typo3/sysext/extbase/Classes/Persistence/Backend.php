@@ -31,7 +31,7 @@
  *
  * @package Extbase
  * @subpackage Persistence
- * @version $Id: Backend.php 2292 2010-05-25 11:11:04Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendInterface, t3lib_Singleton {
 
@@ -76,7 +76,7 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 	protected $storageBackend;
 
 	/**
-	 * @var Tx_Extbase_Persistence_DataMapper
+	 * @var Tx_Extbase_Persistence_Mapper_DataMapper
 	 */
 	protected $dataMapper;
 
@@ -273,7 +273,7 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 		} else {
 			$query = $this->queryFactory->create($className);
 			return $query->matching(
-				$query->withUid($identifier))
+				$query->equals('uid', $identifier))
 				->execute()
 				->getFirst();
 		}
@@ -431,7 +431,7 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 	 * @param Tx_Extbase_Persistence_ObjectStorage $objectStorage The object storage to be persisted.
 	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $parentObject The parent object. One of the properties holds the object storage.
 	 * @param string $propertyName The name of the property holding the object storage.
-	 * @param array $row The row array of the parent object to be persisted. It's passed by reference and gets filled with either a comma separated list of uids (csv) or the number of contained objects. 
+	 * @param array $row The row array of the parent object to be persisted. It's passed by reference and gets filled with either a comma separated list of uids (csv) or the number of contained objects.
 	 * @return void
 	 */
 	protected function persistObjectStorage(Tx_Extbase_Persistence_ObjectStorage $objectStorage, Tx_Extbase_DomainObject_DomainObjectInterface $parentObject, $propertyName, array &$row) {
@@ -468,26 +468,6 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 		} else {
 			$row[$columnMap->getColumnName()] = $this->dataMapper->countRelated($parentObject, $propertyName);
 		}
-	}
-
-	/**
-	 * Returns the current field value of the given object property from the storage backend.
-	 *
-	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $object The object
-	 * @param string $propertyName The property name
-	 * @return mixed The field value
-	 */
-	protected function getCurrentFieldValue(Tx_Extbase_DomainObject_DomainObjectInterface $object, $propertyName) {
-		$className = get_class($object);
-		$columnMap = $this->dataMapper->getDataMap($className)->getColumnMap($propertyName);
-		$query = $this->queryFactory->create($className);
-		$query->getQuerySettings()->setReturnRawQueryResult(TRUE);
-		$currentRow = $query->matching(
-			$query->withUid($object->getUid()))
-			->execute()
-			->getFirst();
-		$fieldValue = $currentRow[$columnMap->getColumnName()];
-		return $fieldValue;
 	}
 
 	/**
@@ -615,6 +595,7 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 	 * Tests, if the given Value Object already exists in the storage backend and if so, it returns the uid.
 	 *
 	 * @param Tx_Extbase_DomainObject_AbstractValueObject $object The object to be tested
+	 * @return mixed The matching uid if an object was found, else FALSE
 	 */
 	protected function getUidOfAlreadyPersistedValueObject(Tx_Extbase_DomainObject_AbstractValueObject $object) {
 		return $this->storageBackend->getUidOfAlreadyPersistedValueObject($object);
@@ -626,7 +607,8 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $object The related object
 	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $parentObject The parent object
 	 * @param string $propertyName The name of the parent object's property where the related objects are stored in
-	 * @return void
+	 * @param int $sortingPosition Defaults to NULL
+	 * @return int The uid of the inserted row
 	 */
 	protected function insertRelationInRelationtable(Tx_Extbase_DomainObject_DomainObjectInterface $object, Tx_Extbase_DomainObject_DomainObjectInterface $parentObject, $propertyName, $sortingPosition = NULL) {
 		$dataMap = $this->dataMapper->getDataMap(get_class($parentObject));
@@ -665,7 +647,7 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 	 *
 	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $parentObject The parent object
 	 * @param string $parentPropertyName The name of the parent object's property where the related objects are stored in
-	 * @return void
+	 * @return bool
 	 */
 	protected function deleteAllRelationsFromRelationtable(Tx_Extbase_DomainObject_DomainObjectInterface $parentObject, $parentPropertyName) {
 		$dataMap = $this->dataMapper->getDataMap(get_class($parentObject));
@@ -694,7 +676,7 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $relatedObject The related object
 	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $parentObject The parent object
 	 * @param string $parentPropertyName The name of the parent object's property where the related objects are stored in
-	 * @return void
+	 * @return bool
 	 */
 	protected function deleteRelationFromRelationtable(Tx_Extbase_DomainObject_DomainObjectInterface $relatedObject, Tx_Extbase_DomainObject_DomainObjectInterface $parentObject, $parentPropertyName) {
 		$dataMap = $this->dataMapper->getDataMap(get_class($parentObject));
@@ -713,10 +695,9 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 	/**
 	 * Updates a given object in the storage
 	 *
-	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $object The object to be insterted in the storage
-	 * @param Tx_Extbase_DomainObject_AbstractEntity|NULL $parentObject The parent object (if any)
-	 * @param string|NULL $parentPropertyName The name of the property
-	 * @param array $row The $row
+	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $object The object to be updated
+	 * @param array $row Row to be stored
+	 * @return bool
 	 */
 	protected function updateObject(Tx_Extbase_DomainObject_DomainObjectInterface $object, array $row) {
 		$dataMap = $this->dataMapper->getDataMap(get_class($object));
@@ -740,26 +721,37 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 	}
 
 	/**
-	 * Returns a table row to be inserted or updated in the database
+	 * Adds common databse fields to a row
 	 *
-	 * @param Tx_Extbase_Persistence_Mapper_DataMap $dataMap The appropriate data map representing a database table
-	 * @param array $properties The properties of the object
-	 * @return array A single row to be inserted in the database
+	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $object
+	 * @param array $row
+	 * @return void
 	 */
 	protected function addCommonFieldsToRow(Tx_Extbase_DomainObject_DomainObjectInterface $object, array &$row) {
-		$className = get_class($object);
-		$dataMap = $this->dataMapper->getDataMap($className);
-		if ($object->_isNew() && ($dataMap->getCreationDateColumnName() !== NULL)) {
-			$row[$dataMap->getCreationDateColumnName()] = $GLOBALS['EXEC_TIME'];
-		}
-		if ($dataMap->getModificationDateColumnName() !== NULL) {
-			$row[$dataMap->getModificationDateColumnName()] = $GLOBALS['EXEC_TIME'];
-		}
+		$dataMap = $this->dataMapper->getDataMap(get_class($object));
+		$this->addCommonDateFieldsToRow($object, $row);
 		if ($dataMap->getRecordTypeColumnName() !== NULL && $dataMap->getRecordType() !== NULL) {
 			$row[$dataMap->getRecordTypeColumnName()] = $dataMap->getRecordType();
 		}
 		if ($object->_isNew() && !isset($row['pid'])) {
 			$row['pid'] = $this->determineStoragePageIdForNewRecord($object);
+		}
+	}
+
+	/**
+	 * Adjustes the common date fields of the given row to the current time
+	 *
+	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $object
+	 * @param array $row The row to be updated
+	 * @return void
+	 */
+	protected function addCommonDateFieldsToRow(Tx_Extbase_DomainObject_DomainObjectInterface $object, array &$row) {
+		$dataMap = $this->dataMapper->getDataMap(get_class($object));
+		if ($object->_isNew() && $dataMap->getCreationDateColumnName() !== NULL) {
+			$row[$dataMap->getCreationDateColumnName()] = $GLOBALS['EXEC_TIME'];
+		}
+		if ($dataMap->getModificationDateColumnName() !== NULL) {
+			$row[$dataMap->getModificationDateColumnName()] = $GLOBALS['EXEC_TIME'];
 		}
 	}
 
@@ -779,10 +771,8 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 	/**
 	 * Deletes an object
 	 *
-	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $object The object to be insterted in the storage
-	 * @param Tx_Extbase_DomainObject_AbstractEntity|NULL $parentObject The parent object (if any)
-	 * @param string|NULL $parentPropertyName The name of the property
-	 * @param bool $markAsDeleted Shold we only mark the row as deleted instead of deleting (TRUE by default)?
+	 * @param Tx_Extbase_DomainObject_DomainObjectInterface $object The object to be removed from the storage
+	 * @param bool $markAsDeleted Wether to just flag the row deleted (default) or really delete it
 	 * @return void
 	 */
 	protected function removeObject(Tx_Extbase_DomainObject_DomainObjectInterface $object, $markAsDeleted = TRUE) {
@@ -790,13 +780,15 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 		$tableName = $dataMap->getTableName();
 		if (($markAsDeleted === TRUE) && ($dataMap->getDeletedFlagColumnName() !== NULL)) {
 			$deletedColumnName = $dataMap->getDeletedFlagColumnName();
+			$row = array(
+				'uid' => $object->getUid(),
+				$deletedColumnName => 1
+			);
+			$this->addCommonDateFieldsToRow($object, $row);
 			$res = $this->storageBackend->updateRow(
 				$tableName,
-				array(
-					'uid' => $object->getUid(),
-					$deletedColumnName => 1
-					)
-				);
+				$row
+			);
 		} else {
 			$res = $this->storageBackend->removeRow(
 				$tableName,
@@ -841,6 +833,7 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 	 * Determine the storage page ID for a given NEW record
 	 *
 	 * This does the following:
+	 * - If the domain object has an accessible property 'pid' (i.e. through a getPid() method), that is used to store the record.
 	 * - If there is a TypoScript configuration "classes.CLASSNAME.newRecordStoragePid", that is used to store new records.
 	 * - If there is no such TypoScript configuration, it uses the first value of The "storagePid" taken for reading records.
 	 *
@@ -850,6 +843,12 @@ class Tx_Extbase_Persistence_Backend implements Tx_Extbase_Persistence_BackendIn
 	protected function determineStoragePageIdForNewRecord(Tx_Extbase_DomainObject_DomainObjectInterface $object = NULL) {
 		$frameworkConfiguration = $this->configurationManager->getConfiguration(Tx_Extbase_Configuration_ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
 		if ($object !== NULL) {
+			if (Tx_Extbase_Reflection_ObjectAccess::isPropertyGettable($object, 'pid')) {
+				$pid = Tx_Extbase_Reflection_ObjectAccess::getProperty($object, 'pid');
+				if (isset($pid)) {
+					return (int)$pid;
+				}
+			}
 			$className = get_class($object);
 			if (isset($frameworkConfiguration['persistence']['classes'][$className]) && !empty($frameworkConfiguration['persistence']['classes'][$className]['newRecordStoragePid'])) {
 				return (int)$frameworkConfiguration['persistence']['classes'][$className]['newRecordStoragePid'];

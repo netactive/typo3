@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2010-2011 Xavier Perseguers <typo3@perseguers.ch>
+ *  (c) 2010-2011 Xavier Perseguers <xavier@typo3.org>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,9 +28,7 @@
 /**
  * Hooks for TYPO3 Extension Manager.
  *
- * $Id: class.tx_dbal_em.php 43945 2011-02-21 13:52:54Z xperseguers $
- *
- * @author Xavier Perseguers <typo3@perseguers.ch>
+ * @author Xavier Perseguers <xavier@typo3.org>
  *
  * @package TYPO3
  * @subpackage dbal
@@ -82,15 +80,15 @@ class tx_dbal_em implements tx_em_Index_CheckDatabaseUpdatesHook {
 	 * @param array $extInfo: Extension information array
 	 * @param array $diff: Database differences
 	 * @param t3lib_install $instObj: Instance of the installer
-	 * @param SC_mod_tools_em_index $parent: The calling parent object
+	 * @param tx_em_Install $parent: The calling parent object
 	 * @return string Either empty string or a pre-processing user form
 	 */
-	public function preProcessDatabaseUpdates($extKey, array $extInfo, array $diff, t3lib_install $instObj, SC_mod_tools_em_index $parent) {
+	public function preProcessDatabaseUpdates($extKey, array $extInfo, array $diff, t3lib_install $instObj, tx_em_Install $parent) {
 		$content = '';
 
 		// Remapping is only mandatory for Oracle:
 		if ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['dbal']['handlerCfg']['_DEFAULT']['type'] !== 'adodb'
-				&& $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['dbal']['handlerCfg']['_DEFAULT']['config']['driver'] !== 'oci8') {
+				|| $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['dbal']['handlerCfg']['_DEFAULT']['config']['driver'] !== 'oci8') {
 
 			// Not using Oracle
 			return '';
@@ -383,6 +381,22 @@ class tx_dbal_em implements tx_em_Index_CheckDatabaseUpdatesHook {
 		}
 	}
 
+	/**
+	 * Hook that allows to dynamically extend the table definitions for e.g. custom caches.
+	 * The hook implementation may return table create strings that will be respected by
+	 * the extension manager during installation of an extension.
+	 *
+	 * @param string $extKey: Extension key
+	 * @param array $extInfo: Extension information array
+	 * @param string $fileContent: Content of the current extension sql file
+	 * @param t3lib_install $instObj: Instance of the installer
+	 * @param t3lib_install_Sql $instSqlObj: Instance of the installer sql object
+	 * @param tx_em_Install $parent: The calling parent object
+	 * @return string Either empty string or table create strings
+	 */
+	public function appendTableDefinitions($extKey, array $extInfo, $fileContent, t3lib_install $instObj, t3lib_install_Sql $instSqlObj, tx_em_Install $parent) {
+		// currently not used
+	}
 }
 
 

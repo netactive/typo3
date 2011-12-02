@@ -67,6 +67,15 @@
  * (depending on the value of {menu})
  * </output>
  *
+ *
+ * <code title="Passing all variables to a partial">
+ * <f:render partial="somePartial" arguments="{_all}" />
+ * </code>
+ * <output>
+ * the content of the partial "somePartial".
+ * Using the reserved keyword "_all", all available variables will be passed along to the partial
+ * </output>
+ *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @api
  */
@@ -78,17 +87,18 @@ class Tx_Fluid_ViewHelpers_RenderViewHelper extends Tx_Fluid_Core_ViewHelper_Abs
 	 * @param string $section Name of section to render. If used in a layout, renders a section of the main content file. If used inside a standard template, renders a section of the same file.
 	 * @param string $partial Reference to a partial.
 	 * @param array $arguments Arguments to pass to the partial.
+	 * @param boolean $optional Set to TRUE, to ignore unknown sections, so the definition of a section inside a template can be optional for a layout
 	 * @return string
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 * @api
 	 */
-	public function render($section = NULL, $partial = NULL, $arguments = array()) {
+	public function render($section = NULL, $partial = NULL, $arguments = array(), $optional = FALSE) {
 		$arguments = $this->loadSettingsIntoArguments($arguments);
 
 		if ($partial !== NULL) {
 			return $this->viewHelperVariableContainer->getView()->renderPartial($partial, $section, $arguments);
 		} elseif ($section !== NULL) {
-			return $this->viewHelperVariableContainer->getView()->renderSection($section, $arguments);
+			return $this->viewHelperVariableContainer->getView()->renderSection($section, $arguments, $optional);
 		}
 		return '';
 	}

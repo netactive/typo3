@@ -23,7 +23,7 @@
 /**
  * View Helper which creates a text field (<input type="text">).
  *
-  * = Examples =
+ * = Examples =
  *
  * <code title="Example">
  * <f:form.textfield name="myTextBox" value="default value" />
@@ -82,7 +82,7 @@ class Tx_Fluid_ViewHelpers_Form_TextfieldViewHelper extends Tx_Fluid_ViewHelpers
 			$this->tag->addAttribute('placeholder', $placeholder);
 		}
 
-		if (!empty($value)) {
+		if ($value !== NULL) {
 			$this->tag->addAttribute('value', $value);
 		}
 

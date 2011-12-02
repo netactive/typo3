@@ -22,11 +22,18 @@
 
 /**
  * With this tag, you can select a layout to be used for the current template.
- * <code><f:layout name="main" /></code>
+ *
+ * = Examples =
+ *
+ * <code>
+ * <f:layout name="main" />
+ * </code>
+ * <output>
+ * (no output)
+ * </output>
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @api
- * @todo refine documentation
  */
 class Tx_Fluid_ViewHelpers_LayoutViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper implements Tx_Fluid_Core_ViewHelper_Facets_PostParseInterface {
 
@@ -38,7 +45,7 @@ class Tx_Fluid_ViewHelpers_LayoutViewHelper extends Tx_Fluid_Core_ViewHelper_Abs
 	 * @api
 	 */
 	public function initializeArguments() {
-		$this->registerArgument('name', 'string', 'Name of layout to use. If none given, "default" is used.', TRUE);
+		$this->registerArgument('name', 'string', 'Name of layout to use. If none given, "Default" is used.', TRUE);
 	}
 
 	/**
@@ -52,12 +59,12 @@ class Tx_Fluid_ViewHelpers_LayoutViewHelper extends Tx_Fluid_Core_ViewHelper_Abs
 	 */
 	static public function postParseEvent(Tx_Fluid_Core_Parser_SyntaxTree_ViewHelperNode $syntaxTreeNode, array $viewHelperArguments, Tx_Fluid_Core_ViewHelper_TemplateVariableContainer $variableContainer) {
 		if (isset($viewHelperArguments['name'])) {
-			$layoutName = $viewHelperArguments['name']->getText();
+			$layoutNameNode = $viewHelperArguments['name'];
 		} else {
-			$layoutName = 'default';
+			$layoutNameNode = new Tx_Fluid_Core_Parser_SyntaxTree_TextNode('Default');
 		}
 
-		$variableContainer->add('layoutName', $layoutName);
+		$variableContainer->add('layoutName', $layoutNameNode);
 	}
 
 	/**
@@ -70,6 +77,5 @@ class Tx_Fluid_ViewHelpers_LayoutViewHelper extends Tx_Fluid_Core_ViewHelper_Abs
 	public function render() {
 	}
 }
-
 
 ?>

@@ -2,7 +2,7 @@
 *  Copyright notice
 *
 *  Copyright (c) 2003 dynarch.com. Authored by Mihai Bazon. Sponsored by www.americanbible.org.
-*  Copyright (c) 2004-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  Copyright (c) 2004-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,13 +29,8 @@
 ***************************************************************/
 /*
  * Context Menu Plugin for TYPO3 htmlArea RTE
- *
- * TYPO3 SVN ID: $Id: context-menu.js 10133 2011-01-18 23:33:12Z stan $
  */
-HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
-	constructor : function(editor, pluginName) {
-		this.base(editor, pluginName);
-	},
+HTMLArea.ContextMenu = Ext.extend(HTMLArea.Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -54,7 +49,7 @@ HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 		 * Registering plugin "About" information
 		 */
 		var pluginInformation = {
-			version		: '3.1',
+			version		: '3.2',
 			developer	: 'Mihai Bazon & Stanislas Rolland',
 			developerUrl	: 'http://www.sjbr.ca/',
 			copyrightOwner	: 'dynarch.com & Stanislas Rolland',
@@ -90,7 +85,7 @@ HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 			items: this.buildItemsConfig()
 		}, this.pageTSConfiguration));
 			// Monitor contextmenu clicks on the iframe
-		this.menu.mon(Ext.get(this.editor.document.documentElement), 'contextmenu', this.show, this, {single: true});
+		this.menu.mon(Ext.get(this.editor.document.documentElement), 'contextmenu', this.show, this);
 			// Monitor editor being destroyed
 		this.menu.mon(this.editor, 'beforedestroy', this.onBeforeDestroy, this, {single: true});
 	},
@@ -161,35 +156,33 @@ HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 	 * Handler when the menu gets shown
 	 */
 	onShow: function () {
-		this.menu.mun(Ext.get(this.editor.document.documentElement), 'contextmenu', this.show, this);
 		this.menu.mon(Ext.get(this.editor.document.documentElement), 'mousedown', this.menu.hide, this.menu, {single: true});
 	},
 	/*
 	 * Handler when the menu gets hidden
 	 */
 	onHide: function () {
-		this.menu.mon(Ext.get(this.editor.document.documentElement), 'contextmenu', this.show, this);
 		this.menu.mun(Ext.get(this.editor.document.documentElement), 'mousedown', this.menu.hide, this.menu);
 	},
 	/*
 	 * Handler to show the context menu
 	 */
 	show: function (event, target) {
-			// Need to wait a while for the toolbar state to be updated
-		this.showMenu.defer(150, this, [event, target]);
 		event.stopEvent();
-		return false;
+			// Need to wait a while for the toolbar state to be updated
+		this.showMenu.defer(150, this, [target]);
 	},
 	/*
 	 * Show the context menu
 	 */
-	showMenu: function (event, target) {
+	showMenu: function (target) {
 		this.showContextItems(target);
 		if (!Ext.isIE) {
 			this.ranges = this.editor.getSelectionRanges();
 		}
 		var iframeEl = this.editor.iframe.getEl();
-		this.menu.showAt([Ext.get(target).getX() + iframeEl.getX(), Ext.get(target).getY() + iframeEl.getY()]);
+			// Show the context menu
+		this.menu.showAt([Ext.fly(target).getX() + iframeEl.getX(), Ext.fly(target).getY() + iframeEl.getY()]);
 	},
 	/*
 	 * Show items depending on context
@@ -204,26 +197,26 @@ HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 			} else if (xtype === 'menuitem') {
 				var button = this.getButton(menuItem.getItemId());
 				if (button) {
-					menuItem.setText(button.contextMenuTitle ? button.contextMenuTitle : button.tooltip.title);
+					var text = button.contextMenuTitle ? button.contextMenuTitle : button.tooltip.title;
+					if (menuItem.text != text) {
+						menuItem.setText(text);
+					}
 					menuItem.helpText = button.helpText ? button.helpText : menuItem.helpText;
 					menuItem.setVisible(!button.disabled);
 					lastIsButton = lastIsButton || !button.disabled;
 				} else {
 						// Special target delete item
-					this.deleteTarget = Ext.get(target);
+					this.deleteTarget = target;
 					if (/^(html|body)$/i.test(target.nodeName)) {
 						this.deleteTarget = null;
 					} else if (/^(table|thead|tbody|tr|td|th|tfoot)$/i.test(target.nodeName)) {
-						var targetAncestor = this.deleteTarget.findParent('table');
+						this.deleteTarget = Ext.fly(target).findParent('table');
 					} else if (/^(ul|ol|dl|li|dd|dt)$/i.test(target.nodeName)) {
-						var targetAncestor = this.deleteTarget.findParent('ul') || this.deleteTarget.findParent('ol') || this.deleteTarget.findParent('dl');
-					}
-					if (targetAncestor) {
-						this.deleteTarget = Ext.get(targetAncestor);
+						this.deleteTarget = Ext.fly(target).findParent('ul') || Ext.fly(target).findParent('ol') || Ext.fly(target).findParent('dl');
 					}
 					if (this.deleteTarget) {
 						menuItem.setVisible(true);
-						menuItem.setText(this.localize('Remove the') + ' &lt;' + this.deleteTarget.dom.nodeName.toLowerCase() + '&gt; ');
+						menuItem.setText(this.localize('Remove the') + ' &lt;' + this.deleteTarget.nodeName.toLowerCase() + '&gt; ');
 						lastIsButton = true;
 					} else {
 						menuItem.setVisible(false);
@@ -251,21 +244,21 @@ HTMLArea.ContextMenu = HTMLArea.Plugin.extend({
 			button.fireEvent('HTMLAreaEventContextMenu', button, event);
 		} else if (item.getItemId() === 'DeleteTarget') {
 				// Do not leave a non-ie table cell empty
-			var parent = this.deleteTarget.parent().dom;
+			var parent = this.deleteTarget.parentNode;
 			parent.normalize();
 			if (!Ext.isIE && /^(td|th)$/i.test(parent.nodeName) && parent.childNodes.length == 1) {
 					// Do not leave a non-ie table cell empty
-				this.deleteTarget.insertSibling(this.editor.document.createElement('br'));
+				parent.appendChild(this.editor.document.createElement('br'));
 			}
 				// Try to find a reasonable replacement selection
-			var nextSibling = this.deleteTarget.dom.nextSibling;
-			var previousSibling = this.deleteTarget.dom.previousSibling;
+			var nextSibling = this.deleteTarget.nextSibling;
+			var previousSibling = this.deleteTarget.previousSibling;
 			if (nextSibling) {
 				this.editor.selectNode(nextSibling, true);
 			} else if (previousSibling) {
 				this.editor.selectNode(previousSibling, false);
 			}
-			this.deleteTarget.remove();
+			HTMLArea.removeFromParent(this.deleteTarget);
 			this.editor.updateToolbar();
 		}
 	},

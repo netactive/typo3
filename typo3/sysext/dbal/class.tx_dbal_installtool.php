@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2010 Xavier Perseguers <typo3@perseguers.ch>
+ *  (c) 2010-2011 Xavier Perseguers <xavier@typo3.org>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,9 +28,7 @@
 /**
  * Hooks for TYPO3 Install Tool.
  *
- * $Id: class.tx_dbal_installtool.php 40828 2010-12-05 14:55:53Z xperseguers $
- *
- * @author Xavier Perseguers <typo3@perseguers.ch>
+ * @author Xavier Perseguers <xavier@typo3.org>
  *
  * @package TYPO3
  * @subpackage dbal
@@ -75,10 +73,11 @@ class tx_dbal_installtool {
 	 * Hooks into Installer to set required PHP modules.
 	 *
 	 * @param array $modules
-	 * @param tx_install $instObj
+	 * @param tx_install|tx_reports_reports_status_SystemStatus $instObj
 	 * @return array modules
 	 */
-	public function setRequiredPhpModules(array &$modules, tx_install $instObj) {
+	public function setRequiredPhpModules(array &$modules, $instObj) {
+		$modifiedModules = array();
 		foreach ($modules as $key => $module) {
 			if ($module === 'mysql') {
 				$dbModules = array();
@@ -137,7 +136,8 @@ class tx_dbal_installtool {
 						break;
 					case 'mssql':
 					case 'odbc_mssql':
-						$driverConfig = '\'useNameQuote\' => TRUE';
+						$driverConfig = '\'useNameQuote\' => TRUE,'
+								. '\'quoteClob\' => FALSE';
 						break;
 					case 'mysql':
 						return;

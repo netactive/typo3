@@ -21,7 +21,7 @@
  *                                                                        */
 
 /**
- * Error messages view helper
+ * Error messages view helper, which is deprecated in Extbase 1.4.0, with the old property mapper.
  *
  * = Examples =
  *
@@ -53,6 +53,7 @@
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @api
+ * @deprecated since Extbase 1.4.0, will be removed with Extbase 1.6.0.
  */
 class Tx_Fluid_ViewHelpers_Form_ErrorsViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
 
@@ -68,7 +69,7 @@ class Tx_Fluid_ViewHelpers_Form_ErrorsViewHelper extends Tx_Fluid_Core_ViewHelpe
 	 */
 	public function render($for = '', $as = 'error') {
 		$errors = $this->controllerContext->getRequest()->getErrors();
-		if ($for !== '') {
+		if ($for !== '' && $for !== NULL) {
 			$propertyPath = explode('.', $for);
 			foreach ($propertyPath as $currentPropertyName) {
 				$errors = $this->getErrorsForProperty($currentPropertyName, $errors);

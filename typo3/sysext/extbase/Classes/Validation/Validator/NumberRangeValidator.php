@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Validation\Validator
- * @version $Id: NumberRangeValidator.php 1789 2010-01-18 21:31:59Z jocrau $
+ * @version $Id$
  * @scope prototype
  */
 class Tx_Extbase_Validation_Validator_NumberRangeValidator extends Tx_Extbase_Validation_Validator_AbstractValidator {
@@ -44,6 +44,13 @@ class Tx_Extbase_Validation_Validator_NumberRangeValidator extends Tx_Extbase_Va
 	 * @return boolean TRUE if the value is within the range, otherwise FALSE
 	 */
 	public function isValid($value) {
+		if (isset($this->options['minimum'])) {
+			$this->options['startRange'] = $this->options['minimum'];
+		}
+		if (isset($this->options['maximum'])) {
+			$this->options['endRange'] = $this->options['maximum'];
+		}
+
 		$this->errors = array();
 		if (!is_numeric($value)) {
 			$this->addError('The given subject was not a valid number.', 1221563685);

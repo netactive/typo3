@@ -27,7 +27,7 @@
  *
  * @package Extbase
  * @subpackage Domain\Model
- * @version $Id: FrontendUserGroup.php 2143 2010-03-30 09:28:26Z jocrau $
+ * @version $Id$
  * @scope prototype
  * @entity
  * @api

@@ -29,7 +29,6 @@
 /**
  * Contains MEDIA class object.
  *
- * $Id: class.tslib_content.php 7905 2010-06-13 14:42:33Z ohader $
  * @author Xavier Perseguers <typo3@perseguers.ch>
  * @author Steffen Kamper <steffen@typo3.org>
  */
@@ -38,11 +37,11 @@ class tslib_content_Media extends tslib_content_Abstract {
 	/**
 	 * Rendering the cObject, MEDIA
 	 *
-	 * @param	array		Array of TypoScript properties
-	 * @return	string		Output
+	 * @param $conf array Array of TypoScript properties
+	 * @return string Output
 	 */
 	public function render($conf = array()) {
-		$content = $mmFile = '';
+		$content = '';
 		$flexParams = isset($conf['flexParams.'])
 			? $this->cObj->stdWrap($conf['flexParams'], $conf['flexParams.'])
 			: $conf['flexParams'];
@@ -61,7 +60,6 @@ class tslib_content_Media extends tslib_content_Abstract {
 		}
 
 		$mode = is_file(PATH_site . $url) ? 'file' : 'url';
-		$fileinfo = NULL;
 		if ($mode === 'file') {
 				// render FILE
 			$filename = $GLOBALS['TSFE']->tmpl->getFileName($url);
@@ -92,7 +90,7 @@ class tslib_content_Media extends tslib_content_Abstract {
 				// default renderType is swf
 			$renderType = 'swf';
 			$handler = array_keys($conf['fileExtHandler.']);
-			if (is_array($fileinfo) && in_array($fileinfo['fileext'], $handler)) {
+			if (in_array($fileinfo['fileext'], $handler)) {
 				$renderType = strtolower($conf['fileExtHandler.'][$fileinfo['fileext']]);
 			}
 		}
@@ -143,7 +141,7 @@ class tslib_content_Media extends tslib_content_Abstract {
 		}
 
 		if (is_array($conf['parameter.']['mmMediaOptions'])) {
-			$params = $parts = array();
+			$params = array();
 			foreach ($conf['parameter.']['mmMediaOptions'] as $key => $value) {
 				if ($key == 'mmMediaCustomParameterContainer') {
 					foreach ($value as $val) {
@@ -230,10 +228,9 @@ class tslib_content_Media extends tslib_content_Abstract {
 						$content = $hookObj->customMediaRender($renderType, $conf, $this);
 					}
 				}
-		}
-
-		if (isset($conf['stdWrap.'])) {
-			$content = $this->cObj->stdWrap($content, $conf['stdWrap.']);
+				if (isset($conf['stdWrap.'])) {
+					$content = $this->cObj->stdWrap($content, $conf['stdWrap.']);
+				}
 		}
 
 		return $content;

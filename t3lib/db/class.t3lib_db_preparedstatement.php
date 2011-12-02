@@ -128,6 +128,13 @@ class t3lib_db_PreparedStatement {
 	protected $resource;
 
 	/**
+	 * Random token which is wrapped around the markers
+	 * that will be replaced by user input.
+	 * @var string
+	 */
+	protected $parameterWrapToken;
+
+	/**
 	 * Creates a new PreparedStatement. Either $query or $queryComponents
 	 * should be used. Typically $query will be used by native MySQL TYPO3_DB
 	 * on a ready-to-be-executed query. On the other hand, DBAL will have
@@ -146,6 +153,7 @@ class t3lib_db_PreparedStatement {
 		$this->table = $table;
 		$this->parameters = array();
 		$this->resource = NULL;
+		$this->parameterWrapToken = $this->generateParameterWrapToken();
 	}
 
 	/**
@@ -164,7 +172,7 @@ class t3lib_db_PreparedStatement {
 	 * $statement->bindValues(array(':nickname' => 'goofy', ':status' => 'FIXED'));
 	 * </code>
 	 *
-	 * @param array $values The values to bind to the parameter. The PHP type of each array value will be used to decide which PARAM_* type to use (int, string, boolean, null), so make sure your variables are properly casted, if needed.
+	 * @param array $values The values to bind to the parameter. The PHP type of each array value will be used to decide which PARAM_* type to use (int, string, boolean, NULL), so make sure your variables are properly casted, if needed.
 	 * @return t3lib_db_PreparedStatement The current prepared statement to allow method chaining
 	 * @api
 	 */
@@ -253,7 +261,7 @@ class t3lib_db_PreparedStatement {
 	 * $statement->execute(array(':nickname' => 'goofy', ':status' => 'FIXED'));
 	 * </code>
 	 *
-	 * @param array $input_parameters An array of values with as many elements as there are bound parameters in the SQL statement being executed. The PHP type of each array value will be used to decide which PARAM_* type to use (int, string, boolean, null), so make sure your variables are properly casted, if needed.
+	 * @param array $input_parameters An array of values with as many elements as there are bound parameters in the SQL statement being executed. The PHP type of each array value will be used to decide which PARAM_* type to use (int, string, boolean, NULL), so make sure your variables are properly casted, if needed.
 	 * @return boolean Returns TRUE on success or FALSE on failure.
 	 * @api
 	 */
@@ -430,6 +438,11 @@ class t3lib_db_PreparedStatement {
 	 * @return void
 	 */
 	protected function replaceValuesInQuery(&$query, array &$precompiledQueryParts, array $parameterValues) {
+
+		if (count($precompiledQueryParts['queryParts']) === 0) {
+			$query = $this->tokenizeQueryParameterMarkers($query, $parameterValues);
+		}
+
 		foreach ($parameterValues as $key => $typeValue) {
 			switch ($typeValue['type']) {
 				case self::PARAM_NULL:
@@ -455,25 +468,56 @@ class t3lib_db_PreparedStatement {
 				if (count($precompiledQueryParts['queryParts']) > 0) {
 					$precompiledQueryParts['queryParts'][2 * $key + 1] = $value;
 				} else {
-					$parts = explode('?', $query, 2);
+					$parts = explode($this->parameterWrapToken . '?' . $this->parameterWrapToken, $query, 2);
 					$parts[0] .= $value;
 					$query = implode('', $parts);
 				}
 			} else {
-				if (!preg_match('/^:[\w]+$/', $key)) {
-					throw new InvalidArgumentException('Parameter names must start with ":" followed by an arbitrary number of alphanumerical characters.', 1282348825);
-				}
-
 				for ($i = 1; $i < count($precompiledQueryParts['queryParts']); $i++) {
 					if ($precompiledQueryParts['queryParts'][$i] === $key) {
 						$precompiledQueryParts['queryParts'][$i] = $value;
 					}
 				}
-					// Replace the marker (not preceeded by a word character or a ':' but
-					// followed by a word boundary)
-				$query = preg_replace('/(?<![\w:])' . $key . '\b/', $value, $query);
+				$query = str_replace($this->parameterWrapToken . $key . $this->parameterWrapToken, $value, $query);
 			}
 		}
+	}
+
+	/**
+	 * Replace the markers with unpredictable token markers.
+	 *
+	 * @throws InvalidArgumentException
+	 * @param string $query
+	 * @param array $parameterValues
+	 * @return string
+	 */
+	protected function tokenizeQueryParameterMarkers($query, array $parameterValues) {
+		$unnamedParameterCount = 0;
+		foreach ($parameterValues as $key => $typeValue) {
+			if (!is_int($key)) {
+				if (!preg_match('/^:[\w]+$/', $key)) {
+					throw new InvalidArgumentException('Parameter names must start with ":" followed by an arbitrary number of alphanumerical characters.', 1282348825);
+				}
+				// Replace the marker (not preceeded by a word character or a ':' but
+				// followed by a word boundary)
+				$query = preg_replace('/(?<![\w:])' . $key . '\b/', $this->parameterWrapToken . $key . $this->parameterWrapToken, $query);
+			} else {
+				$unnamedParameterCount++;
+			}
+		}
+		$parts = explode('?', $query, $unnamedParameterCount + 1);
+		$query = implode($this->parameterWrapToken . '?' . $this->parameterWrapToken, $parts);
+
+		return $query;
+	}
+
+	/**
+	 * Generate a random token that is used to wrap the query markers
+	 *
+	 * @return string
+	 */
+	protected function generateParameterWrapToken() {
+		return '__' . t3lib_div::getRandomHexString(16) . '__';
 	}
 }
 

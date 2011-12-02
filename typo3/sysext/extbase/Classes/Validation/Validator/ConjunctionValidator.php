@@ -31,17 +31,34 @@
  *
  * @package Extbase
  * @subpackage Validation\Validator
- * @version $Id: ConjunctionValidator.php 1729 2009-11-25 21:37:20Z stucki $
+ * @version $Id$
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @scope prototype
  */
 class Tx_Extbase_Validation_Validator_ConjunctionValidator extends Tx_Extbase_Validation_Validator_AbstractCompositeValidator {
+
+	/**
+	 * Checks if the given value is valid according to the validators of the conjunction.
+	 *
+	 * @param mixed $value The value that should be validated
+	 * @return Tx_Extbase_Error_Result
+	 * @api
+	 */
+	public function validate($value) {
+		$result = new Tx_Extbase_Error_Result();
+		foreach ($this->validators as $validator) {
+			$result->merge($validator->validate($value));
+		}
+		return $result;
+	}
+
 	/**
 	 * Checks if the given value is valid according to the validators of the conjunction.
 	 *
 	 * If at least one error occurred, the result is FALSE.
 	 *
 	 * @param mixed $value The value that should be validated
+	 * @deprecated since Extbase 1.4.0, will be removed in Extbase 1.6.0.
 	 */
 	public function isValid($value) {
 		$result = TRUE;

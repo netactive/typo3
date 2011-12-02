@@ -33,6 +33,7 @@ class Tx_Fluid_Tests_Unit_Core_ViewHelper_TemplateVariableContainerTest extends 
 	public function setUp() {
 		$this->variableContainer = new Tx_Fluid_Core_ViewHelper_TemplateVariableContainer();
 	}
+
 	/**
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 */
@@ -129,8 +130,29 @@ class Tx_Fluid_Tests_Unit_Core_ViewHelper_TemplateVariableContainerTest extends 
 		$this->variableContainer->remove('variable');
 		$this->variableContainer->get('variable');
 	}
+
+	/**
+	 * @test
+	 */
+	public function whenVariablesAreEmpty_getAll_shouldReturnEmptyArray() {
+		$this->assertSame(array(), $this->variableContainer->get('_all'));
+	}
+
+	/**
+	 * @test
+	 */
+	public function getAllShouldReturnAllVariables() {
+		$this->variableContainer->add('name', 'Simon');
+		$this->assertSame(array('name' => 'Simon'), $this->variableContainer->get('_all'));
+	}
+
+	/**
+	 * @test
+	 * @expectedException Tx_Fluid_Core_ViewHelper_Exception_InvalidVariableException
+	 */
+	public function addingVariableNamedAllShouldThrowException() {
+		$this->variableContainer->add('_all', 'foo');
+	}
 }
-
-
 
 ?>

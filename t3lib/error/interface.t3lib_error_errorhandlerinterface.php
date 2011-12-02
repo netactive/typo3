@@ -30,7 +30,6 @@
  *
  * @package TYPO3
  * @subpackage t3lib_error
- * @version $Id: interface.t3lib_error_errorhandlerinterface.php 10121 2011-01-18 20:15:30Z ohader $
  */
 interface t3lib_error_ErrorHandlerInterface {
 

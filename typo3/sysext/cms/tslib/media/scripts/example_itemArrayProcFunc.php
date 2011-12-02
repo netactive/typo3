@@ -28,7 +28,6 @@
  * This is an example of how to manipulate menu item arrays.
  * Used in the "testsite" package
  *
- * $Id: example_itemArrayProcFunc.php 10120 2011-01-18 20:03:36Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *

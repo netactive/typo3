@@ -56,9 +56,11 @@ interface Tx_Extbase_Configuration_ConfigurationManagerInterface extends t3lib_S
 	 * Note that this is a low level method and only makes sense to be used by Extbase internally.
 	 *
 	 * @param string $configurationType The kind of configuration to fetch - must be one of the CONFIGURATION_TYPE_* constants
+	 * @param string $extensionName if specified, the configuration for the given extension will be returned.
+	 * @param string $pluginName if specified, the configuration for the given plugin will be returned.
 	 * @return array The configuration
 	 */
-	public function getConfiguration($configurationType);
+	public function getConfiguration($configurationType, $extensionName = NULL, $pluginName = NULL);
 
 	/**
 	 * Sets the specified raw configuration coming from the outside.
@@ -68,6 +70,18 @@ interface Tx_Extbase_Configuration_ConfigurationManagerInterface extends t3lib_S
 	 * @return void
 	 */
 	public function setConfiguration(array $configuration = array());
+
+	/**
+	 * Returns TRUE if a certain feature, identified by $featureName
+	 * should be activated, FALSE for backwards-compatible behavior.
+	 *
+	 * This is an INTERNAL API used throughout Extbase and Fluid for providing backwards-compatibility.
+	 * Do not use it in your custom code!
+	 *
+	 * @param string $featureName
+	 * @return boolean
+	 */
+	public function isFeatureEnabled($featureName);
 
 }
 ?>

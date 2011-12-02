@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 TYPO3 Tree Team <http://forge.typo3.org/projects/typo3v4-extjstrees>
+*  (c) 2010-2011 Stefan Galinski <stefan.galinski@gmail.com>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -264,7 +264,7 @@ TYPO3.Components.PageTree.App = Ext.extend(Ext.Panel, {
 
 		var indicator = Ext.getCmp(this.id + '-indicatorBar').add(component);
 		this.doLayout();
-		
+
 		return indicator;
 	},
 

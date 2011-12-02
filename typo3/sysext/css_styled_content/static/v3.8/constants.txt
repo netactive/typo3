@@ -97,5 +97,4 @@ styles.content.searchresult {
 PAGE_TARGET = page
 
 
-# TYPO3 SVN ID: $Id: constants.txt 10041 2011-01-12 16:49:19Z flyguide $
 

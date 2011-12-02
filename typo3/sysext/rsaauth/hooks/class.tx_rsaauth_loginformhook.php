@@ -22,14 +22,6 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- * $Id: class.tx_rsaauth_loginformhook.php 10120 2011-01-18 20:03:36Z ohader $
- */
-
-require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/backends/class.tx_rsaauth_backendfactory.php');
-require_once(t3lib_extMgm::extPath('rsaauth', 'sv1/storage/class.tx_rsaauth_storagefactory.php'));
 
 /**
  * This class provides a hook to the login form to add extra javascript code
@@ -47,7 +39,7 @@ class tx_rsaauth_loginformhook {
 	 * @return	string	Form tag
 	 */
 	public function getLoginFormTag(array $params, SC_index& $pObj) {
-		$form = null;
+		$form = NULL;
 		if ($pObj->loginSecurityLevel == 'rsa') {
 
 			// If we can get the backend, we can proceed
@@ -68,6 +60,11 @@ class tx_rsaauth_loginformhook {
 				// Add RSA hidden fields
 				$form .= '<input type="hidden" id="rsa_n" name="n" value="' . htmlspecialchars($keyPair->getPublicKeyModulus()) . '" />';
 				$form .= '<input type="hidden" id="rsa_e" name="e" value="' . sprintf('%x', $keyPair->getExponent()) . '" />';
+			} else {
+				throw new t3lib_error_Exception(
+					'No OpenSSL backend could be obtained for rsaauth.',
+					1318283565
+				);
 			}
 		}
 		return $form;

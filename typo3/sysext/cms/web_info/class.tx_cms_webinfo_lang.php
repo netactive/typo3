@@ -27,27 +27,7 @@
 /**
  * Contains a class with functions for page related overview of translations.
  *
- * $Id: class.tx_cms_webinfo_lang.php 10120 2011-01-18 20:03:36Z ohader $
- *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   66: class tx_cms_webinfo_lang extends t3lib_extobjbase
- *   73:     function modMenu()
- *  102:     function main()
- *  171:     function renderL10nTable(&$tree)
- *  342:     function getSystemLanguages()
- *  364:     function getLangStatus($pageId, $langId)
- *  393:     function getLocalizedElementInfo($pageId,$sysLang)
- *  471:     function getContentElementCount($pageId,$sysLang)
- *
- * TOTAL FUNCTIONS: 7
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 /**
  * Class for displaying translation status of pages in the tree.

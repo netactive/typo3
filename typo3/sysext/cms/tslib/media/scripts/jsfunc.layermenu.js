@@ -2,8 +2,6 @@
 *
 *  JavaScript DHTML layer menu
 *
-* $Id: jsfunc.layermenu.js 7905 2010-06-13 14:42:33Z ohader $
-*
 *
 *
 *  Copyright notice

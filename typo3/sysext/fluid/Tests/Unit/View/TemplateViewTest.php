@@ -28,6 +28,7 @@ include_once(dirname(__FILE__) . '/Fixtures/TemplateViewFixture.php');
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
+@require_once('vfsStream/vfsStream.php'); // include vfs stream wrapper
 class Tx_Fluid_Tests_Unit_View_TemplateViewTest extends Tx_Extbase_Tests_Unit_BaseTestCase {
 
 	/**
@@ -51,7 +52,7 @@ class Tx_Fluid_Tests_Unit_View_TemplateViewTest extends Tx_Extbase_Tests_Unit_Ba
 	 * @test
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 */
-	public function expandGenericPathPatternWorksWithSubpackageAndBubblingDisabledAndFormatNotOptional() { $this->markTestIncomplete("Not implemented in v4");
+	public function expandGenericPathPatternWorksWithSubpackageAndBubblingDisabledAndFormatNotOptional() {
 		$mockControllerContext = $this->setupMockControllerContextForPathResolving('MyPackage', 'MySubPackage', 'My', 'html');
 
 		$templateView = $this->getAccessibleMock('Tx_Fluid_View_TemplateView', array('getTemplateRootPath', 'getPartialRootPath', 'getLayoutRootPath'), array(), '', FALSE);
@@ -69,7 +70,7 @@ class Tx_Fluid_Tests_Unit_View_TemplateViewTest extends Tx_Extbase_Tests_Unit_Ba
 	 * @test
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 */
-	public function expandGenericPathPatternWorksWithSubpackageAndBubblingDisabledAndFormatOptional() { $this->markTestIncomplete("Not implemented in v4");
+	public function expandGenericPathPatternWorksWithSubpackageAndBubblingDisabledAndFormatOptional() {
 		$mockControllerContext = $this->setupMockControllerContextForPathResolving('MyPackage', 'MySubPackage', 'My', 'html');
 
 		$templateView = $this->getAccessibleMock('Tx_Fluid_View_TemplateView', array('getTemplateRootPath', 'getPartialRootPath', 'getLayoutRootPath'), array(), '', FALSE);
@@ -88,7 +89,7 @@ class Tx_Fluid_Tests_Unit_View_TemplateViewTest extends Tx_Extbase_Tests_Unit_Ba
 	 * @test
 	 * @author Sebastian Kurfürst <sebastian@typo3.org>
 	 */
-	public function expandGenericPathPatternWorksWithSubpackageAndBubblingEnabledAndFormatOptional() { $this->markTestIncomplete("Not implemented in v4");
+	public function expandGenericPathPatternWorksWithSubpackageAndBubblingEnabledAndFormatOptional() {
 		$mockControllerContext = $this->setupMockControllerContextForPathResolving('MyPackage', 'MySubPackage', 'My', 'html');
 
 		$templateView = $this->getAccessibleMock('Tx_Fluid_View_TemplateView', array('getTemplateRootPath', 'getPartialRootPath', 'getLayoutRootPath'), array(), '', FALSE);
@@ -119,9 +120,9 @@ class Tx_Fluid_Tests_Unit_View_TemplateViewTest extends Tx_Extbase_Tests_Unit_Ba
 	 * @author Robert Lemke <robert@typo3.org>
 	 */
 	protected function setupMockControllerContextForPathResolving($packageKey, $subPackageKey, $controllerName, $format) {
-     	$controllerObjectName = 'Tx_' . $packageKey . '_' . ($subPackageKey !== '' ? '_' . $subPackageKey . '_' : '') . 'Controller_' . $controllerName . 'Controller';
+		$controllerObjectName = "TYPO3\\$packageKey\\" . ($subPackageKey != $subPackageKey . '\\' ? : '') . 'Controller\\' . $controllerName . 'Controller';
 
-		$mockRequest = $this->getMock('Tx_Extbase_MVC_Request');
+		$mockRequest = $this->getMock('Tx_Extbase_MVC_Web_Request');
 		$mockRequest->expects($this->any())->method('getControllerPackageKey')->will($this->returnValue($packageKey));
 		$mockRequest->expects($this->any())->method('getControllerSubPackageKey')->will($this->returnValue($subPackageKey));
 		$mockRequest->expects($this->any())->method('getControllerName')->will($this->returnValue($controllerName));
@@ -190,7 +191,7 @@ class Tx_Fluid_Tests_Unit_View_TemplateViewTest extends Tx_Extbase_Tests_Unit_Ba
 	 * @test
 	 * @author Robert Lemke <robert@typo3.org>
 	 */
-	public function resolveTemplatePathAndFilenameChecksDifferentPathPatternsAndReturnsTheFirstPathWhichExists() { $this->markTestIncomplete("Not implemented in v4");
+	public function resolveTemplatePathAndFilenameChecksDifferentPathPatternsAndReturnsTheFirstPathWhichExists() {
 		vfsStreamWrapper::register();
 		mkdir('vfs://MyTemplates');
 		file_put_contents('vfs://MyTemplates/MyCoolAction.html', 'contentsOfMyCoolAction');
@@ -215,7 +216,7 @@ class Tx_Fluid_Tests_Unit_View_TemplateViewTest extends Tx_Extbase_Tests_Unit_Ba
 	 * @test
 	 * @author Robert Lemke <robert@typo3.org>
 	 */
-	public function resolveTemplatePathAndFilenameReturnsTheExplicitlyConfiguredTemplatePathAndFilename() { $this->markTestIncomplete("Not implemented in v4");
+	public function resolveTemplatePathAndFilenameReturnsTheExplicitlyConfiguredTemplatePathAndFilename() {
 		vfsStreamWrapper::register();
 		mkdir('vfs://MyTemplates');
 		file_put_contents('vfs://MyTemplates/MyCoolAction.html', 'contentsOfMyCoolAction');
@@ -224,7 +225,7 @@ class Tx_Fluid_Tests_Unit_View_TemplateViewTest extends Tx_Extbase_Tests_Unit_Ba
 		$templateView->_set('templatePathAndFilename', 'vfs://MyTemplates/MyCoolAction.html');
 
 		$this->assertSame('contentsOfMyCoolAction', $templateView->_call('getTemplateSource'));
-  	}
+	}
 }
 
 ?>

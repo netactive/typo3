@@ -34,7 +34,7 @@ abstract class Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper extends Tx_Fl
 	 * Names of all registered tag attributes
 	 * @var array
 	 */
-	protected $tagAttributes = array();
+	static private $tagAttributes = array();
 
 	/**
 	 * Tag builder instance
@@ -53,12 +53,14 @@ abstract class Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper extends Tx_Fl
 	protected $tagName = 'div';
 
 	/**
-	 * @param Tx_Extbase_Object_ObjectManagerInterface $objectManager
+	 * Inject a TagBuilder
+	 *
+	 * @param Tx_Fluid_Core_ViewHelper_TagBuilder $tagBuilder Tag builder
 	 * @return void
+	 * @author Bastian Waidelich <bastian@typo3.org>
 	 */
-	public function injectObjectManager(Tx_Extbase_Object_ObjectManagerInterface $objectManager) {
-		$this->objectManager = $objectManager;
-		$this->tag = $this->objectManager->create('Tx_Fluid_Core_ViewHelper_TagBuilder');
+	public function injectTagBuilder(Tx_Fluid_Core_ViewHelper_TagBuilder $tagBuilder) {
+		$this->tag = $tagBuilder;
 	}
 
 	/**
@@ -86,12 +88,15 @@ abstract class Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper extends Tx_Fl
 		parent::initialize();
 		$this->tag->reset();
 		$this->tag->setTagName($this->tagName);
-		if (is_array($this->arguments['additionalAttributes'])) {
+		if ($this->hasArgument('additionalAttributes') && is_array($this->arguments['additionalAttributes'])) {
 			$this->tag->addAttributes($this->arguments['additionalAttributes']);
 		}
-		foreach ($this->tagAttributes as $attributeName) {
-			if ($this->arguments->hasArgument($attributeName) && $this->arguments[$attributeName] !== '') {
-				$this->tag->addAttribute($attributeName, $this->arguments[$attributeName]);
+
+		if (isset(self::$tagAttributes[get_class($this)])) {
+			foreach (self::$tagAttributes[get_class($this)] as $attributeName) {
+				if ($this->hasArgument($attributeName) && $this->arguments[$attributeName] !== '') {
+					$this->tag->addAttribute($attributeName, $this->arguments[$attributeName]);
+				}
 			}
 		}
 	}
@@ -109,7 +114,7 @@ abstract class Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper extends Tx_Fl
 	 */
 	protected function registerTagAttribute($name, $type, $description, $required = FALSE) {
 		$this->registerArgument($name, $type, $description, $required, NULL);
-		$this->tagAttributes[] = $name;
+		self::$tagAttributes[get_class($this)][$name] = $name;
 	}
 
 	/**

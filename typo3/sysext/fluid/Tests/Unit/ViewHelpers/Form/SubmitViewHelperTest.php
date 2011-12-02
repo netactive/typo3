@@ -20,14 +20,14 @@
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
-require_once(dirname(__FILE__) . '/../ViewHelperBaseTestcase.php');
+require_once(dirname(__FILE__) . '/FormFieldViewHelperBaseTestcase.php');
 
 /**
  * Test for the "Submit" Form view helper
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
-class Tx_Fluid_Tests_Unit_ViewHelpers_Form_SubmitViewHelperTest extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {
+class Tx_Fluid_Tests_Unit_ViewHelpers_Form_SubmitViewHelperTest extends Tx_Fluid_Tests_Unit_ViewHelpers_Form_FormFieldViewHelperBaseTestcase {
 
 	/**
 	 * var Tx_Fluid_ViewHelpers_Form_ubmitViewHelper
@@ -36,7 +36,8 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_SubmitViewHelperTest extends Tx_Fluid
 
 	public function setUp() {
 		parent::setUp();
-		$this->viewHelper = $this->getAccessibleMock('Tx_Fluid_ViewHelpers_Form_SubmitViewHelper', array('dummy'));
+		$this->viewHelper = new Tx_Fluid_ViewHelpers_Form_SubmitViewHelper();
+		$this->arguments['name'] = '';
 		$this->injectDependenciesIntoViewHelper($this->viewHelper);
 		$this->viewHelper->initializeArguments();
 	}
@@ -50,7 +51,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_SubmitViewHelperTest extends Tx_Fluid
 		$mockTagBuilder->expects($this->once())->method('setTagName')->with('input');
 		$mockTagBuilder->expects($this->at(1))->method('addAttribute')->with('type', 'submit');
 
-		$this->viewHelper->_set('tag', $mockTagBuilder);
+		$this->viewHelper->injectTagBuilder($mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render();

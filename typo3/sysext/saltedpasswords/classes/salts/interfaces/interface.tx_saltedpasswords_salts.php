@@ -28,8 +28,6 @@
 /**
  * Contains interface "tx_saltedpasswords_salts" to be used in
  * classes that provide salted hashing.
- *
- * $Id: interface.tx_saltedpasswords_salts.php 10120 2011-01-18 20:03:36Z ohader $
  */
 
 

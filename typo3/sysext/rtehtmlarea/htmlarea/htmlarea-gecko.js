@@ -29,7 +29,6 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /*
- * TYPO3 SVN ID: $Id: htmlarea-gecko.js 10181 2011-01-20 23:36:41Z stan $
  */
 
 /***************************************************

@@ -5,7 +5,7 @@
 *  (c) 2009 Jochen Rau <jochen.rau@typoplanet.de>
 *  All rights reserved
 *
-*  This class is a backport of the corresponding class of FLOW3.
+*  This class is a backport of the corresponding class of FLOW3. 
 *  All credits go to the v5 team.
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Object\Exception
- * @version $Id: UnknownInterface.php 1729 2009-11-25 21:37:20Z stucki $
+ * @version $Id$
  */
 class Tx_Extbase_Object_UnknownInterface extends Tx_Extbase_Object_Exception {
 

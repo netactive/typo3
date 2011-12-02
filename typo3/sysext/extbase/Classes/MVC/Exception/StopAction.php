@@ -5,7 +5,7 @@
 *  (c) 2009 Jochen Rau <jochen.rau@typoplanet.de>
 *  All rights reserved
 *
-*  This class is a backport of the corresponding class of FLOW3.
+*  This class is a backport of the corresponding class of FLOW3. 
 *  All credits go to the v5 team.
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -31,11 +31,11 @@
  * exception and - depending on the "dispatched" status of the request - either
  * continues dispatching the request or returns control to the request handler.
  *
- * See the Action Controller's forward() and redirectToURI() methods for more information.
+ * See the Action Controller's forward() and redirectToUri() methods for more information.
  *
  * @package Extbase
  * @subpackage MVC\Exception
- * @version $Id: StopAction.php 1052 2009-08-05 21:51:32Z sebastian $
+ * @version $Id$
  */
 class Tx_Extbase_MVC_Exception_StopAction extends Tx_Extbase_MVC_Exception {
 

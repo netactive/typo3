@@ -30,7 +30,7 @@
  *
  * @package Extbase
  * @subpackage Validation\Validator
- * @version $Id: EmailAddressValidator.php 1792 2010-01-19 00:06:05Z jocrau $
+ * @version $Id$
  */
 class Tx_Extbase_Validation_Validator_EmailAddressValidator extends Tx_Extbase_Validation_Validator_AbstractValidator {
 
@@ -47,16 +47,17 @@ class Tx_Extbase_Validation_Validator_EmailAddressValidator extends Tx_Extbase_V
 	public function isValid($value) {
 		$this->errors = array();
 		if(is_string($value) && preg_match('
-				/
-					^[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+)*
+				/^
+					[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+)*
 					@
 					(?:
 						(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:[a-z]{2}|aero|asia|biz|cat|com|edu|coop|gov|info|int|invalid|jobs|localdomain|mil|mobi|museum|name|net|org|pro|tel|travel)|
 						localhost|
-						(?:(?:\d{1,2}|1\d{1,2}|2[0-5][0-5])\.){3}(?:(?:\d{1,2}|1\d{1,2}|2[0-5][0-5]))
+						(?:(?:\d{1,2}|1\d{1,2}|2[0-4][0-9]|25[0-5])\.){3}(?:(?:\d{1,2}|1\d{1,2}|2[0-4][0-9]|25[0-5]))
 					)
-					\b
-				/ix', $value)) return TRUE;
+				$/Dix', $value)) {
+			return TRUE;
+		}
 		$this->addError('The given subject was not a valid email address.', 1221559976);
 		return FALSE;
 	}

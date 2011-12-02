@@ -27,19 +27,13 @@
 /**
  * Generates a thumbnail and returns an image stream, either GIF/PNG or JPG
  *
- * $Id: thumbs.php 10121 2011-01-18 20:15:30Z ohader $
- *
  * @author		René Fritz <r.fritz@colorcube.de>
  */
 
 // *******************************
 // Set error reporting
 // *******************************
-if (defined('E_DEPRECATED')) {
-	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
-} else {
-	error_reporting(E_ALL ^ E_NOTICE);
-}
+error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
 
 
 define('PATH_thisScript', str_replace('//', '/', str_replace('\\', '/',

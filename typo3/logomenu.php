@@ -27,13 +27,7 @@
 /**
  * Logo menu
  *
- * $Id: logomenu.php 10317 2011-01-26 00:56:49Z baschny $
- *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
  */
 
 

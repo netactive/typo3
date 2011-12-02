@@ -27,8 +27,6 @@
  *
  * Module: Extension manager - mirror.xml abstract parser
  *
- * $Id: class.tx_em_parser_mirrorxmlabstractparser.php 1913 2010-02-21 15:47:37Z mkrause $
- *
  * @author  Marcus Krause <marcus#exp2010@t3sec.info>
  * @author  Steffen Kamper <info@sk-typo3.de>
  */
@@ -218,7 +216,6 @@ abstract class tx_em_Parser_MirrorXmlAbstractParser extends tx_em_Parser_XmlAbst
 	 * @return  void
 	 */
 	protected function throwException($message = "", $code = 0) {
-		t3lib_div::requireOnce(t3lib_extMgm::extPath('em') . 'classes/exception/class.tx_em_mirrorxml_exception.php');
 		throw new tx_em_MirrorXmlException(get_class($this) . ': ' . $message, $code);
 	}
 }

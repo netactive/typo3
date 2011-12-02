@@ -3,7 +3,7 @@
 *
 *  (c) 2002-2004 interactivetools.com, inc.
 *  (c) 2003-2004 dynarch.com
-*  (c) 2004-2010 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2004-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,24 +30,12 @@
 ***************************************************************/
 /*
  * Main script of TYPO3 htmlArea RTE
- *
- * TYPO3 SVN ID: $Id: htmlarea.js 10513 2011-02-21 02:13:33Z stan $
  */
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
 if (typeof(HTMLArea) == 'undefined') {
 	// Establish HTMLArea name space
 Ext.namespace('HTMLArea.CSS', 'HTMLArea.util.TYPO3', 'HTMLArea.util.Tips', 'HTMLArea.util.Color', 'Ext.ux.form', 'Ext.ux.menu', 'Ext.ux.Toolbar');
 Ext.apply(HTMLArea, {
-	/*************************************************************************
-	 * THESE BROWSER IDENTIFICATION CONSTANTS ARE DEPRECATED AS OF TYPO3 4.4 *
-	 *************************************************************************/
-		// Browser identification
-	is_gecko	: Ext.isGecko || Ext.isOpera || Ext.isWebKit,
-	is_ff2		: Ext.isGecko2,
-	is_ie		: Ext.isIE,
-	is_safari	: Ext.isWebKit,
-	is_chrome	: Ext.isChrome,
-	is_opera	: Ext.isOpera,
 	/***************************************************
 	 * COMPILED REGULAR EXPRESSIONS                    *
 	 ***************************************************/
@@ -64,25 +52,15 @@ Ext.apply(HTMLArea, {
 	RE_noClosingTag		: /^(img|br|hr|col|input|area|base|link|meta|param)$/i,
 	RE_numberOrPunctuation	: /[0-9.(),;:!¡?¿%#$'"_+=\\\/-]*/g,
 	/***************************************************
-	 * TROUBLESHOOTING                                 *
-	 ***************************************************/
-	_appendToLog: function(str){
-		if (HTMLArea.enableDebugMode) {
-			var log = document.getElementById('HTMLAreaLog');
-			if(log) {
-				log.appendChild(document.createTextNode(str));
-				log.appendChild(document.createElement('br'));
-			}
-		}
-	},
-	appendToLog: function (editorId, objectName, functionName, text) {
-		HTMLArea._appendToLog(editorId + '[' + objectName + '::' + functionName + ']: ' + text);
-	},
-	/***************************************************
 	 * LOCALIZATION                                    *
 	 ***************************************************/
-	localize: function (label) {
-		return HTMLArea.I18N.dialogs[label] || HTMLArea.I18N.tooltips[label] || HTMLArea.I18N.msg[label] || '';
+	localize: function (label, plural) {
+		var i = plural || 0;
+		var localized = HTMLArea.I18N.dialogs[label] || HTMLArea.I18N.tooltips[label] || HTMLArea.I18N.msg[label] || '';
+		if (typeof localized === 'object' && typeof localized[i] !== 'undefined') {
+			localized = localized[i]['target'];
+		}
+		return localized;
 	},
 	/***************************************************
 	 * INITIALIZATION                                  *
@@ -98,9 +76,36 @@ Ext.apply(HTMLArea, {
 			HTMLArea.editedContentCSS = HTMLArea.editorSkin + 'htmlarea-edited-content.css';
 		}
 		HTMLArea.isReady = true;
-		HTMLArea._appendToLog("[HTMLArea::init]: Editor url set to: " + HTMLArea.editorUrl);
-		HTMLArea._appendToLog("[HTMLArea::init]: Editor skin CSS set to: " + HTMLArea.editorCSS);
-		HTMLArea._appendToLog("[HTMLArea::init]: Editor content skin CSS set to: " + HTMLArea.editedContentCSS);
+		HTMLArea.appendToLog('', 'HTMLArea', 'init', 'Editor url set to: ' + HTMLArea.editorUrl, 'info');
+		HTMLArea.appendToLog('', 'HTMLArea', 'init', 'Editor skin CSS set to: ' + HTMLArea.editorCSS, 'info');
+		HTMLArea.appendToLog('', 'HTMLArea', 'init', 'Editor content skin CSS set to: ' + HTMLArea.editedContentCSS, 'info');
+	},
+	/*
+	 * Write message to JavaScript console
+	 *
+	 * @param	string		editorId: the id of the editor issuing the message
+	 * @param	string		objectName: the name of the object issuing the message
+	 * @param	string		functionName: the name of the function issuing the message
+	 * @param	string		text: the text of the message
+	 * @param	string		type: the type of message: 'log', 'info', 'warn' or 'error'
+	 *
+	 * @return	void
+	 */
+	appendToLog: function (editorId, objectName, functionName, text, type) {
+		var str = 'RTE[' + editorId + '][' + objectName + '::' + functionName + ']: ' + text;
+		if (typeof(type) === 'undefined') {
+			var type = 'info';
+		}
+		if (typeof(console) !== 'undefined' && typeof(console) === 'object') {
+				// If console is TYPO3.Backend.DebugConsole, write only error messages
+			if (Ext.isFunction(console.addTab)) {
+				if (type === 'error') {
+					console[type](str);
+				}
+			} else {
+				console[type](str);
+			}
+		}
 	}
 });
 /***************************************************
@@ -120,6 +125,8 @@ HTMLArea.Config = function (editorId) {
 	this.editedContentStyle = HTMLArea.editedContentCSS;
 		// content style
 	this.pageStyle = "";
+		// Maximum attempts at accessing the stylesheets
+	this.styleSheetsMaximumAttempts = 20;
 		// Remove tags (must be a regular expression)
 	this.htmlRemoveTags = /none/i;
 		// Remove tags and their contents (must be a regular expression)
@@ -202,7 +209,7 @@ HTMLArea.Config = Ext.extend(HTMLArea.Config, {
 	registerButton: function (config) {
 		config.itemId = config.id;
 		if (Ext.type(this.buttonsConfig[config.id])) {
-			HTMLArea._appendToLog('[HTMLArea.Config::registerButton]: A toolbar item with the same Id: ' + config.id + ' already exists and will be overidden.');
+			HTMLArea.appendToLog('', 'HTMLArea.Config', 'registerButton', 'A toolbar item with the same Id: ' + config.id + ' already exists and will be overidden.', 'warn');
 		}
 			// Apply defaults
 		config = Ext.applyIf(config, this.configDefaults['all']);
@@ -246,14 +253,13 @@ HTMLArea.Config = Ext.extend(HTMLArea.Config, {
 	 */
 	registerHotKey: function (hotKeyConfiguration) {
 		if (Ext.isDefined(this.hotKeyList[hotKeyConfiguration.id])) {
-			HTMLArea._appendToLog('[HTMLArea.Config::registerHotKey]: A hotkey with the same key ' + hotKeyConfiguration.id + ' already exists and will be overidden.');
+			HTMLArea.appendToLog('', 'HTMLArea.Config', 'registerHotKey', 'A hotkey with the same key ' + hotKeyConfiguration.id + ' already exists and will be overidden.', 'warn');
 		}
 		if (Ext.isDefined(hotKeyConfiguration.cmd) && !Ext.isEmpty(hotKeyConfiguration.cmd) && Ext.isDefined(this.buttonsConfig[hotKeyConfiguration.cmd])) {
 			this.hotKeyList[hotKeyConfiguration.id] = hotKeyConfiguration;
-			HTMLArea._appendToLog('[HTMLArea.Config::registerHotKey]: A hotkey with key ' + hotKeyConfiguration.id + ' was registered for toolbar item ' + hotKeyConfiguration.cmd + '.');
 			return true;
 		} else {
-			HTMLArea._appendToLog('[HTMLArea.Config::registerHotKey]: A hotkey with key ' + hotKeyConfiguration.id + ' could not be registered because toolbar item with id ' + hotKeyConfiguration.cmd + ' was not registered.');
+			HTMLArea.appendToLog('', 'HTMLArea.Config', 'registerHotKey', 'A hotkey with key ' + hotKeyConfiguration.id + ' could not be registered because toolbar item with id ' + hotKeyConfiguration.cmd + ' was not registered.', 'warn');
 			return false;
 		}
 	},
@@ -523,7 +529,7 @@ Ext.ux.form.HTMLAreaCombo = Ext.extend(Ext.form.ComboBox, {
 				// Invoke the plugin onChange handler
 			this.plugins[this.action](editor, combo, record, index);
 				// In IE, bookmark the updated selection as the editor will be loosing focus
-			if (Ext.isIE) { 
+			if (Ext.isIE) {
 				editor.focus();
 				this.savedRange = editor._createRange(editor._getSelection());
 				this.triggered = true;
@@ -804,7 +810,8 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		this.htmlRenderer = new HTMLArea.DOM.Walker({
 			keepComments: !this.config.htmlRemoveComments,
 			removeTags: this.config.htmlRemoveTags,
-			removeTagsAndContents: this.config.htmlRemoveTagsAndContents
+			removeTagsAndContents: this.config.htmlRemoveTagsAndContents,
+			baseUrl: this.config.baseURL
 		});
 		if (!this.config.showStatusBar) {
 			this.addClass('noStatusBar');
@@ -827,17 +834,12 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 	 * In all browsers, it breaks the evaluation of the framework dimensions
 	 */
 	initStyleChangeEventListener: function () {
-		if (this.isNested  && !Ext.isWebKit) {
+		if (this.isNested  && Ext.isGecko) {
 			var options = {
-				stopEvent: true
+				stopEvent: true,
+				delay: 50
 			};
-			if (Ext.isGecko) {
-				options.delay = 50;
-			}
 			Ext.each(this.nestedParentElements.sorted, function (nested) {
-				if (!Ext.isGecko) {
-					options.target = Ext.get(nested);
-				}
 				this.mon(
 					Ext.get(nested),
 					Ext.isIE ? 'propertychange' : 'DOMAttrModified',
@@ -924,7 +926,18 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 			this.getEditor()._doc = this.document;
 			this.getEditor()._iframe = iframe;
 			this.createHead();
-			this.getStyleSheets();
+				// Style the document body
+			Ext.get(this.document.body).addClass('htmlarea-content-body');
+				// Start listening to things happening in the iframe
+				// For some unknown reason, this is too early for Opera
+			if (!Ext.isOpera) {
+				this.startListening();
+			}
+				// Hide the iframe
+			this.hide();
+				// Set iframe ready
+			this.ready = true;
+			this.fireEvent('HTMLAreaEventIframeReady');
 		}
 	},
 	/*
@@ -943,106 +956,40 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 				base.href = this.config.baseURL;
 				head.appendChild(base);
 			}
-			HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Iframe baseURL set to: ' + base.href);
+			this.getEditor().appendToLog('HTMLArea.Iframe', 'createHead', 'Iframe baseURL set to: ' + base.href, 'info');
 		}
 		var link0 = this.document.getElementsByTagName('link')[0];
 		if (!link0) {
 			link0 = this.document.createElement('link');
 			link0.rel = 'stylesheet';
+			link0.type = 'text/css';
 				// Firefox 3.0.1 does not apply the base URL while Firefox 3.6.8 does so. Do not know in what version this was fixed.
 				// Therefore, for versions before 3.6.8, we prepend the url with the base, if the url is not absolute
 			link0.href = ((Ext.isGecko && navigator.productSub < 2010072200 && !/^http(s?):\/{2}/.test(this.config.editedContentStyle)) ? this.config.baseURL : '') + this.config.editedContentStyle;
 			head.appendChild(link0);
-			HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Skin CSS set to: ' + link0.href);
+			this.getEditor().appendToLog('HTMLArea.Iframe', 'createHead', 'Skin CSS set to: ' + link0.href, 'info');
 		}
 		if (this.config.defaultPageStyle) {
 			var link = this.document.getElementsByTagName('link')[1];
 			if (!link) {
 				link = this.document.createElement('link');
 				link.rel = 'stylesheet';
+				link.type = 'text/css';
 				link.href = ((Ext.isGecko && navigator.productSub < 2010072200 && !/^https?:\/{2}/.test(this.config.defaultPageStyle)) ? this.config.baseURL : '') + this.config.defaultPageStyle;
 				head.appendChild(link);
 			}
-			HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Override CSS set to: ' + link.href);
+			this.getEditor().appendToLog('HTMLArea.Iframe', 'createHead', 'Override CSS set to: ' + link.href, 'info');
 		}
 		if (this.config.pageStyle) {
 			var link = this.document.getElementsByTagName('link')[2];
 			if (!link) {
 				link = this.document.createElement('link');
 				link.rel = 'stylesheet';
+				link.type = 'text/css';
 				link.href = ((Ext.isGecko && navigator.productSub < 2010072200 && !/^https?:\/{2}/.test(this.config.pageStyle)) ? this.config.baseURL : '') + this.config.pageStyle;
 				head.appendChild(link);
 			}
-			HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Content CSS set to: ' + link.href);
-		}
-		HTMLArea._appendToLog('[HTMLArea.Iframe::createHead]: Editor iframe document head successfully built.');
-	},
-	/*
-	 * Fire event 'HTMLAreaEventIframeReady' when the iframe style sheets become accessible
-	 */
-	getStyleSheets: function () {
-		var stylesAreLoaded = true;
-		var errorText = '';
-		var rules;
-		if (Ext.isOpera) {
-			if (this.document.readyState != 'complete') {
-				stylesAreLoaded = false;
-				errorText = 'Document.readyState not complete';
-			}
-		} else {
-				// Test if the styleSheets array is at all accessible
-			if (Ext.isIE) {
-				try { 
-					rules = this.document.styleSheets[0].rules;
-				} catch(e) {
-					stylesAreLoaded = false;
-					errorText = e;
-				}
-			} else {
-				try { 
-					this.document.styleSheets && this.document.styleSheets[0] && this.document.styleSheets[0].rules;
-				} catch(e) {
-					stylesAreLoaded = false;
-					errorText = e;
-				}
-			}
-				// Then test if all stylesheets are accessible
-			if (stylesAreLoaded) {
-				if (this.document.styleSheets.length) {
-					Ext.each(this.document.styleSheets, function (styleSheet) {
-						if (Ext.isIE) {
-							try { rules = styleSheet.rules; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
-							try { rules = styleSheet.imports; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
-						} else {
-							try { rules = styleSheet.cssRules; } catch(e) { stylesAreLoaded = false; errorText = e; return false; }
-						}
-					});
-				} else {
-					stylesAreLoaded = false;
-					errorText = 'Empty stylesheets array';
-				}
-			}
-		}
-		if (!stylesAreLoaded) {
-			this.getStyleSheets.defer(100, this);
-			HTMLArea._appendToLog('[HTMLArea.Iframe::getStyleSheets]: Stylesheets not yet loaded (' + errorText + '). Retrying...');
-			if (/Security/i.test(errorText)) {
-				HTMLArea._appendToLog('ERROR [HTMLArea.Iframe::getStyleSheets]: A security error occurred. Make sure all stylesheets are accessed from the same domain/subdomain and using the same protocol as the current script.');
-			}
-		} else {
-			HTMLArea._appendToLog('[HTMLArea.Iframe::getStyleSheets]: Stylesheets successfully accessed.');
-				// Style the document body
-			Ext.get(this.document.body).addClass('htmlarea-content-body');
-				// Start listening to things happening in the iframe
-				// For some unknown reason, this is too early for Opera
-			if (!Ext.isOpera) {
-				this.startListening();
-			}
-				// Hide the iframe
-			this.hide();
-				// Set iframe ready
-			this.ready = true;
-			this.fireEvent('HTMLAreaEventIframeReady');
+			this.getEditor().appendToLog('HTMLArea.Iframe', 'createHead', 'Content CSS set to: ' + link.href, 'info');
 		}
 	},
 	/*
@@ -1243,6 +1190,9 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		this.mon(Ext.get(this.document.documentElement), (Ext.isIE || Ext.isWebKit) ? 'keydown' : 'keypress', this.onAnyKey, this);
 		this.mon(Ext.get(this.document.documentElement), 'mouseup', this.onMouse, this);
 		this.mon(Ext.get(this.document.documentElement), 'click', this.onMouse, this);
+		if (Ext.isGecko) {
+			this.mon(Ext.get(this.document.documentElement), 'paste', this.onPaste, this);
+		}
 		this.mon(Ext.get(this.document.documentElement), 'drop', this.onDrop, this);
 		if (Ext.isWebKit) {
 			this.mon(Ext.get(this.document.body), 'dragend', this.onDrop, this);
@@ -1254,25 +1204,6 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 	onAnyKey: function(event) {
 		if (this.inhibitKeyboardInput(event)) {
 			return false;
-		}
-		/*****************************************************
-		 * onKeyPress DEPRECATED AS OF TYPO3 4.4             *
-		 *****************************************************/
-		if (this.getEditor().hasPluginWithOnKeyPressHandler) {
-			var letBubble = true;
-			Ext.iterate(this.getEditor().plugins, function (pluginId) {
-				var plugin = this.getEditor().getPlugin(pluginId);
-				if (Ext.isFunction(plugin.onKeyPress)) {
-					if (!plugin.onKeyPress(event.browserEvent)) {
-						event.stopEvent();
-						letBubble = false;
-					}
-				}
-				return letBubble;
-			}, this);
-			if (!letBubble) {
-				return letBubble;
-			}
 		}
 		this.fireEvent('HTMLAreaEventWordCountChange', 100);
 		if (!event.altKey && !event.ctrlKey) {
@@ -1311,11 +1242,25 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		return true;
 	},
 	/*
-	 * Handlers for drag and drop operations
+	 * Handler for paste operations in Gecko
 	 */
-	onDrop: function (event) {
+	onPaste: function (event) {
+			// Make src and href urls absolute
+		if (Ext.isGecko) {
+			HTMLArea.DOM.makeUrlsAbsolute.defer(50, this, [this.getEditor().document.body, this.config.baseURL, this.htmlRenderer]);
+		}
+	},
+	/*
+	 * Handler for drag and drop operations
+	 */
+	onDrop: function (event, target) {
+			// Clean up span elements added by WebKit
 		if (Ext.isWebKit) {
 			this.getEditor().cleanAppleStyleSpans.defer(50, this.getEditor(), [this.getEditor().document.body]);
+		}
+			// Make src url absolute in Firefox
+		if (Ext.isGecko) {
+			HTMLArea.DOM.makeUrlsAbsolute.defer(50, this, [target, this.config.baseURL, this.htmlRenderer]);
 		}
 		this.getToolbar().updateLater.delay(100);
 	},
@@ -1538,13 +1483,13 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 			id: this.editorId + '-statusBarTree',
 			tag: 'span',
 			cls: 'statusBarTree',
-			html: HTMLArea.I18N.msg['Path'] + ': '
+			html: HTMLArea.localize('Path') + ': '
 		}, true).setVisibilityMode(Ext.Element.DISPLAY).setVisible(true);
 		this.statusBarTextMode = Ext.DomHelper.append(this.getEl(), {
 			id: this.editorId + '-statusBarTextMode',
 			tag: 'span',
 			cls: 'statusBarTextMode',
-			html: HTMLArea.I18N.msg['TEXT_MODE']
+			html: HTMLArea.localize('TEXT_MODE')
 		}, true).setVisibilityMode(Ext.Element.DISPLAY).setVisible(false);
 	},
 	/*
@@ -1577,7 +1522,7 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 			this.clear();
 			var path = Ext.DomHelper.append(this.statusBarTree, {
 				tag: 'span',
-				html: HTMLArea.I18N.msg['Path'] + ': '
+				html: HTMLArea.localize('Path') + ': '
 			},true);
 			Ext.each(ancestors, function (ancestor, index) {
 				if (!ancestor) {
@@ -1607,7 +1552,7 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 				var element = Ext.DomHelper.insertAfter(path, {
 					tag: 'a',
 					href: '#',
-					'ext:qtitle': HTMLArea.I18N.dialogs['statusBarStyle'],
+					'ext:qtitle': HTMLArea.localize('statusBarStyle'),
 					'ext:qtip': ancestor.style.cssText.split(';').join('<br />'),
 					html: text
 				}, true);
@@ -1655,7 +1600,7 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 			}
 		}
 			// Update the word count of the status bar
-		this.statusBarWordCount.dom.innerHTML = wordCount ? ( wordCount + ' ' + HTMLArea.I18N.dialogs[(wordCount == 1) ? 'word' : 'words']) : '&nbsp;';
+		this.statusBarWordCount.dom.innerHTML = wordCount ? ( wordCount + ' ' + HTMLArea.localize((wordCount == 1) ? 'word' : 'words')) : '&nbsp;';
 	},
 	/*
 	 * Adapt status bar to current editor mode
@@ -1700,7 +1645,7 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 		var editor = this.getEditor();
 		element.blur();
 		if (!Ext.isIE) {
-			if (/^(img)$/i.test(element.ancestor.nodeName)) {
+			if (/^(img|table)$/i.test(element.ancestor.nodeName)) {
 				editor.selectNode(element.ancestor);
 			} else {
 				editor.selectNodeContents(element.ancestor);
@@ -1874,6 +1819,19 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 		}
 	},
 	/*
+	 * onLayout will fail if inside a hidden tab or inline element
+	 */
+	onLayout: function () {
+		if (!this.isNested || HTMLArea.util.TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
+			HTMLArea.Framework.superclass.onLayout.call(this);
+		} else {
+				// Clone the array of nested tabs and inline levels instead of using a reference as HTMLArea.util.TYPO3.accessParentElements will modify the array
+			var parentElements = [].concat(this.nestedParentElements.sorted);
+				// Walk through all nested tabs and inline levels to get correct sizes
+				HTMLArea.util.TYPO3.accessParentElements(parentElements, 'HTMLArea.Framework.superclass.onLayout.call(args[0])', [this]);
+		}
+	},
+	/*
 	 * Make the framework resizable, if configured
 	 */
 	makeResizable: function () {
@@ -1932,18 +1890,14 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 			this.resizer.resizeTo(frameworkWidth, frameworkHeight);
 		} else {
 			this.setSize(frameworkWidth, frameworkHeight);
+			this.doLayout();
 		}
 	},
 	/*
 	 * Resize the framework components
 	 */
 	onFrameworkResize: function () {
-			// For unknown reason, in Chrome 7, this following is the only way to set the height of the iframe
-		if (Ext.isChrome) {
-			this.iframe.getResizeEl().dom.setAttribute('style', 'width:' + this.getInnerWidth() + 'px; height:' + this.getInnerHeight() + 'px;');
-		} else {
-			this.iframe.setSize(this.getInnerWidth(), this.getInnerHeight());
-		}
+		this.iframe.setSize(this.getInnerWidth(), this.getInnerHeight());
 		this.textArea.setSize(this.getInnerWidth(), this.getInnerHeight());
 	},
 	/*
@@ -1960,12 +1914,7 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 		if (this.getInnerHeight() <= 0) {
 			this.onWindowResize();
 		} else {
-				// For unknown reason, in Chrome 7, this following is the only way to set the height of the iframe
-			if (Ext.isChrome) {
-				this.iframe.getResizeEl().dom.setAttribute('style', 'width:' + this.getInnerWidth() + 'px; height:' + this.getInnerHeight() + 'px;');
-			} else {
-				this.iframe.setHeight(this.getInnerHeight());
-			}
+			this.iframe.setHeight(this.getInnerHeight());
 			this.textArea.setHeight(this.getInnerHeight());
 		}
 	},
@@ -2147,7 +2096,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 						id: this.editorId + '-iframe',
 						tag: 'iframe',
 						cls: 'editorIframe',
-						src: (Ext.isGecko || Ext.isChrome) ? 'javascript:void(0);' : HTMLArea.editorUrl + 'popups/blank.html'
+						src: (Ext.isGecko || Ext.isWebKit) ? 'javascript:void(0);' : HTMLArea.editorUrl + 'popups/blank.html'
 					},
 					isNested: this.isNested,
 					nestedParentElements: this.nestedParentElements,
@@ -2223,7 +2172,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 		}, this);
 		this.ready = true;
 		this.fireEvent('HTMLAreaEventEditorReady');
-		HTMLArea._appendToLog('[HTMLArea.Editor::onFrameworkReady]: Editor ready.');
+		this.appendToLog('HTMLArea.Editor', 'onFrameworkReady', 'Editor ready.', 'info');
 	},
 	/*
 	 * Set editor mode
@@ -2245,10 +2194,10 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 				try {
 					this.document.body.innerHTML = this.getHTML();
 				} catch(e) {
-					HTMLArea._appendToLog('[HTMLArea.Editor::setMode]: The HTML document is not well-formed.');
+					this.appendToLog('HTMLArea.Editor', 'setMode', 'The HTML document is not well-formed.', 'warn');
 					TYPO3.Dialog.ErrorDialog({
 						title: 'htmlArea RTE',
-						msg: HTMLArea.I18N.msg['HTML-document-not-well-formed']
+						msg: HTMLArea.localize('HTML-document-not-well-formed')
 					});
 					break;
 				}
@@ -2281,7 +2230,14 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 			case 'wysiwyg':
 				return this.iframe.getHTML();
 			case 'textmode':
-				return this.textArea.getValue();
+					// Collapse repeated spaces non-editable in wysiwyg
+					// Replace leading and trailing spaces non-editable in wysiwyg
+				return this.textArea.getValue().
+					replace(/[\x20]+/g, '\x20').
+					replace(/^\x20/g, '&nbsp;').
+					replace(/\x20$/g, '&nbsp;').
+					replace(/>\x20/g, '>&nbsp;').
+					replace(/\x20</g, '&nbsp;<');
 			default:
 				return '';
 		}
@@ -2326,53 +2282,30 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 	 * @return	boolean		true if the plugin was successfully registered
 	 */
 	registerPlugin: function (pluginName) {
-		var plugin = null;
-		if (Ext.isString(pluginName)) {
-			/*******************************************************************************
-			 * USE OF PLUGIN NAME OUTSIDE HTMLArea NAMESPACE IS DEPRECATED AS OF TYPO3 4.4 *
-			 *******************************************************************************/
-			try {
-				plugin = eval(pluginName);
-			} catch (e) {
-				try {
-					plugin = eval('HTMLArea.' + pluginName);
-				} catch (error) {
-					HTMLArea._appendToLog('ERROR [HTMLArea.Editor::registerPlugin]: Cannot register invalid plugin: ' + error);
-					return false;
-				}
+		var plugin = HTMLArea[pluginName],
+			isRegistered = false;
+		if (typeof(plugin) !== 'undefined' && Ext.isFunction(plugin)) {
+			var pluginInstance = new plugin(this, pluginName);
+			if (pluginInstance) {
+				var pluginInformation = pluginInstance.getPluginInformation();
+				pluginInformation.instance = pluginInstance;
+				this.plugins[pluginName] = pluginInformation;
+				isRegistered = true;
 			}
 		}
-		if (!Ext.isFunction(plugin)) {
-			HTMLArea._appendToLog('ERROR [HTMLArea.Editor::registerPlugin]: Cannot register undefined plugin.');
-			return false;
+		if (!isRegistered) {
+			this.appendToLog('HTMLArea.Editor', 'registerPlugin', 'Could not register plugin ' + pluginName + '.', 'warn');
 		}
-		var pluginInstance = new plugin(this, pluginName);
-		if (pluginInstance) {
-			var pluginInformation = pluginInstance.getPluginInformation();
-			pluginInformation.instance = pluginInstance;
-			this.plugins[pluginName] = pluginInformation;
-			HTMLArea._appendToLog('[HTMLArea.Editor::registerPlugin]: Plugin ' + pluginName + ' was successfully registered.');
-			return true;
-		} else {
-			HTMLArea._appendToLog("ERROR [HTMLArea.Editor::registerPlugin]: Can't register plugin " + pluginName + '.');
-			return false;
-		}
+		return isRegistered;
 	},
 	/*
 	 * Generate registered plugins
 	 */
 	generatePlugins: function () {
-		this.hasPluginWithOnKeyPressHandler = false;
 		Ext.iterate(this.plugins, function (pluginId) {
 			var plugin = this.getPlugin(pluginId);
 			plugin.onGenerate();
-				// onKeyPress deprecated as of TYPO3 4.4
-			if (Ext.isFunction(plugin.onKeyPress)) {
-				this.hasPluginWithOnKeyPressHandler = true;
-				HTMLArea._appendToLog('[HTMLArea.Editor::generatePlugins]: Deprecated use of onKeyPress function by plugin ' + pluginId + '. Use keyMap instead.');
-			}
 		}, this);
-		HTMLArea._appendToLog('[HTMLArea.Editor::generatePlugins]: All plugins successfully generated.');
 	},
 	/*
 	 * Get the instance of the specified plugin, if it exists
@@ -2429,11 +2362,12 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 	 *
 	 * @param	string		functionName: the name of the editor function writing to the log
 	 * @param	string		text: the text of the message
+	 * @param	string		type: the type of message
 	 *
 	 * @return	void
 	 */
-	appendToLog: function (objectName, functionName, text) {
-		HTMLArea.appendToLog(this.editorId, objectName, functionName, text);
+	appendToLog: function (objectName, functionName, text, type) {
+		HTMLArea.appendToLog(this.editorId, objectName, functionName, text, type);
 	},
 	/*
 	 * Iframe unload handler: Update the textarea for submission and cleanup
@@ -2479,7 +2413,6 @@ HTMLArea.Ajax = Ext.extend(HTMLArea.Ajax, {
 	getJavascriptFile: function (url, callback, scope) {
 		var success = false;
 		var self = this;
-		this.editor.appendToLog('HTMLArea.Ajax', 'getJavascriptFile', 'Requesting script ' + url);
 		Ext.Ajax.request({
 			method: 'GET',
 			url: url,
@@ -2489,7 +2422,7 @@ HTMLArea.Ajax = Ext.extend(HTMLArea.Ajax, {
 			},
 			failure: function (response) {
 				self.editor.inhibitKeyboardInput = false;
-				self.editor.appendToLog('HTMLArea.Ajax', 'getJavascriptFile', 'Unable to get ' + url + ' . Server reported ' + response.status);
+				self.editor.appendToLog('HTMLArea.Ajax', 'getJavascriptFile', 'Unable to get ' + url + ' . Server reported ' + response.status, 'error');
 			},
 			scope: scope
 		});
@@ -2514,7 +2447,6 @@ HTMLArea.Ajax = Ext.extend(HTMLArea.Ajax, {
 			params += (params.length ? '&' : '') + parameter + '=' + encodeURIComponent(value);
 		});
 		params += this.editor.config.RTEtsConfigParams;
-		this.editor.appendToLog('HTMLArea.Ajax', 'postData', 'Posting to ' + url + '. Data: ' + params);
 		Ext.Ajax.request({
 			method: 'POST',
 			headers: {
@@ -2523,17 +2455,15 @@ HTMLArea.Ajax = Ext.extend(HTMLArea.Ajax, {
 			url: url,
 			params: params,
 			callback: Ext.isFunction(callback) ? callback: function (options, success, response) {
-				if (success) {
-					self.editor.appendToLog('HTMLArea.Ajax', 'postData', 'Post request to ' + url + ' successful. Server response: ' + response.responseText);
-				} else {
-					self.editor.appendToLog('HTMLArea.Ajax', 'postData', 'Post request to ' + url + ' failed. Server reported ' + response.status);
+				if (!success) {
+					self.editor.appendToLog('HTMLArea.Ajax', 'postData', 'Post request to ' + url + ' failed. Server reported ' + response.status, 'error');
 				}
 			},
 			success: function (response) {
 				success = true;
 			},
 			failure: function (response) {
-				self.editor.appendToLog('HTMLArea.Ajax', 'postData', 'Unable to post ' + url + ' . Server reported ' + response.status);
+				self.editor.appendToLog('HTMLArea.Ajax', 'postData', 'Unable to post ' + url + ' . Server reported ' + response.status, 'error');
 			},
 			scope: scope
 		});
@@ -2646,49 +2576,6 @@ HTMLArea.util.TYPO3 = function () {
 		}
 	}
 }();
-/*
- * Load a stylesheet file
- ***********************************************
- * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.4 *
- ***********************************************
- */
-HTMLArea.loadStyle = function(style, plugin, url) {
-	if (typeof(url) == "undefined") {
-		var url = HTMLArea.editorUrl || '';
-		if (typeof(plugin) != "undefined") { url += "plugins/" + plugin + "/"; }
-		url += style;
-		if (/^\//.test(style)) { url = style; }
-	}
-	var head = document.getElementsByTagName("head")[0];
-	var link = document.createElement("link");
-	link.rel = "stylesheet";
-	link.href = url;
-	head.appendChild(link);
-};
-
-/*
- * Get the url of some popup
- ***********************************************
- * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.4 *
- ***********************************************
- */
-HTMLArea.Editor.prototype.popupURL = function(file) {
-	var url = "";
-	if(file.match(/^plugin:\/\/(.*?)\/(.*)/)) {
-		var pluginId = RegExp.$1;
-		var popup = RegExp.$2;
-		if(!/\.html$/.test(popup)) popup += ".html";
-		if (this.config.pathToPluginDirectory[pluginId]) {
-			url = this.config.pathToPluginDirectory[pluginId] + "popups/" + popup;
-		} else {
-			url = HTMLArea.editorUrl + "plugins/" + pluginId + "/popups/" + popup;
-		}
-	} else {
-		url = HTMLArea.editorUrl + this.config.popupURL + file;
-	}
-	return url;
-};
-
 /***************************************************
  *  EDITOR UTILITIES
  ***************************************************/
@@ -2709,33 +2596,6 @@ HTMLArea.Editor.prototype.forceRedraw = function() {
 	this.htmlArea.doLayout();
 };
 
-/*
- * Focus the editor iframe window or the textarea.
- ***********************************************
- * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.4 *
- ***********************************************
- */
-HTMLArea.Editor.prototype.focusEditor = function() {
-	this.focus();
-	return this.document;
-};
-
-/*
- * Check if any plugin has an opened window
- ***********************************************
- * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.4 *
- ***********************************************
- */
-HTMLArea.Editor.prototype.hasOpenedWindow = function () {
-	for (var plugin in this.plugins) {
-		if (this.plugins.hasOwnProperty(plugin)) {
-			if (HTMLArea.Dialog[plugin.name] && HTMLArea.Dialog[plugin.name].hasOpenedWindow && HTMLArea.Dialog[plugin.name].hasOpenedWindow()) {
-				return true;
-			}
-		}
-	}
-	return false
-};
 HTMLArea.Editor.prototype.updateToolbar = function(noStatus) {
 	this.toolbar.update(noStatus);
 };
@@ -2990,7 +2850,7 @@ HTMLArea.Editor.prototype.execCommand = function(cmdID, UI, param) {
 			try {
 				this.document.execCommand(cmdID, UI, param);
 			} catch(e) {
-				HTMLArea._appendToLog('[HTMLArea.Editor::execCommand]: ' + e + 'by execCommand(' + cmdID + ')');
+				this.appendToLog('HTMLArea.Editor', 'execCommand', e + ' by execCommand(' + cmdID + ')', 'error');
 			}
 	}
 	this.toolbar.update();
@@ -3092,16 +2952,12 @@ HTMLArea.getHTML = function(root, outputRoot, editor){
 	try {
 		return editor.iframe.htmlRenderer.render(root, outputRoot);
 	} catch(e) {
-		HTMLArea._appendToLog('[HTMLArea::getHTML]: The HTML document is not well-formed.');
-		if (!HTMLArea.enableDebugMode) {
-			TYPO3.Dialog.ErrorDialog({
-				title: 'htmlArea RTE',
-				msg: HTMLArea.I18N.msg['HTML-document-not-well-formed']
-			});
-			return editor.document.body.innerHTML;
-		} else {
-			return editor.iframe.htmlRenderer.render(root, outputRoot);
-		}
+		editor.appendToLog('HTMLArea', 'getHTML', 'The HTML document is not well-formed.', 'warn');
+		TYPO3.Dialog.ErrorDialog({
+			title: 'htmlArea RTE',
+			msg: HTMLArea.localize('HTML-document-not-well-formed')
+		});
+		return editor.document.body.innerHTML;
 	}
 };
 HTMLArea.getPrevNode = function(node) {
@@ -3247,6 +3103,78 @@ HTMLArea.DOM = function () {
 					}
 				}
 			}
+		},
+		/*
+		 * Make url's absolute in the DOM tree under the root node
+		 *
+		 * @param	object		root: the root node
+		 * @param	string		baseUrl: base url to use
+		 * @param	string		walker: a HLMLArea.DOM.Walker object
+		 * @return	void
+		 */
+		makeUrlsAbsolute: function (node, baseUrl, walker) {
+			walker.walk(node, true, 'HTMLArea.DOM.makeImageSourceAbsolute(node, args[0]) || HTMLArea.DOM.makeLinkHrefAbsolute(node, args[0])', 'Ext.emptyFn', [baseUrl]);
+		},
+		/*
+		 * Make the src attribute of an image node absolute
+		 *
+		 * @param	object		node: the image node
+		 * @param	string		baseUrl: base url to use
+		 * @return	void
+		 */
+		makeImageSourceAbsolute: function (node, baseUrl) {
+			if (/^img$/i.test(node.nodeName)) {
+				var src = node.getAttribute('src');
+				if (src) {
+					node.setAttribute('src', HTMLArea.DOM.addBaseUrl(src, baseUrl));
+				}
+				return true;
+			}
+			return false;
+		},
+		/*
+		 * Make the href attribute of an a node absolute
+		 *
+		 * @param	object		node: the image node
+		 * @param	string		baseUrl: base url to use
+		 * @return	void
+		 */
+		makeLinkHrefAbsolute: function (node, baseUrl) {
+			if (/^a$/i.test(node.nodeName)) {
+				var href = node.getAttribute('href');
+				if (href) {
+					node.setAttribute('href', HTMLArea.DOM.addBaseUrl(href, baseUrl));
+				}
+				return true;
+			}
+			return false;
+		},
+		/*
+		 * Add base url
+		 *
+		 * @param	string		url: value of a href or src attribute
+		 * @param	string		baseUrl: base url to add
+		 * @return	string		absolute url
+		 */
+		addBaseUrl: function (url, baseUrl) {
+			var absoluteUrl = url;
+				// If the url has no scheme...
+			if (!/^[a-z0-9_]{2,}\:/i.test(absoluteUrl)) {
+				var base = baseUrl;
+				while (absoluteUrl.match(/^\.\.\/(.*)/)) {
+						// Remove leading ../ from url
+					absoluteUrl = RegExp.$1;
+					base.match(/(.*\:\/\/.*\/)[^\/]+\/$/);
+						// Remove lowest directory level from base
+					base = RegExp.$1;
+					absoluteUrl = base + absoluteUrl;
+				}
+					// If the url is still not absolute...
+				if (!/^.*\:\/\//.test(absoluteUrl)) {
+					absoluteUrl = baseUrl + absoluteUrl;
+				}
+			}
+			return absoluteUrl;
 		}
 	};
 }();
@@ -3261,7 +3189,8 @@ HTMLArea.DOM.Walker = function (config) {
 		removeTagsAndContents: /none/i,
 		keepTags: /.*/i,
 		removeAttributes: /none/i,
-		removeTrailingBR: true
+		removeTrailingBR: true,
+		baseUrl: ''
 	};
 	Ext.apply(this, config, configDefaults);
 };
@@ -3366,7 +3295,7 @@ HTMLArea.DOM.Walker = Ext.extend(HTMLArea.DOM.Walker, {
 	 */
 	getAttributes: function (node) {
 		var attributes = node.attributes;
-		var filterededAttributes = {};
+		var filterededAttributes = [];
 		var attribute, attributeName, attributeValue;
 		for (var i = attributes.length; --i >= 0 ;) {
 			attribute = attributes.item(i);
@@ -3391,17 +3320,25 @@ HTMLArea.DOM.Walker = Ext.extend(HTMLArea.DOM.Walker, {
 				} else if (attributeName === 'value' && /^li$/i.test(node.nodeName) && attributeValue == 0) {
 					continue;
 				}
-				// Ignore special values reported by Mozilla
-			} else if (Ext.isGecko && /(_moz|^$)/.test(attributeValue)) {
-				continue;
+			} else if (Ext.isGecko) {
+					// Ignore special values reported by Mozilla
+				if (/(_moz|^$)/.test(attributeValue)) {
+					continue;
+					// Pasted internal url's are made relative by Mozilla: https://bugzilla.mozilla.org/show_bug.cgi?id=613517
+				} else if (attributeName === 'href' || attributeName === 'src') {
+					attributeValue = HTMLArea.DOM.addBaseUrl(attributeValue, this.baseUrl);
+				}
 			}
 				// Ignore id attributes generated by ExtJS
 			if (attributeName === 'id' && /^ext-gen/.test(attributeValue)) {
 				continue;
 			}
-			filterededAttributes[attributeName] = attributeValue;
+			filterededAttributes.push({
+				attributeName: attributeName,
+				attributeValue: attributeValue
+			});
 		}
-		return filterededAttributes;
+		return (Ext.isWebKit || Ext.isOpera) ? filterededAttributes.reverse() : filterededAttributes;
 	},
 	/*
 	 * Set opening tag for a node
@@ -3428,8 +3365,8 @@ HTMLArea.DOM.Walker = Ext.extend(HTMLArea.DOM.Walker, {
 		}
 			// Normal node
 		var attributes = this.getAttributes(node);
-		for (var attributeName in attributes) {
-			html +=  ' ' + attributeName + '="' + HTMLArea.htmlEncode(attributes[attributeName]) + '"';
+		for (var i = 0, n = attributes.length; i < n; i++) {
+			html +=  ' ' + attributes[i]['attributeName'] + '="' + HTMLArea.htmlEncode(attributes[i]['attributeValue']) + '"';
 		}
 		html = '<' + node.nodeName.toLowerCase() + html + (HTMLArea.RE_noClosingTag.test(node.nodeName) ? ' />' : '>');
 			// Fix orphan list elements
@@ -3473,7 +3410,7 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 	constructor: function (config) {
 		HTMLArea.CSS.Parser.superclass.constructor.call(this, {});
 		var configDefaults = {
-			parseAttemptsMaximumNumber: 17,
+			parseAttemptsMaximumNumber: 20,
 			prefixLabelWithClassName: false,
 			postfixLabelWithClassName: false,
 			showTagFreeClasses: false,
@@ -3481,6 +3418,9 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 			editor: null
 		};
 		Ext.apply(this, config, configDefaults);
+		if (this.editor.config.styleSheetsMaximumAttempts) {
+			this.parseAttemptsMaximumNumber = this.editor.config.styleSheetsMaximumAttempts;
+		}
 		this.addEvents(
 			/*
 			 * @event HTMLAreaEventCssParsingComplete
@@ -3533,10 +3473,9 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 					try {
 						if (typeof(HTMLArea.classesLabels) === 'undefined') {
 							eval(response.responseText);
-							this.editor.appendToLog('HTMLArea.CSS.Parser', 'initiateParsing', 'Javascript file successfully evaluated: ' + this.editor.config.classesUrl);
 						}
 					} catch(e) {
-						this.editor.appendToLog('HTMLArea.CSS.Parser', 'initiateParsing', 'Error evaluating contents of Javascript file: ' + this.editor.config.classesUrl);
+						this.editor.appendToLog('HTMLArea.CSS.Parser', 'initiateParsing', 'Error evaluating contents of Javascript file: ' + this.editor.config.classesUrl, 'error');
 					}
 				}
 				this.parse();
@@ -3554,11 +3493,14 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 		if (this.editor.document) {
 			this.parseStyleSheets();
 			if (!this.cssLoaded) {
-				if (this.parseAttemptsCounter < this.parseAttemptsMaximumNumber) {
-					this.attemptTimeout = this.parse.defer(200, this);
+				if (/Security/i.test(this.error)) {
+					this.editor.appendToLog('HTMLArea.CSS.Parser', 'parse', 'A security error occurred. Make sure all stylesheets are accessed from the same domain/subdomain and using the same protocol as the current script.', 'error');
+					this.fireEvent('HTMLAreaEventCssParsingComplete');
+				} else if (this.parseAttemptsCounter < this.parseAttemptsMaximumNumber) {
 					this.parseAttemptsCounter++;
+					this.attemptTimeout = this.parse.defer(200, this);
 				} else {
-					this.editor.appendToLog('HTMLArea.CSS.Parser', 'parse', 'The stylesheets could not be parsed. Reported error: ' + this.error);
+					this.editor.appendToLog('HTMLArea.CSS.Parser', 'parse', 'The stylesheets could not be parsed. Reported error: ' + this.error, 'error');
 					this.fireEvent('HTMLAreaEventCssParsingComplete');
 				}
 			} else {
@@ -3578,28 +3520,67 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 	parseStyleSheets: function () {
 		this.cssLoaded = true;
 		this.error = null;
-		for (var i = 0; i < this.editor.document.styleSheets.length; i++) {
-			if (!Ext.isIE) {
+			// Test if the styleSheets array is at all accessible
+		if (Ext.isOpera) {
+			if (this.editor.document.readyState !== 'complete') {
+				this.cssLoaded = false;
+				this.error = 'Document.readyState not complete';
+			}
+		} else {
+			if (Ext.isIE) {
 				try {
-					this.parseRules(this.editor.document.styleSheets[i].cssRules);
-				} catch (e) {
-					this.error = e;
+					var rules = this.editor.document.styleSheets[0].rules;
+					var imports = this.editor.document.styleSheets[0].imports;
+					if (!rules.length && !imports.length) {
+						this.cssLoaded = false;
+						this.error = 'Empty rules and imports arrays';
+					}
+				} catch(e) {
 					this.cssLoaded = false;
-					this.parsedClasses = {};
+					this.error = e;
 				}
 			} else {
-				try{
-					if (this.editor.document.styleSheets[i].imports) {
-						this.parseIeRules(this.editor.document.styleSheets[i].imports);
-					}
-					if (this.editor.document.styleSheets[i].rules) {
-						this.parseRules(this.editor.document.styleSheets[i].rules);
-					}
-				} catch (e) {
-					this.error = e;
+				try {
+					this.editor.document.styleSheets && this.editor.document.styleSheets[0] && this.editor.document.styleSheets[0].rules;
+				} catch(e) {
 					this.cssLoaded = false;
-					this.parsedClasses = {};
+					this.error = e;
 				}
+			}
+		}
+		if (this.cssLoaded) {
+				// Expecting 3 stylesheets...
+			if (this.editor.document.styleSheets.length > 2) {
+				Ext.each(this.editor.document.styleSheets, function (styleSheet, index) {
+					try {
+						if (Ext.isIE) {
+							var rules = styleSheet.rules;
+							var imports = styleSheet.imports;
+								// Default page style may contain only a comment
+							if (!rules.length && !imports.length && index != 1) {
+								this.cssLoaded = false;
+								this.error = 'Empty rules and imports arrays of styleSheets[' + index + ']';
+								return false;
+							}
+							if (styleSheet.imports) {
+								this.parseIeRules(styleSheet.imports);
+							}
+							if (styleSheet.rules) {
+								this.parseRules(styleSheet.rules);
+							}
+						} else {
+							this.parseRules(styleSheet.cssRules);
+						}
+					} catch (e) {
+						this.error = e;
+						this.cssLoaded = false;
+						this.parsedClasses = {};
+						return false;
+					}
+				}, this);
+			} else {
+				this.cssLoaded = false;
+				this.error = 'Empty stylesheets array or missing linked stylesheets';
 			}
 		}
 	},
@@ -3875,11 +3856,6 @@ HTMLArea.util.Color = function () {
 	}
 }();
 /*
- * Interim backward compatibility
- */
-HTMLArea._makeColor = HTMLArea.util.Color.colorToRgb;
-HTMLArea._colorToRgb = HTMLArea.util.Color.colorToHex;
-/*
  * Intercept Ext.ColorPalette.prototype.select
  */
 Ext.ColorPalette.prototype.select = Ext.ColorPalette.prototype.select.createInterceptor(HTMLArea.util.Color.checkIfColorInPalette);
@@ -3919,7 +3895,7 @@ Ext.ux.menu.HTMLAreaColorMenu = Ext.extend(Ext.menu.Menu, {
 					value: this.value,
 					allowReselect: true,
 					tpl: new Ext.XTemplate(
-						'<tpl for="."><a href="#" class="color-{1}" hidefocus="on"><em><span style="background:#{1}" unselectable="on">&#160;</span></em><span unselectable="on">{0}<span></a></tpl>'
+						'<tpl for="."><a href="#" class="color-{1}" hidefocus="on"><em><span style="background:#{1}" unselectable="on">&#160;</span></em><span unselectable="on">{0}</span></a></tpl>'
 					)
 				}
 			});
@@ -4122,7 +4098,6 @@ HTMLArea.initEditor = function(editorNumber) {
 				HTMLArea.initEditor.defer(150, null, [editorNumber]);
 			} else {
 					// Create an editor for the textarea
-				HTMLArea._appendToLog("[HTMLArea::initEditor]: Initializing editor with editor Id: " + editorNumber + ".");
 				var editor = new HTMLArea.Editor(Ext.apply(new HTMLArea.Config(editorNumber), RTEarea[editorNumber]));
 				editor.generate();
 				return false;
@@ -4133,131 +4108,36 @@ HTMLArea.initEditor = function(editorNumber) {
 		}
 	}
 };
-
-/**
- *	Base, version 1.0.2
- *	Copyright 2006, Dean Edwards
- *	License: http://creativecommons.org/licenses/LGPL/2.1/
- */
-
-HTMLArea.Base = function() {
-	if (arguments.length) {
-		if (this == window) { // cast an object to this class
-			HTMLArea.Base.prototype.extend.call(arguments[0], arguments.callee.prototype);
-		} else {
-			this.extend(arguments[0]);
-		}
-	}
-};
-
-HTMLArea.Base.version = "1.0.2";
-
-HTMLArea.Base.prototype = {
-	extend: function(source, value) {
-		var extend = HTMLArea.Base.prototype.extend;
-		if (arguments.length == 2) {
-			var ancestor = this[source];
-			// overriding?
-			if ((ancestor instanceof Function) && (value instanceof Function) &&
-				ancestor.valueOf() != value.valueOf() && /\bbase\b/.test(value)) {
-				var method = value;
-			//	var _prototype = this.constructor.prototype;
-			//	var fromPrototype = !Base._prototyping && _prototype[source] == ancestor;
-				value = function() {
-					var previous = this.base;
-				//	this.base = fromPrototype ? _prototype[source] : ancestor;
-					this.base = ancestor;
-					var returnValue = method.apply(this, arguments);
-					this.base = previous;
-					return returnValue;
-				};
-				// point to the underlying method
-				value.valueOf = function() {
-					return method;
-				};
-				value.toString = function() {
-					return String(method);
-				};
-			}
-			return this[source] = value;
-		} else if (source) {
-			var _prototype = {toSource: null};
-			// do the "toString" and other methods manually
-			var _protected = ["toString", "valueOf"];
-			// if we are prototyping then include the constructor
-			if (HTMLArea.Base._prototyping) _protected[2] = "constructor";
-			for (var i = 0; (name = _protected[i]); i++) {
-				if (source[name] != _prototype[name]) {
-					extend.call(this, name, source[name]);
-				}
-			}
-			// copy each of the source object's properties to this object
-			for (var name in source) {
-				if (!_prototype[name]) {
-					extend.call(this, name, source[name]);
-				}
-			}
-		}
-		return this;
-	},
-
-	base: function() {
-		// call this method from any other method to invoke that method's ancestor
-	}
-};
-
-HTMLArea.Base.extend = function(_instance, _static) {
-	var extend = HTMLArea.Base.prototype.extend;
-	if (!_instance) _instance = {};
-	// build the prototype
-	HTMLArea.Base._prototyping = true;
-	var _prototype = new this;
-	extend.call(_prototype, _instance);
-	var constructor = _prototype.constructor;
-	_prototype.constructor = this;
-	delete HTMLArea.Base._prototyping;
-	// create the wrapper for the constructor function
-	var klass = function() {
-		if (!HTMLArea.Base._prototyping) constructor.apply(this, arguments);
-		this.constructor = klass;
-	};
-	klass.prototype = _prototype;
-	// build the class interface
-	klass.extend = this.extend;
-	klass.implement = this.implement;
-	klass.toString = function() {
-		return String(constructor);
-	};
-	extend.call(klass, _static);
-	// single instance
-	var object = constructor ? klass : _prototype;
-	// class initialisation
-	//if (object.init instanceof Function) object.init();
-	return object;
-};
-
-HTMLArea.Base.implement = function(_interface) {
-	if (_interface instanceof Function) _interface = _interface.prototype;
-	this.prototype.extend(_interface);
-};
-
 /**
  * HTMLArea.plugin class
  *
  * Every plugin should be a subclass of this class
  *
  */
-HTMLArea.Plugin = HTMLArea.Base.extend({
-
+HTMLArea.Plugin = function (editor, pluginName) {
+};
+/**
+ ***********************************************
+ * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.6 *
+ ***********************************************
+ * Extends class HTMLArea.Plugin
+ *
+ * Defined for backward compatibility only
+ * Use Ext.extend(SubClassName, config) directly
+ */
+HTMLArea.Plugin.extend = function (config) {
+	return Ext.extend(HTMLArea.Plugin, config);
+};
+HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 	/**
-	 * HTMLArea.plugin constructor
+	 * HTMLArea.Plugin constructor
 	 *
 	 * @param	object		editor: instance of RTE
 	 * @param	string		pluginName: name of the plugin
 	 *
 	 * @return	boolean		true if the plugin was configured
 	 */
-	constructor : function(editor, pluginName) {
+	constructor: function (editor, pluginName) {
 		this.editor = editor;
 		this.editorNumber = editor.editorId;
 		this.editorId = editor.editorId;
@@ -4268,9 +4148,20 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 		} catch(e) {
 			this.I18N = new Object();
 		}
-		return this.configurePlugin(editor);
+		this.configurePlugin(editor);
+		/**
+		 ***********************************************
+		 * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.6 *
+		 ***********************************************
+		 * Extends class HTMLArea[pluginName]
+		 *
+		 * Defined for backward compatibility only
+		 * Use Ext.extend(SubClassName, config) directly
+		 */
+		HTMLArea[pluginName].extend = function (config) {
+			return Ext.extend(HTMLArea[pluginName], config);
+		};
 	},
-
 	/**
 	 * Configures the plugin
 	 * This function is invoked by the class constructor.
@@ -4283,10 +4174,22 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	 *
 	 * @return	boolean		true if the plugin was configured
 	 */
-	configurePlugin : function(editor) {
+	configurePlugin: function (editor) {
 		return false;
 	},
-
+	/**
+	 ***********************************************
+	 * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.6 *
+	 ***********************************************
+	 * Invove the base class constructor
+	 *
+	 * Defined for backward compatibility only
+	 * Note: this.base will exclusively refer to the HTMLArea.Plugin class constructor
+	 */
+	base: function (editor, pluginName) {
+		HTMLArea.appendToLog(this.editor.editorId, 'HTMLArea.' + this.name, 'base', 'Deprecated use of base function. Use Ext superclass reference instead.', 'warn');
+		HTMLArea.Plugin.prototype.constructor.call(this, this.editor, this.name);
+	},
 	/**
 	 * Registers the plugin "About" information
 	 *
@@ -4301,17 +4204,13 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	 *
 	 * @return	boolean		true if the information was registered
 	 */
-	registerPluginInformation : function(pluginInformation) {
-		if (typeof(pluginInformation) !== "object") {
-			this.appendToLog("registerPluginInformation", "Plugin information was not provided");
+	registerPluginInformation: function(pluginInformation) {
+		if (typeof(pluginInformation) !== 'object') {
+			this.appendToLog('registerPluginInformation', 'Plugin information was not provided', 'warn');
 			return false;
 		} else {
 			this.pluginInformation = pluginInformation;
 			this.pluginInformation.name = this.name;
-				/* Ensure backwards compatibility */
-			this.pluginInformation.developer_url = this.pluginInformation.developerUrl;
-			this.pluginInformation.c_owner = this.pluginInformation.copyrightOwner;
-			this.pluginInformation.sponsor_url = this.pluginInformation.sponsorUrl;
 			return true;
 		}
 	},
@@ -4427,7 +4326,7 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 					return true;
 				}
 			} else {
-				this.appendToLog("registerButton", "Function " + buttonConfiguration.action + " was not defined when registering button " + buttonConfiguration.id);
+				this.appendToLog('registerButton', 'Function ' + buttonConfiguration.action + ' was not defined when registering button ' + buttonConfiguration.id, 'error');
 			}
 		}
 		return false;
@@ -4456,7 +4355,7 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 				}
 				return this.editorConfiguration.registerButton(dropDownConfiguration);
 			} else {
-				this.appendToLog('registerDropDown', 'Function ' + dropDownConfiguration.action + ' was not defined when registering drop-down ' + dropDownConfiguration.id);
+				this.appendToLog('registerDropDown', 'Function ' + dropDownConfiguration.action + ' was not defined when registering drop-down ' + dropDownConfiguration.id, 'error');
 			}
 		}
 		return false;
@@ -4557,20 +4456,6 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	 */
 	onUpdateToolbar: Ext.emptyFn,
 	/**
-	 ***********************************************
-	 * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.4 *
-	 ***********************************************
-	 * Register the key handler to the editor keyMap in onGenerate function
-	 * The keyPress event handler
-	 * This function may be defined by the plugin subclass.
-	 * If defined, the function is invoked whenever a key is pressed.
-	 *
-	 * @param	event		keyEvent: the event that was triggered when a key was pressed
-	 *
-	 * @return	boolean
-	 */
-	onKeyPress: null,
-	/**
 	 * The onMode event handler
 	 * This function may be redefined by the plugin subclass.
 	 * The function is invoked whenever the editor changes mode.
@@ -4580,7 +4465,7 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	 * @return	boolean
 	 */
 	onMode: function(mode) {
-		if (mode === "textmode" && this.dialog && HTMLArea.Dialog[this.name] == this.dialog && !(this.dialog.buttonId && this.editorConfiguration.buttons[this.dialog.buttonId] && this.editorConfiguration.buttons[this.dialog.buttonId].textMode)) {
+		if (mode === "textmode" && this.dialog && !(this.dialog.buttonId && this.editorConfiguration.buttons[this.dialog.buttonId] && this.editorConfiguration.buttons[this.dialog.buttonId].textMode)) {
 			this.dialog.close();
 		}
 	},
@@ -4593,29 +4478,21 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	 */
 	onGenerate: Ext.emptyFn,
 	/**
-	 * Make function reference in order to avoid memory leakage in IE
-	 ***********************************************
-	 * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.4 *
-	 ***********************************************
-	 *
-	 * @param	string		functionName: the name of the plugin function to be invoked
-	 *
-	 * @return	function	function definition invoking the specified function of the plugin
-	 */
-	makeFunctionReference: function (functionName) {
-		var self = this;
-		return (function(arg1, arg2, arg3) {
-			return (self[functionName](arg1, arg2, arg3));});
-	},
-	/**
 	 * Localize a string
 	 *
 	 * @param	string		label: the name of the label to localize
 	 *
 	 * @return	string		the localization of the label
 	 */
-	localize: function (label) {
-		return this.I18N[label] || HTMLArea.localize(label);
+	localize: function (label, plural) {
+		var i = plural || 0;
+		var localized = this.I18N[label];
+		if (typeof localized === 'object' && typeof localized[i] !== 'undefined') {
+			localized = localized[i]['target'];
+		} else {
+			localized = HTMLArea.localize(label, plural);
+		}
+		return localized;
 	},
 	/**
 	 * Get localized label wrapped with contextual help markup when available
@@ -4629,9 +4506,9 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	getHelpTip: function (fieldName, label, pluginName) {
 		if (Ext.isDefined(TYPO3.ContextHelp)) {
 			var pluginName = Ext.isDefined(pluginName) ? pluginName : this.name;
-			return '<span class="t3-help-link" href="#" data-table="xEXT_rtehtmlarea_' + pluginName + '" data-field="' + fieldName + '"><abbr class="t3-help-teaser">' + this.localize(label) + '</abbr></span>';
+			return '<span class="t3-help-link" href="#" data-table="xEXT_rtehtmlarea_' + pluginName + '" data-field="' + fieldName + '"><abbr class="t3-help-teaser">' + (this.localize(label) || label) + '</abbr></span>';
 		} else {
-			return this.localize(label);
+			return this.localize(label) || label;
 		}
 	},
 	/**
@@ -4643,7 +4520,6 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	 * @return	boolean		true on success of the request submission
 	 */
 	getJavascriptFile: function (url, callback) {
-		this.appendToLog('getJavascriptFile', 'Requesting script ' + url);
 		return this.editor.ajax.getJavascriptFile(url, callback, this);
 	},
 	/**
@@ -4656,49 +4532,7 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	 * @return	boolean		true on success
 	 */
 	postData: function (url, data, callback) {
-	 	this.appendToLog('postData', 'Posting to ' + url + '.');
 	 	return this.editor.ajax.postData(url, data, callback, this);
-	},
-	/**
-	 ***********************************************
-	 * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.4 *
-	 ***********************************************
-	 * Open a dialog window or bring focus to it if is already opened
-	 *
-	 * @param	string		buttonId: buttonId requesting the opening of the dialog
-	 * @param	string		url: name, without extension, of the html file to be loaded into the dialog window
-	 * @param	string		action: name of the plugin function to be invoked when the dialog ends
-	 * @param	object		arguments: object of variable type to be passed to the dialog
-	 * @param	object		dimensions: object giving the width and height of the dialog window
-	 * @param	string		showScrollbars: specifies by "yes" or "no" whether or not the dialog window should have scrollbars
-	 * @param	object		dialogOpener: reference to the opener window
-	 *
-	 * @return	object		the dialogue object
-	 */
-	openDialog : function (buttonId, url, action, arguments, dimensions, showScrollbars, dialogOpener) {
-		if (this.dialog && this.dialog.hasOpenedWindow() && this.dialog.buttonId === buttonId) {
-			this.dialog.focus();
-			return this.dialog;
-		} else {
-			var actionFunctionReference = action;
-			if (typeof(action) === "string") {
-				if (typeof(this[action]) === "function") {
-					var actionFunctionReference = this.makeFunctionReference(action);
-				} else {
-					this.appendToLog("openDialog", "Function " + action + " was not defined when opening dialog for " + buttonId);
-				}
-			}
-			return new HTMLArea.Dialog(
-					this,
-					buttonId,
-					url,
-					actionFunctionReference,
-					arguments,
-					this.getWindowDimensions(dimensions, buttonId),
-					(showScrollbars?showScrollbars:"no"),
-					dialogOpener
-				);
-		}
 	},
 	/*
 	 * Open a window with container iframe
@@ -4786,19 +4620,6 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 		return this.dialogueWindowDimensions;
 	},
 	/**
-	 ***********************************************
-	 * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.4 *
-	 ***********************************************
-	 * Make url from the name of a popup of the plugin
-	 *
-	 * @param	string		popupName: name, without extension, of the html file to be loaded into the dialog window
-	 *
-	 * @return	string		the url
-	 */
-	makeUrlFromPopupName: function(popupName) {
-		return (popupName ? this.editor.popupURL("plugin://" + this.name + "/" + popupName) : this.editor.popupURL("blank.html"));
-	},
-	/**
 	 * Make url from module path
 	 *
 	 * @param	string		modulePath: module path
@@ -4814,11 +4635,12 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	 *
 	 * @param	string		functionName: the name of the plugin function writing to the log
 	 * @param	string		text: the text of the message
+	 * @param	string		type: the typeof of message: 'log', 'info', 'warn' or 'error'
 	 *
 	 * @return	void
 	 */
-	appendToLog: function (functionName, text) {
-		this.editor.appendToLog(this.name, functionName, text);
+	appendToLog: function (functionName, text, type) {
+		this.editor.appendToLog(this.name, functionName, text, type);
 	},
 	/*
 	 * Add a config element to config array if not empty
@@ -4907,7 +4729,7 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 	 *
 	 * @param	string		button: the text of the button
 	 * @param	function	handler: button handler
-	 * 
+	 *
 	 * @return	object		the button configuration object
 	 */
 	buildButtonConfig: function (button, handler) {
@@ -4922,423 +4744,5 @@ HTMLArea.Plugin = HTMLArea.Base.extend({
 			}
 		};
 	}
-});
-
-/**
- * HTMLArea.Dialog class
- *********************************************
- * THIS OBJECT IS DEPRECATED AS OF TYPO3 4.4 *
- *********************************************
- */
-HTMLArea.Dialog = HTMLArea.Base.extend({
-
-	/**
-	 * HTMLArea.Dialog constructor
-	 *
-	 * @param	object		plugin: reference to the invoking plugin
-	 * @param	string		buttonId: buttonId triggering the opening of the dialog
-	 * @param	string		url: url of the html document to load into the dialog window
-	 * @param	function	action: function to be executed when the the dialog ends
-	 * @param	object		arguments: object of variable type to be passed to the dialog
-	 * @param	object		dimensions: object giving the width and height of the dialog window
-	 * @param	string		showScrollbars: specifies by "yes" or "no" whether or not the dialog window should have scrollbars
-	 * @param	object		dialogOpener: reference to the opener window
-	 *
-	 * @return	boolean		true if the dialog window was opened
-	 */
-	constructor : function (plugin, buttonId, url, action, arguments, dimensions, showScrollbars, dialogOpener) {
-		this.window = window.window ? window.window : window.self;
-		this.plugin = plugin;
-		this.buttonId = buttonId;
-		this.action = action;
-		if (typeof(arguments) !== "undefined") {
-			this.arguments = arguments;
-		}
-		this.plugin.dialog = this;
-
-		if (HTMLArea.Dialog[this.plugin.name] && HTMLArea.Dialog[this.plugin.name].hasOpenedWindow() && HTMLArea.Dialog[this.plugin.name].plugin != this.plugin) {
-			HTMLArea.Dialog[this.plugin.name].close();
-		}
-		HTMLArea.Dialog[this.plugin.name] = this;
-		this.dialogWindow = window.open(url, this.plugin.name + "Dialog", "toolbar=no,location=no,directories=no,menubar=no,resizable=yes,top=" + dimensions.top + ",left=" + dimensions.left + ",dependent=yes,dialog=yes,chrome=no,width=" + dimensions.width + ",height=" + dimensions.height + ",scrollbars=" + showScrollbars);
-		if (!this.dialogWindow) {
-			this.plugin.appendToLog("openDialog", "Dialog window could not be opened with url " + url);
-			return false;
-		}
-
-		if (typeof(dialogOpener) !== "undefined") {
-			this.dialogWindow.opener = dialogOpener;
-			this.dialogWindow.opener.openedDialog = this;
-		}
-		if (!this.dialogWindow.opener) {
-			this.dialogWindow.opener = this.window;
-		}
-		return true;
-	},
-	/**
-	 * Adds OK and Cancel buttons to the dialogue window
-	 *
-	 * @return	void
-	 */
-	addButtons : function() {
-		var self = this;
-		var div = this.document.createElement("div");
-		this.content.appendChild(div);
-		div.className = "buttons";
-		for (var i = 0; i < arguments.length; ++i) {
-			var btn = arguments[i];
-			var button = this.document.createElement("button");
-			div.appendChild(button);
-			switch (btn) {
-				case "ok":
-					button.innerHTML = this.plugin.localize("OK");
-					button.onclick = function() {
-						try {
-							self.callFormInputHandler();
-						} catch(e) { };
-						return false;
-					};
-					break;
-				case "cancel":
-					button.innerHTML = this.plugin.localize("Cancel");
-					button.onclick = function() {
-						self.close();
-						return false;
-					};
-					break;
-			}
-		}
-	},
-
-	/**
-	 * Call the form input handler
-	 *
-	 * @return	boolean		false
-	 */
-	callFormInputHandler : function() {
-		var tags = ["input", "textarea", "select"];
-		var params = new Object();
-		for (var ti = tags.length; --ti >= 0;) {
-			var tag = tags[ti];
-			var els = this.content.getElementsByTagName(tag);
-			for (var j = 0; j < els.length; ++j) {
-				var el = els[j];
-				var val = el.value;
-				if (el.nodeName.toLowerCase() == "input") {
-					if (el.type == "checkbox") {
-						val = el.checked;
-					}
-				}
-				params[el.name] = val;
-			}
-		}
-		this.action(this, params);
-		return false;
-	},
-
-	/**
-	 * Cheks if the dialogue has an open dialogue window
-	 *
-	 * @return	boolean		true if the dialogue has an open window
-	 */
-	hasOpenedWindow : function () {
-		return this.dialogWindow && !this.dialogWindow.closed;
-	},
-
-	/**
-	 * Initialize the dialog window: load the stylesheets, localize labels, resize if required, etc.
-	 * This function MUST be invoked from the dialog window in the onLoad event handler
-	 *
-	 * @param	boolean		noResize: if true the window in not resized, but may be centered
-	 *
-	 * @return	void
-	 */
-	initialize : function (noLocalize, noResize, noStyle) {
-		this.dialogWindow.HTMLArea = HTMLArea;
-		this.dialogWindow.dialog = this;
-			// Capture unload and escape events
-		this.captureEvents();
-			// Get stylesheets for the dialog window
-		if (!noStyle) this.loadStyle();
-			// Localize the labels of the popup window
-		if (!noLocalize) this.localize();
-			// Resize the dialog window to its contents
-		if (!noResize) this.resize(noResize);
-	},
-	/**
-	 * Load the stylesheets in the dialog window
-	 *
-	 * @return	void
-	 */
-	loadStyle : function () {
-		var head = this.dialogWindow.document.getElementsByTagName("head")[0];
-		var link = this.dialogWindow.document.createElement("link");
-		link.rel = "stylesheet";
-		link.type = "text/css";
-		link.href = HTMLArea.editorCSS;
-		if (link.href.indexOf("http") == -1 && !Ext.isIE) link.href = HTMLArea.hostUrl + link.href;
-		head.appendChild(link);
-	},
-
-	/**
-	 * Localize the labels contained in the dialog window
-	 *
-	 * @return	void
-	 */
-	localize : function () {
-		var label;
-		var types = ["input", "label", "option", "select", "legend", "span", "td", "button", "div", "h1", "h2", "a"];
-		for (var type = 0; type < types.length; ++type) {
-			var elements = this.dialogWindow.document.getElementsByTagName(types[type]);
-			for (var i = elements.length; --i >= 0;) {
-				var element = elements[i];
-				if (element.firstChild && element.firstChild.data) {
-					label = this.plugin.localize(element.firstChild.data);
-					if (label) element.firstChild.data = label;
-				}
-				if (element.title) {
-					label = this.plugin.localize(element.title);
-					if (label) element.title = label;
-				}
-					// resetting the selected option for Mozilla
-				if (types[type] == "option" && element.selected ) {
-					element.selected = false;
-					element.selected = true;
-				}
-			}
-		}
-		label = this.plugin.localize(this.dialogWindow.document.title);
-		if (label) this.dialogWindow.document.title = label;
-	},
-
-	/**
-	 * Resize the dialog window to its contents
-	 *
-	 * @param	boolean		noResize: if true the window in not resized, but may be centered
-	 *
-	 * @return	void
-	 */
-	resize : function (noResize) {
-		var buttonConfiguration = this.plugin.editorConfiguration.buttons[this.plugin.editorConfiguration.convertButtonId[this.buttonId]];
-		if (!this.plugin.editorConfiguration.dialogueWindows.doNotResize
-				&& (!buttonConfiguration  || !buttonConfiguration.dialogueWindow || !buttonConfiguration.dialogueWindow.doNotResize)) {
-				// Resize if allowed
-			var dialogWindow = this.dialogWindow;
-			var doc = dialogWindow.document;
-			var content = doc.getElementById("content");
-				// As of Google Chrome build 1798, window resizeTo and resizeBy are completely erratic: do nothing
-			if (Ext.isGecko || ((Ext.isIE || Ext.isOpera || (Ext.isWebKit && !Ext.isChrome)) && content)) {
-				var self = this;
-				setTimeout( function() {
-					if (!noResize) {
-						if (content) {
-							self.resizeToContent(content);
-						} else if (dialogWindow.sizeToContent) {
-							dialogWindow.sizeToContent();
-						}
-					}
-					self.centerOnParent();
-				}, 75);
-			} else if (!noResize) {
-				var body = doc.body;
-				if (Ext.isIE) {
-					var innerX = (doc.documentElement && doc.documentElement.clientWidth) ? doc.documentElement.clientWidth : body.clientWidth;
-					var innerY = (doc.documentElement && doc.documentElement.clientHeight) ? doc.documentElement.clientHeight : body.clientHeight;
-					var pageY = Math.max(body.scrollHeight, body.offsetHeight);
-					if (innerY == pageY) {
-						dialogWindow.resizeTo(body.scrollWidth, body.scrollHeight + 80);
-					} else {
-						dialogWindow.resizeBy((innerX < body.scrollWidth) ? (Math.max(body.scrollWidth, body.offsetWidth) - innerX) : 0, (body.scrollHeight - body.offsetHeight));
-					}
-					// As of Google Chrome build 1798, window resizeTo and resizeBy are completely erratic: do nothing
-				} else if (Ext.isSafari || Ext.isOpera) {
-					dialogWindow.resizeTo(dialogWindow.innerWidth, body.offsetHeight + 10);
-					if (dialogWindow.innerHeight < body.scrollHeight) {
-						dialogWindow.resizeBy(0, (body.scrollHeight - dialogWindow.innerHeight) + 10);
-					}
-				}
-				this.centerOnParent();
-			} else {
-				this.centerOnParent();
-			}
-		} else {
-			this.centerOnParent();
-		}
-	},
-
-	/**
-	 * Resize the Opera dialog window to its contents, based on size of content div
-	 *
-	 * @param	object		content: reference to the div (may also be form) section containing the contents of the dialog window
-	 *
-	 * @return	void
-	 */
-	resizeToContent : function(content) {
-		var dialogWindow = this.dialogWindow;
-		var doc = dialogWindow.document;
-		var docElement = doc.documentElement;
-		var body = doc.body;
-		var width = 0, height = 0;
-
-		var contentWidth = content.offsetWidth;
-		var contentHeight = content.offsetHeight;
-		if (Ext.isGecko || Ext.isWebKit) {
-			dialogWindow.resizeTo(contentWidth, contentHeight + (Ext.isWebKit ? 40 : (Ext.isGecko2 ? 75 : 95)));
-		} else {
-			dialogWindow.resizeTo(contentWidth + 200, contentHeight + 200);
-			if (dialogWindow.innerWidth) {
-				width = dialogWindow.innerWidth;
-				height = dialogWindow.innerHeight;
-			} else if (docElement && docElement.clientWidth) {
-				width = docElement.clientWidth;
-				height = docElement.clientHeight;
-			} else if (body && body.clientWidth) {
-				width = body.clientWidth;
-				height = body.clientHeight;
-			}
-			dialogWindow.resizeTo(contentWidth + ((contentWidth + 200 ) - width), contentHeight + ((contentHeight + 200) - (height - 16)));
-		}
-	},
-
-	/**
-	 * Center the dialogue window on the parent window
-	 *
-	 * @return	void
-	 */
-	centerOnParent : function () {
-		var buttonConfiguration = this.plugin.editorConfiguration.buttons[this.plugin.editorConfiguration.convertButtonId[this.buttonId]];
-		if (!this.plugin.editorConfiguration.dialogueWindows.doNotCenter && (!buttonConfiguration  || !buttonConfiguration.dialogueWindow || !buttonConfiguration.dialogueWindow.doNotCenter)) {
-			var dialogWindow = this.dialogWindow;
-			var doc = dialogWindow.document;
-			var body = doc.body;
-				// Center on parent if allowed
-			if (!Ext.isIE) {
-				var x = dialogWindow.opener.screenX + (dialogWindow.opener.outerWidth - dialogWindow.outerWidth) / 2;
-				var y = dialogWindow.opener.screenY + (dialogWindow.opener.outerHeight - dialogWindow.outerHeight) / 2;
-			} else {
-				var W = body.offsetWidth;
-				var H = body.offsetHeight;
-				var x = (screen.availWidth - W) / 2;
-				var y = (screen.availHeight - H) / 2;
-			}
-				// As of build 1798, Google Chrome moveTo breaks the window dimensions: do nothing
-			if (!Ext.isChrome) {
-				try {
-					dialogWindow.moveTo(x, y);
-				} catch(e) { }
-			}
-		}
-	},
-
-	/**
-	 * Perform the action function when the dialog end
-	 *
-	 * @return	void
-	 */
-	performAction : function (val) {
-		if (val && this.action) {
-			this.action(val);
-		}
-	},
-
-	/**
-	 * Bring the focus on the dialog window
-	 *
-	 * @return	void
-	 */
-	focus : function () {
-		if (this.hasOpenedWindow()) {
-			this.dialogWindow.focus();
-		}
-	},
-	/**
-	 * Close the dialog window
-	 *
-	 * @return	void
-	 */
-	close : function () {
-		if (this.dialogWindow) {
-			try {
-				if (this.dialogWindow.openedDialog) {
-					this.dialogWindow.openedDialog.close();
-				}
-			} catch(e) { }
-			HTMLArea.Dialog[this.plugin.name] = null;
-			if (!this.dialogWindow.closed) {
-				this.dialogWindow.dialog = null;
-				if (Ext.isWebKit || Ext.isIE) {
-					this.dialogWindow.blur();
-				}
-				this.dialogWindow.close();
-					// Safari 3.1.2 does not set the closed flag
-				if (!this.dialogWindow.closed) {
-					this.dialogWindow = null;
-				}
-			}
-				// Opera unload event may be triggered after the editor iframe is gone
-			if (this.plugin.editor._iframe) {
-				this.plugin.editor.toolbar.update();
-			}
-		}
-		return false;
-	},
-
-	/**
-	 * Make function reference in order to avoid memory leakage in IE
-	 *
-	 * @param	string		functionName: the name of the dialog function to be invoked
-	 *
-	 * @return	function	function definition invoking the specified function of the dialog
-	 */
-	makeFunctionReference : function (functionName) {
-		var self = this;
-		return (function(arg1, arg2) {
-			self[functionName](arg1, arg2);});
-	},
-
-	/**
-	 * Escape event handler
-	 *
-	 * @param	object		ev: the event
-	 *
-	 * @return	boolean		false if the event was handled
-	 */
-	closeOnEscape : function(event) {
-		var ev = event.browserEvent;
-		if (ev.keyCode == 27) {
-			if (!Ext.isIE) {
-				var parentWindow = ev.currentTarget.defaultView;
-			} else {
-				var parentWindow = ev.srcElement.parentNode.parentNode.parentWindow;
-			}
-			if (parentWindow && parentWindow.dialog) {
-					// If the dialogue window as an onEscape function, invoke it
-				if (typeof(parentWindow.onEscape) == "function") {
-					parentWindow.onEscape(ev);
-				}
-				if (parentWindow.dialog) {
-					parentWindow.dialog.close();
-				}
-				return false;
-			}
-		}
-		return true;
-	},
-	/**
-	 * Capture unload and escape events
-	 *
-	 * @return	void
-	 */
-	captureEvents : function (skipUnload) {
-			// Capture unload events on the dialogue window and the editor frame
-		if (!Ext.isIE && this.plugin.editor._iframe.contentWindow) {
-			Ext.EventManager.on(this.plugin.editor._iframe.contentWindow, 'unload', this.close, this, {single: true});
-		}
-		if (!skipUnload) {
-			Ext.EventManager.on(this.dialogWindow, 'unload', this.close, this, {single: true});
-		}
-			// Capture escape key on the dialogue window
-		Ext.EventManager.on(this.dialogWindow.document, 'keypress', this.closeOnEscape, this, {single: true});
-	 }
 });
 }

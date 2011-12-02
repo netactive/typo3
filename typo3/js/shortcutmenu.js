@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2010 Ingo Renner <ingo@typo3.org>
+*  (c) 2007-2011 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -27,8 +27,6 @@
 
 /**
  * class to handle the shortcut menu
- *
- * $Id: shortcutmenu.js 10193 2011-01-21 09:26:38Z psychomieze $
  */
 var ShortcutMenu = Class.create({
 
@@ -37,7 +35,10 @@ var ShortcutMenu = Class.create({
 	 */
 	initialize: function() {
 		Ext.onReady(function() {
-			Event.observe(window, 'resize', TYPO3BackendToolbarManager.positionMenu('shortcut-menu'));
+			Event.observe(
+				window, 'resize',
+				function() { TYPO3BackendToolbarManager.positionMenu('shortcut-menu'); }
+			);
 			TYPO3BackendToolbarManager.positionMenu('shortcut-menu');
 			
 			this.toolbarItemIcon = $$('#shortcut-menu .toolbar-item span.t3-icon')[0];

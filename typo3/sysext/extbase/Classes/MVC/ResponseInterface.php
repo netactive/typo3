@@ -28,7 +28,7 @@
 /**
  * A generic and very basic response implementation
  *
- * @version $Id: ResponseInterface.php 1729 2009-11-25 21:37:20Z stucki $
+ * @version $Id$
  * @api
  */
 interface Tx_Extbase_MVC_ResponseInterface {

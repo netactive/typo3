@@ -27,8 +27,6 @@
 /**
  * Module: Extension manager, developer module
  *
- * $Id: class.em_extensionmanager.php 2106 2010-03-24 00:56:22Z steffenk $
- *
  * @author	Steffen Kamper <info@sk-typo3.de>
  */
 
@@ -124,18 +122,6 @@ class tx_em_ExtensionManager {
 		$this->pageRenderer->loadExtJS();
 		$this->pageRenderer->enableExtJSQuickTips();
 
-			// Load  JavaScript:
-		$this->pageRenderer->addJsFile($this->parentObject->doc->backPath .
-			'ajax.php?ajaxID=ExtDirect::getAPI&namespace=TYPO3.EM',
-			NULL,
-			FALSE
-		);
-		$this->pageRenderer->addJsFile($this->parentObject->doc->backPath .
-			'ajax.php?ajaxID=ExtDirect::getAPI&namespace=TYPO3.EMSOAP',
-			NULL,
-			FALSE
-		);
-
 		$this->pageRenderer->addExtDirectCode();
 
 
@@ -150,9 +136,11 @@ class tx_em_ExtensionManager {
 		if (!is_array($globalSettings)) {
 			$globalSettings = array(
 				'displayMyExtensions' => 0,
-				'selectedLanguages' => array(),
+				'selectedLanguages' => '',
 				'inlineToWindow' => 1,
 			);
+		} elseif (!isset($globalSettings['inlineToWindow'])) {
+			$globalSettings['inlineToWindow'] = 1;
 		}
 		$settings = $this->parentObject->MOD_SETTINGS;
 		$mirrors = unserialize($settings['extMirrors']);
@@ -188,7 +176,6 @@ class tx_em_ExtensionManager {
 			'codemirrorJsPath' => $this->parentObject->doc->backPath . 'contrib/codemirror/js/',
 			'codemirrorContribPath' => $this->parentObject->doc->backPath . 'contrib/codemirror/contrib/',
 			'selectedLanguages' => t3lib_div::trimExplode(',', $globalSettings['selectedLanguages'], TRUE),
-			'state' => $GLOBALS['BE_USER']->uc['moduleData']['tools_em']['States'],
 			'inlineToWindow' => $globalSettings['inlineToWindow'],
 			'allowRepositoryUpdate' => $allowRepositoryUpdate,
 			'displayMyExtensions' => $globalSettings['displayMyExtensions'],

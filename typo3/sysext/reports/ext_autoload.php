@@ -1,8 +1,6 @@
 <?php
 /*
  * Register necessary class names with autoloader
- *
- * $Id: ext_autoload.php 10098 2011-01-17 10:56:55Z flyguide $
  */
 $extensionPath = t3lib_extMgm::extPath('reports');
 return array(

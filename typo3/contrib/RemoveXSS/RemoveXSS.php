@@ -16,29 +16,11 @@
  * This code is public domain, you are free to do whatever you want with it,
  * including adding it to your own project which can be under any license.
  *
- * $Id: RemoveXSS.php 9008 2010-10-08 19:11:55Z psychomieze $
- *
  * @author	Travis Puderbaugh <kallahar@quickwired.com>
  * @author	Jigal van Hemert <jigal@xs4all.nl>
  * @package	RemoveXSS
  */
 final class RemoveXSS {
-	/**
-	 * Removes potential XSS code from an input string.
-	 * Wrapper for RemoveXSS::process().
-	 *
-	 * Using an external class by Travis Puderbaugh <kallahar@quickwired.com>
-	 *
-	 * @param	string		Input string
-	 * @param	string		replaceString for inserting in keywords (which destroyes the tags)
-	 * @return	string		Input string with potential XSS code removed
-	 * @deprecated since TYPO3 4.3, will be removed in TYPO3 4.6 - use static call RemoveXSS::process() instead
-	 */
-	public function RemoveXSS($val, $replaceString = '<x>') {
-		t3lib_div::logDeprecatedFunction();
-
-		return self::process($val, $replaceString);
-	}
 
 	/**
 	 * Removes potential XSS code from an input string.
@@ -75,7 +57,7 @@ final class RemoveXSS {
 		$ra_protocol = array('javascript', 'vbscript', 'expression');
 
 		//remove the potential &#xxx; stuff for testing
-		$val2 = preg_replace('/(&#[xX]?0{0,8}(9|10|13|a|b);)*\s*/i', '', $val);
+		$val2 = preg_replace('/(&#[xX]?0{0,8}(9|10|13|a|b);?)*\s*/i', '', $val);
 		$ra = array();
 
 		foreach ($ra1 as $ra1word) {
@@ -100,14 +82,14 @@ final class RemoveXSS {
 		//only process potential words
 		if (count($ra) > 0) {
 			// keep replacing as long as the previous round replaced something
-			$found = true;
-			while ($found == true) {
+			$found = TRUE;
+			while ($found == TRUE) {
 				$val_before = $val;
 				for ($i = 0; $i < sizeof($ra); $i++) {
 					$pattern = '';
 					for ($j = 0; $j < strlen($ra[$i][0]); $j++) {
 						if ($j > 0) {
-							$pattern .= '((&#[xX]0{0,8}([9ab]);)|(&#0{0,8}(9|10|13);)|\s)*';
+							$pattern .= '((&#[xX]0{0,8}([9ab]);?)|(&#0{0,8}(9|10|13);?)|\s)*';
 						}
 						$pattern .= $ra[$i][0][$j];
 					}
@@ -115,11 +97,11 @@ final class RemoveXSS {
 					switch ($ra[$i][1]) {
 						case 'ra_protocol':
 							//these take the form of e.g. 'javascript:'
-							$pattern .= '((&#[xX]0{0,8}([9ab]);)|(&#0{0,8}(9|10|13);)|\s)*(?=:)';
+							$pattern .= '((&#[xX]0{0,8}([9ab]);?)|(&#0{0,8}(9|10|13);?)|\s)*(?=:)';
 							break;
 						case 'ra_tag':
 							//these take the form of e.g. '<SCRIPT[^\da-z] ....';
-							$pattern = '(?<=<)' . $pattern . '((&#[xX]0{0,8}([9ab]);)|(&#0{0,8}(9|10|13);)|\s)*(?=[^\da-z])';
+							$pattern = '(?<=<)' . $pattern . '((&#[xX]0{0,8}([9ab]);?)|(&#0{0,8}(9|10|13);?)|\s)*(?=[^\da-z])';
 							break;
 						case 'ra_attribute':
 							//these take the form of e.g. 'onload='  Beware that a lot of characters are allowed

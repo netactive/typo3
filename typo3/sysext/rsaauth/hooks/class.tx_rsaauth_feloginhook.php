@@ -22,14 +22,6 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- * $Id: class.tx_rsaauth_feloginhook.php 10120 2011-01-18 20:03:36Z ohader $
- */
-
-require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/backends/class.tx_rsaauth_backendfactory.php');
-require_once(t3lib_extMgm::extPath('rsaauth') . 'sv1/storage/class.tx_rsaauth_storagefactory.php');
 
 /**
  * This class contains a hook to implement RSA authentication for the TYPO3

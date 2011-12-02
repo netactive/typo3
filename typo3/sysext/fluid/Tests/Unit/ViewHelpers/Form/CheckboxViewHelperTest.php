@@ -20,14 +20,14 @@
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
 
-require_once(dirname(__FILE__) . '/../ViewHelperBaseTestcase.php');
+require_once(dirname(__FILE__) . '/FormFieldViewHelperBaseTestcase.php');
 
 /**
  * Test for the "Checkbox" Form view helper
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
-class Tx_Fluid_Tests_Unit_ViewHelpers_Form_CheckboxViewHelperTest extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {
+class Tx_Fluid_Tests_Unit_ViewHelpers_Form_CheckboxViewHelperTest extends Tx_Fluid_Tests_Unit_ViewHelpers_Form_FormFieldViewHelperBaseTestcase {
 
 	/**
 	 * var Tx_Fluid_ViewHelpers_Form_CheckboxViewHelper
@@ -37,6 +37,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_CheckboxViewHelperTest extends Tx_Flu
 	public function setUp() {
 		parent::setUp();
 		$this->viewHelper = $this->getAccessibleMock('Tx_Fluid_ViewHelpers_Form_CheckboxViewHelper', array('setErrorClassAttribute', 'getName', 'getValue', 'isObjectAccessorMode', 'getPropertyValue', 'registerFieldNameForFormTokenGeneration'));
+		$this->arguments['property'] = '';
 		$this->injectDependenciesIntoViewHelper($this->viewHelper);
 		$this->viewHelper->initializeArguments();
 	}
@@ -55,7 +56,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_CheckboxViewHelperTest extends Tx_Flu
 
 		$this->viewHelper->expects($this->any())->method('getName')->will($this->returnValue('foo'));
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
-		$this->viewHelper->_set('tag', $mockTagBuilder);
+		$this->viewHelper->injectTagBuilder($mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render();
@@ -74,7 +75,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_CheckboxViewHelperTest extends Tx_Flu
 
 		$this->viewHelper->expects($this->any())->method('getName')->will($this->returnValue('foo'));
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
-		$this->viewHelper->_set('tag', $mockTagBuilder);
+		$this->viewHelper->injectTagBuilder($mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render(TRUE);
@@ -94,7 +95,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_CheckboxViewHelperTest extends Tx_Flu
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
 		$this->viewHelper->expects($this->never())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
 		$this->viewHelper->expects($this->never())->method('getPropertyValue')->will($this->returnValue(TRUE));
-		$this->viewHelper->_set('tag', $mockTagBuilder);
+		$this->viewHelper->injectTagBuilder($mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render(TRUE);
@@ -116,7 +117,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_CheckboxViewHelperTest extends Tx_Flu
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
 		$this->viewHelper->expects($this->any())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
 		$this->viewHelper->expects($this->any())->method('getPropertyValue')->will($this->returnValue(TRUE));
-		$this->viewHelper->_set('tag', $mockTagBuilder);
+		$this->viewHelper->injectTagBuilder($mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render();
@@ -137,7 +138,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_CheckboxViewHelperTest extends Tx_Flu
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
 		$this->viewHelper->expects($this->any())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
 		$this->viewHelper->expects($this->any())->method('getPropertyValue')->will($this->returnValue(array()));
-		$this->viewHelper->_set('tag', $mockTagBuilder);
+		$this->viewHelper->injectTagBuilder($mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render();
@@ -158,7 +159,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_CheckboxViewHelperTest extends Tx_Flu
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
 		$this->viewHelper->expects($this->any())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
 		$this->viewHelper->expects($this->any())->method('getPropertyValue')->will($this->returnValue(array('foo', 'bar', 'baz')));
-		$this->viewHelper->_set('tag', $mockTagBuilder);
+		$this->viewHelper->injectTagBuilder($mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render();
@@ -174,7 +175,7 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_CheckboxViewHelperTest extends Tx_Flu
 
 		$this->viewHelper->expects($this->any())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
 		$this->viewHelper->expects($this->any())->method('getPropertyValue')->will($this->returnValue(new stdClass()));
-		$this->viewHelper->_set('tag', $mockTagBuilder);
+		$this->viewHelper->injectTagBuilder($mockTagBuilder);
 
 		$this->viewHelper->initialize();
 		$this->viewHelper->render();

@@ -3,13 +3,11 @@
 /***************************************************************
 *  Inline-Relational-Record Editing
 *
-* $Id: jsfunc.inline.js 9166 2010-10-19 14:01:21Z psychomieze $
-*
 *
 *
 *  Copyright notice
 *
-*  (c) 2006-2010 Oliver Hader <oh@inpublica.de>
+*  (c) 2006-2011 Oliver Hader <oh@inpublica.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is

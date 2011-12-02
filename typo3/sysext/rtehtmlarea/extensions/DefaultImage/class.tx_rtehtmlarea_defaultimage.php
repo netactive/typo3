@@ -26,8 +26,6 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id: class.tx_rtehtmlarea_defaultimage.php 10240 2011-01-22 05:23:59Z stan $
- *
  */
 class tx_rtehtmlarea_defaultimage extends tx_rtehtmlarea_api {
 

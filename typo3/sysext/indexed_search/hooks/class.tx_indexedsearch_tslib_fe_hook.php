@@ -25,8 +25,6 @@
 /**
  * Hooks for tslib_fe (TSFE).
  *
- * $Id: class.tx_indexedsearch_tslib_fe_hook.php 10120 2011-01-18 20:03:36Z ohader $
- *
  * @author		Oliver Hader <oliver@typo3.org>
  * @package		TYPO3
  * @subpackage	tx_indexedsearch

@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2010 Xavier Perseguers <typo3@perseguers.ch>
+ *  (c) 2010-2011 Xavier Perseguers <xavier@typo3.org>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -29,51 +29,11 @@
 /**
  * Cache engine helper for generated queries.
  *
- * $Id: class.tx_dbal_querycache.php 40828 2010-12-05 14:55:53Z xperseguers $
- *
- * @author Xavier Perseguers <typo3@perseguers.ch>
+ * @author Xavier Perseguers <xavier@typo3.org>
  * @package TYPO3
  * @subpackage dbal
  */
 class tx_dbal_querycache {
-
-	/**
-	 * Initializes the caching framework by loading the cache manager and factory
-	 * into the global context.
-	 *
-	 * @return	void
-	 */
-	public static function initializeCachingFramework() {
-		t3lib_cache::initializeCachingFramework();
-	}
-
-	/**
-	 * Initializes the DBAL cache.
-	 *
-	 * @return	void
-	 */
-	public static function initDbalCache() {
-		try {
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['dbal'])) {
-				$backend = $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['dbal']['backend'];
-				$options = $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['dbal']['options'];
-			} else {
-				// Transient storage, will be better than nothing
-				$backend = 't3lib_cache_backend_TransientMemoryBackend';
-				$options = array();
-			}
-
-			$GLOBALS['typo3CacheFactory']->create(
-				'dbal',
-				't3lib_cache_frontend_VariableFrontend',
-				$backend,
-				$options
-			);
-		} catch (t3lib_cache_exception_DuplicateIdentifier $e) {
-			// Do nothing, a DBAL cache already exists
-		}
-	}
-
 	/**
 	 * Returns a proper cache key.
 	 *

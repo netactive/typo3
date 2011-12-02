@@ -26,8 +26,6 @@
  ***************************************************************/
 /**
  * Grid wizard
- *
- * $Id $
  */
 
 require_once('conf.php');
@@ -86,7 +84,9 @@ class SC_wizard_backend_layout {
 					parent.opener.TBE_EDITOR.fieldChanged("backend_layout","' . $uid . '","config","data[backend_layout][' . $uid . '][config]");
 				}
 			}
-		');
+			',
+			FALSE
+		);
 
 		$languageLabels = array(
 			'save' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_wizards.xml:grid_labelSave', 1),
@@ -204,7 +204,6 @@ class SC_wizard_backend_layout {
 
 
 		$this->doc->styleSheetFile_post = TYPO3_MOD_PATH . 'res/grideditor.css';
-		$this->doc->styleSheetFile2 = 'sysext/t3skin/stylesheets/extjs/xtheme-t3skin.css';
 	}
 
 	/**

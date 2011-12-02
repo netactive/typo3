@@ -22,12 +22,6 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- * $Id: class.tx_sv_loginformhook.php 10120 2011-01-18 20:03:36Z ohader $
- */
-
 
 /**
  * This class contains a BE login form hook. It adds all necessary JavaScript
