@@ -1238,6 +1238,19 @@
 		if(!is_array($groupList)) {
 			$groupList = explode(',', $groupList);
 		}
+
+			// If the actual page has no fe_group, check the rootline for
+			// inherited fe_group due to extendToSubpage-property
+		if (isset($row['uid']) && intval($row['fe_group']) === 0) {
+			$rootLine = $this->sys_page->getRootLine($row['uid']);
+			foreach ($rootLine as $pageConf) {
+				if ($pageConf['fe_group'] != '' && $pageConf['extendToSubpages'] == 1) {
+					$row['fe_group'] = $pageConf['fe_group'];
+					break;
+				}
+			}
+		}
+
 		$pageGroupList = explode(',', $row['fe_group'] ? $row['fe_group'] : 0);
 		return count(array_intersect($groupList, $pageGroupList)) > 0;
 	}
@@ -3857,32 +3870,33 @@ if (version == "n3") {
 	}
 
 	/**
-	 * Outputs preview info.
+	 * Generates preview info.
 	 *
-	 * @return	void
+	 * @return string Formatted preview message
 	 */
 	function previewInfo()	{
+		$content = '';
 		if ($this->fePreview && (!isset($this->config['config']['disablePreviewNotification']) || intval($this->config['config']['disablePreviewNotification']) !== 1)) {
-				if ($this->fePreview === 2) {
-					$onclickForStoppingPreview = 'document.location="'.t3lib_div::getIndpEnv('TYPO3_SITE_URL').'index.php?ADMCMD_prev=LOGOUT&returnUrl='.rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')).'";return false;';
-					$text = 'Preview of workspace "'.$this->whichWorkspace(TRUE).'" ('.$this->whichWorkspace().')';
-					$html = $this->doWorkspacePreview() ? '<br/><input name="_" type="submit" value="Stop preview" onclick="'.htmlspecialchars($onclickForStoppingPreview).'" />' : '';
-				} else {
-					$text = 'PREVIEW!';
-					$html = '';
-				}
+			if ($this->fePreview === 2) {
+				$onclickForStoppingPreview = 'document.location="' . t3lib_div::getIndpEnv('TYPO3_SITE_URL') . 'index.php?ADMCMD_prev=LOGOUT&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')) . '";return false;';
+				$text = 'Preview of workspace "' . $this->whichWorkspace(TRUE) . '" (' . $this->whichWorkspace() . ')';
+				$html = $this->doWorkspacePreview() ? '<br/><input name="_" type="submit" value="Stop preview" onclick="' . htmlspecialchars($onclickForStoppingPreview) . '" />' : '';
+			} else {
+				$text = 'PREVIEW!';
+				$html = '';
+			}
 
-				$stdMsg = '<div id="typo3-previewInfo" style="position: absolute; top: 20px; right: 20px; border: 2px solid #000; padding: 5px 5px; background: #f00; font: 1em Verdana; color: #000; font-weight: bold; z-index: 10001">'.htmlspecialchars($text).$html.'</div>';
+			$stdMsg = '<div id="typo3-previewInfo" style="position: absolute; top: 20px; right: 20px; border: 2px solid #000; padding: 5px; background: #f00; font: 1em Verdana; color: #000; font-weight: bold; z-index: 10001">' . htmlspecialchars($text) . $html . '</div>';
 
-				if ($this->fePreview === 2) {
-					$temp_content = $this->config['config']['message_preview_workspace'] ?
-						@sprintf($this->config['config']['message_preview_workspace'], $this->whichWorkspace(TRUE),$this->whichWorkspace()) :
-						$stdMsg;
-				} else {
-					$temp_content = $this->config['config']['message_preview'] ? $this->config['config']['message_preview'] : $stdMsg;
-				}
-				echo $temp_content;
+			if ($this->fePreview === 2) {
+				$content = $this->config['config']['message_preview_workspace'] ?
+					@sprintf($this->config['config']['message_preview_workspace'], $this->whichWorkspace(TRUE),$this->whichWorkspace()) :
+					$stdMsg;
+			} else {
+				$content = $this->config['config']['message_preview'] ? $this->config['config']['message_preview'] : $stdMsg;
+			}
 		}
+		return $content;
 	}
 
 	/**
