@@ -1399,6 +1399,25 @@ class tx_em_Connection_ExtDirectServer {
 	}
 
 	/**
+	 * Disables (uninstalls) an extension
+	 *
+	 * @param string $extensionKey Extension to uninstall
+	 * @return void
+	 */
+	public function disableExtension($extensionKey) {
+		/** @var tx_em_Extensions_List */
+		$this->extensionList = t3lib_div::makeInstance('tx_em_Extensions_List', $this);
+		/** @var $install tx_em_Install */
+		$install = t3lib_div::makeInstance('tx_em_Install', $this);
+
+		list($installedList,) = $this->extensionList->getInstalledExtensions();
+		$newExtensionList = $this->extensionList->removeExtFromList($extensionKey, $installedList);
+
+		$install->writeNewExtensionList($newExtensionList);
+		tx_em_Tools::refreshGlobalExtList();
+	}
+
+	/**
 	 * Reset all states for current user
 	 *
 	 * @return void
@@ -1613,7 +1632,7 @@ class tx_em_Connection_ExtDirectServer {
 
 }
 
-if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/sysext/em/classes/connection/class.tx_em_connectionextdirectserver.php'])) {
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/sysext/em/classes/connection/class.tx_em_connection_extdirectserver.php'])) {
 	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['typo3/sysext/em/classes/connection/class.tx_em_connection_extdirectserver.php']);
 }
 
