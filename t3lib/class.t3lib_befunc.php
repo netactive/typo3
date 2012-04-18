@@ -242,17 +242,17 @@ final class t3lib_BEfunc {
 				if ($ctrl['enablecolumns']['disabled']) {
 					$field = $table . '.' . $ctrl['enablecolumns']['disabled'];
 					$query[] = $field . '=0';
-					$invQuery[] = $field . '!=0';
+					$invQuery[] = $field . '<>0';
 				}
 				if ($ctrl['enablecolumns']['starttime']) {
 					$field = $table . '.' . $ctrl['enablecolumns']['starttime'];
 					$query[] = '(' . $field . '<=' . $GLOBALS['SIM_ACCESS_TIME'] . ')';
-					$invQuery[] = '(' . $field . '!=0 AND ' . $field . '>' . $GLOBALS['SIM_ACCESS_TIME'] . ')';
+					$invQuery[] = '(' . $field . '<>0 AND ' . $field . '>' . $GLOBALS['SIM_ACCESS_TIME'] . ')';
 				}
 				if ($ctrl['enablecolumns']['endtime']) {
 					$field = $table . '.' . $ctrl['enablecolumns']['endtime'];
 					$query[] = '(' . $field . '=0 OR ' . $field . '>' . $GLOBALS['SIM_ACCESS_TIME'] . ')';
-					$invQuery[] = '(' . $field . '!=0 AND ' . $field . '<=' . $GLOBALS['SIM_ACCESS_TIME'] . ')';
+					$invQuery[] = '(' . $field . '<>0 AND ' . $field . '<=' . $GLOBALS['SIM_ACCESS_TIME'] . ')';
 				}
 			}
 		}
@@ -2206,7 +2206,9 @@ final class t3lib_BEfunc {
 	 */
 	public static function getCommonSelectFields($table, $prefix = '', $fields = array()) {
 		$fields[] = $prefix . 'uid';
-		$fields[] = $prefix . $GLOBALS['TCA'][$table]['ctrl']['label'];
+		if (isset($GLOBALS['TCA'][$table]['ctrl']['label']) && $GLOBALS['TCA'][$table]['ctrl']['label'] != '') {
+			$fields[] = $prefix . $GLOBALS['TCA'][$table]['ctrl']['label'];
+		}
 
 		if ($GLOBALS['TCA'][$table]['ctrl']['label_alt']) {
 			$secondFields = t3lib_div::trimExplode(',', $GLOBALS['TCA'][$table]['ctrl']['label_alt'], 1);
@@ -2619,9 +2621,25 @@ final class t3lib_BEfunc {
 			// checks alternate domains
 		if (count($rootLine) > 0) {
 			$urlParts = parse_url($domain);
-			if (self::getDomainStartPage($urlParts['host'], $urlParts['path'])) {
-				$protocol = t3lib_div::getIndpEnv('TYPO3_SSL') ? 'https://' : 'http://';
-				$domain = $protocol . self::firstDomainRecord($rootLine);
+
+				/** @var t3lib_pageSelect $sysPage */
+			$sysPage = t3lib_div::makeInstance('t3lib_pageSelect');
+
+			$page = (array)$sysPage->getPage($pageId);
+			$protocol = 'http';
+			if ($page['url_scheme'] == t3lib_utility_Http::SCHEME_HTTPS || ($page['url_scheme'] == 0 && t3lib_div::getIndpEnv('TYPO3_SSL'))) {
+				$protocol = 'https';
+			}
+			$domainRecord = self::getDomainStartPage($urlParts['host'], $urlParts['path']);
+			if ($domainRecord && isset($domainRecord['domainName'])) {
+				$domain = $domainRecord['domainName'];
+			} else {
+				$domain = self::firstDomainRecord($rootLine);
+			}
+			if ($domain) {
+				$domain = $protocol . '://' . $domain;
+			} else {
+				$domain = rtrim(t3lib_div::getIndpEnv('TYPO3_SITE_URL'), '/');
 			}
 		}
 
@@ -3074,7 +3092,7 @@ final class t3lib_BEfunc {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 				'*',
 				'sys_lockedrecords',
-					'sys_lockedrecords.userid!=' . intval($GLOBALS['BE_USER']->user['uid']) . '
+					'sys_lockedrecords.userid<>' . intval($GLOBALS['BE_USER']->user['uid']) . '
 								AND sys_lockedrecords.tstamp > ' . ($GLOBALS['EXEC_TIME'] - 2 * 3600)
 			);
 			while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
@@ -3575,7 +3593,7 @@ final class t3lib_BEfunc {
 				!$GLOBALS['TCA'][$table]['ctrl']['transOrigPointerTable']) {
 
 			$where = $GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'] . '=' . intval($ref) .
-					' AND ' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '!=0';
+					' AND ' . $GLOBALS['TCA'][$table]['ctrl']['languageField'] . '<>0';
 
 			if (!empty($GLOBALS['TCA'][$table]['ctrl']['delete'])) {
 				$where .= ' AND ' . $GLOBALS['TCA'][$table]['ctrl']['delete'] . '=0';
@@ -3644,7 +3662,7 @@ final class t3lib_BEfunc {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 				$fields,
 				$table,
-					'pid=-1 AND uid!=' . intval($uid) . ' AND t3ver_oid=' . intval($uid) . ($workspace != 0 ? ' AND t3ver_wsid=' . intval($workspace) : '') .
+					'pid=-1 AND uid<>' . intval($uid) . ' AND t3ver_oid=' . intval($uid) . ($workspace != 0 ? ' AND t3ver_wsid=' . intval($workspace) : '') .
 							($includeDeletedRecords ? '' : self::deleteClause($table)),
 				'',
 				't3ver_id DESC'
@@ -4029,7 +4047,7 @@ final class t3lib_BEfunc {
 			$row = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow(
 				$fields,
 				$table,
-					'pid!=-1 AND
+					'pid<>-1 AND
 				 t3ver_state=3 AND
 				 t3ver_move_id=' . intval($uid) . ' AND
 				 t3ver_wsid=' . intval($workspace) .

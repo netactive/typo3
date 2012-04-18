@@ -724,12 +724,9 @@
 
 			if ($this->id)	{
 
-					// Now it's investigated if the raw page-id points to a hidden page and if so, the flag is set.
-					// This does not require the preview flag to be set in the admin panel
-				$idQ = t3lib_utility_Math::canBeInterpretedAsInteger($this->id) ? 'uid='.intval($this->id) : 'alias='.$GLOBALS['TYPO3_DB']->fullQuoteStr($this->id, 'pages').' AND pid>=0';	// pid>=0 added for the sake of versioning...
-				$count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', 'pages', $idQ . ' AND hidden!=0 AND deleted=0');
-				if ($count) {
-					$this->fePreview = 1;	// The preview flag is set only if the current page turns out to actually be hidden!
+				if ($this->determineIdIsHiddenPage()) {
+						// The preview flag is set only if the current page turns out to actually be hidden!
+					$this->fePreview = 1;
 					$this->showHiddenPage = 1;
 				}
 
@@ -819,6 +816,23 @@
 	}
 
 	/**
+	 * Checks if the page is hidden. If it is hidden, preview flags will be set.
+	 *
+	 * @return bool
+	 */
+	protected function determineIdIsHiddenPage() {
+		$field = t3lib_utility_Math::canBeInterpretedAsInteger($this->id) ? 'uid' : 'alias';
+		$pageSelectCondition = $field . '=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->id, 'pages');
+		$page = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('uid,hidden,starttime,endtime', 'pages',
+			$pageSelectCondition . ' AND pid>=0 AND deleted=0');
+		$result = is_array($page) && (
+			$page['hidden'] || $page['starttime'] > $GLOBALS['SIM_EXEC_TIME'] ||
+				($page['endtime'] != 0 && $page['endtime'] <= $GLOBALS['SIM_EXEC_TIME'])
+		);
+		return $result;
+	}
+
+	 /**
 	 * Get The Page ID
 	 * This gets the id of the page, checks if the page is in the domain and if the page is accessible
 	 * Sets variables such as $this->sys_page, $this->loginUser, $this->gr_list, $this->id, $this->type, $this->domainStartPage, $this->idParts
@@ -2660,6 +2674,50 @@
 	}
 
 	/**
+	 * Calculates and sets the internal linkVars based upon the current
+	 * $_GET parameters and the setting "config.linkVars".
+	 *
+	 * @return void
+	 */
+	public function calculateLinkVars() {
+		$this->linkVars = '';
+		$linkVars = t3lib_div::trimExplode(',', (string) $this->config['config']['linkVars']);
+		if (empty($linkVars)) {
+			return;
+		}
+
+		$getData = t3lib_div::_GET();
+		foreach ($linkVars as $linkVar) {
+			$test = $value = '';
+			if (preg_match('/^(.*)\((.+)\)$/', $linkVar, $match)) {
+				$linkVar = trim($match[1]);
+				$test = trim($match[2]);
+			}
+
+			if ($linkVar === '' || !isset($getData[$linkVar])) {
+				continue;
+			}
+
+			if (!is_array($getData[$linkVar])) {
+				$temp = rawurlencode($getData[$linkVar]);
+
+				if ($test !== '' && !TSpagegen::isAllowedLinkVarValue($temp, $test)) {
+					continue; // Error: This value was not allowed for this key
+				}
+
+				$value = '&' . $linkVar . '=' . $temp;
+			} else {
+				if ($test !== '' && strcmp('array', $test)) {
+					continue; // Error: This key must not be an array!
+				}
+				$value = t3lib_div::implodeArrayForUrl($linkVar, $getData[$linkVar]);
+			}
+
+			$this->linkVars .= $value;
+		}
+	}
+
+	/**
 	 * Redirect to target page, if the current page is a Shortcut.
 	 *
 	 * If the current page is of type shortcut and accessed directly via its URL, this function redirects to the
@@ -2668,20 +2726,8 @@
 	 * @return void If page is not a Shortcut, redirects and exits otherwise
 	 */
 	public function checkPageForShortcutRedirect() {
-
 		if (!empty($this->originalShortcutPage) && $this->originalShortcutPage['doktype'] == t3lib_pageSelect::DOKTYPE_SHORTCUT) {
-			$linkVars = t3lib_div::trimExplode(',', (string) $this->config['config']['linkVars']);
-			if (!empty($linkVars)) {
-				$getData = t3lib_div::_GET();
-				foreach ($linkVars as $key) {
-					if (isset($getData[$key])) {
-						$value = rawurlencode($getData[$key]);
-						if (!empty($value)) {
-							$this->linkVars .= '&' . $key . '=' . $value;
-						}
-					}
-				}
-			}
+			$this->calculateLinkVars();
 
 				// instantiate tslib_content to generate the correct target URL
 			$cObj = t3lib_div::makeInstance('tslib_cObj');

@@ -93,7 +93,7 @@ class t3lib_TCEforms {
 	var $charsPerRow = 40; // The number of chars expected per row when the height of a text area field is automatically calculated based on the number of characters found in the field content.
 	var $maxTextareaWidth = 48; // The maximum abstract value for textareas
 	var $maxInputWidth = 48; // The maximum abstract value for input fields
-	var $defaultMultipleSelectorStyle = 'width:250px;'; // Default style for the selector boxes used for multiple items in "select" and "group" types.
+	var $defaultMultipleSelectorStyle = 'width:310px;'; // Default style for the selector boxes used for multiple items in "select" and "group" types.
 
 
 		// INTERNAL, static
@@ -1439,6 +1439,10 @@ class t3lib_TCEforms {
 		} elseif (!strcmp($config['renderMode'], 'tree')) { // Tree renderMode
 			$treeClass = t3lib_div::makeInstance('t3lib_TCEforms_Tree', $this);
 			$item = $treeClass->renderField($table, $field, $row, $PA, $config, $selItems, $nMV_label);
+
+				// Register the required number of elements
+			$minitems = t3lib_utility_Math::forceIntegerInRange($config['minitems'], 0);
+			$this->registerRequiredProperty('range', $PA['itemFormElName'], array($minitems, $maxitems, 'imgName' => $table . '_' . $row['uid'] . '_' . $field));
 		} else { // Traditional multiple selector box:
 			$item = $this->getSingleField_typeSelect_multiple($table, $field, $row, $PA, $config, $selItems, $nMV_label);
 		}
@@ -1471,8 +1475,8 @@ class t3lib_TCEforms {
 		$inlineParent = $this->inline->getStructureLevel(-1);
 		if (is_array($inlineParent) && $inlineParent['uid']) {
 			if ($inlineParent['config']['foreign_table'] == $table && $inlineParent['config']['foreign_unique'] == $field) {
-				$uniqueIds = $this->inline->inlineData['unique'][$this->inline->inlineNames['object'] . '[' . $table . ']']['used'];
-				$PA['fieldChangeFunc']['inlineUnique'] = "inline.updateUnique(this,'" . $this->inline->inlineNames['object'] . '[' . $table . "]','" . $this->inline->inlineNames['form'] . "','" . $row['uid'] . "');";
+				$uniqueIds = $this->inline->inlineData['unique'][$this->inline->inlineNames['object'] . t3lib_TCEforms_inline::Structure_Separator . $table]['used'];
+				$PA['fieldChangeFunc']['inlineUnique'] = "inline.updateUnique(this,'" . $this->inline->inlineNames['object'] . t3lib_TCEforms_inline::Structure_Separator . $table . "','" . $this->inline->inlineNames['form'] . "','" . $row['uid'] . "');";
 			}
 				// hide uid of parent record for symmetric relations
 			if ($inlineParent['config']['foreign_table'] == $table && ($inlineParent['config']['foreign_field'] == $field || $inlineParent['config']['symmetric_field'] == $field)) {
@@ -1983,7 +1987,7 @@ class t3lib_TCEforms {
 				}
 				$opt[] = '<option value="' . htmlspecialchars($p[1]) . '"' .
 						 ($styleAttrValue ? ' style="' . htmlspecialchars($styleAttrValue) . '"' : '') .
-						 '>' . $p[0] . '</option>';
+						 ' title="' . $p[0] . '">' . $p[0] . '</option>';
 			}
 
 				// Put together the selector box:
@@ -1991,9 +1995,12 @@ class t3lib_TCEforms {
 			$size = intval($config['size']);
 			$size = $config['autoSizeMax'] ? t3lib_utility_Math::forceIntegerInRange(count($itemArray) + 1, t3lib_utility_Math::forceIntegerInRange($size, 1), $config['autoSizeMax']) : $size;
 			if ($config['exclusiveKeys']) {
-				$sOnChange = 'setFormValueFromBrowseWin(\'' . $PA['itemFormElName'] . '\',this.options[this.selectedIndex].value,this.options[this.selectedIndex].text,\'' . $config['exclusiveKeys'] . '\'); ';
+				$sOnChange = 'setFormValueFromBrowseWin(\'' . $PA['itemFormElName']
+						. '\',this.options[this.selectedIndex].value, this.options[this.selectedIndex].text, this.options[this.selectedIndex].title,\''
+						. $config['exclusiveKeys'] . '\'); ';
 			} else {
-				$sOnChange = 'setFormValueFromBrowseWin(\'' . $PA['itemFormElName'] . '\',this.options[this.selectedIndex].value,this.options[this.selectedIndex].text); ';
+				$sOnChange = 'setFormValueFromBrowseWin(\'' . $PA['itemFormElName']
+						. '\',this.options[this.selectedIndex].value, this.options[this.selectedIndex].text, this.options[this.selectedIndex].title); ';
 			}
 			$sOnChange .= implode('', $PA['fieldChangeFunc']);
 			$itemsToSelect = '
@@ -2682,11 +2689,13 @@ class t3lib_TCEforms {
 									// Makes a "Add new" link:
 								$var = uniqid('idvar');
 								$replace = 'replace(/' . $idTagPrefix . '-/g,"' . $idTagPrefix . '-"+' . $var . '+"-")';
+								$replace .= '.replace(/(tceforms-(datetime|date)field-)/g,"$1" + (new Date()).getTime())';
 								$onClickInsert = 'var ' . $var . ' = "' . 'idx"+(new Date()).getTime();';
 									// Do not replace $isTagPrefix in setActionStatus() because it needs section id!
-								$onClickInsert .= 'new Insertion.Bottom($("' . $idTagPrefix . '"), unescape(decodeURIComponent("' . rawurlencode($newElementTemplate) . '")).' . $replace . '); setActionStatus("' . $idTagPrefix . '");';
+								$onClickInsert .= 'new Insertion.Bottom($("' . $idTagPrefix . '"), ' . json_encode($newElementTemplate) . '.' . $replace . '); setActionStatus("' . $idTagPrefix . '");';
 								$onClickInsert .= 'eval(unescape("' . rawurlencode(implode(';', $this->additionalJS_post)) . '").' . $replace . ');';
 								$onClickInsert .= 'TBE_EDITOR.addActionChecks("submit", unescape("' . rawurlencode(implode(';', $this->additionalJS_submit)) . '").' . $replace . ');';
+								$onClickInsert .= 'TYPO3.TCEFORMS.update();';
 								$onClickInsert .= 'return false;';
 									// Kasper's comment (kept for history): Maybe there is a better way to do this than store the HTML for the new element in rawurlencoded format - maybe it even breaks with certain charsets? But for now this works...
 								$this->additionalJS_post = $additionalJS_post_saved;
@@ -3514,7 +3523,7 @@ class t3lib_TCEforms {
 	 */
 	function dbFileIcons($fName, $mode, $allowed, $itemArray, $selector = '', $params = array(), $onFocus = '', $table = '', $field = '', $uid = '') {
 
-
+		$title = '';
 		$disabled = '';
 		if ($this->renderReadonly || $params['readOnly']) {
 			$disabled = ' disabled="disabled"';
@@ -3539,7 +3548,9 @@ class t3lib_TCEforms {
 							$pTitle = t3lib_BEfunc::getRecordTitle($pp['table'], $pRec, FALSE, TRUE);
 							$pUid = $pp['table'] . '_' . $pp['id'];
 							$uidList[] = $pUid;
-							$opt[] = '<option value="' . htmlspecialchars($pUid) . '">' . htmlspecialchars($pTitle) . '</option>';
+							$title = htmlspecialchars($pTitle);
+							$opt[] = '<option value="' . htmlspecialchars($pUid)
+									. '" title="' . $title . '">' . $title . '</option>';
 						}
 					}
 				break;
@@ -3548,14 +3559,18 @@ class t3lib_TCEforms {
 					foreach ($itemArray as $item) {
 						$itemParts = explode('|', $item);
 						$uidList[] = $pUid = $pTitle = $itemParts[0];
-						$opt[] = '<option value="' . htmlspecialchars(rawurldecode($itemParts[0])) . '">' . htmlspecialchars(basename(rawurldecode($itemParts[0]))) . '</option>';
+						$title = htmlspecialchars(basename(rawurldecode($itemParts[0])));
+						$opt[] = '<option value="' . htmlspecialchars(rawurldecode($itemParts[0]))
+								. '" title="' . $title . '">' . $title . '</option>';
 					}
 				break;
 				case 'folder':
 					foreach ($itemArray as $pp) {
 						$pParts = explode('|', $pp);
 						$uidList[] = $pUid = $pTitle = $pParts[0];
-						$opt[] = '<option value="' . htmlspecialchars(rawurldecode($pParts[0])) . '">' . htmlspecialchars(rawurldecode($pParts[0])) . '</option>';
+						$title = htmlspecialchars(rawurldecode($pParts[0]));
+						$opt[] = '<option value="' . htmlspecialchars(rawurldecode($pParts[0]))
+								. '" title="' . $title . '">' . $title . '</option>';
 					}
 				break;
 				default:
@@ -3563,7 +3578,9 @@ class t3lib_TCEforms {
 						$pParts = explode('|', $pp, 2);
 						$uidList[] = $pUid = $pParts[0];
 						$pTitle = $pParts[1];
-						$opt[] = '<option value="' . htmlspecialchars(rawurldecode($pUid)) . '">' . htmlspecialchars(rawurldecode($pTitle)) . '</option>';
+						$title =  htmlspecialchars(rawurldecode($pTitle));
+						$opt[] = '<option value="' . htmlspecialchars(rawurldecode($pUid))
+								. '" title="' . $title . '">' . $title . '</option>';
 					}
 				break;
 			}
@@ -3587,7 +3604,7 @@ class t3lib_TCEforms {
 				$inlineParent = $this->inline->getStructureLevel(-1);
 				if (is_array($inlineParent) && $inlineParent['uid']) {
 					if ($inlineParent['config']['foreign_table'] == $table && $inlineParent['config']['foreign_unique'] == $field) {
-						$objectPrefix = $this->inline->inlineNames['object'] . '[' . $table . ']';
+						$objectPrefix = $this->inline->inlineNames['object'] . t3lib_TCEforms_inline::Structure_Separator . $table;
 						$aOnClickInline = $objectPrefix . '|inline.checkUniqueElement|inline.setUniqueElement';
 						$rOnClickInline = 'inline.revertUnique(\'' . $objectPrefix . '\',null,\'' . $uid . '\');';
 					}
@@ -3628,7 +3645,9 @@ class t3lib_TCEforms {
 							// 'file', 'file_reference' and 'folder' mode
 						$itemTitle = 'unescape(\'' . rawurlencode(basename($elValue)) . '\')';
 					}
-					$aOnClick .= 'setFormValueFromBrowseWin(\'' . $fName . '\',unescape(\'' . rawurlencode(str_replace('%20', ' ', $elValue)) . '\'),' . $itemTitle . ');';
+					$aOnClick .= 'setFormValueFromBrowseWin(\'' . $fName . '\',unescape(\''
+							. rawurlencode(str_replace('%20', ' ', $elValue)) . '\'),'
+							. $itemTitle . ',' . $itemTitle . ');';
 				}
 				$aOnClick .= 'return false;';
 				$icons['R'][] = '<a href="#" onclick="' . htmlspecialchars($aOnClick) . '">' .
@@ -5599,7 +5618,7 @@ class t3lib_TCEforms {
 				browserWin = window.open(url,"Typo3WinBrowser","height=650,width="+(mode=="db"?650:600)+",status=0,menubar=0,resizable=1,scrollbars=1");
 				browserWin.focus();
 			}
-			function setFormValueFromBrowseWin(fName,value,label,exclusiveValues) {
+			function setFormValueFromBrowseWin(fName,value,label,title,exclusiveValues) {
 				var formObj = setFormValue_getFObj(fName), fObj, isMultiple = false, isList = false, len;
 				if (formObj && value !== "--div--") {
 						// Check if the form object has a "_list" element or not
@@ -5666,6 +5685,7 @@ class t3lib_TCEforms {
 							fObj.length++;
 							fObj.options[len].value = value;
 							fObj.options[len].text = unescape(label);
+							fObj.options[len].title = title;
 
 								// Traversing list and set the hidden-field
 							setHiddenFromList(fObj,formObj[fName]);

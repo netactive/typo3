@@ -124,9 +124,29 @@ HTMLArea.Language = Ext.extend(HTMLArea.Plugin, {
 	 * This function gets called when the editor is generated
 	 */
 	onGenerate: function () {
-			// Add rules to the stylesheet for language mark highlighting
-			// Model: body.htmlarea-show-language-marks *[lang=en]:before { content: "en: "; }
-			// Works in IE8, but not in earlier versions of IE
+		var select = this.getButton('Language');
+		if (select) {
+			if (select.getStore().getCount() > 1) {
+				this.addLanguageMarkingRules();
+			} else {
+					// Monitor the language combo's store being loaded
+				select.mon(select.getStore(), 'load', function () {
+					this.addLanguageMarkingRules();
+					var selection = this.editor.getSelection(),
+						selectionEmpty = selection.isEmpty(),
+						ancestors = selection.getAllAncestors(),
+						endPointsInSameBlock = selection.endPointsInSameBlock();
+					this.onUpdateToolbar(select, this.getEditorMode(), selectionEmpty, ancestors, endPointsInSameBlock);
+				}, this);
+			}
+		}
+	},
+	/*
+	 * This function adds rules to the stylesheet for language mark highlighting
+	 * Model: body.htmlarea-show-language-marks *[lang=en]:before { content: "en: "; }
+	 * Works in IE8, but not in earlier versions of IE
+	 */
+	addLanguageMarkingRules: function () {
 		var select = this.getButton('Language');
 		if (select) {
 			var styleSheet = this.editor._doc.styleSheets[0];
@@ -145,8 +165,6 @@ HTMLArea.Language = Ext.extend(HTMLArea.Plugin, {
 				}
 				return true;
 			}, this);
-				// Monitor the combo's store being loaded
-			select.mon(select.getStore(), 'load', function () { this.updateValue(select); }, this);
 		}
 	},
 	/*
@@ -294,27 +312,29 @@ HTMLArea.Language = Ext.extend(HTMLArea.Plugin, {
 	 *
 	 * @return	void
 	 */
-	setLanguageAttributes : function (element, language) {
-		if (language == "none") {
-				// Remove language mark, if any
-			element.removeAttribute("lang");
-			try {
-					// Do not let IE7 complain
-				element.removeAttribute("xml:lang");
-			} catch(e) { }
-				// Remove the span tag if it has no more attribute
-			if ((element.nodeName.toLowerCase() == "span") && !HTMLArea.hasAllowedAttributes(element, this.allowedAttributes)) {
-				this.editor.removeMarkup(element);
-			}
-		} else {
-			if (this.useAttribute.lang) {
-				element.setAttribute("lang", language);
-			}
-			if (this.useAttribute.xmlLang) {
+	setLanguageAttributes: function (element, language) {
+		if (element) {
+			if (language == 'none') {
+					// Remove language mark, if any
+				element.removeAttribute('lang');
 				try {
 						// Do not let IE7 complain
-					element.setAttribute("xml:lang", language);
+					element.removeAttribute('xml:lang');
 				} catch(e) { }
+					// Remove the span tag if it has no more attribute
+				if (/^span$/i.test(element.nodeName) && !HTMLArea.hasAllowedAttributes(element, this.allowedAttributes)) {
+					this.editor.removeMarkup(element);
+				}
+			} else {
+				if (this.useAttribute.lang) {
+					element.setAttribute('lang', language);
+				}
+				if (this.useAttribute.xmlLang) {
+					try {
+							// Do not let IE7 complain
+						element.setAttribute('xml:lang', language);
+					} catch(e) { }
+				}
 			}
 		}
 	},

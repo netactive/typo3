@@ -2961,18 +2961,41 @@ final class t3lib_div {
 
 		$fullPath = $directory . $deepDirectory;
 		if (!is_dir($fullPath) && strlen($fullPath) > 0) {
-			@mkdir(
-				$fullPath,
-				octdec($GLOBALS['TYPO3_CONF_VARS']['BE']['folderCreateMask']),
-				TRUE
-			);
-			if (!is_dir($fullPath)) {
-				throw new \RuntimeException(
-					'Could not create directory!',
-					1170251400
-				);
+			$firstCreatedPath = self::createDirectoryPath($fullPath);
+			if ($firstCreatedPath !== '') {
+				self::fixPermissions($firstCreatedPath, TRUE);
 			}
 		}
+	}
+
+	/**
+	 * Creates directories for the specified paths if they do not exist. This
+	 * functions sets proper permission mask but does not set proper user and
+	 * group.
+	 *
+	 * @static
+	 * @param string $fullDirectoryPath
+	 * @return string Path to the the first created directory in the hierarchy
+	 * @see t3lib_div::mkdir_deep
+	 * @throws \RuntimeException If directory could not be created
+	 */
+	protected static function createDirectoryPath($fullDirectoryPath) {
+		$currentPath = $fullDirectoryPath;
+		$firstCreatedPath = '';
+		$permissionMask = octdec($GLOBALS['TYPO3_CONF_VARS']['BE']['folderCreateMask']);
+		if (!@is_dir($currentPath)) {
+			do {
+				$firstCreatedPath = $currentPath;
+				$separatorPosition = strrpos($currentPath, DIRECTORY_SEPARATOR);
+				$currentPath = substr($currentPath, 0, $separatorPosition);
+			} while (!is_dir($currentPath) && $separatorPosition !== FALSE);
+
+			$result = @mkdir($fullDirectoryPath, $permissionMask, TRUE);
+			if (!$result) {
+				throw new \RuntimeException('Could not create directory!', 1170251400);
+			}
+		}
+		return $firstCreatedPath;
 	}
 
 	/**
@@ -3234,18 +3257,13 @@ final class t3lib_div {
 	 * @return integer The bytes value (e.g. 102400)
 	 */
 	public static function getBytesFromSizeMeasurement($measurement) {
+		$bytes = doubleval($measurement);
 		if (stripos($measurement, 'G')) {
-			$bytes = doubleval($measurement) * 1024 * 1024 * 1024;
-		} else {
-			if (stripos($measurement, 'M')) {
-				$bytes = doubleval($measurement) * 1024 * 1024;
-			} else {
-				if (stripos($measurement, 'K')) {
-					$bytes = doubleval($measurement) * 1024;
-				} else {
-					$bytes = doubleval($measurement);
-				}
-			}
+			$bytes *= 1024 * 1024 * 1024;
+		} elseif (stripos($measurement, 'M')) {
+			$bytes *= 1024 * 1024;
+		} elseif (stripos($measurement, 'K')) {
+			$bytes *= 1024;
 		}
 		return $bytes;
 	}
@@ -3949,7 +3967,7 @@ final class t3lib_div {
 	 * @todo Possible improvement: Should it rawurldecode the string first to check if any of these characters is encoded?
 	 */
 	public static function validPathStr($theFile) {
-		if (strpos($theFile, '//') === FALSE && strpos($theFile, '\\') === FALSE && !preg_match('#(?:^\.\.|/\.\./|[[:cntrl:]])#', $theFile)) {
+		if (strpos($theFile, '//') === FALSE && strpos($theFile, '\\') === FALSE && !preg_match('#(?:^\.\.|/\.\./|[[:cntrl:]])#u', $theFile)) {
 			return TRUE;
 		}
 	}
@@ -4230,6 +4248,17 @@ final class t3lib_div {
 		} else {
 			return $l18n_cfg_fieldValue & 2 ? TRUE : FALSE;
 		}
+	}
+
+	/**
+	 * Returns true if the "l18n_cfg" field value is not set to hide
+	 * pages in the default language
+	 *
+	 * @param int $localizationConfiguration
+	 * @return boolean
+	 */
+	public static function hideIfDefaultLanguage($localizationConfiguration) {
+		return ($localizationConfiguration & 1);
 	}
 
 	/**
@@ -5502,14 +5531,17 @@ final class t3lib_div {
 
 				// write message to a file
 			if ($type == 'file') {
+				$lockObject = t3lib_div::makeInstance('t3lib_lock', $destination, $GLOBALS['TYPO3_CONF_VARS']['SYS']['lockingMode']);
+				/** @var t3lib_lock $lockObject */
+				$lockObject->setEnableLogging(FALSE);
+				$lockObject->acquire();
 				$file = fopen($destination, 'a');
 				if ($file) {
-					flock($file, LOCK_EX); // try locking, but ignore if not available (eg. on NFS and FAT)
 					fwrite($file, date($dateFormat . ' ' . $timeFormat) . $msgLine . LF);
-					flock($file, LOCK_UN); // release the lock
 					fclose($file);
 					self::fixPermissions($destination);
 				}
+				$lockObject->release();
 			}
 				// send message per mail
 			elseif ($type == 'mail') {
@@ -5587,14 +5619,17 @@ final class t3lib_div {
 		if (stripos($log, 'file') !== FALSE) {
 				// write a longer message to the deprecation log
 			$destination = self::getDeprecationLogFileName();
+			$lockObject = t3lib_div::makeInstance('t3lib_lock', $destination, $GLOBALS['TYPO3_CONF_VARS']['SYS']['lockingMode']);
+			/** @var t3lib_lock $lockObject */
+			$lockObject->setEnableLogging(FALSE);
+			$lockObject->acquire();
 			$file = @fopen($destination, 'a');
 			if ($file) {
-				flock($file, LOCK_EX); // try locking, but ignore if not available (eg. on NFS and FAT)
 				@fwrite($file, $date . $msg . LF);
-				flock($file, LOCK_UN); // release the lock
 				@fclose($file);
 				self::fixPermissions($destination);
 			}
+			$lockObject->release();
 		}
 
 		if (stripos($log, 'devlog') !== FALSE) {
