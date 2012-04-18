@@ -711,7 +711,7 @@ if (TYPO3_MODE === 'BE') {
 $T3_VAR = array();	// Initialize.
 
 	// TYPO3 version
-$TYPO_VERSION = '4.6.7';	// @deprecated: Will be removed in TYPO3 4.8. Use the constants defined below
+$TYPO_VERSION = '4.6.8';	// @deprecated: Will be removed in TYPO3 4.8. Use the constants defined below
 define('TYPO3_version', $TYPO_VERSION);
 define('TYPO3_branch', '4.6');
 define('TYPO3_copyright_year', '1998-2012');
@@ -749,7 +749,7 @@ define('TYPO3_URL_DONATE', 'http://typo3.org/donate/');
 
 	// Include localconf.php. Use this file to configure TYPO3 for your needs and database
 if (!@is_file(PATH_typo3conf . 'localconf.php')) {
-	throw new Exception('localconf.php is not found!');
+	throw new RuntimeException('localconf.php is not found!', 1333754332);
 }
 require(PATH_typo3conf.'localconf.php');
 
@@ -783,6 +783,19 @@ initializeCachingFramework();
 require_once(PATH_t3lib . 'class.t3lib_autoloader.php');
 t3lib_autoloader::registerAutoloader();
 
+/**
+ * Add typo3/contrib/pear/ as first include folder in
+ * include path, because the shipped PEAR packages use
+ * relative paths to include their files.
+ *
+ * This is required for t3lib_http_Request to work.
+ *
+ * Having the TYPO3 folder first will make sure that the
+ * shipped version is loaded before any local PEAR package,
+ * thus avoiding any incompatibilities with newer or older
+ * versions.
+ */
+set_include_path(PATH_typo3 . 'contrib/pear/' . PATH_SEPARATOR . get_include_path());
 
 /**
  * Checking for UTF-8 in the settings since TYPO3 4.5
