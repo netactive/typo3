@@ -2630,11 +2630,14 @@ final class t3lib_BEfunc {
 			if ($page['url_scheme'] == t3lib_utility_Http::SCHEME_HTTPS || ($page['url_scheme'] == 0 && t3lib_div::getIndpEnv('TYPO3_SSL'))) {
 				$protocol = 'https';
 			}
-			$domainRecord = self::getDomainStartPage($urlParts['host'], $urlParts['path']);
-			if ($domainRecord && isset($domainRecord['domainName'])) {
-				$domain = $domainRecord['domainName'];
+
+			$domainName = self::firstDomainRecord($rootLine);
+
+			if ($domainName) {
+				$domain = $domainName;
 			} else {
-				$domain = self::firstDomainRecord($rootLine);
+				$domainRecord = self::getDomainStartPage($urlParts['host'], $urlParts['path']);
+				$domain = $domainRecord['domainName'];
 			}
 			if ($domain) {
 				$domain = $protocol . '://' . $domain;
@@ -4111,7 +4114,7 @@ final class t3lib_BEfunc {
 				'<a href="' . TYPO3_URL_LICENSE . '" target="_blank">', '</a>'
 			);
 		}
-		$cNotice = '<a href="http://typo3.com/" target="_blank">' .
+		$cNotice = '<a href="' . TYPO3_URL_GENERAL . '" target="_blank">' .
 				'<img' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], 'gfx/loginlogo_transp.gif', 'width="75" height="19" vspace="2" hspace="4"') . ' alt="' .
 				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_login.xml:typo3.logo') . '" align="left" />' .
 				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_login.xml:typo3.cms') . ' ' .
