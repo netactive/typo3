@@ -148,18 +148,18 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 					continue;
 				}
 
-				$subpage = t3lib_befunc::getRecordWSOL('pages', $subpage['uid'], '*', '', TRUE, TRUE);
+					// must be calculated above getRecordWithWorkspaceOverlay,
+					// because the information is lost otherwise
+				$isMountPoint = ($subpage['isMountPoint'] === TRUE);
+
+				$subpage = $this->getRecordWithWorkspaceOverlay($subpage['uid'], TRUE);
+
 				if (!$subpage) {
 					continue;
 				}
 
-					// This was the real mountpoint below the virtual root node.
-					// Use this as mountpoint for the subpages of this page.
-				if ($subpage['isMountPoint']) {
-					$mountPoint = $subpage['uid'];
-				}
-
 				$subNode = t3lib_tree_pagetree_Commands::getNewNode($subpage, $mountPoint);
+				$subNode->setIsMountPoint($isMountPoint);
 				if ($this->nodeCounter < $this->nodeLimit) {
 					$childNodes = $this->getNodes($subNode, $mountPoint, $level + 1);
 					$subNode->setChildNodes($childNodes);
@@ -179,6 +179,18 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 		}
 
 		return $nodeCollection;
+	}
+
+	/**
+	 * Wrapper method for t3lib_befunc::getRecordWSOL
+	 *
+	 * @param integer $uid The page id
+	 * @param boolean $unsetMovePointers Whether to unset move pointers
+	 * @return array
+	 */
+	protected function getRecordWithWorkspaceOverlay($uid, $unsetMovePointers = FALSE) {
+		$subpage = t3lib_befunc::getRecordWSOL('pages', $uid, '*', '', TRUE, $unsetMovePointers);
+		return $subpage;
 	}
 
 	/**
@@ -362,15 +374,17 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 				$subNode->setLabelIsEditable(FALSE);
 				if ($rootNodeIsVirtual) {
 					$subNode->setType('virtual_root');
+					$subNode->setIsDropTarget(FALSE);
 				} else {
 					$subNode->setType('pages_root');
+					$subNode->setIsDropTarget(TRUE);
 				}
 			} else {
 				if (in_array($mountPoint, $this->hiddenRecords)) {
 					continue;
 				}
 
-				$record = t3lib_BEfunc::getRecordWSOL('pages', $mountPoint, '*', '', TRUE);
+				$record = $this->getRecordWithWorkspaceOverlay($mountPoint);
 				if (!$record) {
 					continue;
 				}
@@ -389,7 +403,6 @@ class t3lib_tree_pagetree_DataProvider extends t3lib_tree_AbstractDataProvider {
 
 			$subNode->setIsMountPoint(TRUE);
 			$subNode->setDraggable(FALSE);
-			$subNode->setIsDropTarget(FALSE);
 
 			if ($searchFilter === '') {
 				$childNodes = $this->getNodes($subNode, $mountPoint);

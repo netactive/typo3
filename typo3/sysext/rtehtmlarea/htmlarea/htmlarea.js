@@ -56,6 +56,10 @@ Ext.apply(HTMLArea, {
 	RE_noClosingTag		: /^(area|base|br|col|command|embed|hr|img|input|keygen|meta|param|source|track|wbr)$/i,
 	RE_numberOrPunctuation	: /[0-9.(),;:!¡?¿%#$'"_+=\\\/-]*/g,
 	/***************************************************
+	 * BROWSER IDENTIFICATION                          *
+	 ***************************************************/
+	isIEBeforeIE9: Ext.isIE6 || Ext.isIE7 || Ext.isIE8 || (Ext.isIE && typeof(document.documentMode) !== 'undefined' && document.documentMode < 9),
+	/***************************************************
 	 * LOCALIZATION                                    *
 	 ***************************************************/
 	localize: function (label, plural) {
@@ -174,8 +178,8 @@ HTMLArea.Config = function (editorId) {
 	this.htmlRemoveTagsAndContents = /none/i;
 		// Remove comments
 	this.htmlRemoveComments = false;
-		// Custom tags (must be a regular expression)
-	this.customTags = /none/i;
+		// Array of custom tags
+	this.customTags = [];
 		// BaseURL to be included in the iframe document
 	this.baseURL = document.baseURI;
 		// IE does not support document.baseURI
@@ -976,6 +980,7 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 			this.getEditor().document = this.document;
 			this.getEditor()._doc = this.document;
 			this.getEditor()._iframe = iframe;
+			this.initializeCustomTags();
 			this.createHead();
 				// Style the document body
 			Ext.get(this.document.body).addClass('htmlarea-content-body');
@@ -989,6 +994,19 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 				// Set iframe ready
 			this.ready = true;
 			this.fireEvent('HTMLAreaEventIframeReady');
+		}
+	},
+	/*
+	 * Create one of each of the configured custom tags so they are properly parsed by the walker when using IE
+	 * See: http://en.wikipedia.org/wiki/HTML5_Shiv
+	 * 
+	 * @return	void
+	 */
+	initializeCustomTags: function () {
+		if (HTMLArea.isIEBeforeIE9) {
+			Ext.each(this.config.customTags, function (tag) {
+				this.document.createElement(tag);
+			}, this);
 		}
 	},
 	/*
@@ -3037,7 +3055,7 @@ HTMLArea.DOM = function () {
 		 * @return	string		the text inside the node
 		 */
 		getInnerText: function (node) {
-			return (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) ? node.innerText : node.textContent;;
+			return HTMLArea.isIEBeforeIE9 ? node.innerText : node.textContent;;
 		},
 		/*
 		 * Get the block ancestors of a node within a given block
@@ -3163,7 +3181,7 @@ HTMLArea.DOM = function () {
 			var rangeIntersectsNode = false,
 				ownerDocument = node.ownerDocument;
 			if (ownerDocument) {
-				if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+				if (HTMLArea.isIEBeforeIE9) {
 					var nodeRange = ownerDocument.body.createTextRange();
 					nodeRange.moveToElementText(node);
 					rangeIntersectsNode = (range.compareEndPoints('EndToStart', nodeRange) == -1 && range.compareEndPoints('StartToEnd', nodeRange) == 1) ||
@@ -3594,7 +3612,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 		var isEmpty = true;
 		this.get();
 		if (!Ext.isEmpty(this.selection)) {
-			if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+			if (HTMLArea.isIEBeforeIE9) {
 				switch (this.selection.type) {
 					case 'None':
 						isEmpty = true;
@@ -3620,7 +3638,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	createRange: function () {
 		var range;
 		this.get();
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			range = this.selection.createRange();
 		} else {
 			if (Ext.isEmpty(this.selection)) {
@@ -3732,7 +3750,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	selectNode: function (node, endPoint) {
 		this.get();
 		if (!Ext.isEmpty(this.selection)) {
-			if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+			if (HTMLArea.isIEBeforeIE9) {
 					// IE8/7/6 cannot set this type of selection
 				this.selectNodeContents(node, endPoint);
 			} else if (Ext.isWebKit && /^(img)$/i.test(node.nodeName)) {
@@ -3769,7 +3787,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 		var range;
 		this.get();
 		if (!Ext.isEmpty(this.selection)) {
-			if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+			if (HTMLArea.isIEBeforeIE9) {
 				range = this.document.body.createTextRange();
 				range.moveToElementText(node);
 			} else {
@@ -3801,7 +3819,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 		var parentElement,
 			range;
 		this.get();
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			range = this.createRange();
 			switch (this.selection.type) {
 				case 'Text':
@@ -3930,7 +3948,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 			var range = this.createRange();
 			var ancestors = this.getAllAncestors();
 			Ext.each(ancestors, function (ancestor) {
-				if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+				if (HTMLArea.isIEBeforeIE9) {
 					isFullySelected = (type !== 'Control' && ancestor.innerText == range.text) || (type === 'Control' && ancestor.innerText == range.item(0).text);
 				} else {
 					isFullySelected = (ancestor.textContent == range.toString());
@@ -3960,7 +3978,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 		var range = this.createRange(),
 			parentStart,
 			parentEnd;
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			if (this.getType() === 'Control') {
 				parentStart = range.item(0);
 				parentEnd = parentStart;
@@ -4015,7 +4033,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	getHtml: function () {
 		var range = this.createRange(),
 			html = '';
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			if (this.getType() === 'Control') {
 					// We have a controlRange collection
 				var bodyRange = this.document.body.createTextRange();
@@ -4043,7 +4061,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	 * @return	object		this
 	 */
 	insertNode: function (toBeInserted) {
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			this.insertHtml(toBeInserted.outerHTML);
 		} else {
 			var range = this.createRange();
@@ -4063,7 +4081,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	 * @return	object		this
 	 */
 	insertHtml: function (html) {
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			this.get();
 			if (this.getType() === 'Control') {
 				this.selection.clear();
@@ -4124,7 +4142,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	 */
 	handleBackSpace: function () {
 		var range = this.createRange();
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			if (this.getType() === 'Control') {
 					// Deleting or backspacing on a control selection : delete the element
 				var element = this.getParentElement();
@@ -4554,7 +4572,7 @@ HTMLArea.DOM.BookMark = Ext.extend(HTMLArea.DOM.BookMark, {
 	 */
 	get: function (range) {
 		var bookMark;
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 				// Bookmarking will not work on control ranges
 			try {
 				bookMark = range.getBookmark();
@@ -4627,7 +4645,7 @@ HTMLArea.DOM.BookMark = Ext.extend(HTMLArea.DOM.BookMark, {
 	 */
 	moveTo: function (bookMark) {
 		var range = this.selection.createRange();
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			if (bookMark) {
 				range.moveToBookmark(bookMark);
 			}
@@ -4721,7 +4739,7 @@ HTMLArea.DOM.Node = Ext.extend(HTMLArea.DOM.Node, {
 	 * @return	void
 	 */
 	wrapWithInlineElement: function (element, range) {
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			var nodeName = element.nodeName;
 			var bookMark = this.bookMark.get(range);
 			if (range.parentElement) {
@@ -5273,7 +5291,7 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 				this.error = 'Document.readyState not complete';
 			}
 		} else {
-			if (Ext.isIE) {
+			if (HTMLArea.isIEBeforeIE9) {
 				try {
 					var rules = this.editor.document.styleSheets[0].rules;
 					var imports = this.editor.document.styleSheets[0].imports;
@@ -5299,11 +5317,11 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 			if (this.editor.document.styleSheets.length > 2) {
 				Ext.each(this.editor.document.styleSheets, function (styleSheet, index) {
 					try {
-						if (Ext.isIE) {
+						if (HTMLArea.isIEBeforeIE9) {
 							var rules = styleSheet.rules;
 							var imports = styleSheet.imports;
 								// Default page style may contain only a comment
-							if (!rules.length && !imports.length && index != 1) {
+							if (!rules.length && !imports.length && styleSheet.href.indexOf('defaultPageStyle') === -1) {
 								this.cssLoaded = false;
 								this.error = 'Empty rules and imports arrays of styleSheets[' + index + ']';
 								return false;
@@ -6265,7 +6283,6 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 			cls: 'htmlarea-window',
 			width: dimensions.width,
 			border: false,
-			resizable: true,
 			iconCls: this.getButton(buttonId).iconCls,
 			listeners: {
 				afterrender: {

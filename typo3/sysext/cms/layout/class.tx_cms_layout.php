@@ -305,8 +305,8 @@ class tx_cms_layout extends recordList {
 	 * @return mixed Uid of the backend layout record or NULL if no layout should be used
 	 */
 	function getSelectedBackendLayoutUid($id) {
-			// uid, pid, t3ver_swapmode needed for workspaceOL()
-		$page = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('uid, pid, t3ver_swapmode, backend_layout', 'pages', 'uid=' . $id);
+			// uid and pid are needed for workspaceOL()
+		$page = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('uid, pid, backend_layout', 'pages', 'uid=' . $id);
 		t3lib_BEfunc::workspaceOL('pages', $page);
 
 		$backendLayoutUid = intval($page['backend_layout']);
@@ -315,7 +315,7 @@ class tx_cms_layout extends recordList {
 			$backendLayoutUid = NULL;
 		} elseif ($backendLayoutUid == 0) {
 				// if it not set check the rootline for a layout on next level and use this
-			$rootline = t3lib_BEfunc::BEgetRootLine($id);
+			$rootline = t3lib_BEfunc::BEgetRootLine($id, '', TRUE);
 			for ($i = count($rootline) - 2; $i > 0; $i--) {
 				$backendLayoutUid = intval($rootline[$i]['backend_layout_next_level']);
 				if ($backendLayoutUid > 0) {

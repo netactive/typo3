@@ -923,7 +923,6 @@ class t3lib_TCEmain {
 						case 't3ver_id':
 						case 't3ver_wsid':
 						case 't3ver_state':
-						case 't3ver_swapmode':
 						case 't3ver_count':
 						case 't3ver_stage':
 						case 't3ver_tstamp':
@@ -6859,7 +6858,11 @@ class t3lib_TCEmain {
 				$details = '';
 			}
 			if ($error > 0) {
-				$this->errorLog[] = '[' . $type . '.' . $action . '.' . $details_nr . ']: ' . $details;
+				$detailMessage = $details;
+				if (is_array($data)) {
+					$detailMessage = vsprintf($details, $data);
+				}
+				$this->errorLog[] = '[' . $type . '.' . $action . '.' . $details_nr . ']: ' . $detailMessage;
 			}
 			return $this->BE_USER->writelog($type, $action, $error, $details_nr, $details, $data, $table, $recuid, $recpid, $event_pid, $NEWid);
 		}
