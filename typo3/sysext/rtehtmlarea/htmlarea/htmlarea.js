@@ -52,6 +52,10 @@ Ext.apply(HTMLArea, {
 	RE_noClosingTag		: /^(img|br|hr|col|input|area|base|link|meta|param)$/i,
 	RE_numberOrPunctuation	: /[0-9.(),;:!¡?¿%#$'"_+=\\\/-]*/g,
 	/***************************************************
+	 * BROWSER IDENTIFICATION                          *
+	 ***************************************************/
+	isIEBeforeIE9: Ext.isIE6 || Ext.isIE7 || Ext.isIE8 || (Ext.isIE && typeof(document.documentMode) !== 'undefined' && document.documentMode < 9),
+	/***************************************************
 	 * LOCALIZATION                                    *
 	 ***************************************************/
 	localize: function (label, plural) {
@@ -133,8 +137,8 @@ HTMLArea.Config = function (editorId) {
 	this.htmlRemoveTagsAndContents = /none/i;
 		// Remove comments
 	this.htmlRemoveComments = false;
-		// Custom tags (must be a regular expression)
-	this.customTags = /none/i;
+		// Array of custom tags
+	this.customTags = [];
 		// BaseURL to be included in the iframe document
 	this.baseURL = document.baseURI;
 		// IE does not support document.baseURI
@@ -936,6 +940,7 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 			this.getEditor().document = this.document;
 			this.getEditor()._doc = this.document;
 			this.getEditor()._iframe = iframe;
+			this.initializeCustomTags();
 			this.createHead();
 				// Style the document body
 			Ext.get(this.document.body).addClass('htmlarea-content-body');
@@ -949,6 +954,19 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 				// Set iframe ready
 			this.ready = true;
 			this.fireEvent('HTMLAreaEventIframeReady');
+		}
+	},
+	/*
+	 * Create one of each of the configured custom tags so they are properly parsed by the walker when using IE
+	 * See: http://en.wikipedia.org/wiki/HTML5_Shiv
+	 * 
+	 * @return	void
+	 */
+	initializeCustomTags: function () {
+		if (HTMLArea.isIEBeforeIE9) {
+			Ext.each(this.config.customTags, function (tag) {
+				this.document.createElement(tag);
+			}, this);
 		}
 	},
 	/*
@@ -3536,7 +3554,7 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 				this.error = 'Document.readyState not complete';
 			}
 		} else {
-			if (Ext.isIE) {
+			if (HTMLArea.isIEBeforeIE9) {
 				try {
 					var rules = this.editor.document.styleSheets[0].rules;
 					var imports = this.editor.document.styleSheets[0].imports;
@@ -3562,11 +3580,11 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 			if (this.editor.document.styleSheets.length > 2) {
 				Ext.each(this.editor.document.styleSheets, function (styleSheet, index) {
 					try {
-						if (Ext.isIE) {
+						if (HTMLArea.isIEBeforeIE9) {
 							var rules = styleSheet.rules;
 							var imports = styleSheet.imports;
 								// Default page style may contain only a comment
-							if (!rules.length && !imports.length && index != 1) {
+							if (!rules.length && !imports.length && styleSheet.href.indexOf('defaultPageStyle') === -1) {
 								this.cssLoaded = false;
 								this.error = 'Empty rules and imports arrays of styleSheets[' + index + ']';
 								return false;

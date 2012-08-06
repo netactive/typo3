@@ -65,7 +65,7 @@ if (version_compare(phpversion(), '5.3', '<'))	die ('TYPO3 requires PHP 5.3.0 or
 // *******************************
 // Set error reporting
 // *******************************
-error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
+error_reporting(E_ALL & ~(E_STRICT | E_NOTICE | E_DEPRECATED));
 
 // *******************************
 // Prevent any unwanted output that may corrupt AJAX/compression. Note: this does
@@ -321,8 +321,10 @@ if (intval($TYPO3_CONF_VARS['BE']['lockSSL']) && !(TYPO3_REQUESTTYPE & TYPO3_REQ
 // *******************************
 // Checking environment
 // *******************************
-if (isset($_POST['GLOBALS']) || isset($_GET['GLOBALS']))	die('You cannot set the GLOBALS-array from outside the script.');
-if (!version_compare(phpversion(), '5.4', '<') || !get_magic_quotes_gpc()) {
+if (isset($_POST['GLOBALS']) || isset($_GET['GLOBALS'])) {
+	die('You cannot set the GLOBALS-array from outside the script.');
+}
+if (!get_magic_quotes_gpc()) {
 	t3lib_div::addSlashesOnArray($_GET);
 	t3lib_div::addSlashesOnArray($_POST);
 	$HTTP_GET_VARS = $_GET;
