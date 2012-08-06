@@ -24,21 +24,6 @@
  *
  * This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
-/**
- * Contains classes for Content Rendering based on TypoScript Template configuration
- *
- * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
- * XHTML compliant
- *
- * class tslib_cObj			:		All main TypoScript features, rendering of content objects (cObjects). This class is the backbone of TypoScript Template rendering.
- * class tslib_controlTable		:		Makes a table CTABLE (TS cObject)
- * class tslib_tableOffset		:		Makes a table-offset (TS)
- * class tslib_frameset			: 		Generates framesets (TS)
- *
- * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-
-
 
 /**
  * This class contains all main TypoScript features.
@@ -68,6 +53,7 @@ class tslib_cObj {
 	 */
 	var $stdWrapOrder = array(
 		'stdWrapPreProcess' => 'hook', // this is a placeholder for the first Hook
+		'cacheRead' => 'hook', // this is a placeholder for checking if the content is available in cache
 		'setContentToCurrent' => 'boolean',
 		'setContentToCurrent.' => 'array',
 		'setCurrent' => 'string',
@@ -198,6 +184,8 @@ class tslib_cObj {
 		'append.' => 'array',
 		'wrap3' => 'wrap',
 		'wrap3.' => 'array',
+		'orderedStdWrap' => 'stdWrap',
+		'orderedStdWrap.' => 'array',
 		'outerWrap' => 'wrap',
 		'outerWrap.' => 'array',
 		'insertData' => 'boolean',
@@ -212,6 +200,7 @@ class tslib_cObj {
 		'editIcons.' => 'array',
 		'editPanel' => 'boolean',
 		'editPanel.' => 'array',
+		'cacheStore' => 'hook', // this is a placeholder for storing the content in cache
 		'stdWrapPostProcess' => 'hook', // this is a placeholder for the last Hook
 		'debug' => 'boolean',
 		'debug.' => 'array',
@@ -671,6 +660,7 @@ class tslib_cObj {
 			'MULTIMEDIA' => 'Multimedia',
 			'MEDIA' => 'Media',
 			'SWFOBJECT' => 'ShockwaveFlashObject',
+			'FLOWPLAYER' => 'FlowPlayer',
 			'QTOBJECT' => 'QuicktimeObject',
 			'SVG' => 'ScalableVectorGraphics',
 			'EDITPANEL' => 'EditPanel',
@@ -703,6 +693,17 @@ class tslib_cObj {
 	function HTML($conf) {
 		return $this->getContentObject('HTML')->render($conf);
 	}
+
+	/**
+	 * Rendering the cObject, FLOWPLAYER
+	 *
+	 * @param array $conf array of TypoScript properties
+	 * @return string Output
+	 */
+	function FLOWPLAYER($conf) {
+		return $this->getContentObject('FLOWPLAYER')->render($conf);
+	}
+
 
 	/**
 	 * Rendering the cObject, TEXT
@@ -1165,7 +1166,9 @@ class tslib_cObj {
 				t3lib_div::rawUrlEncodeFP($info[3])) . '" width="' . $info[0] . '" height="' . $info[1] . '"' .
 				$this->getBorderAttr(' border="' . intval($conf['border']) . '"') .
 				$params .
-				($altParam) . ' />';
+				($altParam) .
+				(!empty($GLOBALS['TSFE']->xhtmlDoctype) ? ' /' : '') .
+				'>';
 			$linkWrap = isset($conf['linkWrap.'])
 				? $this->stdWrap($conf['linkWrap'], $conf['linkWrap.'])
 				: $conf['linkWrap'];
@@ -1253,7 +1256,7 @@ class tslib_cObj {
 
 				$params = '&md5=' . $md5_value;
 				foreach (str_split($parametersEncoded, 64) as $index => $chunk) {
-					$params .= '&parameters[' . $index . ']=' . rawurlencode($chunk);
+					$params .= '&parameters' . rawurlencode('[') . $index . rawurlencode(']') . '=' . rawurlencode($chunk);
 				}
 
 				$url = $GLOBALS['TSFE']->absRefPrefix . 'index.php?eID=tx_cms_showpic&file=' . rawurlencode($imageFile) . $params;
@@ -1412,9 +1415,11 @@ class tslib_cObj {
 		$titleText = isset($conf['titleText.'])
 			? trim($this->stdWrap($conf['titleText'], $conf['titleText.']))
 			: trim($conf['titleText']);
-		$longDesc = isset($conf['longdescURL.'])
-			? trim($this->stdWrap($conf['longdescURL'], $conf['longdescURL.']))
-			: trim($conf['longdescURL']);
+		if (isset($conf['longdescURL.']) && $GLOBALS['TSFE']->config['config']['doctype'] != 'html5') {
+			$longDesc = $this->typoLink_URL($conf['longdescURL.']);
+		} else {
+			$longDesc = trim($conf['longdescURL']);
+		}
 
 			// "alt":
 		$altParam = ' alt="' . htmlspecialchars($altText) . '"';
@@ -1472,6 +1477,19 @@ class tslib_cObj {
 		if ($addGlobal) {
 			$aTagParams = ' ' . trim($GLOBALS['TSFE']->ATagParams . $aTagParams);
 		}
+
+			// extend params
+		if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content.php']['getATagParamsPostProc']) && is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content.php']['getATagParamsPostProc'])) {
+			$_params = array(
+				'conf' => &$conf,
+				'aTagParams' => &$aTagParams
+			);
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content.php']['getATagParamsPostProc'] as $objRef) {
+				$processor = &t3lib_div::getUserObj($objRef);
+				$aTagParams = $processor->process( $_params, $this);
+			}
+		}
+
 		return $aTagParams;
 	}
 
@@ -1770,7 +1788,8 @@ class tslib_cObj {
 		if ($fieldList) {
 			$fArr = t3lib_div::trimExplode(',', $fieldList, 1);
 			foreach ($fArr as $field) {
-				$markContentArray['###' . $prefix . $field . '###'] = $nl2br ? nl2br($row[$field]) : $row[$field];
+				$markContentArray['###' . $prefix . $field . '###'] =
+					$nl2br ? nl2br($row[$field], !empty($GLOBALS['TSFE']->xhtmlDoctype)) : $row[$field];
 			}
 		} else {
 			if (is_array($row)) {
@@ -1780,7 +1799,8 @@ class tslib_cObj {
 							$value = htmlspecialchars($value);
 						}
 
-						$markContentArray['###' . $prefix . $field . '###'] = $nl2br ? nl2br($value) : $value;
+						$markContentArray['###' . $prefix . $field . '###'] =
+							$nl2br ? nl2br($value, !empty($GLOBALS['TSFE']->xhtmlDoctype)) : $value;
 					}
 				}
 			}
@@ -1827,7 +1847,19 @@ class tslib_cObj {
 				;
 			}
 		}
+
 		if (is_array($conf) && count($conf)) {
+
+			// cache handling
+			if (is_array($conf['cache.'])) {
+				$conf['cache.']['key'] = $this->stdWrap($conf['cache.']['key'], $conf['cache.']['key.']);
+				$conf['cache.']['tags'] = $this->stdWrap($conf['cache.']['tags'], $conf['cache.']['tags.']);
+				$conf['cache.']['lifetime'] = $this->stdWrap($conf['cache.']['lifetime'], $conf['cache.']['lifetime.']);
+
+				$conf['cacheRead'] = 1;
+				$conf['cacheStore'] = 1;
+			}
+
 			// check, which of the available stdWrap functions is needed for the current conf Array
 			// and keep only those but still in the same order
 			$sortedConf = array_intersect_key($this->stdWrapOrder, $conf);
@@ -1841,7 +1873,7 @@ class tslib_cObj {
 			$this->stdWrapRecursionLevel++;
 			$this->stopRendering[$this->stdWrapRecursionLevel] = FALSE;
 
-			// execute each funtion in the predefined order
+			// execute each function in the predefined order
 			foreach ($sortedConf as $stdWrapName => $functionType) {
 				// eliminate the second key of a pair 'key'|'key.' to make sure functions get called only once and check if rendering has been stopped
 				if (!$isExecuted[$stdWrapName] &&
@@ -1912,6 +1944,24 @@ class tslib_cObj {
 	public function stdWrap_stdWrapPreProcess($content = '', $conf = array()) {
 		foreach ($this->stdWrapHookObjects as $hookObject) {
 			$content = $hookObject->stdWrapPreProcess($content, $conf, $this);
+		}
+		return $content;
+	}
+
+	/**
+	 * Check if content was cached before (depending on the given cache key)
+	 *
+	 * @param	string		Input value undergoing processing in these functions.
+	 * @param	array		All stdWrap properties, not just the ones for a particular function.
+	 * @return	string		The processed input value
+	 */
+	public function stdWrap_cacheRead($content = '', $conf = array()) {
+		if (!empty($conf['cache.']['key'])) {
+			$cacheFrontend = $GLOBALS['typo3CacheManager']->getCache('cache_hash'); /* @var $cacheFrontend t3lib_cache_frontend_VariableFrontend */
+			if ($cacheFrontend && $cacheFrontend->has($conf['cache.']['key'])) {
+				$content = $cacheFrontend->get($conf['cache.']['key']);
+				$this->stopRendering[$this->stdWrapRecursionLevel] = TRUE;
+			}
 		}
 		return $content;
 	}
@@ -2595,14 +2645,15 @@ class tslib_cObj {
 
 	/**
 	 * br
-	 * Searches for single line breaks and replaces them with a <br /> tag
+	 * Searches for single line breaks and replaces them with a <br />/<br> tag
+	 * according to the doctype
 	 *
 	 * @param	string		Input value undergoing processing in this function.
 	 * @param	array		stdWrap properties for br.
 	 * @return	string		The processed input value
 	 */
 	public function stdWrap_br($content = '', $conf = array()) {
-		$content = nl2br($content);
+		$content = nl2br($content, !empty($GLOBALS['TSFE']->xhtmlDoctype));
 		return $content;
 	}
 
@@ -2960,6 +3011,21 @@ class tslib_cObj {
 	}
 
 	/**
+	 * orderedStdWrap
+	 * Calls stdWrap for each entry in the provided array
+	 *
+	 * @param	string		Input value undergoing processing in this function.
+	 * @param	array		stdWrap properties for orderedStdWrap.
+	 * @return	string		The processed input value
+	 */
+	public function stdWrap_orderedStdWrap($content = '', $conf = array()) {
+		$sortedKeysArray = t3lib_TStemplate::sortedKeyList($conf['orderedStdWrap.'], TRUE);
+		foreach ($sortedKeysArray as $key) {
+			$content = $this->stdWrap($content, $conf['orderedStdWrap.'][$key . '.']);
+		}
+		return $content;
+	}
+	/**
 	 * outerWrap
 	 * Eighth of a set of different wraps which will be applied in a certain order before or after other functions that modify the content
 	 *
@@ -2973,7 +3039,7 @@ class tslib_cObj {
 	}
 
 	/**
-	 * inserData
+	 * insertData
 	 * Can fetch additional content the same way data does and replaces any occurence of {field:whatever} with this content
 	 *
 	 * @param	string		Input value undergoing processing in this function.
@@ -3088,6 +3154,55 @@ class tslib_cObj {
 	public function stdWrap_editPanel($content = '', $conf = array()) {
 		if ($GLOBALS['TSFE']->beUserLogin) {
 			$content = $this->editPanel($content, $conf['editPanel.']);
+		}
+		return $content;
+	}
+
+	/**
+	 * Store content into cache
+	 *
+	 * @param	string		Input value undergoing processing in these functions.
+	 * @param	array		All stdWrap properties, not just the ones for a particular function.
+	 * @return	string		The processed input value
+	 */
+	public function stdWrap_cacheStore($content = '', $conf = array()) {
+		if (!empty($conf['cache.']['key'])) {
+			if (defined('TYPO3_UseCachingFramework') && TYPO3_UseCachingFramework) {
+				$cacheFrontend = $GLOBALS['typo3CacheManager']->getCache('cache_hash'); /* @var $cacheFrontend t3lib_cache_frontend_VariableFrontend */
+				if ($cacheFrontend) {
+
+					$tags = !empty($conf['cache.']['tags']) ? t3lib_div::trimExplode(',', $conf['cache.']['tags']) : array();
+
+					if (strtolower($conf['cache.']['lifetime']) == 'unlimited') {
+						$lifetime = 0; // unlimited
+					} elseif (strtolower($conf['cache.']['lifetime']) == 'default') {
+						$lifetime = NULL; // default lifetime
+					} elseif (intval($conf['cache.']['lifetime']) > 0) {
+						$lifetime = intval($conf['cache.']['lifetime']); // lifetime in seconds
+					} else {
+						$lifetime = NULL; // default lifetime
+					}
+
+					if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content.php']['stdWrap_cacheStore'])) {
+						foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_content.php']['stdWrap_cacheStore'] as $_funcRef) {
+							$params = array(
+								'key' => $conf['cache.']['key'],
+								'content' => $content,
+								'lifetime' => $lifetime,
+								'tags' => $tags
+							);
+							t3lib_div::callUserFunction($_funcRef, $params, $this);
+						}
+					}
+
+					$cacheFrontend->set(
+						$conf['cache.']['key'],
+						$content,
+						$tags,
+						$lifetime
+					);
+				}
+			}
 		}
 		return $content;
 	}
@@ -3551,23 +3666,17 @@ class tslib_cObj {
 				</?(?:" . $tags . ")+			# opening tag ('<tag') or closing tag ('</tag')
 				(?:
 					(?:
+						\s+\w+					# EITHER spaces, followed by word characters (attribute names)
 						(?:
-							\s+\w+				# EITHER spaces, followed by word characters (attribute names)
-							(?:
-								\s*=?\s*		# equals
-								(?>
-									\".*?\"		# attribute values in double-quotes
-									|
-									'.*?'		# attribute values in single-quotes
-									|
-									[^'\">\s]+	# plain attribute values
-								)
-							)?
-						)
-						|						# OR a single dash (for TYPO3 link tag)
-						(?:
-							\s+-
-						)
+							\s*=?\s*			# equals
+							(?>
+								\".*?\"			# attribute values in double-quotes
+								|
+								'.*?'			# attribute values in single-quotes
+								|
+								[^'\">\s]+		# plain attribute values
+							)
+						)?
 					)+\s*
 					|							# OR only spaces
 					\s*
@@ -3922,6 +4031,15 @@ class tslib_cObj {
 		if (@is_file($theFile)) {
 			$theFileEnc = str_replace('%2F', '/', rawurlencode($theFile));
 
+			$title = $conf['title'];
+			if (isset($conf['title.'])) {
+				$title = $this->stdWrap($title, $conf['title.']);
+			}
+
+			$target = $conf['target'];
+			if (isset($conf['target.'])) {
+				$target = $this->stdWrap($target, $conf['target.']);
+			}
 				// the jumpURL feature will be taken care of by typoLink, only "jumpurl.secure = 1" is applyable needed for special link creation
 			if ($conf['jumpurl.']['secure']) {
 				$alternativeJumpUrlParameter = isset($conf['jumpurl.']['parameter.'])
@@ -3929,14 +4047,16 @@ class tslib_cObj {
 					: $conf['jumpurl.']['parameter'];
 				$typoLinkConf = array(
 					'parameter' => ($alternativeJumpUrlParameter ? $alternativeJumpUrlParameter : ($GLOBALS['TSFE']->id . ',' . $GLOBALS['TSFE']->type)),
-					'fileTarget' => $conf['target'],
+					'fileTarget' => $target,
+					'title' => $title,
 					'ATagParams' => $this->getATagParams($conf),
 					'additionalParams' => '&jumpurl=' . rawurlencode($theFileEnc) . $this->locDataJU($theFileEnc, $conf['jumpurl.']['secure.']) . $GLOBALS['TSFE']->getMethodUrlIdToken
 				);
 			} else {
 				$typoLinkConf = array(
 					'parameter' => $theFileEnc,
-					'fileTarget' => $conf['target'],
+					'fileTarget' => $target,
+					'title' => $title,
 					'ATagParams' => $this->getATagParams($conf)
 				);
 			}
@@ -3958,8 +4078,15 @@ class tslib_cObj {
 			$theSize = filesize($theFile);
 			$fI = t3lib_div::split_fileref($theFile);
 			if ($conf['icon']) {
-				$iconP = t3lib_extMgm::siteRelPath('cms') . 'tslib/media/fileicons/';
-				$icon = @is_file($iconP . $fI['fileext'] . '.gif') ? $iconP . $fI['fileext'] . '.gif' : $iconP . 'default.gif';
+				$conf['icon.']['path'] = isset($conf['icon.']['path.'])
+					? $this->stdWrap($conf['icon.']['path'], $conf['icon.']['path.'])
+					: $conf['icon.']['path'];
+				$iconP = !empty($conf['icon.']['path']) ? $conf['icon.']['path'] : t3lib_extMgm::siteRelPath('cms') . 'tslib/media/fileicons/';
+				$conf['icon.']['ext'] = isset($conf['icon.']['ext.'])
+					? $this->stdWrap($conf['icon.']['ext'], $conf['icon.']['ext.'])
+					: $conf['icon.']['ext'];
+				$iconExt = !empty($conf['icon.']['ext']) ? '.' . $conf['icon.']['ext'] : '.gif';
+				$icon = @is_file($iconP . $fI['fileext'] . $iconExt) ? $iconP . $fI['fileext'] . $iconExt : $iconP . 'default' . $iconExt;
 					// Checking for images: If image, then return link to thumbnail.
 				$IEList = isset($conf['icon_image_ext_list.'])
 					? $this->stdWrap($conf['icon_image_ext_list'], $conf['icon_image_ext_list.'])
@@ -3977,8 +4104,8 @@ class tslib_cObj {
 									: $conf['icon_thumbSize']);
 							}
 							$check = basename($theFile) . ':' . filemtime($theFile) . ':' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'];
-							$md5sum = '&md5sum=' . t3lib_div::shortMD5($check);
-							$icon = 't3lib/thumbs.php?dummy=' . $GLOBALS['EXEC_TIME'] . '&file=' .
+							$md5sum = '&md5sum=' . md5($check);
+							$icon = 't3lib/thumbs.php?file=' .
 								rawurlencode('../' . $theFile) . $thumbSize . $md5sum;
 						} else {
 							$icon = t3lib_extMgm::siteRelPath('cms') . 'tslib/media/miscicons/notfound_thumb.gif';
@@ -3987,11 +4114,19 @@ class tslib_cObj {
 							$this->getBorderAttr(' border="0"') . '' . $this->getAltParam($conf) . ' />';
 					}
 				} else {
+					$conf['icon.']['widthAttribute'] = isset($conf['icon.']['widthAttribute.'])
+						? $this->stdWrap($conf['icon.']['widthAttribute'], $conf['icon.']['widthAttribute.'])
+						: $conf['icon.']['widthAttribute'];
+					$iconWidth = !empty($conf['icon.']['widthAttribute']) ? $conf['icon.']['widthAttribute'] : 18;
+					$conf['icon.']['heightAttribute'] = isset($conf['icon.']['heightAttribute.'])
+						? $this->stdWrap($conf['icon.']['heightAttribute'], $conf['icon.']['heightAttribute.'])
+						: $conf['icon.']['heightAttribute'];
+					$iconHeight = !empty($conf['icon.']['heightAttribute']) ? $conf['icon.']['heightAttribute'] : 16;
 					$icon = '<img src="' . htmlspecialchars($GLOBALS['TSFE']->absRefPrefix . $icon) .
-						'" width="18" height="16"' . $this->getBorderAttr(' border="0"') .
+						'" width="' . $iconWidth . '" height="' . $iconHeight . '"' . $this->getBorderAttr(' border="0"') .
 						$this->getAltParam($conf) . ' />';
 				}
-				if ($conf['icon_link']) {
+				if ($conf['icon_link'] && !$conf['combinedLink']) {
 					$icon = $this->wrap($icon, $theLinkWrap);
 				}
 				$icon = isset($conf['icon.'])
@@ -4016,16 +4151,30 @@ class tslib_cObj {
 			$wrap = isset($conf['wrap.'])
 				? $this->stdWrap($conf['wrap'], $conf['wrap.'])
 				: $conf['wrap'];
-			if ($conf['ATagBeforeWrap']) {
-				$theValue = $this->wrap($this->wrap($theValue, $wrap), $theLinkWrap);
+			if ($conf['combinedLink']) {
+				$theValue = $icon . $theValue;
+				if ($conf['ATagBeforeWrap']) {
+					$theValue = $this->wrap($this->wrap($theValue, $wrap), $theLinkWrap);
+				} else {
+					$theValue = $this->wrap($this->wrap($theValue, $theLinkWrap), $wrap);
+				}
+				$file = isset($conf['file.'])
+					? $this->stdWrap($theValue, $conf['file.'])
+					: $theValue;
+					// output
+				$output = $file . $size;
 			} else {
-				$theValue = $this->wrap($this->wrap($theValue, $theLinkWrap), $wrap);
+				if ($conf['ATagBeforeWrap']) {
+					$theValue = $this->wrap($this->wrap($theValue, $wrap), $theLinkWrap);
+				} else {
+					$theValue = $this->wrap($this->wrap($theValue, $theLinkWrap), $wrap);
+				}
+				$file = isset($conf['file.'])
+					? $this->stdWrap($theValue, $conf['file.'])
+					: $theValue;
+					// output
+				$output = $icon . $file . $size;
 			}
-			$file = isset($conf['file.'])
-				? $this->stdWrap($theValue, $conf['file.'])
-				: $theValue;
-				// output
-			$output = $icon . $file . $size;
 			if(isset($conf['stdWrap.'])) {
 				$output = $this->stdWrap($output, $conf['stdWrap.']);
 			}
@@ -4817,7 +4966,17 @@ class tslib_cObj {
 						$linktxt = substr($linktxt, 0, -1);
 					}
 				}
-				$target = isset($conf['extTarget']) ? $conf['extTarget'] : $GLOBALS['TSFE']->extTarget;
+
+				if (isset($conf['extTarget'])) {
+					if (isset($conf['extTarget.'])) {
+						$target = $this->stdWrap($conf['extTarget'], $conf['extTarget.']);
+					} else {
+						$target = $conf['extTarget'];
+					}
+				} else {
+					$target = $GLOBALS['TSFE']->extTarget;
+				}
+
 				if ($GLOBALS['TSFE']->config['config']['jumpurl_enable']) {
 					$res = '<a' . ' href="' . htmlspecialchars($GLOBALS['TSFE']->absRefPrefix .
 						$GLOBALS['TSFE']->config['mainScript'] . $initP .
@@ -5084,7 +5243,7 @@ class tslib_cObj {
 							} else { // Normal situation:
 								$fileArray['params'] = $this->modifyImageMagickStripProfileParameters($fileArray['params'], $fileArray);
 								$GLOBALS['TSFE']->tmpl->fileCache[$hash] = $gifCreator->imageMagickConvert($theImage, $fileArray['ext'], $fileArray['width'], $fileArray['height'], $fileArray['params'], $fileArray['frame'], $options);
-								if (($fileArray['reduceColors'] || ($imgExt == 'png' && !$gifCreator->png_truecolor)) && is_file($GLOBALS['TSFE']->tmpl->fileCache[$hash][3])) {
+								if (($fileArray['reduceColors'] || ($fileArray['ext'] == 'png' && !$gifCreator->png_truecolor)) && is_file($GLOBALS['TSFE']->tmpl->fileCache[$hash][3])) {
 									$reduced = $gifCreator->IMreduceColors($GLOBALS['TSFE']->tmpl->fileCache[$hash][3], t3lib_utility_Math::forceIntegerInRange($fileArray['reduceColors'], 256, $gifCreator->truecolorColors, 256));
 									if (is_file($reduced)) {
 										unlink($GLOBALS['TSFE']->tmpl->fileCache[$hash][3]);
@@ -5518,7 +5677,11 @@ class tslib_cObj {
 			}
 
 				// Internal target:
-			$target = isset($conf['target']) ? $conf['target'] : $GLOBALS['TSFE']->intTarget;
+			if ($GLOBALS['TSFE']->dtdAllowsFrames) {
+				$target = isset($conf['target']) ? $conf['target'] : $GLOBALS['TSFE']->intTarget;
+			} else {
+				$target = isset($conf['target']) ? $conf['target'] : '';
+			}
 			if ($conf['target.']) {
 				$target = $this->stdWrap($target, $conf['target.']);
 			}
@@ -5557,7 +5720,11 @@ class tslib_cObj {
 				}
 
 				if ($pU['scheme'] || ($isLocalFile != 1 && $urlChar && (!$containsSlash || $urlChar < $fileChar))) { // url (external): If doubleSlash or if a '.' comes before a '/'.
-					$target = isset($conf['extTarget']) ? $conf['extTarget'] : $GLOBALS['TSFE']->extTarget;
+					if ($GLOBALS['TSFE']->dtdAllowsFrames) {
+						$target = isset($conf['extTarget']) ? $conf['extTarget'] : $GLOBALS['TSFE']->extTarget;
+					} else {
+						$target = isset($conf['extTarget']) ? $conf['extTarget'] : '';
+					}
 					if ($conf['extTarget.']) {
 						$target = $this->stdWrap($target, $conf['extTarget.']);
 					}
@@ -5695,11 +5862,10 @@ class tslib_cObj {
 								// Mind the order below! See http://bugs.typo3.org/view.php?id=5117
 							$params = $GLOBALS['TSFE']->linkVars . $addQueryParams;
 							if (trim($params, '& ') != '') {
-								$cHashParams = t3lib_div::cHashParams($params);
-								if (count($cHashParams) > 1) {
-									$addQueryParams .= '&cHash=' . t3lib_div::calculateCHash($cHashParams);
-								}
-								unset($cHashParams);
+								/* @var $cacheHash t3lib_cacheHash */
+								$cacheHash = t3lib_div::makeInstance('t3lib_cacheHash');
+								$cHash = $cacheHash->generateForParameters($params);
+								$addQueryParams .=  $cHash ? '&cHash=' . $cHash : '';
 							}
 							unset($params);
 						}
@@ -7891,372 +8057,6 @@ class tslib_cObj {
 		}
 	}
 }
-
-
-
-/**
- * Rendering of framesets
- *
- * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- * @package TYPO3
- * @subpackage tslib
- */
-class tslib_frameset {
-
-	/**
-	 * Generates a frameset based on input configuration in a TypoScript array.
-	 *
-	 * @param	array		The TypoScript properties of the PAGE object property "frameSet.". See link.
-	 * @return	string		A <frameset> tag.
-	 * @see TSpagegen::renderContentWithHeader()
-	 */
-	function make($setup) {
-		$content = '';
-		if (is_array($setup)) {
-			$sKeyArray = t3lib_TStemplate::sortedKeyList($setup);
-			foreach ($sKeyArray as $theKey) {
-				$theValue = $setup[$theKey];
-				if (intval($theKey) && $conf = $setup[$theKey . '.']) {
-					switch ($theValue) {
-						case 'FRAME' :
-							$typeNum = intval($GLOBALS['TSFE']->tmpl->setup[$conf['obj'] . '.']['typeNum']);
-							if (!$conf['src'] && !$typeNum) {
-								$typeNum = -1;
-							}
-							$content .= '<frame' . $this->frameParams($conf, $typeNum) . ' />' . LF;
-						break;
-						case 'FRAMESET' :
-							$frameset = t3lib_div::makeInstance('tslib_frameset');
-							$content .= $frameset->make($conf) . LF;
-						break;
-					}
-				}
-			}
-			return '<frameset' . $this->framesetParams($setup) . '>' . LF . $content . '</frameset>';
-		}
-	}
-
-	/**
-	 * Creates the attributes for a <frame> tag based on a $conf array and the type number
-	 *
-	 * @param	array		Configuration for the parameter generation for the FRAME set. See link
-	 * @param	integer		The typenumber to use for the link.
-	 * @return	string		String with attributes for the frame-tag. With a prefixed space character.
-	 * @access private
-	 * @link http://typo3.org/documentation/document-library/references/doc_core_tsref/current/view/7/9/
-	 * @see make(), t3lib_TStemplate::linkData()
-	 */
-	function frameParams($setup, $typeNum) {
-		$paramStr = '';
-		$name = $setup['obj'];
-
-		if ($setup['src'] || $setup['src.']) {
-			$src = $setup['src'];
-			if (is_array($setup['src.'])) {
-				$src = $GLOBALS['TSFE']->cObj->stdWrap($src, $setup['src.']);
-			}
-			$paramStr .= ' src="' . htmlspecialchars($src) . '"';
-		} else {
-			$LD = $GLOBALS['TSFE']->tmpl->linkData(
-				$GLOBALS['TSFE']->page,
-				'',
-				$GLOBALS['TSFE']->no_cache,
-				'',
-				'',
-				($setup['options'] ? '&' . $setup['options'] : '') .
-					$GLOBALS['TSFE']->cObj->getClosestMPvalueForPage($GLOBALS['TSFE']->page['uid']), intval($typeNum)
-			);
-			$finalURL = $LD['totalURL'];
-			$paramStr .= ' src="' . htmlspecialchars($finalURL) . '"';
-		}
-		if ($setup['name']) {
-			$paramStr .= ' name="' . $setup['name'] . '"';
-		} else {
-			$paramStr .= ' name="' . $name . '"';
-		}
-		if ($setup['params']) {
-			$paramStr .= ' ' . $setup['params'];
-		}
-		return $paramStr;
-	}
-
-	/**
-	 * Creates the attributes for a <frameset> tag based on a conf array($setup)
-	 *
-	 * @param	array		The setup array(TypoScript properties)
-	 * @return	string		Attributes with preceeding space.
-	 * @access private
-	 * @see make()
-	 */
-	function framesetParams($setup) {
-		$paramStr = '';
-		if ($setup['cols']) {
-			$paramStr .= ' cols="' . $setup['cols'] . '"';
-		}
-		if ($setup['rows']) {
-			$paramStr .= ' rows="' . $setup['rows'] . '"';
-		}
-		if ($setup['params']) {
-			$paramStr .= ' ' . $setup['params'];
-		}
-		return $paramStr;
-	}
-}
-
-
-
-/**
- * Rendering of tables for offset
- *
- * @see	tslib_cObj::OTABLE(), tslib_cObj::stdWrap()
- * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- * @package TYPO3
- * @subpackage tslib
- */
-class tslib_tableOffset {
-	var $tableParams = 'border="0" cellspacing="0" cellpadding="0"';
-	var $default_tableParams = 'border="0" cellspacing="0" cellpadding="0"';
-	var $tdParams = ' width="99%" valign="top"';
-
-	/**
-	 * Wrapping the input content string in a table which will space it out from top/left/right/bottom
-	 *
-	 * @param	string		The HTML content string
-	 * @param	string		List of offset parameters; x,y,r,b,w,h
-	 * @return	string		The HTML content string being wrapped in a <table> offsetting the content as the $offset parameters defined
-	 */
-	function start($content, $offset) {
-		$valPairs = t3lib_div::intExplode(',', $offset . ',,,,,');
-
-		if ($valPairs[0] || $valPairs[1] || $valPairs[2] || $valPairs[3] || $valPairs[4] || $valPairs[5]) {
-				// If width is defined AND there has been no change to the default table params, then extend them to a tablewidth of 1
-			if ($valPairs[4] && $this->default_tableParams == $this->tableParams) {
-				$this->tableParams .= ' width="1"';
-			}
-				// Init:
-			$this->begin = LF . '<table ' . $this->tableParams . '>';
-			$this->end = '</table>';
-			$rows = array();
-			$widthImg = '';
-			$heightImg = '';
-				// If width is required, set so bottom column will display for sure
-			if ($valPairs[4]) {
-				if (!$valPairs[3])
-					$valPairs[3] = 1;
-				$widthImg = '<img src="' . $GLOBALS['TSFE']->absRefPrefix . 'clear.gif" width="' .
-					$valPairs[4] . '" height="1" alt="" title="" />';
-			}
-				// If height is required, set so right column will display for sure
-			if ($valPairs[5]) {
-				if (!$valPairs[2])
-					$valPairs[2] = 1;
-				$valPairs[2] = 1;
-				$heightImg = '<img src="' . $GLOBALS['TSFE']->absRefPrefix . 'clear.gif" width="1" height="' .
-					$valPairs[5] . '" alt="" title="" />';
-			}
-
-				// First row:
-			if ($valPairs[1]) { // top
-				$rows[1] .= '<tr>';
-				$rows[1] .= '<td><img src="' . $GLOBALS['TSFE']->absRefPrefix . 'clear.gif" width="' .
-					($valPairs[0] ? $valPairs[0] : 1) . '" height="' . $valPairs[1] . '" alt="" title="" /></td>';
-				if ($valPairs[0])
-					$rows[1] .= '<td></td>';
-				if ($valPairs[2])
-					$rows[1] .= '<td></td>';
-				$rows[1] .= '</tr>';
-			}
-				// Middle row:
-			$rows[2] .= '<tr>';
-			if ($valPairs[0]) {
-				$rows[2] .= $valPairs[1] ? '<td></td>' : '<td><img src="' . $GLOBALS['TSFE']->absRefPrefix .
-					'clear.gif" width="' . $valPairs[0] . '" height="1" alt="" title="" /></td>';
-			}
-			$rows[2] .= '<td' . $this->tdParams . '>' . $content . '</td>';
-			if ($valPairs[2]) {
-				$rows[2] .= $valPairs[3] ? '<td>' . $heightImg . '</td>' : '<td><img src="' .
-					$GLOBALS['TSFE']->absRefPrefix . 'clear.gif" width="' . $valPairs[2] . '" height="' .
-					($valPairs[5] ? $valPairs[5] : 1) . '" alt="" title="" /></td>';
-			}
-			$rows[2] .= '</tr>';
-				// Bottom row:
-			if ($valPairs[3]) { // bottom
-				$rows[3] .= '<tr>';
-				if ($valPairs[0])
-					$rows[3] .= '<td></td>';
-				if ($valPairs[2])
-					$rows[3] .= '<td>' . $widthImg . '</td>';
-				$rows[3] .= '<td><img src="' . $GLOBALS['TSFE']->absRefPrefix . 'clear.gif" width="' .
-					($valPairs[2] ? $valPairs[2] : ($valPairs[4] ? $valPairs[4] : 1)) . '" height="' .
-					$valPairs[3] . '" alt="" title="" /></td>';
-				$rows[3] .= '</tr>';
-			}
-			return $this->begin . implode('', $rows) . $this->end;
-		} else
-			return $content;
-	}
-}
-
-
-
-/**
- * Rendering of tables for content positioning
- *
- * @see tslib_cObj::CTABLE()
- * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- * @package TYPO3
- * @subpackage tslib
- */
-class tslib_controlTable {
-	var $offX = 0; // offset, x
-	var $offY = 0; // offset, y
-
-
-	var $tm = ''; // top menu
-	var $lm = ''; // left menu
-	var $rm = ''; // right menu
-	var $bm = ''; // bottom menu
-	var $content = ''; // content
-
-
-	var $tmTDparams = 'valign="top"'; // top menu TDparams
-	var $lmTDparams = 'valign="top"'; // left menu TDparams
-	var $rmTDparams = 'valign="top"'; // right menu TDparams
-	var $bmTDparams = 'valign="top"'; // bottom menu TDparams
-	var $contentTDparams = 'valign="top"'; // content TDparams
-
-
-	var $cMl = 1; // content margin, left
-	var $cMr = 1; // content margin, right
-	var $cMt = 0; // content margin, top
-	var $cMb = 1; // content margin, bottom
-
-
-	var $contentW = 0; // Places a little gif-spacer in the bottom of the content frame
-
-
-	var $tableParams = 'border="0" cellspacing="0" cellpadding="0"';
-
-	/**
-	 * Wrapping internal vars ->tm, ->lm, ->rm, ->bm and ->content in a table where each content part is stored in a cell.
-	 * The two arguments to this function defines some offsets and margins to use in the arrangement of the content in the table.
-	 *
-	 * @param	string		List of offset parameters; x,y
-	 * @param	string		List of margin parameters; left, top, right, bottom
-	 * @return	string		The content strings wrapped in a <table> as the parameters defined
-	 * @see tslib_cObj::CTABLE()
-	 */
-	function start($offset, $cMargins) {
-		$offArr = t3lib_div::intExplode(',', $offset);
-		$cMargArr = t3lib_div::intExplode(',', $cMargins);
-
-		$cols = 0;
-		$rows = 0;
-
-		if ($this->lm)
-			$cols++;
-		if ($this->rm)
-			$cols++;
-		if ($cMargArr[0])
-			$cols++;
-		if ($cMargArr[2])
-			$cols++;
-		if ($cMargArr[1] || $cMargArr[3] || $this->tm || $this->bm || $this->content || $this->contentW)
-			$cols++;
-
-		if ($cMargArr[1])
-			$rows++;
-		if ($cMargArr[3])
-			$rows++;
-		if ($this->tm)
-			$rows++;
-		if ($this->bm)
-			$rows++;
-		if ($this->content)
-			$rows++;
-		if ($this->contentW)
-			$rows++;
-		if (!$rows && $cols)
-			$rows = 1; // If there are no rows in the middle but still som columns...
-
-
-		if ($rows && $cols) {
-			$res = LF . '<table ' . $this->tableParams . '>';
-				// top offset:
-			if ($offArr[1]) {
-				$xoff = $offArr[0] ? 1 : 0;
-				if ($cols + $xoff > 1) {
-					$colspan = ' colspan="' . ($cols + $xoff) . '"';
-				}
-				$res .= '<tr><td' . $colspan . '><img src="' . $GLOBALS['TSFE']->absRefPrefix .
-					'clear.gif" width="1" height="' . $offArr[1] . '" alt="" title="" /></td></tr>';
-			}
-				// The rows:
-			if ($rows > 1) {
-				$rowspan = ' rowspan="' . ($rows) . '"';
-			}
-			$res .= '<tr>';
-			if ($offArr[0]) {
-				$res .= '<td' . $rowspan . '><img src="' . $GLOBALS['TSFE']->absRefPrefix .
-					'clear.gif" height="1" width="' . $offArr[0] . '" alt="" title="" /></td>';
-			}
-			if ($this->lm) {
-				$res .= '<td' . $rowspan . ' ' . $this->lmTDparams . '>' . $this->lm . '</td>';
-			}
-			if ($cMargArr[0]) {
-				$res .= '<td' . $rowspan . '><img src="' . $GLOBALS['TSFE']->absRefPrefix .
-					'clear.gif" height="1" width="' . $cMargArr[0] . '" alt="" title="" /></td>';
-			}
-				// content...
-
-
-			$middle = array();
-			if ($this->tm) {
-				$middle[] = '<td ' . $this->tmTDparams . '>' . $this->tm . '</td>';
-			}
-			if ($cMargArr[1]) {
-				$middle[] = '<td><img src="' . $GLOBALS['TSFE']->absRefPrefix .
-					'clear.gif" width="1" height="' . $cMargArr[1] . '" alt="" title="" /></td>';
-			}
-			if ($this->content) {
-				$middle[] = '<td ' . $this->contentTDparams . '>' . $this->content . '</td>';
-			}
-			if ($cMargArr[3]) {
-				$middle[] = '<td><img src="' . $GLOBALS['TSFE']->absRefPrefix .
-					'clear.gif" width="1" height="' . $cMargArr[3] . '" alt="" title="" /></td>';
-			}
-			if ($this->bm) {
-				$middle[] = '<td ' . $this->bmTDparams . '>' . $this->bm . '</td>';
-			}
-			if ($this->contentW) {
-				$middle[] = '<td><img src="' . $GLOBALS['TSFE']->absRefPrefix .
-					'clear.gif" height="1" width="' . $this->contentW . '" alt="" title="" /></td>';
-			}
-			if (isset($middle[0])) {
-				$res .= $middle[0];
-			}
-
-				// Left of content
-			if ($cMargArr[2]) {
-				$res .= '<td' . $rowspan . '><img src="' . $GLOBALS['TSFE']->absRefPrefix .
-					'clear.gif" height="1" width="' . $cMargArr[2] . '" alt="" title="" /></td>';
-			}
-			if ($this->rm) {
-				$res .= '<td' . $rowspan . ' ' . $this->rmTDparams . '>' . $this->rm . '</td>';
-			}
-			$res .= '</tr>';
-
-				// More than the two rows
-			$mCount = count($middle);
-			for ($a = 1; $a < $mCount; $a++) {
-				$res .= '<tr>' . $middle[$a] . '</tr>';
-			}
-			$res .= '</table>';
-			return $res;
-		}
-	}
-}
-
 
 if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['tslib/class.tslib_content.php'])) {
 	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['tslib/class.tslib_content.php']);

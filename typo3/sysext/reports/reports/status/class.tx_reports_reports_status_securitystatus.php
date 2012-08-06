@@ -276,12 +276,10 @@ class tx_reports_reports_status_SecurityStatus implements tx_reports_StatusProvi
 				$severity = tx_reports_reports_status_Status::ERROR;
 				$messageDetail .= $flashMessage;
 			}
-			if (strpos($flashMessage, 'message-warning') !== FALSE) {
+			if (strpos($flashMessage, 'message-warning') !== FALSE ||
+				strpos($flashMessage, 'message-information') !== FALSE) {
 				$severity = tx_reports_reports_status_Status::WARNING;
-				$messageDetail .= $flashMessage;
-			}
-			if (strpos($flashMessage, 'message-information') !== FALSE) {
-				$messageDetail .= $flashMessage;
+				$message .= $flashMessage;
 			}
 
 			$unsecureUserCount = tx_saltedpasswords_div::getNumberOfBackendUsersWithInsecurePassword();

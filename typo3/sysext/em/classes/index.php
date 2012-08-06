@@ -382,22 +382,14 @@ class SC_mod_tools_em_index extends t3lib_SCbase {
 			$globalSettings['displayMyExtensions'] = 0;
 		}
 
-		// @deprecated Old Extension Manager is officially not supported anymore and may be removed anytime
-		$globalSettings['showOldModules'] = isset($GLOBALS['TYPO3_CONF_VARS']['EXT']['showOldModules']) ? (bool)$GLOBALS['TYPO3_CONF_VARS']['EXT']['showOldModules'] : FALSE;
-		if ($globalSettings['showOldModules']) {
-			t3lib_div::deprecationLog(
-				'Use of the old Extension Manager is obsolete since TYPO3 4.6 and is as such no longer supported.'
-			);
-		} else {
-			unset(
-				$this->MOD_MENU['function']['loaded_list'],
-				$this->MOD_MENU['function']['installed_list'],
-				$this->MOD_MENU['function']['import'],
-				$this->MOD_MENU['function']['translations'],
-				$this->MOD_MENU['function']['settings'],
-				$this->MOD_MENU['function']['updates']
-			);
-		}
+		unset(
+			$this->MOD_MENU['function']['loaded_list'],
+			$this->MOD_MENU['function']['installed_list'],
+			$this->MOD_MENU['function']['import'],
+			$this->MOD_MENU['function']['translations'],
+			$this->MOD_MENU['function']['settings'],
+			$this->MOD_MENU['function']['updates']
+		);
 		$this->MOD_MENU['singleDetails'] = $this->mergeExternalItems($this->MCONF['name'], 'singleDetails', $this->MOD_MENU['singleDetails']);
 		$this->MOD_MENU['extensionInfo'] = $this->mergeExternalItems($this->MCONF['name'], 'singleDetails', array());
 
@@ -590,18 +582,22 @@ class SC_mod_tools_em_index extends t3lib_SCbase {
 	 * @return	array	all available buttons as an assoc. array
 	 */
 	public function getButtons() {
+		$uploadButton = '<a href="#" onclick="TYPO3.EM.Tools.uploadExtension(); return false;" title="' . $GLOBALS['LANG']->getLL('upload_ext_directly') . '">' .
+				t3lib_iconWorks::getSpriteIcon('actions-edit-upload') . '</a>';
 
 		$buttons = array(
 			'csh' => '',
 			'back' => '',
-			'shortcut' => ''
+			'shortcut' => '',
+			'upload' => $uploadButton
 		);
 
-		// Shortcut
+			// Shortcut
 		if ($GLOBALS['BE_USER']->mayMakeShortcut()) {
 			$buttons['shortcut'] = $this->doc->makeShortcutIcon('CMD', 'function', $this->MCONF['name']);
 		}
-		// Back
+
+			// Back
 		if (($this->CMD['showExt'] && (!$this->CMD['standAlone'] && !t3lib_div::_GP('standAlone'))) || ($this->CMD['importExt'] || $this->CMD['uploadExt'] && (!$this->CMD['standAlone'])) || $this->CMD['importExtInfo']) {
 			$buttons['back'] = '<a href="' . t3lib_div::linkThisScript(array(
 				'CMD' => ''
@@ -826,13 +822,8 @@ class SC_mod_tools_em_index extends t3lib_SCbase {
 					<input type="submit" value="' . $GLOBALS['LANG']->getLL('retrieve_update') .
 						'" onclick="' . htmlspecialchars($onCLick) . '" />';
 				if (is_file(PATH_site . 'typo3temp/extensions.xml.gz')) {
-					$dateFormat = $GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy'];
-					$timeFormat = $GLOBALS['TYPO3_CONF_VARS']['SYS']['hhmm'];
 					$content .= ' ' . sprintf($GLOBALS['LANG']->getLL('ext_list_last_updated') . ' ',
-						date(
-							$dateFormat . ', ' . $timeFormat,
-							filemtime(PATH_site . 'typo3temp/extensions.xml.gz')
-						),
+						t3lib_BEfunc::datetime(filemtime(PATH_site . 'typo3temp/extensions.xml.gz')),
 						tx_em_Database::getExtensionCountFromRepository()
 					);
 				}
@@ -2472,13 +2463,8 @@ class SC_mod_tools_em_index extends t3lib_SCbase {
 					. '&nbsp;<label for="checkDisplayFiles">' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_tools_em.xml:display_files') . '</label>';
 			$this->content .= $this->doc->section($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_tools_em.xml:header_upd_ext'), $content, 0, 1);
 
-			$dateFormat = $GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy'];
-			$timeFormat = $GLOBALS['TYPO3_CONF_VARS']['SYS']['hhmm'];
 			$content = sprintf($GLOBALS['LANG']->getLL('note_last_update_new'),
-				date(
-					$dateFormat . ', ' . $timeFormat,
-					filemtime(PATH_site . 'typo3temp/extensions.xml.gz')
-				)
+				t3lib_BEfunc::datetime(filemtime(PATH_site . 'typo3temp/extensions.xml.gz'))
 			) . '<br />';
 		}
 
@@ -2515,16 +2501,10 @@ class SC_mod_tools_em_index extends t3lib_SCbase {
 			<input type="button" value="' . $GLOBALS['LANG']->getLL('retrieve_update') .
 				'" onclick="' . htmlspecialchars($onCLick) . '" />';
 		if (is_file($repoUtility->getLocalExtListFile())) {
-			$dateFormat = $GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy'];
-			$timeFormat = $GLOBALS['TYPO3_CONF_VARS']['SYS']['hhmm'];
-
 			$count = tx_em_Database::getExtensionCountFromRepository($repoUtility->getRepositoryUID());
 			$content .= '<span style="margin-left:10px;padding-right: 50px;" class="typo3-message message-notice">' .
 					sprintf($GLOBALS['LANG']->getLL('ext_list_last_updated'),
-						date(
-							$dateFormat . ', ' . $timeFormat,
-							filemtime($repoUtility->getLocalExtListFile())
-						), $count) . '</span>';
+						t3lib_BEfunc::datetime(filemtime($repoUtility->getLocalExtListFile())), $count) . '</span>';
 		} else {
 			$content .= '<span style="margin-left:10px;padding-right: 50px;" class="typo3-message message-error">There are no extensions available, please update!</span>';
 		}

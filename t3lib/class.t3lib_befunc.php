@@ -105,7 +105,7 @@ final class t3lib_BEfunc {
 	 */
 	public static function getRecordWSOL($table, $uid, $fields = '*', $where = '', $useDeleteClause = TRUE, $unsetMovePointers = FALSE) {
 		if ($fields !== '*') {
-			$internalFields = t3lib_div::uniqueList($fields . ',uid,pid' . ($table == 'pages' ? ',t3ver_swapmode' : ''));
+			$internalFields = t3lib_div::uniqueList($fields . ',uid,pid');
 			$row = self::getRecord($table, $uid, $internalFields, $where, $useDeleteClause);
 			self::workspaceOL($table, $row, -99, $unsetMovePointers);
 
@@ -343,7 +343,6 @@ final class t3lib_BEfunc {
 					't3ver_oid' => $val['t3ver_oid'],
 					't3ver_wsid' => $val['t3ver_wsid'],
 					't3ver_state' => $val['t3ver_state'],
-					't3ver_swapmode' => $val['t3ver_swapmode'],
 					't3ver_stage' => $val['t3ver_stage'],
 					'backend_layout_next_level' => $val['backend_layout_next_level']
 				);
@@ -373,7 +372,7 @@ final class t3lib_BEfunc {
 			$row = $getPageForRootline_cache[$ident];
 		} else {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-				'pid,uid,title,TSconfig,is_siteroot,storage_pid,t3ver_oid,t3ver_wsid,t3ver_state,t3ver_swapmode,t3ver_stage,backend_layout_next_level',
+				'pid,uid,title,TSconfig,is_siteroot,storage_pid,t3ver_oid,t3ver_wsid,t3ver_state,t3ver_stage,backend_layout_next_level',
 				'pages',
 					'uid=' . intval($uid) . ' ' .
 							self::deleteClause('pages') . ' ' .
@@ -463,9 +462,6 @@ final class t3lib_BEfunc {
 			if ($record['uid'] === 0) {
 				continue;
 			}
-			if ($record['_ORIG_pid'] && $record['t3ver_swapmode'] > 0) { // Branch points
-				$output = ' [#VEP#]' . $output; // Adding visual token - Versioning Entry Point - that tells that THIS position was where the versionized branch got connected to the main tree. I will have to find a better name or something...
-			}
 			$output = '/' . t3lib_div::fixed_lgd_cs(strip_tags($record['title']), $titleLimit) . $output;
 			if ($fullTitleLimit) {
 				$fullOutput = '/' . t3lib_div::fixed_lgd_cs(strip_tags($record['title']), $fullTitleLimit) . $fullOutput;
@@ -492,8 +488,11 @@ final class t3lib_BEfunc {
 		foreach ($tc_keys as $table) {
 				// Load table
 			t3lib_div::loadTCA($table);
-				// All field names configured
-			if (is_array($GLOBALS['TCA'][$table]['columns'])) {
+				// All field names configured and not restricted to admins
+			if (is_array($GLOBALS['TCA'][$table]['columns'])
+					&& $GLOBALS['TCA'][$table]['ctrl']['adminOnly'] != 1
+					&& $GLOBALS['TCA'][$table]['ctrl']['rootLevel'] != 1
+					) {
 				$f_keys = array_keys($GLOBALS['TCA'][$table]['columns']);
 				foreach ($f_keys as $field) {
 					if ($GLOBALS['TCA'][$table]['columns'][$field]['exclude']) {
@@ -764,23 +763,70 @@ final class t3lib_BEfunc {
 	 * If no "type" field is configured in the "ctrl"-section of the $GLOBALS['TCA'] for the table, zero is used.
 	 * If zero is not an index in the "types" section of $GLOBALS['TCA'] for the table, then the $fieldValue returned will default to 1 (no matter if that is an index or not)
 	 *
+	 * Note: This method is very similar to t3lib_TCEforms::getRTypeNum(), however, it has two differences:
+	 *       1) The method in TCEForms also takes care of localization (which is difficult to do here as the whole infrastructure for language overlays is only in TCEforms).
+	 *       2) The $rec array looks different in TCEForms, as in there it's not the raw record but the t3lib_transferdata version of it, which changes e.g. how "select"
+	 *          and "group" field values are stored, which makes different processing of the "foreign pointer field" type field variant necessary.
+	 *
 	 * @param	string		Table name present in TCA
 	 * @param	array		Record from $table
 	 * @return	string		Field value
 	 * @see getTCAtypes()
 	 */
-	public static function getTCAtypeValue($table, $rec) {
+	public static function getTCAtypeValue($table, $row) {
 
-			// If no field-value, set it to zero. If there is no type matching the field-value (which now may be zero...) test field-value '1' as default.
+		$typeNum = 0;
+
 		t3lib_div::loadTCA($table);
 		if ($GLOBALS['TCA'][$table]) {
 			$field = $GLOBALS['TCA'][$table]['ctrl']['type'];
-			$fieldValue = $field ? ($rec[$field] ? $rec[$field] : 0) : 0;
-			if (!is_array($GLOBALS['TCA'][$table]['types'][$fieldValue])) {
-				$fieldValue = 1;
+
+			if (strpos($field, ':') !== FALSE) {
+				list($pointerField, $foreignTableTypeField) = explode(':', $field);
+
+				// Get field value from database if field is not in the $row array
+				if (!isset($row[$pointerField])) {
+					$localRow = t3lib_BEfunc::getRecord($table, $row['uid'], $pointerField);
+					$foreignUid = $localRow[$pointerField];
+				} else {
+					$foreignUid = $row[$pointerField];
+				}
+
+				if ($foreignUid) {
+					$fieldConfig = $GLOBALS['TCA'][$table]['columns'][$pointerField]['config'];
+					$relationType = $fieldConfig['type'];
+					if ($relationType === 'select') {
+						$foreignTable = $fieldConfig['foreign_table'];
+					} elseif ($relationType === 'group') {
+						$allowedTables = explode(',', $fieldConfig['allowed']);
+						$foreignTable = $allowedTables[0]; // Always take the first configured table.
+					} else {
+						throw new RuntimeException('TCA foreign field pointer fields are only allowed to be used with group or select field types.', 1325862240);
+					}
+
+					$foreignRow = t3lib_BEfunc::getRecord($foreignTable, $foreignUid, $foreignTableTypeField);
+
+					if ($foreignRow[$foreignTableTypeField]) {
+						$typeNum = $foreignRow[$foreignTableTypeField];
+					}
+				}
+			} else {
+				$typeNum = $row[$field];
 			}
-			return $fieldValue;
+
+			if (!strcmp($typeNum, '')) {  // If that value is an empty string, set it to "0" (zero)
+				$typeNum = 0;
+			}
 		}
+
+		// If current typeNum doesn't exist, set it to 0 (or to 1 for historical reasons, if 0 doesn't exist)
+		if (!$GLOBALS['TCA'][$table]['types'][$typeNum]) {
+			$typeNum = $GLOBALS['TCA'][$table]['types']["0"] ? 0 : 1;
+		}
+
+		$typeNum = (string)$typeNum; // Force to string. Necessary for eg '-1' to be recognized as a type value.
+
+		return $typeNum;
 	}
 
 	/**
@@ -1570,27 +1616,19 @@ final class t3lib_BEfunc {
 					$check = basename($theFile_abs) . ':' . filemtime($theFile_abs) . ':' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'];
 					$params = '&file=' . rawurlencode($theFile);
 					$params .= $size ? '&size=' . $size : '';
-					$params .= '&md5sum=' . t3lib_div::shortMD5($check);
+					$params .= '&md5sum=' . md5($check);
 
-					$url = $thumbScript . '?&dummy=' . $GLOBALS['EXEC_TIME'] . $params;
+					$url = $thumbScript . '?' . $params;
 					$onClick = 'top.launchView(\'' . $theFile . '\',\'\',\'' . $backPath . '\');return false;';
 					$thumbData .= '<a href="#" onclick="' . htmlspecialchars($onClick) . '"><img src="' . htmlspecialchars($backPath . $url) . '" hspace="2" border="0" title="' . trim($theFile) . '"' . $tparams . ' alt="" /></a> ';
 				} else {
 						// Icon
-					$theFile_abs = PATH_site . ($uploaddir ? $uploaddir . '/' : '') . trim($theFile);
 					$theFile = ($abs ? '' : '../') . ($uploaddir ? $uploaddir . '/' : '') . trim($theFile);
-
 					$fileIcon = t3lib_iconWorks::getSpriteIconForFile(
 						strtolower($ext),
 						array('title' => htmlspecialchars(trim($theFile)))
 					);
 
-					$check = basename($theFile_abs) . ':' . filemtime($theFile_abs) . ':' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'];
-					$params = '&file=' . rawurlencode($theFile);
-					$params .= $size ? '&size=' . $size : '';
-					$params .= '&md5sum=' . t3lib_div::shortMD5($check);
-
-					$url = $thumbScript . '?&dummy=' . $GLOBALS['EXEC_TIME'] . $params;
 					$onClick = 'top.launchView(\'' . $theFile . '\',\'\',\'' . $backPath . '\');return false;';
 					$thumbData .= '<a href="#" onclick="' . htmlspecialchars($onClick) . '">' . $fileIcon . '</a> ';
 				}
@@ -1612,9 +1650,9 @@ final class t3lib_BEfunc {
 		$check = basename($theFile) . ':' . filemtime($theFile) . ':' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'];
 		$params = '&file=' . rawurlencode($theFile);
 		$params .= trim($size) ? '&size=' . trim($size) : '';
-		$params .= '&md5sum=' . t3lib_div::shortMD5($check);
+		$params .= '&md5sum=' . md5($check);
 
-		$url = $thumbScript . '?&dummy=' . $GLOBALS['EXEC_TIME'] . $params;
+		$url = $thumbScript . '?' . $params;
 		$th = '<img src="' . htmlspecialchars($url) . '" title="' . trim(basename($theFile)) . '"' . ($tparams ? " " . $tparams : "") . ' alt="" />';
 		return $th;
 	}
@@ -2020,7 +2058,7 @@ final class t3lib_BEfunc {
 								$MMres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 									'uid, ' . $MMfield,
 									$theColConf['foreign_table'],
-									'uid IN (' . implode(',', $selectUids) . ')' . self::deleteClause($theColConf['foreign_table'])
+										'uid IN (' . implode(',', $selectUids) . ')'
 								);
 								while ($MMrow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($MMres)) {
 									$mmlA[] = ($noRecordLookup ? $MMrow['uid'] : self::getRecordTitle($theColConf['foreign_table'], $MMrow, FALSE, $forceResult));
@@ -2030,7 +2068,7 @@ final class t3lib_BEfunc {
 								if (is_array($mmlA)) {
 									$l = implode('; ', $mmlA);
 								} else {
-									$l = 'N/A';
+									$l = '';
 								}
 							} else {
 								$l = 'N/A';
@@ -2336,7 +2374,6 @@ final class t3lib_BEfunc {
 
 	/**
 	 * Returns CSH help text (description), if configured for, as an array (title, description)
-	 * Will automatically call t3lib_BEfunc::helpTextIcon() to get the icon for the text.
 	 *
 	 * @param	string	Table name
 	 * @param	string	Field name
@@ -2375,32 +2412,32 @@ final class t3lib_BEfunc {
 	/**
 	 * Returns CSH help text (description), if configured for.
 	 * $GLOBALS['TCA_DESCR'] must be loaded prior to this function and $GLOBALS['BE_USER'] must have "edit_showFieldHelp" set to "text",
-	 * otherwise nothing is returned
-	 * Will automatically call t3lib_BEfunc::helpTextIcon() to get the icon for the text.
+	 * otherwise nothing is returned.
 	 *
 	 * @param	string		Table name
 	 * @param	string		Field name
-	 * @param	string		Back path, deprecated since TYPO3 4.5, will be removed in TYPO3 4.7, because not used at all
-	 * @param	string		DEPRECATED: Additional style-attribute content for wrapping table (now: only in function cshItem needed)
 	 * @return	string		HTML content for help text
 	 */
-	public static function helpText($table, $field, $BACK_PATH = '', $styleAttrib = '') {
+	public static function helpText($table, $field) {
 		$helpTextArray = self::helpTextArray($table, $field);
 
 		$output = '';
-		$arrow = '';
 
-			// Put header before the rest of the text
+			// put header before the rest of the text
 		if ($helpTextArray['title'] !== NULL) {
 			$output .= '<h2 class="t3-row-header">' . $helpTextArray['title'] . '</h2>';
 		}
-			// Add see also arrow if we have more info
+			// add the content
+		if ($helpTextArray['description'] !== NULL) {
+			$output .= $helpTextArray['description'];
+		}
+			// add see also arrow if we have more info
 		if ($helpTextArray['moreInfo']) {
 			$arrow = t3lib_iconWorks::getSpriteIcon('actions-view-go-forward');
 		}
-			// Wrap description and arrow in p tag
-		if ($helpTextArray['description'] !== NULL || $arrow) {
-			$output .= '<p class="t3-help-short">' . nl2br(htmlspecialchars($helpTextArray['description'])) . $arrow . '</p>';
+			// add description text
+		if ($helpTextArray['description'] || $arrow) {
+			$output['description'] = '<p class="t3-help-short">' . nl2br(htmlspecialchars($helpTextArray['description'])) . $arrow . '</p>';
 		}
 
 		return $output;
@@ -2476,7 +2513,7 @@ final class t3lib_BEfunc {
 
 			if (is_array($GLOBALS['TCA_DESCR'][$table])) {
 					// Creating CSH icon and short description:
-				$fullText = self::helpText($table, $field, $BACK_PATH, '');
+				$fullText = self::helpText($table, $field);
 				$icon = self::helpTextIcon($table, $field, $BACK_PATH);
 
 				if ($fullText && !$onlyIconMode && $GLOBALS['BE_USER']->uc['edit_showFieldHelp'] == 'text') {
@@ -2635,6 +2672,7 @@ final class t3lib_BEfunc {
 				$domainRecord = self::getDomainStartPage($urlParts['host'], $urlParts['path']);
 				$domain = $domainRecord['domainName'];
 			}
+
 			if ($domain) {
 				$domain = $protocol . '://' . $domain;
 			} else {
@@ -3732,7 +3770,7 @@ final class t3lib_BEfunc {
 	 * Recently, this function has been modified so it MAY set $row to FALSE. This happens if a version overlay with the move-id pointer is found in which case we would like a backend preview. In other words, you should check if the input record is still an array afterwards when using this function.
 	 *
 	 * @param	string		Table name
-	 * @param	array		Record array passed by reference. As minimum, the "uid", "pid" and "t3ver_swapmode" (pages) fields must exist! Fake fields cannot exist since the fields in the array is used as field names in the SQL look up. It would be nice to have fields like "t3ver_state" and "t3ver_mode_id" as well to avoid a new lookup inside movePlhOL().
+	 * @param	array		Record array passed by reference. As minimum, the "uid" and  "pid" fields must exist! Fake fields cannot exist since the fields in the array is used as field names in the SQL look up. It would be nice to have fields like "t3ver_state" and "t3ver_mode_id" as well to avoid a new lookup inside movePlhOL().
 	 * @param	integer		Workspace ID, if not specified will use $GLOBALS['BE_USER']->workspace
 	 * @param	boolean		If TRUE the function does not return a "pointer" row for moved records in a workspace
 	 * @return	void		(Passed by ref).
@@ -3788,19 +3826,11 @@ final class t3lib_BEfunc {
 					}
 
 						// For versions of single elements or page+content, swap UID and PID:
-					if ($table !== 'pages' || $wsAlt['t3ver_swapmode'] <= 0) {
-						$wsAlt['_ORIG_uid'] = $wsAlt['uid'];
-						$wsAlt['uid'] = $row['uid'];
+					$wsAlt['_ORIG_uid'] = $wsAlt['uid'];
+					$wsAlt['uid'] = $row['uid'];
 
-							// Backend css class:
-						$wsAlt['_CSSCLASS'] = $table === 'pages' && $wsAlt['t3ver_swapmode'] == 0 ? 'ver-page' : 'ver-element';
-					} else { // This is only for page-versions with BRANCH below!
-						$wsAlt['_ONLINE_uid'] = $row['uid'];
-
-							// Backend css class:
-						$wsAlt['_CSSCLASS'] = 'ver-branchpoint';
-						$wsAlt['_SUBCSSCLASS'] = 'ver-branch';
-					}
+						// Backend css class:
+					$wsAlt['_CSSCLASS'] = 'ver-element';
 
 						// Changing input record to the workspace version alternative:
 					$row = $wsAlt;
@@ -3924,8 +3954,10 @@ final class t3lib_BEfunc {
 	 * @param	string		Table name you are checking for. If you don't give the table name ONLY "branch" types are found and returned TRUE. Specifying table you might also get a positive response if the pid is a "page" versioning type AND the table has "versioning_followPages" set.
 	 * @param	boolean		If set, the keyword "branchpoint" or "first" is not returned by rather the "t3ver_stage" value of the branch-point.
 	 * @return	mixed		Returns either "branchpoint" (if branch) or "first" (if page) or FALSE if nothing. Alternatively, it returns the value of "t3ver_stage" for the branchpoint (if any)
+	 * @deprecated since TYPO3 4.4, will be removed in TYPO3 4.7, as branch versioning is not supported anymore
 	 */
 	public static function isPidInVersionizedBranch($pid, $table = '', $returnStage = FALSE) {
+		t3lib_div::logDeprecatedFunction();
 		$rl = self::BEgetRootLine($pid);
 		$c = 0;
 
@@ -3966,11 +3998,11 @@ final class t3lib_BEfunc {
 	public static function getWorkspaceWhereClause($table, $workspaceId = NULL) {
 		$whereClause = '';
 
-		if (is_null($workspaceId)) {
-			$workspaceId = $GLOBALS['BE_USER']->workspace;
-		}
-
 		if (self::isTableWorkspaceEnabled($table)) {
+			if (is_null($workspaceId)) {
+				$workspaceId = $GLOBALS['BE_USER']->workspace;
+			}
+
 			$workspaceId = intval($workspaceId);
 			$pidOperator = ($workspaceId === 0 ? '!=' : '=');
 			$whereClause = ' AND ' . $table . '.t3ver_wsid=' . $workspaceId . ' AND ' . $table . '.pid' . $pidOperator . '-1';
@@ -3984,14 +4016,13 @@ final class t3lib_BEfunc {
 	 *
 	 * @param	integer		Workspace ID
 	 * @param	integer		Page ID
-	 * @param	boolean		If set, then all tables and not only "versioning_followPages" are found (except other pages)
 	 * @return	array		Overview of records
 	 */
-	public static function countVersionsOfRecordsOnPage($workspace, $pageId, $allTables = FALSE) {
+	public static function countVersionsOfRecordsOnPage($workspace, $pageId) {
 		$output = array();
 		if ($workspace != 0) {
 			foreach ($GLOBALS['TCA'] as $tableName => $cfg) {
-				if ($tableName != 'pages' && $cfg['ctrl']['versioningWS'] && ($cfg['ctrl']['versioning_followPages'] || $allTables)) {
+				if ($tableName != 'pages' && $cfg['ctrl']['versioningWS']) {
 
 						// Select all records from this table in the database from the workspace
 						// This joins the online version with the offline version as tables A and B
@@ -4067,28 +4098,6 @@ final class t3lib_BEfunc {
 	 * Miscellaneous
 	 *
 	 *******************************************/
-
-	/**
-	 * Print error message with header, text etc.
-	 *
-	 * @param	string		Header string
-	 * @param	string		Content string
-	 * @param	boolean		Will return an alert() with the content of header and text.
-	 * @param	boolean		Print header.
-	 * @return	void
-	 * @deprecated since TYPO3 4.5, will be removed in TYPO3 4.7 - use RuntimeException from now on
-	 */
-	public static function typo3PrintError($header, $text, $js = '', $head = 1) {
-			// This prints out a TYPO3 error message.
-			// If $js is set the message will be output in JavaScript
-		if ($js) {
-			echo "alert('" . t3lib_div::slashJS($header . '\n' . $text) . "');";
-		} else {
-			t3lib_div::logDeprecatedFunction();
-			$messageObj = t3lib_div::makeInstance('t3lib_message_ErrorPageMessage', $text, $header);
-			$messageObj->output();
-		}
-	}
 
 	/**
 	 * Prints TYPO3 Copyright notice for About Modules etc. modules.

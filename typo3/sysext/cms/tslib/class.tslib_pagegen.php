@@ -73,6 +73,7 @@ class TSpagegen {
 		if ($GLOBALS['TSFE']->page['content_from_pid']>0)	{
 			$temp_copy_TSFE = clone($GLOBALS['TSFE']);	// make REAL copy of TSFE object - not reference!
 			$temp_copy_TSFE->id = $GLOBALS['TSFE']->page['content_from_pid'];	// Set ->id to the content_from_pid value - we are going to evaluate this pid as was it a given id for a page-display!
+			$temp_copy_TSFE->MP = '';
 			$temp_copy_TSFE->getPageAndRootlineWithDomain($GLOBALS['TSFE']->config['config']['content_from_pid_allowOutsideDomain']?0:$GLOBALS['TSFE']->domainStartPage);
 			$GLOBALS['TSFE']->contentPid = intval($temp_copy_TSFE->id);
 			unset($temp_copy_TSFE);
@@ -93,20 +94,9 @@ class TSpagegen {
 		$GLOBALS['TSFE']->debug = ''.$GLOBALS['TSFE']->config['config']['debug'];
 
 			// Base url:
-		if ($GLOBALS['TSFE']->config['config']['baseURL'])	{
-			if ($GLOBALS['TSFE']->config['config']['baseURL']==='1')	{
-					// @deprecated: Deprecated property, going to be dropped in TYPO3 4.7.
-				$error = 'Unsupported TypoScript property was found in this template: "config.baseURL="1"
-
-This setting has been deprecated in TYPO 3.8.1 due to security concerns.
-You need to change this value to the URL of your website root, otherwise TYPO3 will not work!
-
-See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.typo3.org/index.php/TYPO3_3.8.1</a> for more information.';
-				throw new RuntimeException(nl2br($error), 1294587219);
-			} else {
-				$GLOBALS['TSFE']->baseUrl = $GLOBALS['TSFE']->config['config']['baseURL'];
-			}
-			$GLOBALS['TSFE']->anchorPrefix = substr(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'),strlen(t3lib_div::getIndpEnv('TYPO3_SITE_URL')));
+		if (isset($GLOBALS['TSFE']->config['config']['baseURL'])) {
+			$GLOBALS['TSFE']->baseUrl = $GLOBALS['TSFE']->config['config']['baseURL'];
+			$GLOBALS['TSFE']->anchorPrefix = substr(t3lib_div::getIndpEnv('TYPO3_REQUEST_URL'), strlen(t3lib_div::getIndpEnv('TYPO3_SITE_URL')));
 		}
 
 			// Internal and External target defaults
@@ -151,9 +141,17 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 			// linkVars
 		$GLOBALS['TSFE']->calculateLinkVars();
 
-		if($GLOBALS['TSFE']->config['config']['doctype'] == 'html_5') {
-			$GLOBALS['TSFE']->logDeprecatedTyposcript('config.doctype = html_5', 'It will be removed in TYPO3 4.7. Use html5 instead.');
-			$GLOBALS['TSFE']->config['config']['doctype'] = 'html5';
+			// dtdAllowsFrames indicates whether to use the target attribute in links
+		$GLOBALS['TSFE']->dtdAllowsFrames = FALSE;
+		if ($GLOBALS['TSFE']->config['config']['doctype']) {
+			if (in_array(
+				(string) $GLOBALS['TSFE']->config['config']['doctype'],
+				array('xhtml_frames', 'html5')
+			)) {
+				$GLOBALS['TSFE']->dtdAllowsFrames = TRUE;
+			}
+		} else {
+			$GLOBALS['TSFE']->dtdAllowsFrames = TRUE;
 		}
 
 			// Setting XHTML-doctype from doctype
@@ -222,11 +220,6 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 					$incFilesArray[] = $incFile;
 				}
 			}
-		}
-			// Include HTML mail library?
-		if ($GLOBALS['TSFE']->config['config']['incT3Lib_htmlmail'])	{
-			$GLOBALS['TSFE']->logDeprecatedTyposcript('config.incT3Lib_htmlmail');
-			$incFilesArray[] = 't3lib/class.t3lib_htmlmail.php';
 		}
 		return $incFilesArray;
 	}
@@ -324,9 +317,12 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 
 			// Setting document type:
 		$docTypeParts = array ();
+		$xmlDocument = TRUE;
 		// Part 1: XML prologue
 		switch ((string) $GLOBALS['TSFE']->config['config']['xmlprologue']) {
 			case 'none' :
+				$xmlDocument = FALSE;
+				$GLOBALS['TSFE']->config['config']['xhtml_cleaning'] = 'none';
 				break;
 			case 'xml_10' :
 				$docTypeParts[] = '<?xml version="1.0" encoding="' . $theCharset . '"?>';
@@ -382,7 +378,11 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 					break;
 				case 'html5' :
 					$docTypeParts[] = '<!DOCTYPE html>';
-					$pageRenderer->setMetaCharsetTag('<meta charset="|" />');
+					if ($xmlDocument){
+						$pageRenderer->setMetaCharsetTag('<meta charset="|" />');
+					} else {
+						$pageRenderer->setMetaCharsetTag('<meta charset="|">');
+					}
 					break;
 				case 'none' :
 					break;
@@ -400,7 +400,8 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		if ($GLOBALS['TSFE']->xhtmlVersion < 110 || $doctype === 'html5') {
 			$htmlTagAttributes['lang'] = $htmlLang;
 		}
-		if ($GLOBALS['TSFE']->xhtmlVersion || $doctype === 'html5') {
+
+		if ($GLOBALS['TSFE']->xhtmlVersion || ($doctype === 'html5' && $xmlDocument)) {
 			$htmlTagAttributes['xmlns'] = 'http://www.w3.org/1999/xhtml'; // We add this to HTML5 to achieve a slightly better backwards compatibility
 			if (is_array($GLOBALS['TSFE']->config['config']['namespaces.'])) {
 				foreach ($GLOBALS['TSFE']->config['config']['namespaces.'] as $prefix => $uri) {
@@ -425,7 +426,15 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		} else {
 			$_attr = '';
 		}
-		$pageRenderer->setHtmlTag('<html' . ($_attr ? ' ' . $_attr : '') . '>');
+
+		$htmlTag = '<html' . ($_attr ? ' ' . $_attr : '') . '>';
+		if (isset($GLOBALS['TSFE']->config['config']['htmlTag_stdWrap.'])) {
+			   $htmlTag = $GLOBALS['TSFE']->cObj->stdWrap(
+					   $htmlTag,
+					   $GLOBALS['TSFE']->config['config']['htmlTag_stdWrap.']
+			   );
+		}
+		$pageRenderer->setHtmlTag($htmlTag);
 
 			// Head tag:
 		$headTag = $GLOBALS['TSFE']->pSetup['headTag'] ? $GLOBALS['TSFE']->pSetup['headTag'] : '<head>';
@@ -437,7 +446,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		$pageRenderer->addInlineComment('	This website is powered by TYPO3 - inspiring people to share!
 	TYPO3 is a free open source Content Management Framework initially created by Kasper Skaarhoj and licensed under GNU/GPL.
 	TYPO3 is copyright ' . TYPO3_copyright_year . ' of Kasper Skaarhoj. Extensions are copyright of their respective owners.
-	Information and contribution at ' . TYPO3_URL_ORG . '
+	Information and contribution at ' . TYPO3_URL_GENERAL . ' and ' . TYPO3_URL_ORG . '
 ');
 
 		if ($GLOBALS['TSFE']->baseUrl) {
@@ -459,11 +468,17 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		}
 
 			// Including CSS files
-		if (is_array($GLOBALS['TSFE']->tmpl->setup['plugin.']) && empty($GLOBALS['TSFE']->config['config']['removeDefaultCss'])) {
+		if (is_array($GLOBALS['TSFE']->tmpl->setup['plugin.'])) {
 			$temp_styleLines = array ();
 			foreach ($GLOBALS['TSFE']->tmpl->setup['plugin.'] as $key => $iCSScode) {
-				if (is_array($iCSScode) && $iCSScode['_CSS_DEFAULT_STYLE']) {
-					$temp_styleLines[] = '/* default styles for extension "' . substr($key, 0, - 1) . '" */' . LF . $iCSScode['_CSS_DEFAULT_STYLE'];
+				if (is_array($iCSScode)) {
+					if ($iCSScode['_CSS_DEFAULT_STYLE'] && empty($GLOBALS['TSFE']->config['config']['removeDefaultCss'])) {
+						$temp_styleLines[] = '/* default styles for extension "' . substr($key, 0, - 1) . '" */' . LF . $iCSScode['_CSS_DEFAULT_STYLE'];
+					}
+					if ($iCSScode['_CSS_PAGE_STYLE']) {
+						$temp_styleLines[] = '/* specific page styles for extension "' . substr($key, 0, - 1) . '" */' .
+							LF . implode(LF, $iCSScode['_CSS_PAGE_STYLE']);
+					}
 				}
 			}
 			if (count($temp_styleLines)) {
@@ -493,6 +508,10 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 			foreach ($GLOBALS['TSFE']->pSetup['includeCSS.'] as $key => $CSSfile) {
 				if (!is_array($CSSfile)) {
 					$ss = $GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['external'] ? $CSSfile : $GLOBALS['TSFE']->tmpl->getFileName($CSSfile);
+					if (isset($GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['if.'])
+						&& !$GLOBALS['TSFE']->cObj->checkIf($GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['if.'])) {
+						continue;
+					}
 					if ($ss) {
 						if ($GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['import']) {
 							if (! $GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['external'] && substr($ss, 0, 1) != '/') { // To fix MSIE 6 that cannot handle these as relative paths (according to Ben v Ende)
@@ -647,6 +666,10 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		if (is_array($GLOBALS['TSFE']->pSetup['includeJSlibs.'])) {
 			foreach ($GLOBALS['TSFE']->pSetup['includeJSlibs.'] as $key => $JSfile) {
 				if (!is_array($JSfile)) {
+					if (isset($GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['if.'])
+						&& !$GLOBALS['TSFE']->cObj->checkIf($GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['if.'])) {
+						continue;
+					}
 					$ss = $GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['external'] ? $JSfile : $GLOBALS['TSFE']->tmpl->getFileName($JSfile);
 					if ($ss) {
 						$type = $GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['type'];
@@ -670,6 +693,10 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		if (is_array($GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'])) {
 			foreach ($GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'] as $key => $JSfile) {
 				if (!is_array($JSfile)) {
+					if (isset($GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['if.'])
+						&& !$GLOBALS['TSFE']->cObj->checkIf($GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['if.'])) {
+						continue;
+					}
 					$ss = $GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['external'] ? $JSfile : $GLOBALS['TSFE']->tmpl->getFileName($JSfile);
 					if ($ss) {
 						$type = $GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['type'];
@@ -694,6 +721,10 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		if (is_array($GLOBALS['TSFE']->pSetup['includeJS.'])) {
 			foreach ($GLOBALS['TSFE']->pSetup['includeJS.'] as $key => $JSfile) {
 				if (!is_array($JSfile)) {
+					if (isset($GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['if.'])
+						&& !$GLOBALS['TSFE']->cObj->checkIf($GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['if.'])) {
+						continue;
+					}
 					$ss = $GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['external'] ? $JSfile : $GLOBALS['TSFE']->tmpl->getFileName($JSfile);
 					if ($ss) {
 						$type = $GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['type'];
@@ -716,6 +747,10 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		if (is_array($GLOBALS['TSFE']->pSetup['includeJSFooter.'])) {
 			foreach ($GLOBALS['TSFE']->pSetup['includeJSFooter.'] as $key => $JSfile) {
 				if (!is_array($JSfile)) {
+					if (isset($GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['if.'])
+						&& !$GLOBALS['TSFE']->cObj->checkIf($GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['if.'])) {
+						continue;
+					}
 					$ss = $GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['external'] ? $JSfile : $GLOBALS['TSFE']->tmpl->getFileName($JSfile);
 					if ($ss) {
 						$type = $GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['type'];
@@ -771,7 +806,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 					$key = $theKey;
 					if (trim($val)) {
 						$a = 'name';
-						if (strtolower($key) == 'refresh') {
+						if (strtolower($key) === 'refresh' || !empty($conf[$theKey . '.']['httpEquivalent'])) {
 							$a = 'http-equiv';
 						}
 						$pageRenderer->addMetaTag('<meta ' . $a . '="' . $key . '" content="' . htmlspecialchars(trim($val)) . '"' . $endingSlash . '>');
@@ -789,13 +824,11 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 			$GLOBALS['TSFE']->additionalHeaderData['JSImgCode'] = $GLOBALS['TSFE']->JSImgCode;
 			$GLOBALS['TSFE']->config['INTincScript_ext']['divKey'] = $GLOBALS['TSFE']->uniqueHash();
 			$GLOBALS['TSFE']->config['INTincScript_ext']['additionalHeaderData'] = $GLOBALS['TSFE']->additionalHeaderData; // Storing the header-data array
-			$GLOBALS['TSFE']->config['INTincScript_ext']['additionalFooterData'] = $GLOBALS['TSFE']->additionalFooterData; // Storing the footer-data array
 			$GLOBALS['TSFE']->config['INTincScript_ext']['additionalJavaScript'] = $GLOBALS['TSFE']->additionalJavaScript; // Storing the JS-data array
 			$GLOBALS['TSFE']->config['INTincScript_ext']['additionalCSS'] = $GLOBALS['TSFE']->additionalCSS; // Storing the Style-data array
 
 
 			$GLOBALS['TSFE']->additionalHeaderData = array ('<!--HD_' . $GLOBALS['TSFE']->config['INTincScript_ext']['divKey'] . '-->'); // Clearing the array
-			$GLOBALS['TSFE']->additionalFooterData = array ('<!--FD_' . $GLOBALS['TSFE']->config['INTincScript_ext']['divKey'] . '-->'); // Clearing the array
 			$GLOBALS['TSFE']->divSection .= '<!--TDS_' . $GLOBALS['TSFE']->config['INTincScript_ext']['divKey'] . '-->';
 		} else {
 			$GLOBALS['TSFE']->INTincScript_loadJSCode();
@@ -1097,11 +1130,9 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		switch ($ext) {
 			case 'js' :
 				$script = 'typo3temp/javascript_' . substr(md5($str), 0, 10) . '.js';
-				$output = $GLOBALS['TSFE']->absRefPrefix . $script;
 			break;
 			case 'css' :
 				$script = 'typo3temp/stylesheet_' . substr(md5($str), 0, 10) . '.css';
-				$output = $GLOBALS['TSFE']->absRefPrefix . $script;
 			break;
 		}
 
@@ -1112,7 +1143,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 			}
 		}
 
-		return $output;
+		return $script;
 	}
 
 	/**

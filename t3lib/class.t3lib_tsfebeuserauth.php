@@ -69,6 +69,7 @@ class t3lib_tsfeBeUserAuth extends t3lib_beUserAuth {
 	 * from form in $formfield_uident. 'superchallenged' = hashed password hashed again with username.
 	 *
 	 * @var	string
+	 * @deprecated since 4.7 will be removed in 4.9
 	 */
 	public $security_level = '';
 
@@ -335,10 +336,6 @@ class t3lib_tsfeBeUserAuth extends t3lib_beUserAuth {
 
 		$labelStr = htmlspecialchars($GLOBALS['LANG']->getLL($key)); // Label string in the default backend output charset.
 
-			// Convert to utf-8, then to entities:
-		if ($GLOBALS['LANG']->charSet != 'utf-8') {
-			$labelStr = $GLOBALS['LANG']->csConvObj->utf8_encode($labelStr, $GLOBALS['LANG']->charSet);
-		}
 		$labelStr = $GLOBALS['LANG']->csConvObj->utf8_to_entities($labelStr);
 
 			// Return the result:

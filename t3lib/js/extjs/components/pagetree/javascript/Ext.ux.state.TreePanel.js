@@ -45,23 +45,22 @@ Ext.override(Ext.ux.state.TreePanel, {
 		// install event handlers on TreePanel
 		tree.on({
 			// add path of expanded node to stateHash
-			beforeexpandnode:function(node) {
+			 beforeexpandnode:function(n) {
 				if (this.isRestoringState) {
 					return;
 				}
-
-				var saveID = (node.id === 'root' ? node.id : node.id.substr(1));
-				this.stateHash[saveID] = 1;
+				var saveID = n.id;
+				this.stateHash[saveID.substr(1)] = 1;
 			},
 
 			// delete path and all subpaths of collapsed node from stateHash
-			beforecollapsenode:function(node) {
+			beforecollapsenode:function(n) {
 				if (this.isRestoringState) {
 					return;
 				}
 
-				var deleteID = (node.id === 'root' ? node.id : node.id.substr(1));
-				delete this.stateHash[deleteID];
+				var deleteID = n.id;
+				delete this.stateHash[deleteID.substr(1)];
 			},
 
 			beforeclick: function(node) {
@@ -85,7 +84,7 @@ Ext.override(Ext.ux.state.TreePanel, {
 				this.isRestoringState = true;
 					// get last selected node
 				for (var pageID in this.stateHash) {
-					var pageNode = this.getNodeById((pageID !== 'root' ? 'p' : '') + pageID);
+					var pageNode = this.getNodeById('p' + pageID);
 					if (pageNode) {
 						pageNode.on({
 							expand: {

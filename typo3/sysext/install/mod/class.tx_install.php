@@ -53,6 +53,8 @@ require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_mi
 require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_flagsfromsprite.php');
 require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_addflexformstoacl.php');
 require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_imagelink.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_installfluidextbase.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_mediaflexform.php');
 
 /**
  * Install Tool module
@@ -482,7 +484,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 		$this->setupGeneral();
 		$this->generateConfigForm();
 		if (count($this->messages)) {
-			t3lib_div::debug($this->messages);
+			t3lib_utility_Debug::debug($this->messages);
 		}
 
 		if ($this->step) {
@@ -1026,19 +1028,47 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								TRUE
 							);
 						}
+
+						$usePatternList = FALSE;
+						$createDatabaseAllowed = $this->checkCreateDatabasePrivileges();
+						if ($createDatabaseAllowed === TRUE) {
+							$formFieldAttributesNew = 'checked="checked"';
+							$llRemark1 = 'Enter a name for your TYPO3 database.';
+						} elseif (is_array($createDatabaseAllowed)) {
+							$llRemark1 = 'Enter a name for your TYPO3 database.';
+							$llDbPatternRemark = 'The name has to match one of these names/patterns (% is a wild card):';
+							$llDbPatternList = '<li>' . implode('</li><li>', $createDatabaseAllowed) . '</li>';
+							$usePatternList = TRUE;
+						} else {
+							$formFieldAttributesNew = 'disabled="disabled"';
+							$formFieldAttributesSelect = 'checked="checked"';
+							$llRemark1 = 'You have no permissions to create new databases.';
+						}
+
 							// Substitute the subpart for the database options
 						$content = t3lib_parsehtml::substituteSubpart(
 							$step3SubPart,
 							'###DATABASEOPTIONS###',
 							implode(LF, $step3DatabaseOptions)
 						);
+						if ($usePatternList === FALSE) {
+							$content = t3lib_parsehtml::substituteSubpart(
+								$content,
+								'###DATABASE_NAME_PATTERNS###',
+								''
+							);
+						}
 							// Define the markers content
 						$step3SubPartMarkers = array(
 							'step' => $this->step + 1,
 							'llOptions' => 'You have two options:',
 							'action' => htmlspecialchars($this->action),
 							'llOption1' => 'Create a new database (recommended):',
-							'llRemark1' => 'Enter a name for your TYPO3 database.',
+							'llRemark1' => $llRemark1,
+							'll_Db_Pattern_Remark' => $llDbPatternRemark,
+							'll_Db_Pattern_List' => $llDbPatternList,
+							'formFieldAttributesNew' => $formFieldAttributesNew,
+							'formFieldAttributesSelect' => $formFieldAttributesSelect,
 							'llOption2' => 'Select an EMPTY existing database:',
 							'llRemark2' => 'Any tables used by TYPO3 will be overwritten.',
 							'continue' => 'Continue'
@@ -1931,12 +1961,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								// Don't allow editing stuff which is added by extensions
 								// Make sure we fix potentially duplicated entries from older setups
 							$potentialValue = str_replace(array("'.chr(10).'", "' . LF . '"), array(LF, LF), $value);
-							while (preg_match('/' . preg_quote($GLOBALS['TYPO3_CONF_VARS_extensionAdded'][$k][$vk], '/') . '$/', '', $potentialValue)) {
-								$potentialValue = preg_replace(
-									'/' . preg_quote($GLOBALS['TYPO3_CONF_VARS_extensionAdded'][$k][$vk], '/') . '$/',
-									'',
-									$potentialValue
-								);
+							while (preg_match('/' . $GLOBALS['TYPO3_CONF_VARS_extensionAdded'][$k][$vk] . '$/', '', $potentialValue)) {
+								$potentialValue = preg_replace('/' . $GLOBALS['TYPO3_CONF_VARS_extensionAdded'][$k][$vk] . '$/', '', $potentialValue);
 							}
 							$value = $potentialValue;
 						}
@@ -7491,6 +7517,19 @@ $out="
 		foreach ($GLOBALS['TCA'] as $table => $conf) {
 			t3lib_div::loadTCA($table);
 		}
+
+
+			// Hook for postprocessing values set in extTables.php
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['extTablesInclusion-PostProcessing'])) {
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['extTablesInclusion-PostProcessing'] AS $_classRef) {
+				$hookObject = t3lib_div::getUserObj($_classRef);
+				if (!$hookObject instanceof t3lib_extTables_PostProcessingHook) {
+					throw new UnexpectedValueException('$hookObject must implement interface t3lib_extTables_PostProcessingHook', 1320585902);
+				}
+				$hookObject->processData();
+			}
+		}
+
 	}
 
 
@@ -7720,18 +7759,14 @@ $out="
 		$this->markers['stylesheets'] = implode(LF, $this->stylesheets);
 		$this->markers['llErrors'] = 'The following errors occured';
 		$this->markers['copyright'] = $this->copyright();
-		$this->markers['charset'] = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] ? $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] : 'iso-8859-1';
+		$this->markers['charset'] = 'utf-8';
 		$this->markers['backendUrl'] = '../index.php';
 		$this->markers['backend'] = 'Backend admin';
 		$this->markers['frontendUrl'] = '../../index.php';
 		$this->markers['frontend'] = 'Frontend website';
 
 		$this->markers['metaCharset'] = 'Content-Type" content="text/html; charset=';
-		if (!empty($GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'])) {
-			$this->markers['metaCharset'] .= $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'];
-		} else {
-			$this->markers['metaCharset'] .= 'iso-8859-1';
-		}
+		$this->markers['metaCharset'] .= 'utf-8';
 
 			// Add the error messages
 		if (!empty($this->errorMessages)) {
@@ -7862,8 +7897,7 @@ $out="
 	 * @return void
 	 */
 	function output($content) {
-		header ('Content-Type: text/html; charset=' .
-			($GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset']?$GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset']:'iso-8859-1'));
+		header ('Content-Type: text/html; charset=utf-8');
 		echo $content;
 	}
 
@@ -8402,6 +8436,71 @@ $out="
 		}
 
 		$this->errorMessages[] = $messageText;
+	}
+
+	/**
+	 * Checks whether the mysql user is allowed to create new databases.
+	 *
+	 * This code is adopted from the phpMyAdmin project
+	 * http://www.phpmyadmin.net
+	 *
+	 * @return boolean
+	 */
+	protected function checkCreateDatabasePrivileges() {
+		$createAllowed = FALSE;
+		$allowedPatterns = array();
+
+		$grants = $GLOBALS['TYPO3_DB']->sql_query('SHOW GRANTS');
+
+			// we get one or more lines like this
+
+			// insufficent rights:
+			// GRANT USAGE ON *.* TO 'test'@'localhost' IDENTIFIED BY ...
+			// GRANT ALL PRIVILEGES ON `test`.* TO 'test'@'localhost'
+
+			// sufficient rights:
+			// GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY ...
+
+			// loop over all result rows
+		while (($row = $GLOBALS['TYPO3_DB']->sql_fetch_row($grants)) !== FALSE) {
+			$grant = $row[0];
+			$dbNameOffset = strpos($grant, ' ON ') + 4;
+			$dbName = substr($grant, $dbNameOffset, strpos($grant, '.', $dbNameOffset) - $dbNameOffset);
+			$privileges = substr($grant, 6, (strpos($grant, ' ON ') - 6));
+
+				// we need at least one of the following privileges
+			if ($privileges === 'ALL'
+				|| $privileges === 'ALL PRIVILEGES'
+				|| $privileges === 'CREATE'
+				|| strpos($privileges, 'CREATE,') !== FALSE) {
+
+
+					// and we need this privelege not on a specific DB, but on *
+				if ($dbName === '*') {
+						// user has permissions to create new databases
+					$createAllowed = TRUE;
+					break;
+				} else {
+					$allowedPatterns[] = str_replace('`', '', $dbName);
+				}
+			}
+		}
+
+			// remove all existing databases from the list of allowed patterns
+		$existingDatabases = $this->getDatabaseList();
+		foreach ($allowedPatterns as $index => $pattern) {
+			if (strpos($pattern, '%') !== FALSE) continue;
+
+			if (in_array($pattern, $existingDatabases)) {
+				unset($allowedPatterns[$index]);
+			}
+		}
+
+		if (count($allowedPatterns) > 0) {
+			return $allowedPatterns;
+		} else {
+			return $createAllowed;
+		}
 	}
 }
 

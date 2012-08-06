@@ -106,17 +106,15 @@ $TYPO3_CONF_VARS = array(
 		't3lib_cs_utils' => '',					// String (values: "iconv", "mbstring", default is homemade PHP-code). Defines which of these PHP-features to use for various charset processing functions in t3lib_cs. Will speed up charset functions radically.
 		'no_pconnect' => TRUE,					// Boolean: If TRUE, "connect" is used to connect to the database. If FALSE, a persistent connection using "pconnect" will be established!
 		'multiplyDBfieldSize' => 1,				// Double: 1-5: Amount used to multiply the DB field size when the install tool is evaluating the database size (eg. "2.5"). This is only useful e.g. if your database is ISO-8859-1 encoded but you want to use UTF-8 for your site. For Western European sites using UTF-8 the need should not be for more than twice the normal single-byte size (2) and for Chinese / Asian languages 3 should suffice. NOTICE: It is recommended to change the native database charset instead! (see <a href="http://wiki.typo3.org/index.php/UTF-8_support" target="_blank">TYPO3 wiki: UTF-8 support</a> for more information). NOTICE: This option is deprecated since TYPO3 4.5, and will not be used anymore in 4.7+. Please use proper tools to set your installation to native UTF-8.
-		'setDBinit' => '-1',						// String (textarea): Commands to send to database right after connecting, separated by newline. Ignored by the DBAL extension except for the 'native' type!
 		'dbClientCompress' => FALSE,			// Boolean: if TRUE, data exchange between TYPO3 and database server will be compressed. This may improve performance if (1) database serever is on the different server and (2) network connection speed to database server is 100mbps or less. CPU usage will be higher if this option is used but database operations will be executed faster due to much less (up to 3 times) database network traffic. This option has no effect if MySQL server is localhost.
 		'setMemoryLimit' => 0,					// Integer: memory_limit in MB: If more than 16, TYPO3 will try to use ini_set() to set the memory limit of PHP to the value. This works only if the function ini_set() is not disabled by your sysadmin.
-		'forceReturnPath' => FALSE,				// Boolean: <em>Note: This option is deprecated as of TYPO3 4.5 together with t3lib_htmlmail. This behaviour is the default using the new t3lib_mail methods.</em> Force return path to be applied in mail() calls. If this is set, all calls to mail() done by t3lib_htmlmail will be called with '-f&lt;return_path&gt; as the 5th parameter. This will make the return path correct on almost all Unix systems. There is a known problem with Postfix below version 2: Mails are not sent if this option is set and Postfix is used. On Windows platforms, the return path is set via a call to ini_set.
 		'serverTimeZone' => 1,					// Integer: GMT offset of servers time (from time()). Default is "1" which is "GMT+1" (central european time). This value can be used in extensions that are GMT aware and wants to convert times to/from other timezones.
 		'phpTimeZone' => '',					// String: timezone to force for all date() and mktime() functions. A list of supported values can be found at <a href="http://php.net/manual/en/timezones.php" target="_blank">php.net</a>. If this is not set, a valid fallback will be searched for by PHP (php.ini's <a href="http://www.php.net/manual/en/datetime.configuration.php#ini.date.timezone" target="_blank">date.timezone</a> setting, server defaults, etc); and if no fallback is found, the value of "UTC" is used instead.
 		'systemLog' => '',						// <p>String: semi-colon separated list. Defines one or more logging methods. Possible methods:</p><dl><dt>file,&lt;abs-path-to-file&gt;[,&lt;level&gt;]</dt><dd>logs to a file</dd><dt>mail,&lt;to&gt;[/&lt;from&gt;][,&lt;level&gt;]</dt><dd>sends the log entries via mail</dd><dt>syslog,&lt;facility&gt;,[,&lt;level&gt;]</dt><dd>uses the operating system's log. Facility may be one of LOCAL0..LOCAL7, USER (on Windows USER is the only valid type).</dd><dt>error_log[,,&lt;level&gt;]</dt><dd>uses the PHP error log</dd></dl><p>The &lt;level&gt; is the individual logging level (see <a href="#SYS-systemLogLevel">[SYS][systemLogLevel]</a>).</p>
 		'systemLogLevel' => 0,					// <p>Integer (0, 1, 2, 3, 4): Only messages with same or higher severity are logged.</p><ul><li>0: info</li><li>1: notice</li><li>2: warning</li><li>3: error</li><li>4: fatal error</li></ul>
 		'enableDeprecationLog' => 'file',		// Commalist: Enables the logging of deprecated methods and functions. Default is 'file'. The following options are allowed: <dl><dt>file</dt><dd>The log file will be written to typo3conf/deprecation_[hash-value].log</dd><dt>devlog</dt><dd>The log will be written to the development log</dd><dt>console<dt><dd>The log will be displayed in the Backend's Debug Console. The logging options can be combined by comma-separating them.</dd></dl>
 		'maxFileNameLength' => 60,				// Integer: This is the maximum file name length. The value will be taken into account by basic file operations like renaming or creation of files and folders.
-		'UTF8filesystem' => FALSE,				// Boolean: If TRUE and <a href="#BE-forceCharset">[BE][forceCharset]</a> is set to utf-8, then TYPO3 uses utf-8 to store file names. This allows for accented Latin letters as well as any other non-latin characters like Cyrillic and Chinese.
+		'UTF8filesystem' => FALSE,				// Boolean: If TRUE then TYPO3 uses utf-8 to store file names. This allows for accented Latin letters as well as any other non-latin characters like Cyrillic and Chinese.
 		'systemLocale' => '',					// String: locale used for certain system related functions, e.g. escaping shell commands. If problems with filenames containing special characters occur, the value of this option is probably wrong. See <a href="http://php.net/manual/en/function.setlocale.php" target="_blank">setlocale()</a>.
 		'lockingMode' => 'simple',					// String: Define which locking mode is used to control requests to pages being generated. Can be one of either "disable" (no locking), "simple" (checks for file existance), "flock" (using PHPs <a href="http://php.net/flock" target="_blank">flock()</a> function), "semaphore" (using PHPs <a href="http://php.net/sem-acquire" target="_blank">sem_acquire()</a> function). Default is "disable".
 		'reverseProxyIP' => '',					// String: list of IP addresses. If TYPO3 is behind one or more (intransparent) reverese proxies the IP addresses must be added here.
@@ -134,12 +132,16 @@ $TYPO3_CONF_VARS = array(
 				'cache_pages' => array(
 					'frontend' => 't3lib_cache_frontend_VariableFrontend',
 					'backend' => 't3lib_cache_backend_DbBackend',
-					'options' => array(),
+					'options' => array(
+						'compression' => TRUE
+					),
 				),
 				'cache_pagesection' => array(
 					'frontend' => 't3lib_cache_frontend_VariableFrontend',
 					'backend' => 't3lib_cache_backend_DbBackend',
-					'options' => array(),
+					'options' => array(
+						'compression' => TRUE
+					),
 				),
 				'cache_phpcode' => array(
 					'frontend' => 't3lib_cache_frontend_PhpFrontend',
@@ -159,12 +161,12 @@ $TYPO3_CONF_VARS = array(
 		'productionExceptionHandler'  => 't3lib_error_ProductionExceptionHandler',	// String: Classname to handle exceptions that might happen in the TYPO3-code. Leave empty to disable exception handling. Default: "t3lib_error_ProductionExceptionHandler". This exception handler displays a nice error message when something went wrong. The error message is logged to the configured logs. Note: The configured "productionExceptionHandler" is used if displayErrors is set to "0" or to "-1" and devIPmask doesn't match the users IP.
 		'debugExceptionHandler' => 't3lib_error_DebugExceptionHandler',				// String: Classname to handle exceptions that might happen in the TYPO3-code. Leave empty to disable exception handling. Default: "t3lib_error_DebugExceptionHandler". This exception handler displays the complete stack trace of any encountered exception. The error message and the stack trace  is logged to the configured logs. Note: The configured "debugExceptionHandler" is used if displayErrors is set to "1" and if displayErrors is "-1"  or "2" and the devIPmask matches the users IP.
 		'errorHandler' => 't3lib_error_ErrorHandler',	// String: Classname to handle PHP errors. E.g.: t3lib_error_ErrorHandler. This class displays and logs all errors that are registered as "errorHandlerErrors" (<a href="#SYS-errorHandlerErrors">[SYS][errorHandlerErrors]</a>). Leave empty to disable error handling. Errors can be logged to syslog (see: <a href="#SYS-systemLog">[SYS][systemLog]</a>) to the installed developer log and to the "syslog" table. If an error is registered in "exceptionalErrors" ([SYS][exceptionalErrors]) it will be turned into an exception to be handled by the configured exceptionHandler.
-		'errorHandlerErrors' => E_ALL & ~(E_STRICT | E_NOTICE),	// Integer: The E_* constant that will be handled by the errorhandler. Default is "E_ALL ^ E_NOTICE".
-		'exceptionalErrors' => E_ALL & ~(E_STRICT | E_NOTICE | E_DEPRECATED | E_WARNING | E_USER_ERROR | E_USER_NOTICE | E_USER_WARNING),	// Integer: The E_* constant that will be handled as an exception by t3lib_error_ErrorHandler. Default is <tt>E_ALL ^ E_NOTICE ^ E_DEPRECATED ^ E_WARNING ^ E_USER_ERROR ^ E_USER_NOTICE ^ E_USER_WARNING</tt> (20725) and "0" if <tt>displayErrors=0</tt> (see <a href="http://php.net/manual/en/errorfunc.constants.php" target="_blank">PHP documentation</a>).
+		'errorHandlerErrors'=> E_ALL ^ E_NOTICE,	// Integer: The E_* constant that will be handled by the errorhandler. Default is "E_ALL ^ E_NOTICE".
+		'exceptionalErrors' => E_ALL ^ E_NOTICE ^ E_DEPRECATED ^ E_WARNING ^ E_USER_ERROR ^ E_USER_NOTICE ^ E_USER_WARNING,	// Integer: The E_* constant that will be handled as an exception by t3lib_error_ErrorHandler. Default is <tt>E_ALL ^ E_NOTICE ^ E_DEPRECATED ^ E_WARNING ^ E_USER_ERROR ^ E_USER_NOTICE ^ E_USER_WARNING</tt> (20725) and "0" if <tt>displayErrors=0</tt> (see <a href="http://php.net/manual/en/errorfunc.constants.php" target="_blank">PHP documentation</a>).
 		'enable_errorDLOG' => 0,				// Boolean: If set, errors are written to the developer log (requires an installed *devlog* extension).
 		'enable_exceptionDLOG' => 0,			// Boolean: If set, exceptions are written to the developer log (requires an installed *devlog* extension).
-		'syslogErrorReporting' => E_ALL & ~(E_STRICT | E_NOTICE),	// Integer: Configures which PHP errors should be logged to the configured syslogs (see: [SYS][systemLog]). If set to "0" no PHP errors are logged to the syslog. Default is "E_ALL ^ E_NOTICE" (6135).
-		'belogErrorReporting' => E_ALL & ~(E_STRICT | E_NOTICE),	// Integer: Configures which PHP errors should be logged to the "syslog" table (extension: belog). If set to "0" no PHP errors are logged to the sys_log table. Default is "E_ALL ^ E_NOTICE" (6135).
+		'syslogErrorReporting' => E_ALL ^ E_NOTICE,	// Integer: Configures which PHP errors should be logged to the configured syslogs (see: [SYS][systemLog]). If set to "0" no PHP errors are logged to the syslog. Default is "E_ALL ^ E_NOTICE" (6135).
+		'belogErrorReporting' => E_ALL ^ E_NOTICE,	// Integer: Configures which PHP errors should be logged to the "syslog" table (extension: belog). If set to "0" no PHP errors are logged to the sys_log table. Default is "E_ALL ^ E_NOTICE" (6135).
 		'locallangXMLOverride' => array(),				// For extension/overriding of the arrays in 'locallang' files in frontend and backend. See 'Inside TYPO3' for more information.
 		'generateApacheHtaccess' => 1,			// Boolean: TYPO3 can create <em>.htaccess</em> files which are used by Apache Webserver. They are useful for access protection or performance improvements. Currently <em>.htaccess</em> files in the following directories are created, if they do not exist: <ul><li>typo3temp/compressor/</li></ul>You want to disable this feature, if you are not running Apache or want to use own rulesets.
 	),
@@ -223,7 +225,6 @@ $TYPO3_CONF_VARS = array(
 		'usePHPFileFunctions' => TRUE,			// Boolean: If set, all fileoperations are done by the default PHP-functions. Default on Unix is using the system commands by exec().
 		'compressionLevel' => 0,				// Determines output compression of BE output. Makes output smaller but slows down the page generation depending on the compression level. Requires a) zlib in your PHP installation and b) special rewrite rules for .css.gzip and .js.gzip (please see _.htacces for an example). Range 1-9, where 1 is least compression and 9 is greatest compression. 'true' as value will set the compression based on the PHP default settings (usually 5). Suggested and most optimal value is 5.
 		'maxFileSize' => '10240',				// Integer: If set this is the max filesize in KB's for file operations in the backend. Can be overridden through $TCA per table field separately.
-		'forceCharset' => '-1',					// String: Normally the charset of the backend users language selection is used. If you set this value to a charset found in t3lib/csconvtbl/ (or "utf-8") the backend (and database) will ALWAYS use this charset. Always use a lowercase value. NOTICE: This option is deprecated since TYPO3 4.5, and will be removed in 4.7. Please use proper tools to set your installation to native UTF-8.
 		'installToolPassword' => '',			// String: This is the md5-hashed password for the Install Tool. Set this to '' and access will be totally denied. PLEASE consider to externally password protect the typo3/install/ folder, eg. with a .htaccess file.
 		'pageTree' => array(
 			'preloadLimit' => 50,				// Integer: Count of pages that will be preloaded in pagetree. Big amount makes collapsing new branches faster but requires more SQL queries.
@@ -240,6 +241,21 @@ $TYPO3_CONF_VARS = array(
 			options.contextMenu.options.leftIcons = 1
 			options.contextMenu {
 				table {
+					virtual_root {
+						disableItems =
+
+						items {
+							100 = ITEM
+							100 {
+								name = history
+								label = LLL:EXT:lang/locallang_misc.xml:CM_history
+								spriteIcon = actions-document-history-open
+								displayCondition = canShowHistory != 0
+								callbackAction = openHistoryPopUp
+							}
+						}
+					}
+
 					pages_root {
 						disableItems =
 
@@ -468,7 +484,6 @@ $TYPO3_CONF_VARS = array(
 //			'group' => '',						// default in tce_main is 'show,edit,new,editcontent'. If this is set (uncomment), this value is used instead.
 //			'everybody' => ''					// default in tce_main is ''. If this is set (uncomment), this value is used instead.
 		),
-		'newPagesVersioningType' => -1,			// Integer: Default versioning type for new pages create as versions. -1 means "element", 0 means "page", 1 means "branch". If using enything else than -1 ("element") here you also have to set "elementVersioningOnly=FALSE" . Please note that "page" and "branch" types are deprecated since TYPO3 4.2 and will be unsupported in TYPO3 4.6. Thus, this option will be removed in TYPO3 4.6.
 		'defaultUC' => array (					// Override default settings for BE-users. See class.t3lib_beuserauth.php, array $uc_default
 		),
 			// The control of fileextensions goes in two catagories. Webspace and Ftpspace. Webspace is folders accessible from a webbrowser (below TYPO3_DOCUMENT_ROOT) and ftpspace is everything else.
@@ -494,7 +509,6 @@ $TYPO3_CONF_VARS = array(
 		'compactFlexFormXML' => 0,				// If set, the flexform XML will not contain indentation spaces making XML more compact
 		'flexformForceCDATA' => 0,				// Boolean:  If set, will add CDATA to Flexform XML. Some versions of libxml have a bug that causes HTML entities to be stripped from any XML content and this setting will avoid the bug by adding CDATA.
 		'explicitConfirmationOfTranslation' => FALSE,	// If set, then the diff-data of localized records is not saved automatically when updated but requires that a translator clicks the special finish_translation/save/close button that becomes available.
-		'elementVersioningOnly' => TRUE,		// If TRUE, only element versioning is allowed in the backend (see option newPagesVersioningType). Setting this flag is recommended for new installations of TYPO3 4.2+ since "page" and "branch" versioning types are known for the drawbacks of loosing ids and "element" type versions supports moving now. Please note that "page" and "branch" types are deprecated since TYPO3 4.2 and will be unsupported in TYPO3 4.6. Thus, this option will be removed in TYPO3 4.6.
 		'versionNumberInFilename' => FALSE,	// <p>Boolean: If TRUE, included CSS and JS files will have the timestamp embedded in the filename, ie. filename.1269312081.js. This will make browsers and proxies reload the files if they change (thus avoiding caching issues). IMPORTANT: this feature requires extra .htaccess rules to work (please refer to _.htaccess or the _.htaccess file from the dummy package)</p><p>If FALSE the filemtime will be appended as a query-string.</p>
 		'spriteIconGenerator_handler' => '',	// String: Used to register own/other spriteGenerating Handler, they have to implement the interface t3lib_spritemanager_SpriteIconGenerator. If set to "t3lib_spritemanager_SpriteBuildingHandler" icons from extensions will automatically merged into sprites.
 		'debug' => FALSE,			// Boolean: If set, the loginrefresh is disabled and pageRenderer is set to debug mode. Use this to debug the backend only!
@@ -562,8 +576,6 @@ $TYPO3_CONF_VARS = array(
 		'defaultTypoScript_constants.' => array(),	// Lines of TS to include after a static template with the uid = the index in the array (Constants)
 		'defaultTypoScript_setup' => '',		// Enter lines of default TypoScript, setup-field.
 		'defaultTypoScript_setup.' => array(),	// As above, but for Setup
-		'defaultTypoScript_editorcfg' => '',	// String (textarea). Enter lines of default TypoScript, editorcfg-field (Backend Editor Configuration)
-		'defaultTypoScript_editorcfg.' => array(),		// As above, but for Backend Editor Configuration
 		'dontSetCookie' => FALSE,				// Boolean: If set, the no cookies is attempted to be set in the front end. Of course no userlogins are possible either...
 		'additionalAbsRefPrefixDirectories' => '',	// Enter additional directories to be prepended with absRefPrefix. Directories must be comma-separated. TYPO3 already prepends the following directories: media/, typo3conf/ext/, fileadmin/
 		'IPmaskMountGroups' => array(			// This allows you to specify an array of IPmaskLists/fe_group-uids. If the REMOTE_ADDR of the user matches an IPmaskList, then the given fe_group is add to the gr_list. So this is an automatic mounting of a user-group. But no fe_user is logged in though! This feature is implemented for the default frontend user authentication and might not be implemented for alternative authentication services.
@@ -576,19 +588,22 @@ $TYPO3_CONF_VARS = array(
 		'hidePagesIfNotTranslatedByDefault' => FALSE,	// Boolean: If TRUE, pages that has no translation will be hidden by default. Basically this will inverse the effect of the page localization setting "Hide page if no translation for current language exists" to "Show page even if no translation exists"
 		'eID_include' => array(),				// Array of key/value pairs where key is "tx_[ext]_[optional suffix]" and value is relative filename of class to include. Key is used as "?eID=" for index_ts.php to include the code file which renders the page from that point. (Useful for functionality that requires a low initialization footprint, eg. frontend ajax applications)
 		'disableNoCacheParameter' => FALSE,		// Boolean: If set, the no_cache request parameter will become ineffective. This is currently still an experimental feature and will require a website only with plugins that don't use this parameter. However, using "&amp;no_cache=1" should be avoided anyway because there are better ways to disable caching for a certain part of the website (see COA_INT/USER_INT documentation in TSref).
+		'cHashExcludedParameters' => 'L', // String: The the given parameters will be ignored in the cHash calculation. Example: L,tx_search_pi1[query]
+		'cHashOnlyForParameters' => '', // String: Only the given parameters will be evaluated in the cHash calculation. Example: tx_news_pi1[uid]
+		'cHashRequiredParameters' => '', // Optional: Configure Parameters that require a cHash. If no cHash is given but one of the parameters are set, then TYPO3 triggers the configured cHash Error behaviour
+		'cHashExcludedParametersIfEmpty' => '', // Optional: Configure Parameters that are only relevant for the chash if there's an associated value available. And asterisk "*" can be used to skip all empty parameters.
 		'workspacePreviewLogoutTemplate' => '',	// If set, points to an HTML file relative to the TYPO3_site root which will be read and outputted as template for this message. Example: fileadmin/templates/template_workspace_preview_logout.html. Inside you can put the marker %1$s to insert the URL to go back to. Use this in &lt;a href="%1$s"&gt;Go back...&lt;/a&gt; links
 		'versionNumberInFilename' => 'querystring',	// String: embed,querystring,''. Allows to automatically include a version number (timestamp of the file) to referred CSS and JS filenames on the rendered page. This will make browsers and proxies reload the files if they change (thus avoiding caching issues). Set to 'embed' will have the timestamp embedded in the filename, ie. filename.1269312081.js. IMPORTANT: 'embed' requires extra .htaccess rules to work (please refer to _.htaccess or the _.htaccess file from the dummy package)<p>Set to 'querystring' (default setting) to append the version number as a query parameter (doesn't require mod_rewrite). Set to '' will turn this functionality off (behaves like TYPO3 &lt; v4.4).</p>
 		'XCLASS' => array(),					// See 'Inside TYPO3' document for more information.
 	),
 	'MAIL' => array(		// Mail configurations to tune how t3lib_mail classes will send their mails.
-		'transport' => 'mail',					// <p>String:</p><dl><dt>mail</dt><dd>Sends messages by delegating to PHP's internal mail() function. No further settings required. This is the most unreliable option. If you are serious about sending mails, consider using "smtp" or "sendmail".</dd><dt>smtp</dt><dd>Sends messages over the (standardized) Simple Message Transfer Protocol. It can deal with encryption and authentication. Most flexible option, requires a mail server and configurations in transport_smtp_* settings below. Works the same on Windows, Unix and MacOS.</dd><dt>sendmail</dt><dd>Sends messages by communicating with a locally installed MTA - such as sendmail. See setting transport_sendmail_command bellow.<dd><dt>mbox</dt><dd>This doesn't send any mail out, but instead will write every outgoing mail to a file adhering to the RFC 4155 mbox format, which is a simple text file where the mails are concatenated. Useful for debugging the mail sending process and on development machines which cannot send mails to the outside. Configure the file to write to in the 'transport_mbox_file' setting below</dd></dl>
+		'transport' => 'mail',					// <p>String:</p><dl><dt>mail</dt><dd>Sends messages by delegating to PHP's internal mail() function. No further settings required. This is the most unreliable option. If you are serious about sending mails, consider using "smtp" or "sendmail".</dd><dt>smtp</dt><dd>Sends messages over the (standardized) Simple Message Transfer Protocol. It can deal with encryption and authentication. Most flexible option, requires a mail server and configurations in transport_smtp_* settings below. Works the same on Windows, Unix and MacOS.</dd><dt>sendmail</dt><dd>Sends messages by communicating with a locally installed MTA - such as sendmail. See setting transport_sendmail_command bellow.<dd><dt>mbox</dt><dd>This doesn't send any mail out, but instead will write every outgoing mail to a file adhering to the RFC 4155 mbox format, which is a simple text file where the mails are concatenated. Useful for debugging the mail sending process and on development machines which cannot send mails to the outside. Configure the file to write to in the 'transport_mbox_file' setting below</dd><dt>&lt;classname&gt;</dt><dd>Custom class which implements Swift_Transport. The constructor receives all settings from the MAIL section to make it possible to add custom settings.</dd></dl>
 		'transport_smtp_server' => 'localhost:25',			// String: <em>only with transport=smtp</em>: &lt;server:port> of mailserver to connect to. &lt;port> defaults to "25".
 		'transport_smtp_encrypt' => '',		// String: <em>only with transport=smtp</em>: Connect to the server using the specified transport protocol. Requires openssl library. Usually available: <em>ssl, sslv2, sslv3, tls</em>. Check <a href="http://www.php.net/stream_get_transports" target="_blank">stream_get_transports()</a>.
 		'transport_smtp_username' => '',		// String: <em>only with transport=smtp</em>: If your SMTP server requires authentication, enter your username here.
 		'transport_smtp_password' => '',		// String: <em>only with transport=smtp</em>: If your SMTP server requires authentication, enter your password here.
 		'transport_sendmail_command' => '/usr/sbin/sendmail -bs',	// String: <em>only with transport=sendmail</em>: The command to call to send a mail locally. The default works on most modern UNIX based mail server (sendmail, postfix, exim)
 		'transport_mbox_file' => '',	// String: <em>only with transport=mbox</em>: The file where to write the mails into. This file will be conforming the mbox format described in RFC 4155. It is a simple text file with a concatenation of all mails. Path must be absolute.
-		'substituteOldMailAPI' => 1,	// Boolean: If this is set, old calls to t3lib_utility_mail::Mail() will be translated to new t3lib_mail calls. This should work on most cases and thus respect the above transport settings. If you get garbled emails (or no attachments), consider setting this off. Ask the extension author to upgrade their code to make use of t3lib_mail (instead of the deprecated t3lib_htmlmail).
 		'defaultMailFromAddress' => '',			// String: This default email address is used when no other "from" address is set for a TYPO3-generated email. You can specify an email address only (ex. info@example.org).
 		'defaultMailFromName' => '',			// String: This default name is used when no other "from" name is set for a TYPO3-generated email.
 	),
@@ -711,9 +726,9 @@ if (TYPO3_MODE === 'BE') {
 $T3_VAR = array();	// Initialize.
 
 	// TYPO3 version
-$TYPO_VERSION = '4.6.10';	// @deprecated: Will be removed in TYPO3 4.8. Use the constants defined below
+$TYPO_VERSION = '4.7.0';	// @deprecated: Will be removed in TYPO3 4.8. Use the constants defined below
 define('TYPO3_version', $TYPO_VERSION);
-define('TYPO3_branch', '4.6');
+define('TYPO3_branch', '4.7');
 define('TYPO3_copyright_year', '1998-2012');
 
 	// Handle $GLOBALS['TYPO3_CONF_VARS']['HTTP']['userAgent']. We can not set the default above
@@ -801,56 +816,40 @@ set_include_path(PATH_typo3 . 'contrib/pear/' . PATH_SEPARATOR . get_include_pat
  * Checking for UTF-8 in the settings since TYPO3 4.5
  *
  * Since TYPO3 4.5, everything other than UTF-8 is deprecated.
- * The -1 operator is used to see if the option was set in the installations localconf.php.
  *
  *   [BE][forceCharset] is set to the charset that TYPO3 is using
  *   [SYS][setDBinit] is used to set the DB connection
  * and both settings need to be adjusted for UTF-8 in order to work properly
  */
-	// If this value is -1 then the setting has not been modified in localconf.php
-if ($TYPO3_CONF_VARS['BE']['forceCharset'] == '-1' && $typo_db) {
-	if (t3lib_div::compat_version('4.5')) {
-			// 1) no option was set in localconf.php but the Update Wizard
-			//    was already used, so the admin is knowing what he's doing,
-			// 2) a new installation with the new default value
-		$TYPO3_CONF_VARS['BE']['forceCharset'] = 'utf-8';
-	} elseif (TYPO3_enterInstallScript !== '1') {
-			// The value needs to be set in localconf.php
-		die('This installation was just upgraded to TYPO3 ' . TYPO3_branch . '. In this version, some default settings have changed.<br />' .
-			'You can continue to use your settings by specifying the former default values in localconf.php.<br />' .
-			'Please proceed to the Update Wizard in the TYPO3 Install Tool to update your configuration.');
+	// Check if [BE][forceCharset] has been set in localconf.php
+if (isset($TYPO3_CONF_VARS['BE']['forceCharset'])) {
+		// die() unless we're already on UTF-8
+	if ($TYPO3_CONF_VARS['BE']['forceCharset'] != 'utf-8' && $TYPO3_CONF_VARS['BE']['forceCharset'] && TYPO3_enterInstallScript !== '1') {
+		die('This installation was just upgraded to a new TYPO3 version. Since TYPO3 4.7, utf-8 is always enforced.<br />' .
+			'The configuration option $TYPO3_CONF_VARS[BE][forceCharset] was marked as deprecated in TYPO3 4.5 and is now ignored.<br />' .
+			'You have configured the value to something different, which is not supported anymore.<br />' .
+			'Please proceed to the Update Wizard in the TYPO3 Install Tool to update your configuration.'
+		);
+	} else {
+		unset($TYPO3_CONF_VARS['BE']['forceCharset']);
 	}
-
-} elseif ($TYPO3_CONF_VARS['BE']['forceCharset'] !== 'utf-8' && $typo_db) {
-	t3lib_div::deprecationLog('This TYPO3 installation does not enforce the UTF-8 character set.' . chr(10) .
-		'Everything other than UTF-8 is deprecated since TYPO3 4.5.' . chr(10) .
-		'The DB, its connection and TYPO3 should be migrated to UTF-8 therefore. Please check your setup.');
 }
 
-
-	// If this value is -1 then the setting has not been modified in localconf.php
-if ($TYPO3_CONF_VARS['SYS']['setDBinit'] == '-1' && $typo_db) {
-	if (t3lib_div::compat_version('4.5')) {
-			// 1) no option was set in localconf.php but the Update Wizard
-			//    was already used, so the admin is knowing what he's doing,
-			// 2) a new installation with the new default value
-		$TYPO3_CONF_VARS['SYS']['setDBinit'] = 'SET NAMES utf8';
-	} elseif (TYPO3_enterInstallScript !== '1' && $typo_db) {
-			// The value needs to be set in localconf.php
-		die('This installation was just upgraded to TYPO3 ' . TYPO3_branch . '. In this version, some default settings have changed.<br />' .
-			'You can continue to use your settings by specifying the former default values in localconf.php.<br />' .
-			'Please proceed to the Update Wizard in the TYPO3 Install Tool to update your configuration.');
-	}
-
-	// Only accept "SET NAMES utf8" for this setting. Otherwise, a deprecation warning will be issued.
-} elseif (!preg_match('/SET NAMES utf8/', $TYPO3_CONF_VARS['SYS']['setDBinit']) && $typo_db) {
-		// TODO: Add a link to a website with more information here
-	t3lib_div::deprecationLog('This TYPO3 installation is using the $TYPO3_CONF_VARS[\'SYS\'][\'setDBinit\'] property with the following value:' . chr(10) .
+if (isset($TYPO3_CONF_VARS['SYS']['setDBinit']) &&
+	$TYPO3_CONF_VARS['SYS']['setDBinit'] !== '-1' &&
+	preg_match('/SET NAMES utf8/', $TYPO3_CONF_VARS['SYS']['setDBinit']) === FALSE &&
+	TYPO3_enterInstallScript !== '1'
+) {
+		// Only accept "SET NAMES utf8" for this setting, otherwise die with a nice error
+	die('This TYPO3 installation is using the $TYPO3_CONF_VARS[\'SYS\'][\'setDBinit\'] property with the following value:' . chr(10) .
 		$TYPO3_CONF_VARS['SYS']['setDBinit'] . chr(10) . chr(10) .
 		'It looks like UTF-8 is not used for this connection.' . chr(10) . chr(10) .
-		'Everything other than UTF-8 is deprecated since TYPO3 4.5.' . chr(10) .
+		'Everything other than UTF-8 is unsupported since TYPO3 4.7.' . chr(10) .
 		'The DB, its connection and TYPO3 should be migrated to UTF-8 therefore. Please check your setup.');
+} else {
+	$TYPO3_CONF_VARS['SYS']['setDBinit'] = 'SET NAMES utf8;';
 }
+
 
 
 	// If this value is not -1, then the setting has been modified in localconf.php
@@ -905,6 +904,21 @@ if (!empty($GLOBALS['TYPO3_CONF_VARS']['SYS']['curlProxyUserPass'])) {
 		' and $TYPO3_CONF_VARS[\'HTTP\'][\'proxy_password\'] instead.' . LF . 'Remove this line from your localconf.php.'
 	);*/
 }
+
+/**
+ * Set cacheHash options
+ */
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash'] = array(
+	'cachedParametersWhiteList' => t3lib_div::trimExplode(',', $GLOBALS['TYPO3_CONF_VARS']['FE']['cHashOnlyForParameters'], TRUE),
+	'excludedParameters' => t3lib_div::trimExplode(',', $GLOBALS['TYPO3_CONF_VARS']['FE']['cHashExcludedParameters'], TRUE),
+	'requireCacheHashPresenceParameters' => t3lib_div::trimExplode(',', $GLOBALS['TYPO3_CONF_VARS']['FE']['cHashRequiredParameters'], TRUE),
+);
+if (trim($GLOBALS['TYPO3_CONF_VARS']['FE']['cHashExcludedParametersIfEmpty']) === '*') {
+	$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludeAllEmptyParameters'] = TRUE;
+} else {
+	$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParametersIfEmpty'] = t3lib_div::trimExplode(',', $GLOBALS['TYPO3_CONF_VARS']['FE']['cHashExcludedParametersIfEmpty'], TRUE);
+}
+
 
 	// ['HTTP']['proxy_auth_scheme'] can only be 'digest' or 'basic'
 $GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy_auth_scheme'] === 'digest' ?
@@ -1018,9 +1032,7 @@ $TYPO3_CONF_VARS['SC_OPTIONS']['errors']['exceptionHandler'] = $TYPO3_CONF_VARS[
 $TYPO3_CONF_VARS['SC_OPTIONS']['errors']['exceptionalErrors'] = $TYPO3_CONF_VARS['SYS']['exceptionalErrors'];
 
 	// Mail sending via Swift Mailer
-if ($TYPO3_CONF_VARS['MAIL']['substituteOldMailAPI']) {
-	$TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/utility/class.t3lib_utility_mail.php']['substituteMailDelivery'][] = 't3lib_mail_SwiftMailerAdapter';
-}
+$TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/utility/class.t3lib_utility_mail.php']['substituteMailDelivery'][] = 't3lib_mail_SwiftMailerAdapter';
 
 	// Turn error logging on/off.
 if (($displayErrors = intval($TYPO3_CONF_VARS['SYS']['displayErrors'])) != '-1')	{
@@ -1102,7 +1114,6 @@ define('TYPO3_EXCEPTION_DLOG', $GLOBALS['TYPO3_CONF_VARS']['SYS']['enable_except
 	// Unsetting other reserved global variables:
 	// Those which are/can be set in "stddb/tables.php" files:
 unset($PAGES_TYPES);
-unset($ICON_TYPES);
 unset($TCA);
 unset($TBE_MODULES);
 unset($TBE_STYLES);

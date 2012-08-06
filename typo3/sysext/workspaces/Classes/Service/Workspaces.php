@@ -59,7 +59,7 @@ class Tx_Workspaces_Service_Workspaces implements t3lib_Singleton {
 		if (count($customWorkspaces)) {
 			foreach ($customWorkspaces as $workspace) {
 				if ($GLOBALS['BE_USER']->checkWorkspace($workspace)) {
-					$availableWorkspaces[$workspace['uid']] = htmlspecialchars($workspace['title']);
+					$availableWorkspaces[$workspace['uid']] = $workspace['title'];
 				}
 			}
 		}
@@ -206,6 +206,17 @@ class Tx_Workspaces_Service_Workspaces implements t3lib_Singleton {
 			$pageList = $pageId;
 		} else {
 			$pageList = '';
+
+				// check if person may only see a "virtual" page-root
+			$mountPoints = array_map('intval', $GLOBALS['BE_USER']->returnWebmounts());
+			$mountPoints = array_unique($mountPoints);
+			if (!in_array(0, $mountPoints)) {
+				$tempPageIds = array();
+				foreach ($mountPoints as $mountPoint) {
+					$tempPageIds[] = $this->getTreeUids($mountPoint, $wsid, $recursionLevel);
+				}
+				$pageList = implode(',', $tempPageIds);
+			}
 		}
 
 			// Traversing all tables supporting versioning:
@@ -304,6 +315,8 @@ class Tx_Workspaces_Service_Workspaces implements t3lib_Singleton {
 	 * @param string $table
 	 * @param string $pageList
 	 * @param integer $wsid
+	 * @param integer $filter
+	 * @param integer $stage
 	 * @return array
 	 */
 	protected function getMoveToPlaceHolderFromPages($table, $pageList, $wsid, $filter, $stage) {
@@ -567,7 +580,7 @@ class Tx_Workspaces_Service_Workspaces implements t3lib_Singleton {
 	 *
 	 * @param  $pageUid
 	 * @param  $workspaceUid
-	 * @return void
+	 * @return boolean
 	 */
 	public function canCreatePreviewLink($pageUid, $workspaceUid) {
 		$result = TRUE;

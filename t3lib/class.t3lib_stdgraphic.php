@@ -224,7 +224,7 @@ class t3lib_stdGraphic {
 		} else { // The object may not exist yet, so we need to create it now. Happens in the Install Tool for example.
 			$this->csConvObj = t3lib_div::makeInstance('t3lib_cs');
 		}
-		$this->nativeCharset = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'];
+		$this->nativeCharset = 'utf-8';
 	}
 
 
@@ -274,6 +274,7 @@ class t3lib_stdGraphic {
 
 					// preserve alpha transparency
 				if ($this->saveAlphaLayer) {
+					imagealphablending($destImg, FALSE);
 					imagesavealpha($destImg, TRUE);
 					$Bcolor = imagecolorallocatealpha($destImg, 0, 0, 0, 127);
 					imagefill($destImg, 0, 0, $Bcolor);
@@ -291,6 +292,7 @@ class t3lib_stdGraphic {
 				$cpImg = $this->imageCreateFromFile($BBmask[3]);
 				$destImg = imagecreatetruecolor($w, $h);
 				if ($this->saveAlphaLayer) {
+					imagealphablending($destImg, FALSE);
 					imagesavealpha($destImg, TRUE);
 					$Bcolor = imagecolorallocatealpha($destImg, 0, 0, 0, 127);
 					imagefill($destImg, 0, 0, $Bcolor);
@@ -418,30 +420,32 @@ class t3lib_stdGraphic {
 	 * It works, but the resulting images is now a true-color PNG which may be very large.
 	 * So, why not use 'imagetruecolortopalette ($im, TRUE, 256)' - well because it does NOT WORK! So simple is that.
 	 *
-	 * For parameters, see PHP function "imagecopyresized()"
-	 *
-	 * @param	pointer		see PHP function "imagecopyresized()"
-	 * @param	pointer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @return	void
+	 * @param resource $dstImg destination image
+	 * @param resource $srcImg source image
+	 * @param integer $dstX destination x-coordinate
+	 * @param integer $dstY destination y-coordinate
+	 * @param integer $srcX source x-coordinate
+	 * @param integer $srcY source y-coordinate
+	 * @param integer $dstWidth destination width
+	 * @param integer $dstHeight destination height
+	 * @param integer $srcWidth source width
+	 * @param integer $srcHeight source height
+	 * @return void
 	 * @access private
 	 * @see t3lib_iconWorks::imagecopyresized()
 	 */
-	function imagecopyresized(&$im, $cpImg, $Xstart, $Ystart, $cpImgCutX, $cpImgCutY, $w, $h, $w, $h) {
-		if ($this->imagecopyresized_fix && !$this->saveAlphaLayer) {
-			$im_base = imagecreatetruecolor(imagesx($im), imagesy($im)); // Make true color image
-			imagecopyresized($im_base, $im, 0, 0, 0, 0, imagesx($im), imagesy($im), imagesx($im), imagesy($im)); // Copy the source image onto that
-			imagecopyresized($im_base, $cpImg, $Xstart, $Ystart, $cpImgCutX, $cpImgCutY, $w, $h, $w, $h); // Then copy the $cpImg onto that (the actual operation!)
-			$im = $im_base; // Set pointer
+	function imagecopyresized(&$dstImg, $srcImg, $dstX, $dstY, $srcX, $srcY, $dstWidth, $dstHeight, $srcWidth, $srcHeight) {
+		if ($this->imagecopyresized_fix) {
+				// Make true color image
+			$tmpImg = imagecreatetruecolor(imagesx($dstImg), imagesy($dstImg));
+				// Copy the source image onto that
+			imagecopyresized($tmpImg, $srcImg, 0, 0, 0, 0, imagesx($dstImg), imagesy($dstImg), imagesx($dstImg), imagesy($dstImg));
+				// Then copy the source image onto that (the actual operation!)
+			imagecopyresized($tmpImg, $srcImg, $dstX, $dstY, $srcX, $srcY, $dstWidth, $dstHeight, $srcWidth, $srcHeight);
+				// Set the destination image
+			$dstImg = $tmpImg;
 		} else {
-			imagecopyresized($im, $cpImg, $Xstart, $Ystart, $cpImgCutX, $cpImgCutY, $w, $h, $w, $h);
+			imagecopyresized($dstImg, $srcImg, $dstX, $dstY, $srcX, $srcY, $dstWidth, $dstHeight, $srcWidth, $srcHeight);
 		}
 	}
 
@@ -2827,6 +2831,7 @@ class t3lib_stdGraphic {
 				if (function_exists('imagecreatefrompng')) {
 					$imageHandle = imageCreateFromPng($sourceImg);
 					if ($this->saveAlphaLayer) {
+						imagealphablending($imageHandle, FALSE);
 						imagesavealpha($imageHandle, TRUE);
 					}
 					return $imageHandle;

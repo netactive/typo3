@@ -25,7 +25,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 /**
- * Class to clear language cache
+ * Class to clear temp files of htmlArea RTE
  *
  * @author	Dominique Feyer <dominique.feyer@reelpeek.net>
  * @package	TYPO3

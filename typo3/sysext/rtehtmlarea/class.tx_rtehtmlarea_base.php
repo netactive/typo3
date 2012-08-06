@@ -4,7 +4,7 @@
 *
 *  (c) 2004-2011 Kasper Skårhøj (kasper@typo3.com)
 *  (c) 2004-2011 Philipp Borgmann <philipp.borgmann@gmx.de>
-*  (c) 2004-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2004-2012 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -130,17 +130,18 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	public $language;
 	public $contentTypo3Language;
 	public $contentISOLanguage;
-	public $contentCharset;
-	public $OutputCharset;
+	public $charset = 'utf-8';
+	public $contentCharset = 'utf-8';
+	public $OutputCharset = 'utf-8';
 	var $editorCSS;
 	var $specConf;
 	var $toolbar = array();					// Save the buttons for the toolbar
 	var $toolbarOrderArray = array();
 	protected $pluginEnabledArray = array();		// Array of plugin id's enabled in the current RTE editing area
 	protected $pluginEnabledCumulativeArray = array();	// Cumulative array of plugin id's enabled so far in any of the RTE editing areas of the form
-	protected $cumulativeScripts = array();
 	public $registeredPlugins = array();			// Array of registered plugins indexed by their plugin Id's
 	protected $fullScreen = FALSE;
+	protected $pageRenderer;
 
 	/**
 	 * Returns TRUE if the RTE is available. Here you check if the browser requirements are met.
@@ -229,7 +230,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	 * @return	string		HTML code for RTE!
 	 */
 
-	function drawRTE(&$parentObject, $table, $field, $row, $PA, $specConf, $thisConfig, $RTEtypeVal, $RTErelPath, $thePidValue) {
+	function drawRTE($parentObject, $table, $field, $row, $PA, $specConf, $thisConfig, $RTEtypeVal, $RTErelPath, $thePidValue) {
 		global $LANG, $TYPO3_DB, $TYPO3_CONF_VARS;
 
 		$this->TCEform = $parentObject;
@@ -290,8 +291,8 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 
 				// Languages: interface and content
 			$this->language = $LANG->lang;
-			if ($this->language=='default' || !$this->language)	{
-				$this->language='en';
+			if ($this->language == 'default' || !$this->language)	{
+				$this->language = 'en';
 			}
 			$this->contentTypo3Language = ($this->language == 'en') ? 'default' : $this->language;
 			$this->contentISOLanguage = 'en';
@@ -322,15 +323,6 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 					}
 				}
 			}
-
-				// Character sets: interface and content
-			$this->charset = $LANG->charSet;
-			$this->OutputCharset = $this->charset;
-
-			$this->contentCharset = $LANG->csConvObj->charSetArray[$this->contentTypo3Language];
-			$this->contentCharset = $this->contentCharset ? $this->contentCharset : 'iso-8859-1';
-			$this->origContentCharSet = $this->contentCharset;
-			$this->contentCharset = (trim($TYPO3_CONF_VARS['BE']['forceCharset']) ? trim($TYPO3_CONF_VARS['BE']['forceCharset']) : $this->contentCharset);
 
 			/* =======================================
 			 * TOOLBAR CONFIGURATION
@@ -377,29 +369,23 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			 * LOAD CSS AND JAVASCRIPT
 			 * =======================================
 			 */
+			$this->pageRenderer = $GLOBALS['SOBE']->doc->getPageRenderer();
 				// Preloading the pageStyle and including RTE skin stylesheets
 			$this->addPageStyle();
 			$this->addSkin();
-				// Re-initialize the scripts array so that only the cumulative set of plugins of the last RTE on the page is used
-			$this->cumulativeScripts[$this->TCEform->RTEcounter] = array();
-			$this->includeScriptFiles($this->TCEform->RTEcounter);
-			$this->buildJSMainLangFile($this->TCEform->RTEcounter);
-				// Register RTE in JS:
+				// Register RTE in JS
 			$this->TCEform->additionalJS_post[] = $this->registerRTEinJS($this->TCEform->RTEcounter, $table, $row['uid'], $field, $textAreaId);
-				// Set the save option for the RTE:
+				// Set the save option for the RTE
 			$this->TCEform->additionalJS_submit[] = $this->setSaveRTE($this->TCEform->RTEcounter, $this->TCEform->formName, $textAreaId, $PA['itemFormElName']);
 			$this->TCEform->additionalJS_delete[] = $this->setDeleteRTE($this->TCEform->RTEcounter, $this->TCEform->formName, $textAreaId);
-				// Loading JavaScript files and code
-			if ($this->TCEform->RTEcounter == 1) {
-				$this->TCEform->additionalJS_pre['rtehtmlarea-loadJScode'] = $this->loadJScode($this->TCEform->RTEcounter);
-			}
-			$this->TCEform->additionalCode_pre['rtehtmlarea-loadJSfiles'] = $this->loadJSfiles($this->TCEform->RTEcounter);
-			$pageRenderer = $GLOBALS['SOBE']->doc->getPageRenderer();
-			$pageRenderer->enableExtJSQuickTips();
-			if (!$GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->ID]['enableCompressedScripts']) {
-				$pageRenderer->enableExtJsDebug();
-			}
-			$pageRenderer->addJsFile('../t3lib/js/extjs/notifications.js');
+				// Loading ExtJs inline code
+			$this->pageRenderer->enableExtJSQuickTips();
+				// Add TYPO3 notifications JavaScript
+			$this->pageRenderer->addJsFile('../t3lib/js/extjs/notifications.js');
+				// Add RTE JavaScript
+			$this->addRteJsFiles($this->TCEform->RTEcounter);
+			$this->pageRenderer->addJsFile($this->buildJSMainLangFile($this->TCEform->RTEcounter));
+			$this->pageRenderer->addJsInlineCode('HTMLArea-init', $this->getRteInitJsCode(), TRUE);
 			/* =======================================
 			 * DRAW THE EDITOR
 			 * =======================================
@@ -455,6 +441,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		$absolutePath = $fileName
 			? t3lib_div::resolveBackPath(PATH_site . (($this->is_FE() || $this->isFrontendEditActive()) ? '' : TYPO3_mainDir) . $fileName)
 			: '';
+
 			// Fallback to default content css file if configured file does not exists or is of zero size
 		if (!$fileName || !file_exists($absolutePath) || !filesize($absolutePath)) {
 			$fileName = $this->getFullFileName('EXT:' . $this->ID . '/res/contentcss/default.css');
@@ -512,8 +499,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		if (is_object($this->TCEform->inline) && $this->TCEform->inline->isAjaxCall) {
 			$this->TCEform->additionalCode_pre[$key] = '<link rel="' . $relation . '" type="text/css" href="' . $href . '" title="' . $title. '" />';
 		} else {
-			$pageRenderer = $GLOBALS['SOBE']->doc->getPageRenderer();
-			$pageRenderer->addCssFile($href, $relation, 'screen', $title);
+			$this->pageRenderer->addCssFile($href, $relation, 'screen', $title);
 		}
 	}
 
@@ -598,7 +584,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			bar, left, center, right, justifyfull,
 			bar, orderedlist, unorderedlist, definitionlist, definitionitem, outdent, indent,  bar, lefttoright, righttoleft, language, showlanguagemarks,
 			bar, textcolor, bgcolor, textindicator,
-			bar, editelement, emoticon, insertcharacter, link, unlink, image, table,' . (($this->thisConfig['hideTableOperationsInToolbar'] && is_array($this->thisConfig['buttons.']) && is_array($this->thisConfig['buttons.']['toggleborders.']) && $this->thisConfig['buttons.']['toggleborders.']['keepInToolbar']) ? ' toggleborders,': '') . ' user, acronym, bar, findreplace, spellcheck,
+			bar, editelement, showmicrodata, emoticon, insertcharacter, insertsofthyphen, link, unlink, image, table,' . (($this->thisConfig['hideTableOperationsInToolbar'] && is_array($this->thisConfig['buttons.']) && is_array($this->thisConfig['buttons.']['toggleborders.']) && $this->thisConfig['buttons.']['toggleborders.']['keepInToolbar']) ? ' toggleborders,': '') . ' user, acronym, bar, findreplace, spellcheck,
 			bar, chMode, inserttag, removeformat, bar, copy, cut, paste, pastetoggle, pastebehaviour, bar, undo, redo, bar, showhelp, about, linebreak,
 			' . ($this->thisConfig['hideTableOperationsInToolbar'] ? '': 'bar, toggleborders,') . ' bar, tableproperties, tablerestyle, bar, rowproperties, rowinsertabove, rowinsertunder, rowdelete, rowsplit, bar,
 			columnproperties, columninsertbefore, columninsertafter, columndelete, columnsplit, bar,
@@ -732,46 +718,37 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			}
 		}
 	}
-
 	/**
 	 * Convert the TYPO3 names of buttons into the names for htmlArea RTE
 	 *
 	 * @param	string	buttonname (typo3-name)
+	 *
 	 * @return	string	buttonname (htmlarea-name)
 	 */
-
-	 function convertToolbarForHTMLArea($button) {
+	function convertToolbarForHTMLArea($button) {
  		return $this->convertToolbarForHtmlAreaArray[$button];
-	 }
+	}
 	/**
-	 * Return the HTML code for loading the Javascript files
+	 * Add RTE main scripts and plugin scripts
 	 *
-	 * @param	integer		$RTEcounter: The index number of the current RTE editing area within the form.
+	 * @param string $RTEcounter:  The index number of the current RTE editing area within the form.
 	 *
-	 * @return	void
- 	 */
-	protected function includeScriptFiles($RTEcounter) {
-		$this->writeTemporaryFile('EXT:' . $this->ID . '/htmlarea/htmlarea.js', 'htmlarea', 'js', '', TRUE);
-		if ($this->client['browser'] == 'msie') {
-			$this->writeTemporaryFile('EXT:' . $this->ID . '/htmlarea/htmlarea-ie.js', 'htmlarea-ie', 'js', '', TRUE);
-		} else {
-			$this->writeTemporaryFile('EXT:' . $this->ID . '/htmlarea/htmlarea-gecko.js', 'htmlarea-gecko', 'js', '', TRUE);
-		}
+	 * @return void
+	 */
+	protected function addRteJsFiles($RTEcounter) {
+		$this->pageRenderer->addJsFile($this->getFullFileName('EXT:' . $this->ID . '/htmlarea/htmlarea.js'));
 		foreach ($this->pluginEnabledCumulativeArray[$RTEcounter] as $pluginId) {
 			$extensionKey = is_object($this->registeredPlugins[$pluginId]) ? $this->registeredPlugins[$pluginId]->getExtensionKey() : $this->ID;
-			$this->writeTemporaryFile('EXT:' . $extensionKey . '/htmlarea/plugins/' . $pluginId . '/' . strtolower(preg_replace('/([a-z])([A-Z])([a-z])/', "$1".'-'."$2"."$3", $pluginId)) . '.js', $pluginId, 'js', '', TRUE);
+			$this->pageRenderer->addJsFile($this->getFullFileName('EXT:' . $extensionKey . '/htmlarea/plugins/' . $pluginId . '/' . strtolower(preg_replace('/([a-z])([A-Z])([a-z])/', "$1".'-'."$2"."$3", $pluginId)) . '.js'));
 		}
 	}
 	/**
-	 * Return the HTML code for loading the Javascript files
+	 * Return RTE initialization inline JavaScript code
 	 *
-	 * @param	integer		$RTEcounter: The index number of the current RTE editing area within the form.
-	 *
-	 * @return	string		the html code for loading the Javascript Files
+	 * @return string RTE initialization inline JavaScript code
  	 */
-	protected function loadJSfiles($RTEcounter) {
-		$loadJavascriptCode = '<script type="text/javascript" src="' . $this->doConcatenate($RTEcounter) . '"></script>' . LF;
-		$loadJavascriptCode .= t3lib_div::wrapJS('
+	protected function getRteInitJsCode() {
+		return '
 			if (typeof(RTEarea) == "undefined") {
 				RTEarea = new Object();
 				RTEarea[0] = new Object();
@@ -783,35 +760,22 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 				RTEarea[0].hostUrl = "' . $this->hostURL . '";
 				RTEarea.init = function() {
 					if (typeof(HTMLArea) == "undefined" || !Ext.isReady) {
-						window.setTimeout("RTEarea.init();", 40);
+						window.setTimeout("RTEarea.init();", 10);
 					} else {
 						Ext.QuickTips.init();
 						HTMLArea.init();
 					}
 				};
 				RTEarea.initEditor = function(editorNumber) {
-					if (typeof(HTMLArea) == "undefined") {
+					if (typeof(HTMLArea) == "undefined" || !HTMLArea.isReady) {
 						RTEarea.initEditor.defer(40, null, [editorNumber]);
 					} else {
 						HTMLArea.initEditor(editorNumber);
 					}
 				};
-			}'
-		);
-		return $loadJavascriptCode;
+			}
+			RTEarea.init();';
 	}
-
-	/**
-	 * Return the Javascript code for initializing the RTE
-	 *
-	 * @param	integer		$RTEcounter: The index number of the current RTE editing area within the form.
-	 *
-	 * @return 	string		the Javascript code for initializing the RTE
-	 */
-	function loadJScode($RTEcounter) {
-		return TAB . 'RTEarea.init();';
-	}
-
 	/**
 	 * Return the Javascript code for configuring the RTE
 	 *
@@ -919,17 +883,9 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		}
 
 			// Setting the list of tags to be removed with their contents if specified in the RTE config
-		if (trim($this->thisConfig['removeTagsAndContents'])) {
+		if (trim($this->thisConfig['removeTagsAndContents']))  {
 			$configureRTEInJavascriptString .= '
 			RTEarea[editornumber].htmlRemoveTagsAndContents = /^(' . implode('|', t3lib_div::trimExplode(',', $this->thisConfig['removeTagsAndContents'], 1)) . ')$/i;';
-		}
-			// Setting array of custom tags if specified in the RTE config
-		if (!empty($this->thisConfig['customTags'])) {
-			$customTags = t3lib_div::trimExplode(',', $this->thisConfig['customTags'], 1);
-			if (!empty($customTags)) {
-				$configureRTEInJavascriptString .= '
-				RTEarea[editornumber].customTags= ' . json_encode($customTags) . ';';
-			}
 		}
 			// Process default style configuration
 			// This default configuration is deprecated as of TYPO3 4.6 and will be removed in TYPO3 4.8.
@@ -1065,7 +1021,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		}
 			// Include JS arrays of configured classes
 		$configureRTEInJavascriptString .= '
-			RTEarea[editornumber].classesUrl = "' . $this->writeTemporaryFile('', 'classes_' . $this->language, 'js', $this->buildJSClassesArray(), TRUE) . '";';
+			RTEarea[editornumber].classesUrl = "' . (($this->is_FE() && $GLOBALS['TSFE']->absRefPrefix) ? $GLOBALS['TSFE']->absRefPrefix : '') . $this->writeTemporaryFile('', 'classes_' . $this->language, 'js', $this->buildJSClassesArray(), TRUE) . '";';
 		return $configureRTEInJavascriptString;
 	}
 
@@ -1127,11 +1083,6 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	 */
 	function buildNestedJSArray($conf) {
 		$convertedConf = t3lib_div::removeDotsFromTS($conf);
-		if ($this->is_FE()) {
-			$GLOBALS['TSFE']->csConvObj->convArray($convertedConf, ($GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] ? $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] : 'iso-8859-1'), 'utf-8');
-		} else {
-			$GLOBALS['LANG']->csConvObj->convArray($convertedConf, $GLOBALS['LANG']->charSet, 'utf-8');
-		}
 		return str_replace(array(':"0"', ':"\/^(', ')$\/i"', ':"\/^(', ')$\/"', '[]'), array(':false', ':/^(', ')$/i', ':/^(', ')$/', '{}'), json_encode($convertedConf));
 	}
 
@@ -1167,8 +1118,6 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	 * @return	string		The name of the file writtten to typo3temp/rtehtmlarea
 	 */
 	public function writeTemporaryFile($sourceFileName='', $label, $fileExtension='js', $contents='', $concatenate = FALSE) {
-		global $TYPO3_CONF_VARS;
-
 		if ($sourceFileName) {
 			$output = '';
 			$source = t3lib_div::getFileAbsFileName($sourceFileName);
@@ -1176,74 +1125,25 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		} else {
 			$output = $contents;
 		}
-		$compress = $TYPO3_CONF_VARS['EXTCONF'][$this->ID]['enableCompressedScripts'] && ($fileExtension == 'js') && ($output != '');
-		$relativeFilename = 'typo3temp/' . $this->ID . '/' . str_replace('-','_',$label) . '_' . t3lib_div::shortMD5((TYPO3_version . $TYPO3_CONF_VARS['EXTCONF'][$this->ID]['version'] . ($sourceFileName ? $sourceFileName : $output)), 20) . ($compress ? '_compressed' : '') . '.' . $fileExtension;
+		$relativeFilename = 'typo3temp/' . $this->ID . '_' . str_replace('-','_',$label) . '_' . t3lib_div::shortMD5((TYPO3_version . $TYPO3_CONF_VARS['EXTCONF'][$this->ID]['version'] . ($sourceFileName ? $sourceFileName : $output)), 20) . '.' . $fileExtension;
 		$destination = PATH_site . $relativeFilename;
-		if(!file_exists($destination)) {
-			$compressedJavaScript = '';
-			if ($compress && $fileExtension == 'js') {
-				$compressedJavaScript = t3lib_div::minifyJavaScript($output);
+		if (!file_exists($destination)) {
+			$minifiedJavaScript = '';
+			if ($fileExtension == 'js' && $output != '') {
+				$minifiedJavaScript = t3lib_div::minifyJavaScript($output);
 			}
-			$failure = t3lib_div::writeFileToTypo3tempDir($destination, $compressedJavaScript ? $compressedJavaScript : $output);
+			$failure = t3lib_div::writeFileToTypo3tempDir($destination, $minifiedJavaScript ? $minifiedJavaScript : $output);
 			if ($failure)  {
 				throw new RuntimeException($failure, 1294585668);
 			}
 		}
-		if ($concatenate && $fileExtension == 'js') {
-			$this->cumulativeScripts[$this->TCEform->RTEcounter][] = $destination;
-		}
 		if ($this->is_FE()) {
-			$filename =  ($GLOBALS['TSFE']->absRefPrefix ? $GLOBALS['TSFE']->absRefPrefix : '') . t3lib_div::createVersionNumberedFilename($relativeFilename);
+			$filename = $relativeFilename;
 		} else {
-			$filename = t3lib_div::createVersionNumberedFilename(($this->isFrontendEditActive() ? '' : ($this->backPath . '../')) . $relativeFilename);
+			$filename = ($this->isFrontendEditActive() ? '' : ($this->backPath . '../')) . $relativeFilename;
 		}
 		return t3lib_div::resolveBackPath($filename);
 	}
-	/**
-	 * Concatenates all accumulated scripts in a file in typo3temp/rtehtmlarea directory and returns the file name
-	 *
-	 * @param	integer		$RTEcounter: The index number of the current RTE editing area within the form.
-	 *
-	 * @return	string		The name of the file writtten to typo3temp/rtehtmlarea
-	 */
-	protected function doConcatenate($RTEcounter) {
-		$fileExtension = 'js';
-		$compress = $GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->ID]['enableCompressedScripts'];
-		$token = implode('|', $this->cumulativeScripts[$RTEcounter]);
-		$relativeFilename = 'typo3temp/' . $this->ID . '/' . 'htmlarea_cumulative' . '_' . t3lib_div::shortMD5((TYPO3_version . $TYPO3_CONF_VARS['EXTCONF'][$this->ID]['version'] . $token ), 20) . ($compress ? '_compressed' : '') . '.' . $fileExtension;
-		$destination = PATH_site . $relativeFilename;
-		if (!file_exists($destination)) {
-			foreach ($this->cumulativeScripts[$RTEcounter] as $fileName) {
-				$contents = file_get_contents($fileName);
-				if (!file_exists($destination)) {
-					$failure = t3lib_div::writeFileToTypo3tempDir($destination, $contents);
-					if ($failure)  {
-						throw new RuntimeException($failure, 1294585669);
-					}
-				} else {
-					$success = file_put_contents($destination, $contents, FILE_APPEND);
-					if (!$success)  {
-						throw new RuntimeException('Could not append script: ' . $fileName, 1294585670);
-					}
-				}
-			}
-		}
-		if ($this->is_FE()) {
-			$filename = ($GLOBALS['TSFE']->absRefPrefix ? $GLOBALS['TSFE']->absRefPrefix : '') . t3lib_div::createVersionNumberedFilename($relativeFilename);
-		} else {
-			if ($compress) {
-				$compressor = t3lib_div::makeInstance('t3lib_Compressor');
-				$filename = $compressor->compressJsFile(($this->isFrontendEditActive() ? '' : $this->backPath) . '../' . $relativeFilename);
-				if ($this->isFrontendEditActive()) {
-					$filename = preg_replace('/^..\//', '', $filename);
-				}
-			} else {
-				$filename = t3lib_div::createVersionNumberedFilename(($this->isFrontendEditActive() ? '' : ($this->backPath . '../')) . $relativeFilename);
-			}
-		}
-		return t3lib_div::resolveBackPath($filename);
-	}
-
 	/**
 	 * Return a file name containing the main JS language array for HTMLArea
 	 *
@@ -1266,13 +1166,11 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	 *
 	 * @return	string		Javascript localization array
 	 */
-
 	function buildJSLangArray($plugin) {
 		$LOCAL_LANG = FALSE;
 		$extensionKey = is_object($this->registeredPlugins[$plugin]) ? $this->registeredPlugins[$plugin]->getExtensionKey() : $this->ID;
 		$LOCAL_LANG = t3lib_div::readLLfile('EXT:' . $extensionKey . '/htmlarea/plugins/' . $plugin . '/locallang.xml', $this->language, 'utf-8', 1);
-		$linebreak = $GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->ID]['enableCompressedScripts'] ? '' : LF;
-		$JSLanguageArray = 'HTMLArea.I18N["' . $plugin . '"] = new Object();' . $linebreak;
+		$JSLanguageArray = 'HTMLArea.I18N["' . $plugin . '"] = new Object();' . LF;
 		if (is_array($LOCAL_LANG)) {
 			if (!empty($LOCAL_LANG[$this->language])) {
 				$LOCAL_LANG[$this->language] = t3lib_div::array_merge_recursive_overrule($LOCAL_LANG['default'], $LOCAL_LANG[$this->language], FALSE, FALSE);
@@ -1343,16 +1241,19 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		return json_encode($toolbar);
 	}
 
+	/**
+	 * Localize a string using the language of the content element rather than the language of the BE interface
+	 *
+	 * @param	string		string: the label to be localized
+	 * @return	string		Localized string.
+	 */
 	public function getLLContent($string) {
-		global $LANG;
+		$BE_lang = $GLOBALS['LANG']->lang;
 
-		$BE_lang = $LANG->lang;
-		$BE_charSet = $LANG->charSet;
-		$LANG->lang = $this->contentTypo3Language;
-		$LANG->charSet = $this->contentCharset;
-		$LLString = $LANG->JScharCode($LANG->sL($string));
-		$LANG->lang = $BE_lang;
-		$LANG->charSet = $BE_charSet;
+		$GLOBALS['LANG']->lang = $this->contentTypo3Language;
+		$LLString = $GLOBALS['LANG']->JScharCode($GLOBALS['LANG']->sL($string));
+
+		$GLOBALS['LANG']->lang = $BE_lang;
 		return $LLString;
 	}
 
@@ -1360,9 +1261,9 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		global $LANG, $TSFE, $TYPO3_CONF_VARS;
 
 		if ($this->is_FE()) {
-			if (strcmp(substr($string,0,4),'LLL:') && $TYPO3_CONF_VARS['BE']['forceCharset'])	{
-					// A pure string coming from Page TSConfig must be in forceCharset, otherwise we just don't know..
-				$label = $TSFE->csConvObj->conv($TSFE->sL(trim($string)), $TYPO3_CONF_VARS['BE']['forceCharset'], $this->OutputCharset);
+			if (strcmp(substr($string,0,4),'LLL:')) {
+					// A pure string coming from Page TSConfig must be in utf-8
+				$label = $TSFE->csConvObj->conv($TSFE->sL(trim($string)), 'utf-8', $this->OutputCharset);
 			} else {
 				$label = $TSFE->csConvObj->conv($TSFE->sL(trim($string)), $this->charset, $this->OutputCharset);
 			}
@@ -1381,12 +1282,13 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	}
 
 	function feJScharCode($str) {
-		global $TSFE;
 			// Convert string to UTF-8:
-		if ($this->OutputCharset != 'utf-8') $str = $TSFE->csConvObj->utf8_encode($str,$this->OutputCharset);
+		if ($this->OutputCharset != 'utf-8') {
+			$str = $GLOBALS['TSFE']->csConvObj->utf8_encode($str, $this->OutputCharset);
+		}
 			// Convert the UTF-8 string into a array of char numbers:
-		$nArr = $TSFE->csConvObj->utf8_to_numberarray($str);
-		return 'String.fromCharCode('.implode(',',$nArr).')';
+		$nArr = $GLOBALS['TSFE']->csConvObj->utf8_to_numberarray($str);
+		return 'String.fromCharCode('.implode(',', $nArr).')';
 	}
 
 	public function getFullFileName($filename) {

@@ -263,8 +263,7 @@ class SC_db_layout {
 			'function' => array(
 				0 => $GLOBALS['LANG']->getLL('m_function_0'),
 				1 => $GLOBALS['LANG']->getLL('m_function_1'),
-				2 => $GLOBALS['LANG']->getLL('m_function_2'),
-				3 => $GLOBALS['LANG']->getLL('pageInformation'),
+				2 => $GLOBALS['LANG']->getLL('m_function_2')
 			),
 			'language' => array(
 				0 => $GLOBALS['LANG']->getLL('m_default')
@@ -314,6 +313,10 @@ class SC_db_layout {
 		$this->modTSconfig = t3lib_BEfunc::getModTSconfig($this->id,'mod.'.$this->MCONF['name']);
 		if ($this->modTSconfig['properties']['QEisDefault'])	ksort($this->MOD_MENU['function']);
 		$this->MOD_MENU['function'] = t3lib_BEfunc::unsetMenuItems($this->modTSconfig['properties'],$this->MOD_MENU['function'],'menu.function');
+
+		if (!$this->modTSconfig['properties']['disablePageInformation']) {
+			$this->MOD_MENU['function'][3] = $GLOBALS['LANG']->getLL('pageInformation');
+		}
 
 			// Remove QuickEdit as option if page type is not...
 		if (!t3lib_div::inList($GLOBALS['TYPO3_CONF_VARS']['FE']['content_doktypes'] . ',6', $this->pageinfo['doktype'])) {
@@ -1086,20 +1089,20 @@ class SC_db_layout {
 			// For Context Sensitive Menus:
 		$this->doc->getContextMenuCode();
 
-			// Now, create listing based on which element is selected in the function menu:
+		$content .= $this->doc->header($this->pageinfo['title']);
 
+			// Now, create listing based on which element is selected in the function menu:
 		if ($this->MOD_SETTINGS['function']==3) {
 
 				// Making page info:
-			$content.=$this->doc->spacer(10);
-			$content.=$this->doc->section($GLOBALS['LANG']->getLL('pageInformation'), $dblist->getPageInfoBox($this->pageinfo, $this->CALC_PERMS&2), 0, 1);
+			$content .= $this->doc->section($GLOBALS['LANG']->getLL('pageInformation'), $dblist->getPageInfoBox($this->pageinfo, $this->CALC_PERMS&2), 0, 1);
 		} else {
 
 				// Add the content for each table we have rendered (traversing $tableOutput variable)
-			foreach($tableOutput as $table => $output)	{
-				$content.=$this->doc->section('<a name="'.$table.'"></a>'.$dblist->activeTables[$table],$output,TRUE,TRUE,0,TRUE);
-				$content.=$this->doc->spacer(15);
-				$content.=$this->doc->sectionEnd();
+			foreach ($tableOutput as $table => $output)	{
+				$content .= $this->doc->section('', $output, TRUE, TRUE, 0, TRUE);
+				$content .= $this->doc->spacer(15);
+				$content .= $this->doc->sectionEnd();
 			}
 
 				// Making search form:

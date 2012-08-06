@@ -27,7 +27,7 @@
 /**
  * Contains the initialization of global TYPO3 variables among which $TCA is the most significant.
  *
- * The list in order of appearance is: $PAGES_TYPES, $ICON_TYPES, $TCA, $TBE_MODULES, $TBE_STYLES, $FILEICONS
+ * The list in order of appearance is: $PAGES_TYPES, $TCA, $TBE_MODULES, $TBE_STYLES, $FILEICONS
  * These variables are first of all used in the backend but to some degree in the frontend as well. (See references)
  * See the document "Inside TYPO3" for a description of each variable in addition to the comment associated with each.
  *
@@ -81,17 +81,6 @@ $PAGES_TYPES = array(
 		'onlyAllowedTables' => '0'
 	)
 );
-
-
-/**
- * With $ICON_TYPES you can assign alternative icons to pages records based on another field than 'doktype'
- * Each key is a value from the "module" field of page records and the value is an array with a key/value pair, eg. "icon" => "modules_shop.gif"
- *
- * @see t3lib_iconWorks::getIcon(), typo3/sysext/cms/ext_tables.php
- * @deprecated since TYPO3 4.4, use t3lib_SpriteManager::addTcaTypeIcon instead, will be removed in TYPO3 4.7
- */
-$ICON_TYPES = array();
-
 
 /**
  * $TCA:
@@ -286,6 +275,41 @@ $TCA['sys_filemounts'] = array(
 	)
 );
 
+/**
+ * Table "sys_collection":
+ */
+$TCA['sys_collection'] = array(
+	'ctrl' => array(
+		'title'     => 'LLL:EXT:lang/locallang_tca.xlf:sys_collection',
+		'label'     => 'title',
+		'tstamp'    => 'tstamp',
+		'crdate'    => 'crdate',
+		'cruser_id' => 'cruser_id',
+		'versioningWS' => TRUE,
+		'origUid' => 't3_origuid',
+		'languageField'            => 'sys_language_uid',
+		'transOrigPointerField'    => 'l10n_parent',
+		'transOrigDiffSourceField' => 'l10n_diffsource',
+		'default_sortby' => 'ORDER BY crdate',
+		'delete' => 'deleted',
+		'type' => 'type',
+		'rootLevel' => -1,
+		'searchFields' => 'title,description',
+		'typeicon_column' => 'type',
+		'typeicon_classes' => array(
+			'default' => 'apps-clipboard-list',
+			'static' => 'apps-clipboard-list',
+			'filter' => 'actions-system-tree-search-open'
+		),
+		'enablecolumns' => array(
+			'disabled' => 'hidden',
+			'starttime' => 'starttime',
+			'endtime' => 'endtime',
+			'fe_group' => 'fe_group',
+		),
+		'dynamicConfigFile' => 'T3LIB:tbl_be.php',
+	),
+);
 
 /**
  * Table "sys_languages":
@@ -635,6 +659,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'apps-pagetree-page-shortcut-root',
 	'apps-pagetree-root',
 	'apps-pagetree-spacer',
+	'apps-tcatree-select-recursive',
 	'apps-toolbar-menu-actions',
 	'apps-toolbar-menu-cache',
 	'apps-toolbar-menu-opendocs',
@@ -656,6 +681,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'mimetypes-text-js',
 	'mimetypes-text-php',
 	'mimetypes-text-text',
+	'mimetypes-word',
 	'mimetypes-x-content-divider',
 	'mimetypes-x-content-domain',
 	'mimetypes-x-content-form',
@@ -767,6 +793,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'status-warning-in-use',
 	'status-warning-lock'
 );
+
 
 
 

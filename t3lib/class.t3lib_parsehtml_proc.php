@@ -44,7 +44,7 @@
 class t3lib_parsehtml_proc extends t3lib_parsehtml {
 
 		// Static:
-	var $blockElementList = 'PRE,UL,OL,H1,H2,H3,H4,H5,H6,ADDRESS,DL,DD'; // List of tags for these elements
+	var $blockElementList = 'PRE,UL,OL,H1,H2,H3,H4,H5,H6,ADDRESS,DL,DD,HEADER,SECTION,FOOTER,NAV,ARTICLE,ASIDE'; // List of tags for these elements
 
 		// Internal, static:
 	var $recPid = 0; // Set this to the pid of the record manipulated by the class.
@@ -567,32 +567,60 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 				unset($attribArray_copy['target']);
 				unset($attribArray_copy['class']);
 				unset($attribArray_copy['title']);
-				unset($attribArray_copy['external']);
+				unset($attribArray_copy['data-htmlarea-external']);
 				if ($attribArray_copy['rteerror']) { // Unset "rteerror" and "style" attributes if "rteerror" is set!
 					unset($attribArray_copy['style']);
 					unset($attribArray_copy['rteerror']);
 				}
+
+					// Remove additional parameters
+				if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_parsehtml_proc.php']['removeParams_PostProc']) && is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_parsehtml_proc.php']['removeParams_PostProc'])) {
+					$parameters = array(
+						'conf' => &$conf,
+						'aTagParams' => &$attribArray_copy
+					);
+					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_parsehtml_proc.php']['removeParams_PostProc'] as $objRef) {
+						$processor = t3lib_div::getUserObj($objRef);
+						$attribArray_copy = $processor->removeParams( $parameters, $this);
+					}
+				}
+
 				if (!count($attribArray_copy)) { // Only if href, target and class are the only attributes, we can alter the link!
 						// Quoting class and title attributes if they contain spaces
 					$attribArray['class'] = preg_match('/ /', $attribArray['class']) ? '"' . $attribArray['class'] . '"' : $attribArray['class'];
 					$attribArray['title'] = preg_match('/ /', $attribArray['title']) ? '"' . $attribArray['title'] . '"' : $attribArray['title'];
 						// Creating the TYPO3 pseudo-tag "<LINK>" for the link (includes href/url, target and class attributes):
-						// If external attribute is set, keep the href unchanged
-					$href = $attribArray['external'] ? $attribArray['href'] : $info['url'] . ($info['query'] ? ',0,' . $info['query'] : '');
+						// If data-htmlarea-external attribute is set, keep the href unchanged
+					$href = $attribArray['data-htmlarea-external'] ? $attribArray['href'] : $info['url'] . ($info['query'] ? ',0,' . $info['query'] : '');
 					$bTag = '<link ' . $href . ($attribArray['target'] ? ' ' . $attribArray['target'] : (($attribArray['class'] || $attribArray['title']) ? ' -' : '')) . ($attribArray['class'] ? ' ' . $attribArray['class'] : ($attribArray['title'] ? ' -' : '')) . ($attribArray['title'] ? ' ' . $attribArray['title'] : '') . '>';
 					$eTag = '</link>';
-					$blockSplit[$k] = $bTag . $this->TS_links_db($this->removeFirstAndLastTag($blockSplit[$k])) . $eTag;
+
+						// Modify parameters
+					if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_parsehtml_proc.php']['modifyParams_LinksDb_PostProc']) && is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_parsehtml_proc.php']['modifyParams_LinksDb_PostProc'])) {
+						$parameters = array(
+							'conf' => &$conf,
+							'currentBlock' => $v,
+							'url' => $href,
+							'attributes' => $attribArray
+						);
+						foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_parsehtml_proc.php']['modifyParams_LinksDb_PostProc'] as $objRef) {
+							$processor = t3lib_div::getUserObj($objRef);
+							$blockSplit[$k] = $processor->modifyParamsLinksDb( $parameters, $this);
+						}
+					} else {
+						$blockSplit[$k] = $bTag . $this->TS_links_db($this->removeFirstAndLastTag($blockSplit[$k])) . $eTag;
+					}
 				} else { // ... otherwise store the link as a-tag.
 						// Unsetting 'rtekeep' attribute if that had been set.
 					unset($attribArray['rtekeep']);
-					if (!$attribArray['external']) {
+					if (!$attribArray['data-htmlarea-external']) {
 							// If the url is local, remove url-prefix
 						$siteURL = $this->siteUrl();
 						if ($siteURL && substr($attribArray['href'], 0, strlen($siteURL)) == $siteURL) {
 							$attribArray['href'] = $this->relBackPath . substr($attribArray['href'], strlen($siteURL));
 						}
 					}
-					unset($attribArray['external']);
+					unset($attribArray['data-htmlarea-external']);
 					$bTag = '<a ' . t3lib_div::implodeAttributes($attribArray, 1) . '>';
 					$eTag = '</a>';
 					$blockSplit[$k] = $bTag . $this->TS_links_db($this->removeFirstAndLastTag($blockSplit[$k])) . $eTag;
@@ -618,7 +646,6 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 		$siteUrl = $this->siteUrl();
 		foreach ($blockSplit as $k => $v) {
 			$error = '';
-			$external = FALSE;
 			if ($k % 2) { // block:
 				$tagCode = t3lib_div::unQuoteFilenames(trim(substr($this->getFirstTag($v), 0, -1)), TRUE);
 				$link_param = $tagCode[1];
@@ -631,6 +658,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 				} else {
 					$fileChar = intval(strpos($link_param, '/'));
 					$urlChar = intval(strpos($link_param, '.'));
+					$external = FALSE;
 						// Parse URL:
 					$pU = parse_url($link_param);
 						// Detects if a file is found in site-root OR is a simulateStaticDocument.
@@ -681,11 +709,28 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 						($tagCode[2] && $tagCode[2] != '-' ? ' target="' . htmlspecialchars($tagCode[2]) . '"' : '') .
 						($tagCode[3] && $tagCode[3] != '-' ? ' class="' . htmlspecialchars($tagCode[3]) . '"' : '') .
 						($tagCode[4] ? ' title="' . htmlspecialchars($tagCode[4]) . '"' : '') .
-						($external ? ' external="1"' : '') .
+						($external ? ' data-htmlarea-external="1"' : '') .
 						($error ? ' rteerror="' . htmlspecialchars($error) . '" style="background-color: yellow; border:2px red solid; color: black;"' : '') . // Should be OK to add the style; the transformation back to databsae will remove it...
 						'>';
 				$eTag = '</a>';
-				$blockSplit[$k] = $bTag . $this->TS_links_rte($this->removeFirstAndLastTag($blockSplit[$k])) . $eTag;
+
+					// Modify parameters
+				if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_parsehtml_proc.php']['modifyParams_LinksRte_PostProc']) && is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_parsehtml_proc.php']['modifyParams_LinksRte_PostProc'])) {
+					$parameters = array(
+						'conf' => &$conf,
+						'currentBlock' => $v,
+						'url' => $href,
+						'tagCode' => $tagCode,
+						'external' => $external,
+						'error' => $error
+					);
+					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_parsehtml_proc.php']['modifyParams_LinksRte_PostProc'] as $objRef) {
+						$processor = t3lib_div::getUserObj($objRef);
+						$blockSplit[$k] = $processor->modifyParamsLinksRte( $parameters, $this);
+					}
+				} else {
+					$blockSplit[$k] = $bTag . $this->TS_links_rte($this->removeFirstAndLastTag($blockSplit[$k])) . $eTag;
+				}
 			}
 		}
 
@@ -784,6 +829,12 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 					case 'blockquote': // Keep blockquotes, but clean the inside recursively in the same manner as the main code
 					case 'dd' : // Do the same on dd elements
 					case 'div': // Do the same on div sections, if they were splitted
+					case 'header':
+					case 'section':
+					case 'footer':
+					case 'nav':
+					case 'article':
+					case 'aside':
 						$blockSplit[$k] = $tag . $this->TS_transform_db($this->removeFirstAndLastTag($blockSplit[$k]), $css) . '</' . $tagName . '>' . $lastBR;
 					break;
 					case 'ol':
@@ -857,8 +908,11 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 				}
 			} else { // NON-block:
 				if (strcmp(trim($blockSplit[$k]), '')) {
+					$blockSplit[$k] = preg_replace('/<hr\/>/', '<hr />', $blockSplit[$k]);
+						// Remove linebreaks preceding hr tags
+					$blockSplit[$k] = preg_replace('/[' . preg_quote(LF . CR) . ']+<(hr)(\s[^>\/]*)?[[:space:]]*\/?>/', '<$1$2/>', $blockSplit[$k]);
 						// Remove linebreaks following hr tags
-					$blockSplit[$k] = preg_replace('/<(hr)(\s[^>\/]*)?[[:space:]]*\/?>[' . preg_quote(LF . CR) . ']+/', '<$1$2 />', $blockSplit[$k]);
+					$blockSplit[$k] = preg_replace('/<(hr)(\s[^>\/]*)?[[:space:]]*\/?>[' . preg_quote(LF . CR) . ']+/', '<$1$2/>', $blockSplit[$k]);
 						// Replace other linebreaks with space
 					$blockSplit[$k] = preg_replace('/[' . preg_quote(LF . CR) . ']+/', ' ', $blockSplit[$k]);
 					$blockSplit[$k] = $this->divideIntoLines($blockSplit[$k]) . $lastBR;
@@ -925,6 +979,12 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 					case 'blockquote': // Keep blockquotes
 					case 'dd': // Keep definitions
 					case 'div': // Keep div sections, if they were splitted
+					case 'header':
+					case 'section':
+					case 'footer':
+					case 'nav':
+					case 'article':
+					case 'aside':
 						$blockSplit[$k] = $tag .
 										  $this->TS_transform_rte($this->removeFirstAndLastTag($blockSplit[$k]), $css) .
 										  '</' . $tagName . '>';
@@ -1193,7 +1253,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 			// Returns plainly the value if there was no div/p sections in it
 		if (count($divSplit) <= 1 || $count <= 0) {
 				// Wrap hr tags with LF's
-			$newValue = preg_replace('/<(hr)(\s[^>\/]*)?[[:space:]]*\/?>/i', LF . '<$1$2 />' . LF, $value);
+			$newValue = preg_replace('/<(hr)(\s[^>\/]*)?[[:space:]]*\/?>/i', LF . '<$1$2/>' . LF, $value);
 			$newValue = preg_replace('/' . preg_quote(LF . LF) . '/i', LF, $newValue);
 			$newValue = preg_replace('/(^' . preg_quote(LF) . ')|(' . preg_quote(LF) . '$)/i', '', $newValue);
 			return $newValue;
@@ -1286,7 +1346,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 					// Remove positions which are outside div/p tags and without content
 				$divSplit[$k] = trim(strip_tags($divSplit[$k], '<' . implode('><', $allowTagsOutside) . '>'));
 					// Wrap hr tags with LF's
-				$divSplit[$k] = preg_replace('/<(hr)(\s[^>\/]*)?[[:space:]]*\/?>/i', LF . '<$1$2 />' . LF, $divSplit[$k]);
+				$divSplit[$k] = preg_replace('/<(hr)(\s[^>\/]*)?[[:space:]]*\/?>/i', LF . '<$1$2/>' . LF, $divSplit[$k]);
 				$divSplit[$k] = preg_replace('/' . preg_quote(LF . LF) . '/i', LF, $divSplit[$k]);
 				$divSplit[$k] = preg_replace('/(^' . preg_quote(LF) . ')|(' . preg_quote(LF) . '$)/i', '', $divSplit[$k]);
 				if (!strcmp($divSplit[$k], '')) {
@@ -1572,7 +1632,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 					if (!$uP['scheme']) {
 						$attribArray['href'] = $this->siteUrl() . substr($attribArray['href'], strlen($this->relBackPath));
 					} elseif ($uP['scheme'] != 'mailto') {
-						$attribArray['external'] = 1;
+						$attribArray['data-htmlarea-external'] = 1;
 					}
 				} else {
 					$attribArray['rtekeep'] = 1;

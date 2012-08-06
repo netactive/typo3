@@ -317,13 +317,13 @@ class fileList extends t3lib_recordList {
 								$theData[$field] = (($theFile['readable']) ? '' : '<span class="typo3-red"><strong>' . $GLOBALS['LANG']->getLL('read', TRUE) . '</strong></span>') . (($theFile['writable']) ? '' : '<span class="typo3-red"><strong>' . $GLOBALS['LANG']->getLL('write', TRUE) . '</strong></span>');
 							break;
 							case 'fileext':
-								$theData[$field]=strtoupper($theFile['fileext']);
+								$theData[$field] = strtoupper($theFile['fileext']);
 							break;
 							case 'tstamp':
-								$theData[$field]=Date($GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy'], $theFile['tstamp']);
+								$theData[$field] = t3lib_BEfunc::date($theFile['tstamp']);
 							break;
 							case 'file':
-								$theData[$field]= $this->linkWrapDir($title,$path);
+								$theData[$field] = $this->linkWrapDir($title,$path);
 							break;
 							case '_CLIPBOARD_':
 								$temp = '';
@@ -460,10 +460,10 @@ class fileList extends t3lib_recordList {
 								$theData[$field] = (($theFile['readable']) ? '' : '<span class="typo3-red"><strong>' . $GLOBALS['LANG']->getLL('read', TRUE) . '</strong></span>') . (($theFile['writable']) ? '' : '<span class="typo3-red"><strong>' . $GLOBALS['LANG']->getLL('write', TRUE) . '</strong></span>');
 							break;
 							case 'fileext':
-								$theData[$field]=strtoupper($theFile[$field]);
+								$theData[$field] = strtoupper($theFile[$field]);
 							break;
 							case 'tstamp':
-								$theData[$field]=Date($GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy'], $theFile[$field]);
+								$theData[$field] = t3lib_BEfunc::date($theFile[$field]);
 							break;
 							case '_CLIPBOARD_':
 								$temp = '';
@@ -477,20 +477,22 @@ class fileList extends t3lib_recordList {
 								$theData[$field]=$this->makeRef($theFile);
 							break;
 							case 'file':
-								$theData[$field] = $this->linkWrapFile($theFile[$field],$theFile['path'].$theFile['file']);
+								$theData[$field] = $this->linkWrapFile($theFile[$field], $theFile['path'] . $theFile['file']);
 									// Thumbsnails?
-								if ($this->thumbs && $this->isImage($theFile['fileext']))	{
+								if ($this->thumbs && $this->isImage($theFile['fileext'])) {
 									$thumbData = array();
-									$theFile_R = rawurlencode($theFile['path'].$theFile['file']);
+									$theFile_R = rawurlencode($theFile['path'] . $theFile['file']);
 									$titleCol = $this->fieldArray[0];
 
-									$theFile_abs = $theFile['path'].$theFile['file'];
-									$check = basename($theFile_abs).':'.filemtime($theFile_abs).':'.$GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'];
-									$params = '&file='.$theFile_R;
-									$params.= '&md5sum='.t3lib_div::shortMD5($check);
-									$href = $this->backPath.$this->thumbScript.'?&dummy='.$GLOBALS['EXEC_TIME'].$params;
+									$theFile_abs = $theFile['path'] . $theFile['file'];
+									$check = basename($theFile_abs) . ':' . filemtime($theFile_abs) .
+											':' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'];
+									$params = '&file=' . $theFile_R;
+									$params.= '&md5sum=' . md5($check);
+									$href = $this->backPath . $this->thumbScript . '?' . $params;
 
-									$theData[$field] .= '<br /><img src="'.htmlspecialchars($href).'" hspace="2" title="'.htmlspecialchars(trim($theFile['file'])).'" alt="'.htmlspecialchars(trim($theFile['file'])).'" />';
+									$theData[$field] .= '<br /><img src="' . htmlspecialchars($href) . '" hspace="2" title="' .
+											htmlspecialchars(trim($theFile['file'])) . '" alt="' . htmlspecialchars(trim($theFile['file'])) . '" />';
 								}
 							break;
 							default:

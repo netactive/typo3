@@ -782,9 +782,23 @@ class browse_links {
 				'title'  => $currentLinkParts[3],
 				'params'  => $currentLinkParts[4]
 			);
+
 			$this->curUrlArray = (is_array(t3lib_div::_GP('curUrl'))) ?
 				array_merge($initialCurUrlArray, t3lib_div::_GP('curUrl')) :
 				$initialCurUrlArray;
+
+				// additional fields for page links
+			if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.browse_links.php']['extendUrlArray']) && is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.browse_links.php']['extendUrlArray'])) {
+				$_params = array(
+					'conf' => &$conf,
+					'linkParts' => $currentLinkParts
+				);
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.browse_links.php']['extendUrlArray'] as $objRef) {
+					$processor = &t3lib_div::getUserObj($objRef);
+					$processor->extendUrlArray( $_params, $this);
+				}
+			}
+
 			$this->curUrlInfo = $this->parseCurUrl($this->siteURL.'?id='.$this->curUrlArray['href'], $this->siteURL);
 			if ($this->curUrlInfo['pageid'] == 0 && $this->curUrlArray['href']) { // pageid == 0 means that this is not an internal (page) link
 				if (file_exists(PATH_site.rawurldecode($this->curUrlArray['href'])))	{ // check if this is a link to a file
@@ -902,6 +916,7 @@ class browse_links {
 			$P2['fieldChangeFuncHash'] = t3lib_div::hmac(serialize($this->P['fieldChangeFunc']));
 			$P2['params']['allowedExtensions']=$this->P['params']['allowedExtensions'];
 			$P2['params']['blindLinkOptions']=$this->P['params']['blindLinkOptions'];
+			$P2['params']['blindLinkFields'] = $this->P['params']['blindLinkFields'];
 			$addPassOnParams.=t3lib_div::implodeArrayForUrl('P',$P2);
 
 			$JScode.='
@@ -1118,6 +1133,19 @@ class browse_links {
 			}
 		';
 
+			// extends JavaScript code
+		if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.browse_links.php']['extendJScode']) && is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.browse_links.php']['extendJScode'])) {
+			$_params = array(
+				'conf' => &$conf,
+				'wizardUpdate' => $update,
+				'addPassOnParams' => $addPassOnParams
+			);
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.browse_links.php']['extendJScode'] as $objRef) {
+				$processor = &t3lib_div::getUserObj($objRef);
+				$JScode .= $processor->extendJScode( $_params, $this);
+			}
+		}
+
 			// Finally, add the accumulated JavaScript to the template object:
 		$this->doc->JScode.= $this->doc->wrapScriptTags($JScode);
 
@@ -1207,6 +1235,13 @@ class browse_links {
 		foreach($this->hookObjects as $hookObject) {
 			$allowedItems = $hookObject->addAllowedItems($allowedItems);
 		}
+
+			// Removing link fields if configured
+		$allowedFields = array_diff(
+			array('target', 'title', 'class', 'params'),
+			t3lib_div::trimExplode(',', $this->thisConfig['blindLinkFields'], TRUE),
+			t3lib_div::trimExplode(',', $this->P['params']['blindLinkFields'], TRUE)
+		);
 
 			// if $this->act is not allowed, default to first allowed
 		if (!in_array($this->act, $allowedItems)) {
@@ -1443,10 +1478,11 @@ class browse_links {
 			break;
 		}
 
-		$content .= '
-			<!--
-				Selecting params for link:
-			-->
+		if (in_array('params', $allowedFields, TRUE)) {
+			$content .= '
+				<!--
+					Selecting params for link:
+				-->
 				<form action="" name="lparamsform" id="lparamsform">
 					<table border="0" cellpadding="2" cellspacing="1" id="typo3-linkParams">
 						<tr>
@@ -1455,10 +1491,14 @@ class browse_links {
 						</tr>
 					</table>
 				</form>
+			';
+		}
 
-			<!--
-				Selecting class for link:
-			-->
+		if (in_array('class', $allowedFields, TRUE)) {
+			$content .= '
+				<!--
+					Selecting class for link:
+				-->
 				<form action="" name="lclassform" id="lclassform">
 					<table border="0" cellpadding="2" cellspacing="1" id="typo3-linkClass">
 						<tr>
@@ -1467,10 +1507,14 @@ class browse_links {
 						</tr>
 					</table>
 				</form>
+			';
+		}
 
-			<!--
-				Selecting title for link:
-			-->
+		if (in_array('title', $allowedFields, TRUE)) {
+			$content .= '
+				<!--
+					Selecting title for link:
+				-->
 				<form action="" name="ltitleform" id="ltitleform">
 					<table border="0" cellpadding="2" cellspacing="1" id="typo3-linkTitle">
 						<tr>
@@ -1479,10 +1523,23 @@ class browse_links {
 						</tr>
 					</table>
 				</form>
-';
+			';
+		}
+
+			// additional fields for page links
+		if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.browse_links.php']['addFields_PageLink']) && is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.browse_links.php']['addFields_PageLink'])) {
+			$_params = array(
+				'conf' => &$conf,
+			);
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.browse_links.php']['addFields_PageLink'] as $objRef) {
+				$processor = &t3lib_div::getUserObj($objRef);
+				$content .= $processor->addFields( $_params, $this);
+			}
+		}
+
 
 			// Target:
-		if ($this->act!='mail')	{
+		if ($this->act != 'mail' && in_array('target', $allowedFields, TRUE)) {
 			$ltarget='
 
 

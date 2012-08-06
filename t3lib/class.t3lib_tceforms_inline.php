@@ -214,7 +214,7 @@ class t3lib_TCEforms_inline {
 		}
 
 			// if it's required to select from possible child records (reusable children), add a selector box
-		if ($config['foreign_selector']) {
+		if ($config['foreign_selector'] && $config['appearance']['showPossibleRecordsSelector'] !== FALSE) {
 				// if not already set by the foreign_unique, set the possibleRecords here and the uniqueIds to an empty array
 			if (!$config['foreign_unique']) {
 				$possibleRecords = $this->getPossibleRecords($table, $field, $row, $config);
@@ -267,6 +267,22 @@ class t3lib_TCEforms_inline {
 			// Add the level links after all child records:
 		if (in_array($config['appearance']['levelLinksPosition'], array('both', 'bottom'))) {
 			$item .= $levelLinks;
+		}
+
+		if (is_array($config['customControls'])) {
+			$item .= '<div id="' . $nameObject . '_customControls">';
+			foreach ($config['customControls'] as $customControlConfig) {
+				$parameters = array(
+					'table' => $table,
+					'field' => $field,
+					'row' => $row,
+					'nameObject' => $nameObject,
+					'nameForm' => $nameForm,
+					'config' => $config
+				);
+				$item .= t3lib_div::callUserFunction($customControlConfig, $parameters, $this);
+			}
+			$item .= '</div>';
 		}
 
 			// add Drag&Drop functions for sorting to TCEforms::$additionalJS_post
@@ -354,7 +370,9 @@ class t3lib_TCEforms_inline {
 				// Render full content ONLY IF this is a AJAX-request, a new record, the record is not collapsed or AJAX-loading is explicitly turned off
 			if ($isNewRecord || $isExpanded || !$ajaxLoad) {
 				$combination = $this->renderCombinationTable($rec, $appendFormFieldNames, $config);
-				$fields = $this->renderMainFields($foreign_table, $rec);
+
+				$overruleTypesArray = isset($config['foreign_types']) ? $config['foreign_types'] : array();
+				$fields = $this->renderMainFields($foreign_table, $rec, $overruleTypesArray);
 				$fields = $this->wrapFormsSection($fields);
 					// Replace returnUrl in Wizard-Code, if this is an AJAX call
 				$ajaxArguments = t3lib_div::_GP('ajax');
@@ -376,11 +394,6 @@ class t3lib_TCEforms_inline {
 			} else {
 					// set additional field for processing for saving
 				$fields .= '<input type="hidden" name="' . $this->prependCmdFieldNames . $appendFormFieldNames . '[delete]" value="1" disabled="disabled" />';
-				if (!$isExpanded && !empty($GLOBALS['TCA'][$foreign_table]['ctrl']['enablecolumns']['disabled'])) {
-					$checked = (!empty($rec['hidden']) ? ' checked="checked"' : '');
-					$fields .= '<input type="checkbox" name="' . $this->prependFormFieldNames . $appendFormFieldNames . '[hidden]_0" value="1"' . $checked . ' />';
-					$fields .= '<input type="input" name="' . $this->prependFormFieldNames . $appendFormFieldNames . '[hidden]" value="' . $rec['hidden'] . '" />';
-				}
 			}
 				// if this record should be shown collapsed
 			if (!$isExpanded) {
@@ -410,11 +423,12 @@ class t3lib_TCEforms_inline {
 	/**
 	 * Wrapper for TCEforms::getMainFields().
 	 *
-	 * @param	string		$table: The table name
-	 * @param	array		$row: The record to be rendered
-	 * @return	string		The rendered form
+	 * @param string $table: The table name
+	 * @param array $row: The record to be rendered
+	 * @param array $overruleTypesArray: Overrule TCA [types] array, e.g to overrride [showitem] configuration of a particular type
+	 * @return string The rendered form
 	 */
-	protected function renderMainFields($table, $row) {
+	protected function renderMainFields($table, array $row, array $overruleTypesArray = array()) {
 			// The current render depth of t3lib_TCEforms:
 		$depth = $this->fObj->renderDepth;
 			// If there is some information about already rendered palettes of our parent, store this info:
@@ -422,7 +436,7 @@ class t3lib_TCEforms_inline {
 			$palettesRendered = $this->fObj->palettesRendered[$depth][$table];
 		}
 			// Render the form:
-		$content = $this->fObj->getMainFields($table, $row, $depth);
+		$content = $this->fObj->getMainFields($table, $row, $depth, $overruleTypesArray);
 			// If there was some info about rendered palettes stored, write it back for our parent:
 		if (isset($palettesRendered)) {
 			$this->fObj->palettesRendered[$depth][$table] = $palettesRendered;
@@ -1297,7 +1311,6 @@ class t3lib_TCEforms_inline {
 			}
 		}
 		if ($data) {
-			$data = $GLOBALS['LANG']->csConvObj->utf8_encode($data, $GLOBALS['LANG']->charSet);
 			$jsonArray['data'] = $data;
 			array_unshift(
 				$jsonArrayScriptCall,

@@ -93,7 +93,8 @@ class  tx_recycler_module1 extends t3lib_SCbase {
 	 * @return	void
 	 */
 	public function render() {
-		$this->content .= $this->doc->section($GLOBALS['LANG']->getLL('title'), $GLOBALS['LANG']->getLL('description'));
+		$this->content .= $this->doc->header($GLOBALS['LANG']->getLL('title'));
+		$this->content .= $this->doc->section('', $GLOBALS['LANG']->getLL('description'));
 		if ($this->isAccessibleForCurrentUser) {
 			$this->loadHeaderData();
 				// div container for renderTo
@@ -213,11 +214,6 @@ class  tx_recycler_module1 extends t3lib_SCbase {
 
 		$extensionLabels = $this->getJavaScriptLabelsFromLocallang('js.', 'label_');
 		$javaScriptLabels = array_merge($coreLabels, $extensionLabels);
-
-			// Convert labels back to UTF-8 since json_encode() only works with UTF-8:
-		if ($GLOBALS['LANG']->charSet !== 'utf-8') {
-			$GLOBALS['LANG']->csConvObj->convArray($javaScriptLabels, $GLOBALS['LANG']->charSet, 'utf-8');
-		}
 
 		return $javaScriptLabels;
 	}

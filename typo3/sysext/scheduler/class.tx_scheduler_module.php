@@ -533,6 +533,7 @@ class tx_scheduler_Module extends t3lib_SCbase {
 				$this->addMessage($GLOBALS['LANG']->getLL('msg.maynotDeleteRunningTask'), t3lib_FlashMessage::ERROR);
 			} else {
 				if ($this->scheduler->removeTask($task)) {
+					$GLOBALS['BE_USER']->writeLog(4, 0, 0, 0, 'Scheduler task "%s" (UID: %s, Class: "%s") was deleted', array($task->getTaskTitle(), $task->getTaskUid(), $task->getTaskClassName()));
 					$this->addMessage($GLOBALS['LANG']->getLL('msg.deleteSuccess'));
 				} else {
 					$this->addMessage($GLOBALS['LANG']->getLL('msg.deleteError'), t3lib_FlashMessage::ERROR);
@@ -880,8 +881,7 @@ class tx_scheduler_Module extends t3lib_SCbase {
 		$content .= $this->doc->table($table, $tableLayout);
 		$content .= '</div></div>';
 
-		$content .= '<div style="padding-top: 20px; clear: both;"></div><div><input type="submit" name="save" class="button" value="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_common.xml:save', TRUE) . '" /> '
-			. '<input type="button" name="cancel" class="button" value="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_common.xml:cancel', TRUE) . '" onclick="document.location=\'' . $GLOBALS['MCONF']['_'] . '\'" /></div>';
+		$content .= '<div style="padding-top: 20px; clear: both;"></div>';
 
 			// Display information about server time usage
 		$content .= $this->displayServerTime();
@@ -1274,6 +1274,7 @@ class tx_scheduler_Module extends t3lib_SCbase {
 				// Save to database
 			$result = $this->scheduler->saveTask($task);
 			if ($result) {
+				$GLOBALS['BE_USER']->writeLog(4, 0, 0, 0, 'Scheduler task "%s" (UID: %s, Class: "%s") was updated', array($task->getTaskTitle(), $task->getTaskUid(), $task->getTaskClassName()));
 				$this->addMessage($GLOBALS['LANG']->getLL('msg.updateSuccess'));
 			} else {
 				$this->addMessage($GLOBALS['LANG']->getLL('msg.updateError'), t3lib_FlashMessage::ERROR);
@@ -1307,6 +1308,7 @@ class tx_scheduler_Module extends t3lib_SCbase {
 				// Add to database
 			$result = $this->scheduler->addTask($task);
 			if ($result) {
+				$GLOBALS['BE_USER']->writeLog(4, 0, 0, 0, 'Scheduler task "%s" (UID: %s, Class: "%s") was added', array($task->getTaskTitle(), $task->getTaskUid(), $task->getTaskClassName()));
 				$this->addMessage($GLOBALS['LANG']->getLL('msg.addSuccess'));
 			} else {
 				$this->addMessage($GLOBALS['LANG']->getLL('msg.addError'), t3lib_FlashMessage::ERROR);
@@ -1561,11 +1563,13 @@ class tx_scheduler_Module extends t3lib_SCbase {
 	protected function getDocHeaderButtons() {
 		$buttons = array(
 			'addtask'  => '',
+			'close' => '',
+			'save' => '',
 			'reload'   => '',
 			'shortcut' => $this->getShortcutButton(),
 		);
 
-		if (empty($this->CMD) || $this->CMD == 'list' || $this->CMD == 'delete') {
+		if (empty($this->CMD) || $this->CMD == 'list') {
 			$buttons['reload'] = '<a href="' . $GLOBALS['MCONF']['_'] . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.reload', TRUE) . '">' .
 				t3lib_iconWorks::getSpriteIcon('actions-system-refresh') .
 				'</a>';
@@ -1576,6 +1580,16 @@ class tx_scheduler_Module extends t3lib_SCbase {
 				$buttons['addtask'] = '<a href="' . htmlspecialchars($link) . '" ' .
 					'title="' . $GLOBALS['LANG']->getLL('action.add') . '">' . $image . '</a>';
 			}
+		}
+
+		if ($this->CMD === 'add' || $this->CMD === 'edit') {
+			$buttons['close'] = '<a href="#" onclick="document.location=\'' . $GLOBALS['MCONF']['_'] . '\'" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_common.xml:cancel', TRUE) . '">' .
+				t3lib_iconWorks::getSpriteIcon('actions-document-close') . '</a>';
+
+			$buttons['save'] = t3lib_iconWorks::getSpriteIcon(
+				'actions-document-save',
+				array('html' => '<input type="image" name="data[save]" class="c-inputButton" src="clear.gif" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_common.xml:save', TRUE) . '" />')
+			);
 		}
 
 		return $buttons;

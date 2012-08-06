@@ -65,7 +65,7 @@ if (version_compare(phpversion(), '5.3', '<'))	die ('TYPO3 requires PHP 5.3.0 or
 // *******************************
 // Set error reporting
 // *******************************
-error_reporting(E_ALL & ~(E_STRICT | E_NOTICE | E_DEPRECATED));
+error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
 
 // *******************************
 // Prevent any unwanted output that may corrupt AJAX/compression. Note: this does
@@ -240,16 +240,16 @@ if ((TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) && basename(PATH_thisScript) == 
 			define('TYPO3_cliInclude', t3lib_div::getFileAbsFileName($TYPO3_CONF_VARS['SC_OPTIONS']['GLOBAL']['cliKeys'][$temp_cliKey][0]));
 			$MCONF['name'] = $TYPO3_CONF_VARS['SC_OPTIONS']['GLOBAL']['cliKeys'][$temp_cliKey][1];
 		} else {
-			echo "The supplied 'cliKey' was not valid. Please use one of the available from this list:\n\n";
-			print_r(array_keys($TYPO3_CONF_VARS['SC_OPTIONS']['GLOBAL']['cliKeys']));
-			echo LF;
-			exit;
+			$message = "The supplied 'cliKey' was not valid. Please use one of the available from this list:\n\n";
+			$message .= var_export(array_keys($TYPO3_CONF_VARS['SC_OPTIONS']['GLOBAL']['cliKeys']), TRUE);
+			fwrite(STDERR, $message . LF);
+			exit(2);
 		}
 	} else {
-		echo "Please supply a 'cliKey' as first argument. The following are available:\n\n";
-		print_r($TYPO3_CONF_VARS['SC_OPTIONS']['GLOBAL']['cliKeys']);
-		echo LF;
-		exit;
+		$message = "Please supply a 'cliKey' as first argument. The following are available:\n\n";
+		$message .= var_export(array_keys($TYPO3_CONF_VARS['SC_OPTIONS']['GLOBAL']['cliKeys']), TRUE);
+		fwrite(STDERR, $message . LF);
+		exit(2);
 	}
 }
 
@@ -382,6 +382,18 @@ if (TYPO3_extTableDef_script)	{
 	include (PATH_typo3conf.TYPO3_extTableDef_script);
 }
 
+	// Hook for postprocessing values set in extTables.php
+if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['extTablesInclusion-PostProcessing'])) {
+	foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['extTablesInclusion-PostProcessing'] as $_classRef) {
+		$hookObject = t3lib_div::getUserObj($_classRef);
+		if (!$hookObject instanceof t3lib_extTables_PostProcessingHook) {
+			throw new UnexpectedValueException('$hookObject must implement interface t3lib_extTables_PostProcessingHook', 1320585902);
+		}
+		$hookObject->processData();
+	}
+}
+
+
 	// load TYPO3 SpriteGenerating API
 $spriteManager = t3lib_div::makeInstance('t3lib_SpriteManager', TRUE);
 $spriteManager->loadCacheFile();
@@ -425,12 +437,12 @@ $GLOBALS['LANG']->init($BE_USER->uc['lang']);
 if (TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) {
 		// Status output:
 	if (!strcmp($_SERVER['argv'][1],'status'))	{
-		echo "Status of TYPO3 CLI script:\n\n";
-		echo "Username [uid]: ".$BE_USER->user['username']." [".$BE_USER->user['uid']."]\n";
-		echo "Database: ".TYPO3_db.LF;
-		echo "PATH_site: ".PATH_site.LF;
-		echo LF;
-		exit;
+		$message = "Status of TYPO3 CLI script:\n\n";
+		$message .= "Username [uid]: " . $BE_USER->user['username'] . " [" . $BE_USER->user['uid'] . "]\n";
+		$message .= "Database: " . TYPO3_db . LF;
+		$message .= "PATH_site: " . PATH_site . LF;
+		fwrite(STDOUT, $message . LF);
+		exit(0);
 	}
 }
 

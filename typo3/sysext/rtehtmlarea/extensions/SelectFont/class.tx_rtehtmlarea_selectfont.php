@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008-2011 Stanislas Rolland <typo3(arobas)sjbr.ca>
+*  (c) 2008-2012 Stanislas Rolland <typo3(arobas)sjbr.ca>
 *  All rights reserved
 *
 *  This script is part of the Typo3 project. The Typo3 project is
@@ -182,8 +182,6 @@ class tx_rtehtmlarea_selectfont extends tx_rtehtmlarea_api {
 		}
 		if ($this->htmlAreaRTE->is_FE()) {
 			$GLOBALS['TSFE']->csConvObj->convArray($itemsJSArray, $this->htmlAreaRTE->OutputCharset, 'utf-8');
-		} else {
-			$GLOBALS['LANG']->csConvObj->convArray($itemsJSArray, $GLOBALS['LANG']->charSet, 'utf-8');
 		}
 		$itemsJSArray = json_encode(array('options' => $itemsJSArray));
 			// Adding to button JS configuration
@@ -192,7 +190,7 @@ class tx_rtehtmlarea_selectfont extends tx_rtehtmlarea_api {
 			RTEarea['.$RTEcounter.'].buttons.'. $buttonId .' = new Object();';
 		}
 		$configureRTEInJavascriptString .= '
-			RTEarea['.$RTEcounter.'].buttons.'. $buttonId . '.dataUrl = \'' . $this->htmlAreaRTE->writeTemporaryFile('', $buttonId . '_'. $this->htmlAreaRTE->contentLanguageUid, 'js', $itemsJSArray) . '\';';
+			RTEarea['.$RTEcounter.'].buttons.'. $buttonId . '.dataUrl = "' . (($this->htmlAreaRTE->is_FE() && $GLOBALS['TSFE']->absRefPrefix) ? $GLOBALS['TSFE']->absRefPrefix : '') . $this->htmlAreaRTE->writeTemporaryFile('', $buttonId . '_'. $this->htmlAreaRTE->contentLanguageUid, 'js', $itemsJSArray) . '";';
 		return $configureRTEInJavascriptString;
 	}
 }

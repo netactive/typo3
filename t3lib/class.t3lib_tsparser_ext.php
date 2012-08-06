@@ -679,12 +679,12 @@ class t3lib_tsparser_ext extends t3lib_TStemplate {
 	/**
 	 * [Describe function...]
 	 *
-	 * @param	[type]		$ln: ...
+	 * @param integer $lineNumber Line Number
 	 * @param	[type]		$str: ...
-	 * @return	[type]		...
+	 * @return string
 	 */
-	function ext_lnBreakPointWrap($ln, $str) {
-		return '<a href="#" onClick="return brPoint(' . $ln . ',' . ($this->ext_lineNumberOffset_mode == "setup" ? 1 : 0) . ');">' . $str . '</a>';
+	function ext_lnBreakPointWrap($lineNumber, $str) {
+		return '<a href="#" id="line-' . $lineNumber . '" onClick="return brPoint(' . $lineNumber . ',' . ($this->ext_lineNumberOffset_mode == "setup" ? 1 : 0) . ');">' . $str . '</a>';
 	}
 
 	/**
@@ -1104,7 +1104,7 @@ class t3lib_tsparser_ext extends t3lib_TStemplate {
 						$subcat = $params['subcat_name'];
 						$subcat_name = $params['subcat_name'] ? $this->subCategories[$params['subcat_name']][0] : 'Others';
 
-						$output .= '<h2 class="typo3-tstemplate-ceditor-subcat">' . $subcat_name . '</h2>';
+						$output .= '<h3 class="typo3-tstemplate-ceditor-subcat">' . $subcat_name . '</h3>';
 					}
 
 					$label = $GLOBALS['LANG']->sL($params['label']);

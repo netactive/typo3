@@ -108,7 +108,7 @@ class t3lib_loadDBGroup {
 
 			if ($this->MM_oppositeFieldConf['allowed']) {
 				$oppositeFieldConf_allowed = explode(',', $this->MM_oppositeFieldConf['allowed']);
-				if (count($oppositeFieldConf_allowed) > 1) {
+				if (count($oppositeFieldConf_allowed) > 1 || $this->MM_oppositeFieldConf['allowed'] === '*') {
 					$this->MM_isMultiTableRelationship = $oppositeFieldConf_allowed[0];
 				}
 			}
@@ -514,6 +514,7 @@ class t3lib_loadDBGroup {
 		$foreign_table = $conf['foreign_table'];
 		$foreign_table_field = $conf['foreign_table_field'];
 		$useDeleteClause = $this->undeleteRecord ? FALSE : TRUE;
+		$foreign_match_fields = is_array($conf['foreign_match_fields']) ? $conf['foreign_match_fields'] : array();
 
 			// search for $uid in foreign_field, and if we have symmetric relations, do this also on symmetric_field
 		if ($conf['symmetric_field']) {
@@ -529,6 +530,11 @@ class t3lib_loadDBGroup {
 			// add an additional SQL-WHERE clause
 		if ($foreign_table_field && $this->currentTable) {
 			$whereClause .= ' AND ' . $foreign_table_field . '=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->currentTable, $foreign_table);
+		}
+
+			// Add additional where clause if foreign_match_fields are defined
+		foreach ($foreign_match_fields as $field => $value) {
+			$whereClause .= ' AND ' . $field . '=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($value, $foreign_table);
 		}
 
 			// Select children in the same workspace:
@@ -589,6 +595,7 @@ class t3lib_loadDBGroup {
 		$foreign_field = $conf['foreign_field'];
 		$symmetric_field = $conf['symmetric_field'];
 		$foreign_table_field = $conf['foreign_table_field'];
+		$foreign_match_fields = is_array($conf['foreign_match_fields']) ? $conf['foreign_match_fields'] : array();
 
 			// if there are table items and we have a proper $parentUid
 		if (t3lib_utility_Math::canBeInterpretedAsInteger($parentUid) && count($this->tableArray)) {
@@ -622,7 +629,7 @@ class t3lib_loadDBGroup {
 					$isOnSymmetricSide = t3lib_loadDBGroup::isOnSymmetricSide($parentUid, $conf, $row);
 				}
 
-				$updateValues = array();
+				$updateValues = $foreign_match_fields;
 				$workspaceValues = array();
 
 					// no update to the uid is requested, so this is the normal behaviour

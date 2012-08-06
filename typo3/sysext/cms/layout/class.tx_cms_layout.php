@@ -465,7 +465,7 @@ class tx_cms_layout extends recordList {
 						} else {
 							$out .= '
 								<td><img src="clear.gif" width="4" height="1" alt="" /></td>
-								<td bgcolor="#cfcfcf"><img src="clear.gif" width="1" height="1" alt="" /></td>
+								<td class="t3-page-border"><img src="clear.gif" width="1" height="1" alt="" /></td>
 								<td><img src="clear.gif" width="4" height="1" alt="" /></td>';
 						}
 						$out .= '
@@ -482,7 +482,7 @@ class tx_cms_layout extends recordList {
 
 					// Wrap the cells into a table row:
 					$out = '
-					<table border="0" cellpadding="0" cellspacing="0" class="t3-page-columns" width="100%">
+					<table border="0" cellpadding="0" cellspacing="0" class="t3-page-columns">
 						<tr>' . $out . '
 						</tr>
 					</table>';
@@ -571,7 +571,7 @@ class tx_cms_layout extends recordList {
 				// Separator between language columns (black thin line)
 				$midSep = '
 						<td><img src="clear.gif" width="4" height="1" alt="" /></td>
-						<td bgcolor="black"><img src="clear.gif" width="1" height="1" alt="" /></td>
+						<td class="t3-page-border"><img src="clear.gif" width="1" height="1" alt="" /></td>
 						<td><img src="clear.gif" width="4" height="1" alt="" /></td>';
 
 				// Traverse languages found on the page and build up the table displaying them side by side:
@@ -606,13 +606,10 @@ class tx_cms_layout extends recordList {
 					$sCont[$lP] = '
 						<td nowrap="nowrap">' . $lPLabel . '</td>';
 				}
+
 				// Add headers:
-				$out .= '
-					<tr class="bgColor5">' . implode($midSep, $cCont) . '
-					</tr>';
-				$out .= '
-					<tr class="bgColor5">' . implode($midSep, $sCont) . '
-					</tr>';
+				$out .= '<tr>' . implode($midSep, $cCont) . '</tr>';
+				$out .= '<tr class="bgColor5">' . implode($midSep, $sCont) . '</tr>';
 
 				// Traverse previously built content for the columns:
 				foreach ($languageColumn as $cKey => $cCont) {
@@ -652,7 +649,7 @@ class tx_cms_layout extends recordList {
 
 				// Finally, wrap it all in a table and add the language selector on top of it:
 				$out = $languageSelector . '
-					<table border="0" cellpadding="0" cellspacing="0" width="480" class="typo3-page-langMode">
+					<table cellpadding="0" cellspacing="0" class="t3-page-langMode">
 						' . $out . '
 					</table>';
 

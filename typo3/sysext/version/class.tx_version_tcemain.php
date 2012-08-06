@@ -100,7 +100,7 @@ class tx_version_tcemain {
 						// or if "element" version can be used
 					$versionizeTree = -1;
 					if (isset($value['treeLevels'])) {
-						$versionizeTree = t3lib_div::intInRange($value['treeLevels'], -1, 100);
+						$versionizeTree = t3lib_utility_Math::forceIntegerInRange($value['treeLevels'], -1, 100);
 					}
 					if ($table == 'pages' && $versionizeTree >= 0) {
 						$this->versionizePages($id, $value['label'], $versionizeTree, $tcemainObj);
@@ -495,11 +495,6 @@ class tx_version_tcemain {
 					// old way, options are TCEMAIN.notificationEmail_body/subject
 				$TCEmainTSConfig = $tcemainObj->getTCEMAIN_TSconfig($pageUid);
 
-					// these options are deprecated since TYPO3 4.5, but are still
-					// used in order to provide backwards compatibility
-				$emailMessage = trim($TCEmainTSConfig['notificationEmail_body']);
-				$emailSubject = trim($TCEmainTSConfig['notificationEmail_subject']);
-
 					// new way, options are
 					// pageTSconfig: tx_version.workspaces.stageNotificationEmail.subject
 					// userTSconfig: page.tx_version.workspaces.stageNotificationEmail.subject
@@ -547,98 +542,62 @@ class tx_version_tcemain {
 					}
 				}
 
-					// sending the emails the old way with sprintf(),
-					// because it was set explicitly in TSconfig
-				if ($emailMessage && $emailSubject) {
-					t3lib_div::deprecationLog('This TYPO3 installation uses Workspaces staging notification by setting the TSconfig options "TCEMAIN.notificationEmail_subject" / "TCEMAIN.notificationEmail_body". Please use the more flexible marker-based options tx_version.workspaces.stageNotificationEmail.message / tx_version.workspaces.stageNotificationEmail.subject');
+					// send an email to each individual user, to ensure the
+					// multilanguage version of the email
+				$emailHeaders = $emailConfig['additionalHeaders'];
+				$emailRecipients = array();
 
-					$emailSubject = sprintf($emailSubject, $elementName);
-					$emailMessage = sprintf($emailMessage,
-						$markers['###SITE_NAME###'],
-						$markers['###SITE_URL###'],
-						$markers['###WORKSPACE_TITLE###'],
-						$markers['###WORKSPACE_UID###'],
-						$markers['###ELEMENT_NAME###'],
-						$markers['###NEXT_STAGE###'],
-						$markers['###COMMENT###'],
-						$markers['###USER_REALNAME###'],
-						$markers['###USER_USERNAME###'],
-						$markers['###RECORD_PATH###'],
-						$markers['###RECORD_TITLE###']
-					);
+					// an array of language objects that are needed
+					// for emails with different languages
+				$languageObjects = array(
+					$GLOBALS['LANG']->lang => $GLOBALS['LANG']
+				);
 
-						// filter out double email addresses
-					$emailRecipients = array();
-					foreach ($emails as $recip) {
-						$emailRecipients[$recip['email']] = $recip['email'];
+					// loop through each recipient and send the email
+				foreach ($emails as $recipientData) {
+						// don't send an email twice
+					if (isset($emailRecipients[$recipientData['email']])) {
+						continue;
 					}
-					$emailRecipients = implode(',', $emailRecipients);
+					$emailSubject = $emailConfig['subject'];
+					$emailMessage = $emailConfig['message'];
+					$emailRecipients[$recipientData['email']] = $recipientData['email'];
 
-						// Send one email to everybody
+						// check if the email needs to be localized
+						// in the users' language
+					if (t3lib_div::isFirstPartOfStr($emailSubject, 'LLL:') || t3lib_div::isFirstPartOfStr($emailMessage, 'LLL:')) {
+						$recipientLanguage = ($recipientData['lang'] ? $recipientData['lang'] : 'default');
+						if (!isset($languageObjects[$recipientLanguage])) {
+								// a LANG object in this language hasn't been
+								// instantiated yet, so this is done here
+							/** @var $languageObject language */
+							$languageObject = t3lib_div::makeInstance('language');
+							$languageObject->init($recipientLanguage);
+							$languageObjects[$recipientLanguage] = $languageObject;
+						} else {
+							$languageObject = $languageObjects[$recipientLanguage];
+						}
+
+						if (t3lib_div::isFirstPartOfStr($emailSubject, 'LLL:')) {
+							$emailSubject = $languageObject->sL($emailSubject);
+						}
+
+						if (t3lib_div::isFirstPartOfStr($emailMessage, 'LLL:')) {
+							$emailMessage = $languageObject->sL($emailMessage);
+						}
+					}
+
+					$emailSubject = t3lib_parseHtml::substituteMarkerArray($emailSubject, $markers, '', TRUE, TRUE);
+					$emailMessage = t3lib_parseHtml::substituteMarkerArray($emailMessage, $markers, '', TRUE, TRUE);
+						// Send an email to the recipient
 					t3lib_div::plainMailEncoded(
-						$emailRecipients,
+						$recipientData['email'],
 						$emailSubject,
-						$emailMessage
+						$emailMessage,
+						$emailHeaders
 					);
-				} else {
-						// send an email to each individual user, to ensure the
-						// multilanguage version of the email
-
-					$emailHeaders = $emailConfig['additionalHeaders'];
-					$emailRecipients = array();
-
-						// an array of language objects that are needed
-						// for emails with different languages
-					$languageObjects = array(
-						$GLOBALS['LANG']->lang => $GLOBALS['LANG']
-					);
-
-						// loop through each recipient and send the email
-					foreach ($emails as $recipientData) {
-							// don't send an email twice
-						if (isset($emailRecipients[$recipientData['email']])) {
-							continue;
-						}
-						$emailSubject = $emailConfig['subject'];
-						$emailMessage = $emailConfig['message'];
-						$emailRecipients[$recipientData['email']] = $recipientData['email'];
-
-							// check if the email needs to be localized
-							// in the users' language
-						if (t3lib_div::isFirstPartOfStr($emailSubject, 'LLL:') || t3lib_div::isFirstPartOfStr($emailMessage, 'LLL:')) {
-							$recipientLanguage = ($recipientData['lang'] ? $recipientData['lang'] : 'default');
-							if (!isset($languageObjects[$recipientLanguage])) {
-									// a LANG object in this language hasn't been
-									// instantiated yet, so this is done here
-								/** @var $languageObject language */
-								$languageObject = t3lib_div::makeInstance('language');
-								$languageObject->init($recipientLanguage);
-								$languageObjects[$recipientLanguage] = $languageObject;
-							} else {
-								$languageObject = $languageObjects[$recipientLanguage];
-							}
-
-							if (t3lib_div::isFirstPartOfStr($emailSubject, 'LLL:')) {
-								$emailSubject = $languageObject->sL($emailSubject);
-							}
-
-							if (t3lib_div::isFirstPartOfStr($emailMessage, 'LLL:')) {
-								$emailMessage = $languageObject->sL($emailMessage);
-							}
-						}
-
-						$emailSubject = t3lib_parseHtml::substituteMarkerArray($emailSubject, $markers, '', TRUE, TRUE);
-						$emailMessage = t3lib_parseHtml::substituteMarkerArray($emailMessage, $markers, '', TRUE, TRUE);
-							// Send an email to the recipient
-						t3lib_div::plainMailEncoded(
-							$recipientData['email'],
-							$emailSubject,
-							$emailMessage,
-							$emailHeaders
-						);
-					}
-					$emailRecipients = implode(',', $emailRecipients);
 				}
+				$emailRecipients = implode(',', $emailRecipients);
 				$tcemainObj->newlog2('Notification email for stage change was sent to "' . $emailRecipients . '"', $table, $id);
 			}
 		}
@@ -1374,7 +1333,8 @@ class tx_version_tcemain {
 	 */
 	protected function moveRecord_wsPlaceholders($table, $uid, $destPid, $wsUid, t3lib_TCEmain $tcemainObj) {
 			// If a record gets moved after a record that already has a placeholder record
-			// then the new placeholder record needs to be after the existing one:
+			// then the new placeholder record needs to be after the existing one
+		$originalRecordDestinationPid = $destPid;
 		if ($destPid < 0) {
 			$movePlaceHolder = t3lib_BEfunc::getMovePlaceholder($table, abs($destPid), 'uid');
 
@@ -1428,7 +1388,6 @@ class tx_version_tcemain {
 				$newVersion_placeholderFieldArray[$GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField']] = $l10nParentRec[$GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField']];
 				unset($l10nParentRec);
 			}
-
 				// Initially, create at root level.
 			$newVersion_placeholderFieldArray['pid'] = 0;
 			$id = 'NEW_MOVE_PLH';
@@ -1447,7 +1406,7 @@ class tx_version_tcemain {
 		}
 
 			// Check for the localizations of that element and move them as well
-		$tcemainObj->moveL10nOverlayRecords($table, $uid, $destPid);
+		$tcemainObj->moveL10nOverlayRecords($table, $uid, $destPid, $originalRecordDestinationPid);
 	}
 
 	/**

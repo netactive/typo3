@@ -83,7 +83,7 @@
 	var $loginUser='';					// Global flag indicating that a front-end user is logged in. This is set only if a user really IS logged in. The group-list may show other groups (like added by IP filter or so) even though there is no user.
 	var $gr_list='';					// (RO=readonly) The group list, sorted numerically. Group '0,-1' is the default group, but other groups may be added by other means than a user being logged in though...
 	var $beUserLogin='';				// Flag that indicates if a Backend user is logged in!
-	var $workspacePreview='';			// Integer, that indicates which workspace is being previewed.
+	var $workspacePreview = 0;			// Integer, that indicates which workspace is being previewed.
 	var $loginAllowedInBranch = TRUE;	// Shows whether logins are allowed in branch
 	var $loginAllowedInBranch_mode = '';	// Shows specific mode (all or groups)
 	var $ADMCMD_preview_BEUSER_uid = 0;	// Integer, set to backend user ID to initialize when keyword-based preview is used.
@@ -133,12 +133,12 @@
 			JSImgCode : reserved
 	*/
 	var $additionalHeaderData=array();	// used to accumulate additional HTML-code for the header-section, <head>...</head>. Insert either associative keys (like additionalHeaderData['myStyleSheet'], see reserved keys above) or num-keys (like additionalHeaderData[] = '...')
-	public $additionalFooterData = array();	// used to accumulate additional HTML-code for the footer-section of the template
 	var $additionalJavaScript=array();	// used to accumulate additional JavaScript-code. Works like additionalHeaderData. Reserved keys at 'openPic' and 'mouseOver'
 	var $additionalCSS=array();			// used to accumulate additional Style code. Works like additionalHeaderData.
 	var $JSeventFuncCalls = array(		// you can add JavaScript functions to each entry in these arrays. Please see how this is done in the GMENU_LAYERS script. The point is that many applications on a page can set handlers for onload, onmouseover and onmouseup
 		'onmousemove' => array(),
 		'onmouseup' => array(),
+		'onmousemove' => array(),
 		'onkeydown' => array(),
 		'onkeyup' => array(),
 		'onkeypress' => array(),
@@ -213,8 +213,8 @@
 	 * @var t3lib_cs
 	 */
 	var $csConvObj;
-	var $defaultCharSet = 'iso-8859-1';	// The default charset used in the frontend if nothing else is set.
-	var $renderCharset='';				// Internal charset of the frontend during rendering: Defaults to "forceCharset" and if that is not set, to ->defaultCharSet
+	var $defaultCharSet = 'utf-8';	// The default charset used in the frontend if nothing else is set.
+	var $renderCharset='';				// Internal charset of the frontend during rendering. (Default: UTF-8)
 	var $metaCharset='';				// Output charset of the websites content. This is the charset found in the header, meta tag etc. If different from $renderCharset a conversion happens before output to browser. Defaults to ->renderCharset if not set.
 	var $localeCharset='';				// Assumed charset of locale strings.
 
@@ -250,6 +250,11 @@
 	 */
 	protected $pageCache;
 	protected $pageCacheTags = array();
+
+	/**
+	 * @var t3lib_cacheHash	The cHash Service class used for cHash related functionality
+	 */
+	protected $cacheHash;
 
 	/**
 	 * Class constructor
@@ -300,7 +305,7 @@
 				t3lib_div::callUserFunction($_funcRef,$_params,$this);
 			}
 		}
-
+		$this->cacheHash = t3lib_div::makeInstance('t3lib_cacheHash');
 		$this->initCaches();
 	}
 
@@ -642,28 +647,6 @@
 			$GLOBALS['TT']->pull();
 			$GLOBALS['TYPO3_MISC']['microtime_BE_USER_end'] = microtime(TRUE);
 
-		} elseif ($this->ADMCMD_preview_BEUSER_uid) {
-				// TODO: validate the comment below: is this necessary? if so,
-				// formfield_status should be set to "" in t3lib_tsfeBeUserAuth
-				// which is a subclass of t3lib_beUserAuth
-				// ----
-				// the value this->formfield_status is set to empty in order to
-				// disable login-attempts to the backend account through this script
-
-				// New backend user object
-			$BE_USER = t3lib_div::makeInstance('t3lib_tsfeBeUserAuth');
-			$BE_USER->userTS_dontGetCached = 1;
-			$BE_USER->OS = TYPO3_OS;
-			$BE_USER->setBeUserByUid($this->ADMCMD_preview_BEUSER_uid);
-			$BE_USER->unpack_uc('');
-			if ($BE_USER->user['uid']) {
-				$BE_USER->fetchGroupData();
-				$this->beUserLogin = 1;
-			} else {
-				$BE_USER = NULL;
-				$this->beUserLogin = 0;
-				$_SESSION['TYPO3-TT-start'] = FALSE;
-			}
 		}
 
 		// *****************
@@ -1741,7 +1724,10 @@
 	 *******************************************/
 
 	/**
-	 * Calculates a hash string based on additional parameters in the url. This is used to cache pages with more parameters than just id and type
+	 * Calculates a hash string based on additional parameters in the url.
+	 *
+	 * Calculated hash is stored in $this->cHash_array.
+	 * This is used to cache pages with more parameters than just id and type.
 	 *
 	 * @return	void
 	 * @see reqCHash()
@@ -1754,8 +1740,8 @@
 
 		$GET = t3lib_div::_GET();
 		if ($this->cHash && is_array($GET))	{
-			$this->cHash_array = t3lib_div::cHashParams(t3lib_div::implodeArrayForUrl('',$GET));
-			$cHash_calc = t3lib_div::calculateCHash($this->cHash_array);
+			$this->cHash_array = $this->cacheHash->getRelevantParameters(t3lib_div::implodeArrayForUrl('', $GET));
+			$cHash_calc = $this->cacheHash->calculateCacheHash($this->cHash_array);
 
 			if ($cHash_calc!=$this->cHash)	{
 				if ($this->TYPO3_CONF_VARS['FE']['pageNotFoundOnCHashError']) {
@@ -1764,6 +1750,11 @@
 					$this->disableCache();
 					$GLOBALS['TT']->setTSlogMessage('The incoming cHash "'.$this->cHash.'" and calculated cHash "'.$cHash_calc.'" did not match, so caching was disabled. The fieldlist used was "'.implode(',',array_keys($this->cHash_array)).'"',2);
 				}
+			}
+		} elseif (is_array($GET)) {
+				// no cHash is set, check if that is correct
+			if ($this->cacheHash->doParametersRequireCacheHash(t3lib_div::implodeArrayForUrl('', $GET))) {
+				$this->reqCHash();
 			}
 		}
 	}
@@ -1795,10 +1786,12 @@
 	 * @return	array		Array with key/value pairs of query-parameters WITHOUT a certain list of variable names (like id, type, no_cache etc) and WITH a variable, encryptionKey, specific for this server/installation
 	 * @access private
 	 * @see makeCacheHash(), tslib_cObj::typoLink()
+	 * @deprecated since TYPO3 4.7 - will be removed in TYPO3 4.9 - use t3lib_cacheHash instead
 	 * @obsolete
 	 */
 	function cHashParams($addQueryParams) {
-		return t3lib_div::cHashParams($addQueryParams);
+		t3lib_div::logDeprecatedFunction();
+		return $this->cacheHash->calculateCacheHash($addQueryParams);
 	}
 
 	/**
@@ -1954,18 +1947,7 @@
 	 * @see getFromCache(), getLockHash()
 	 */
 	function getHash()	{
-		$this->hash_base = serialize(
-			array(
-				'all' => $this->all,
-				'id' => intval($this->id),
-				'type' => intval($this->type),
-				'gr_list' => (string)$this->gr_list,
-				'MP' => (string)$this->MP,
-				'cHash' => $this->cHash_array,
-				'domainStartPage' => $this->domainStartPage,
-			)
-		);
-
+		$this->hash_base = $this->createHashBase(FALSE);
 		return md5($this->hash_base);
 	}
 
@@ -1978,18 +1960,48 @@
 	 * @see getFromCache(), getHash()
 	 */
 	function getLockHash()	{
-		$lockHash = serialize(
-			array(
-				'id' => intval($this->id),
-				'type' => intval($this->type),
-				'gr_list' => (string)$this->gr_list,
-				'MP' => (string)$this->MP,
-				'cHash' => $this->cHash_array,
-				'domainStartPage' => $this->domainStartPage,
-			)
+		$lockHash = $this->createHashBase(TRUE);
+		return md5($lockHash);
+	}
+
+
+	/**
+	 * Calculates the cache-hash (or the lock-hash)
+	 * This hash is unique to the template,
+	 * the variables ->id, ->type, ->gr_list (list of groups),
+	 * ->MP (Mount Points) and cHash array
+	 * Used to get and later store the cached data.
+	 *
+	 * @param boolean $createLockHashBase whether to create the lock hash, which doesn't contain the "this->all" (the template information)
+	 * @return string the serialized hash base
+	 */
+	protected function createHashBase($createLockHashBase = FALSE) {
+		$hashParameters = array(
+			'id'      => intval($this->id),
+			'type'    => intval($this->type),
+			'gr_list' => (string) $this->gr_list,
+			'MP'      => (string) $this->MP,
+			'cHash'   => $this->cHash_array,
+			'domainStartPage' => $this->domainStartPage
 		);
 
-		return md5($lockHash);
+			// include the template information if we shouldn't create a lock hash
+		if (!$createLockHashBase) {
+			$hashParameters['all'] = $this->all;
+		}
+
+			// Call hook to influence the hash calculation
+		if (is_array($this->TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['createHashBase'])) {
+			$_params = array(
+				'hashParameters' => &$hashParameters,
+				'createLockHashBase' => $createLockHashBase
+			);
+			foreach ($this->TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['createHashBase'] as $_funcRef) {
+				t3lib_div::callUserFunction($_funcRef, $_params, $this);
+			}
+		}
+
+		return serialize($hashParameters);
 	}
 
 	/**
@@ -2012,7 +2024,6 @@
 
 			if ($this->tmpl->loaded)	{
 				$GLOBALS['TT']->push('Setting the config-array','');
-			//	t3lib_div::print_array($this->tmpl->setup);
 				$this->sPre = $this->tmpl->setup['types.'][$this->type];	// toplevel - objArrayName
 				$this->pSetup = $this->tmpl->setup[$this->sPre.'.'];
 
@@ -2228,6 +2239,17 @@
 			}
 
 			$this->TCAloaded = $TCAloaded;
+
+				// Hook for postprocessing values set in extTables.php
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['extTablesInclusion-PostProcessing'])) {
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['extTablesInclusion-PostProcessing'] AS $_classRef) {
+					$hookObject = t3lib_div::getUserObj($_classRef);
+					if (!$hookObject instanceof t3lib_extTables_PostProcessingHook) {
+						throw new UnexpectedValueException('$hookObject must implement interface t3lib_extTables_PostProcessingHook', 1320585902);
+					}
+					$hookObject->processData();
+				}
+			}
 		}
 	}
 
@@ -3173,7 +3195,6 @@
 			// Deprecated stuff:
 			// @deprecated: annotation added TYPO3 4.6
 		$this->additionalHeaderData = is_array($this->config['INTincScript_ext']['additionalHeaderData']) ? $this->config['INTincScript_ext']['additionalHeaderData'] : array();
-		$this->additionalFooterData = is_array($this->config['INTincScript_ext']['additionalFooterData']) ? $this->config['INTincScript_ext']['additionalFooterData'] : array();
 		$this->additionalJavaScript = $this->config['INTincScript_ext']['additionalJavaScript'];
 		$this->additionalCSS = $this->config['INTincScript_ext']['additionalCSS'];
 		$this->JSImgCode = $this->additionalHeaderData['JSImgCode'];
@@ -3191,7 +3212,6 @@
 		$GLOBALS['TT']->push('Substitute header section');
 		$this->INTincScript_loadJSCode();
 		$this->content = str_replace('<!--HD_'.$this->config['INTincScript_ext']['divKey'].'-->', $this->convOutputCharset(implode(LF,$this->additionalHeaderData),'HD'), $this->content);
-		$this->content = str_replace('<!--FD_'.$this->config['INTincScript_ext']['divKey'].'-->', $this->convOutputCharset(implode(LF, $this->additionalFooterData), 'FD'), $this->content);
 		$this->content = str_replace('<!--TDS_'.$this->config['INTincScript_ext']['divKey'].'-->', $this->convOutputCharset($this->divSection,'TDS'), $this->content);
 		$this->setAbsRefPrefix();
 		$GLOBALS['TT']->pull();
@@ -3733,6 +3753,113 @@ if (version == "n3") {
 	}
 
 	/**
+	 * Get the (partially) anonymized IP address for the log file
+	 *  	configure: set set config.stat_IP_anonymize=1
+	 *
+	 *  @return string the IP to log
+	 */
+	public function getLogIPAddress(){
+		$result = t3lib_div::getIndpEnv('REMOTE_ADDR');
+		if ($this->config['config']['stat_IP_anonymize']) {
+			if (strpos($result, ':')) {
+				$result = $this->stripIPv6($result);
+			} else {
+				$result = $this->stripIPv4($result);
+			}
+		}
+		return $result;
+	}
+
+	/**
+	 * Strip parts from a IPv6 address
+	 *
+	 * configure: set config.stat_IP_anonymize_mask_ipv6 to a prefix-length (0 to 128)
+	 * 			  defaults to 64  if not set
+	 *
+	 * @param string raw IPv6 address
+	 * @return string stripped address
+	 */
+	protected function stripIPv6($strIP) {
+		if(isset($this->config['config']['stat_IP_anonymize_mask_ipv6'])) {
+			$netPrefix = intval($this->config['config']['stat_IP_anonymize_mask_ipv6']);
+		} else {
+			$netPrefix = 64;
+		}
+		$bytesIP = t3lib_div::IPv6Hex2Bin($strIP);
+
+		$bitsToStrip = (128 - $netPrefix);
+
+		for($counter = 15; $counter >= 0; $counter--)
+		{
+			$bitsToStripPart = min($bitsToStrip, 8);
+				// TODO find a nicer solution for bindec and chr/ord below - but it works :-)
+			$mask = bindec(str_pad('', 8 - $bitsToStripPart, '1') . str_pad('', $bitsToStripPart, '0'));
+			$bytesIP[$counter] = chr(ord($bytesIP[$counter]) & $mask);
+			$bitsToStrip -= $bitsToStripPart;
+		}
+		$strIP = inet_ntop($bytesIP);
+		return $strIP;
+	}
+
+	/**
+	 * Strip parts from IPv4 addresses
+	 *
+	 * configure: set config.stat_IP_anonymize_mask_ipv4 to a prefix-length (0 to 32)
+	 * 			  defaults to 24, if not set
+	 *
+	 * @param string IPv4 address
+	 * @return string  stripped IP address
+	 */
+	protected function stripIPv4($strIP) {
+		if(isset($this->config['config']['stat_IP_anonymize_mask_ipv4'])) {
+			$netPrefix = intval($this->config['config']['stat_IP_anonymize_mask_ipv4']);
+		} else {
+			$netPrefix = 24;
+		}
+
+		$bitsToStrip = (32 - $netPrefix);
+		$ip = ip2long($strIP);
+			// shift right
+		$ip = $ip >> $bitsToStrip;
+			// shift left; last bytes will be zero now
+		$ip = $ip << $bitsToStrip;
+		$strIP = long2ip($ip);
+		return $strIP;
+	}
+
+	/**
+	 * Get the (possibly) anonymized host name for the log file
+	 *  	configure: set config.stat_IP_anonymize=1
+	 *
+	 * @return the host name to log
+	 */
+	public function getLogHostName(){
+		if($this->config['config']['stat_IP_anonymize']) {
+				// ignore hostname if IP anonymized
+			$hostName = '<anonymized>';
+		} else {
+			$hostName = t3lib_div::getIndpEnv('REMOTE_HOST');
+		}
+		return $hostName;
+	}
+
+	/**
+	 * Get the (possibly) anonymized username or user id for the log file
+	 *      configure: set config.stat_IP_anonymize=1
+	 *
+	 * @return the user name /uid to log
+	 */
+	public function getLogUserName(){
+		$logUser = (isset($this->config['config']['stat_logUser'])) ? $this->config['config']['stat_logUser'] : TRUE;
+		if ($this->loginUser && $logUser) {
+			$userName =  $this->fe_user->user['username'];
+		} else {
+			$userName = '-';
+		}
+		return $userName;
+	}
+
+	/**
 	 * Saves hit statistics
 	 *
 	 * @return	void
@@ -3782,8 +3909,8 @@ if (version == "n3") {
 						'client_os' => $GLOBALS['CLIENT']['SYSTEM'],			// Client Operating system (win, mac, unix)
 						'parsetime' => intval($this->scriptParseTime),			// Parsetime for the page.
 						'flags' => $flags,										// Flags: Is be user logged in? Is page cached?
-						'IP' => t3lib_div::getIndpEnv('REMOTE_ADDR'),			// Remote IP address
-						'host' => t3lib_div::getIndpEnv('REMOTE_HOST'),			// Remote Host Address
+						'IP' => $this->getLogIPAddress(),						// Remote IP address
+						'host' => $this->getLogHostName(),						// Remote Host Address
 						'referer' => $refUrl,									// Referer URL
 						'browser' => t3lib_div::getIndpEnv('HTTP_USER_AGENT'),	// User Agent Info.
 						'tstamp' => $GLOBALS['EXEC_TIME']						// Time stamp
@@ -3808,21 +3935,21 @@ if (version == "n3") {
 					if (@is_file($this->config['stat_vars']['logFile'])) {
 							// Build a log line (format is derived from the NCSA extended/combined log format)
 							// Log part 1: Remote hostname / address
-						$LogLine = (t3lib_div::getIndpEnv('REMOTE_HOST') && empty($this->config['config']['stat_apache_noHost'])) ? t3lib_div::getIndpEnv('REMOTE_HOST') : t3lib_div::getIndpEnv('REMOTE_ADDR');
+						$LogLine = (t3lib_div::getIndpEnv('REMOTE_HOST') && empty($this->config['config']['stat_apache_noHost'])) ? $this->getLogHostName() : $this->getLogIPAddress();
 							// Log part 2: Fake the remote logname
-						$LogLine.= ' -';
+						$LogLine .= ' -';
 							// Log part 3: Remote username
-						$LogLine.= ' '.($this->loginUser ? $this->fe_user->user['username'] : '-');
+						$LogLine .= ' ' . $this->getLogUserName();
 							// Log part 4: Time
-						$LogLine.= ' '.date('[d/M/Y:H:i:s +0000]',$GLOBALS['EXEC_TIME']);
+						$LogLine .= ' ' . date('[d/M/Y:H:i:s +0000]',$GLOBALS['EXEC_TIME']);
 							// Log part 5: First line of request (the request filename)
-						$LogLine.= ' "GET '.$this->config['stat_vars']['pageName'].' HTTP/1.1"';
+						$LogLine .= ' "GET ' . $this->config['stat_vars']['pageName'].' HTTP/1.1"';
 							// Log part 6: Status and content length (ignores special content like admin panel!)
-						$LogLine.= ' 200 '.strlen($this->content);
+						$LogLine .= ' 200 ' . strlen($this->content);
 
 						if (empty($this->config['config']['stat_apache_notExtended'])) {
 							$referer = t3lib_div::getIndpEnv('HTTP_REFERER');
-							$LogLine.= ' "'.($referer ? $referer : '-').'" "'.t3lib_div::getIndpEnv('HTTP_USER_AGENT').'"';
+							$LogLine .= ' "' . ($referer ? $referer : '-') . '" "' . t3lib_div::getIndpEnv('HTTP_USER_AGENT') . '"';
 						}
 
 						$GLOBALS['TT']->push('Write to log file (fputs)');
@@ -4053,7 +4180,6 @@ if (version == "n3") {
 	 */
 	function checkFileInclude($incFile)	{
 		return !$this->TYPO3_CONF_VARS['FE']['noPHPscriptInclude']
-			|| substr($incFile,0,14)=='media/scripts/'
 			|| substr($incFile,0,4+strlen(TYPO3_mainDir))==TYPO3_mainDir.'ext/'
 			|| substr($incFile,0,7+strlen(TYPO3_mainDir))==TYPO3_mainDir.'sysext/'
 			|| substr($incFile,0,14)=='typo3conf/ext/';
@@ -4081,7 +4207,7 @@ if (version == "n3") {
 	function setAbsRefPrefix()	{
 		if ($this->absRefPrefix)	{
 			$this->content = str_replace('"media/', '"'.t3lib_extMgm::siteRelPath('cms').'tslib/media/', $this->content);
-			$this->content = str_replace('"typo3temp/compressor/', '"' . $this->absRefPrefix . 'typo3temp/compressor/', $this->content);
+			$this->content = str_replace('"typo3temp/', '"' . $this->absRefPrefix . 'typo3temp/', $this->content);
 			$this->content = str_replace('"typo3conf/ext/', '"'.$this->absRefPrefix.'typo3conf/ext/', $this->content);
 			$this->content = str_replace('"' . TYPO3_mainDir . 'contrib/', '"' . $this->absRefPrefix . TYPO3_mainDir . 'contrib/', $this->content);
 			$this->content = str_replace('"' . TYPO3_mainDir . 'ext/', '"' . $this->absRefPrefix . TYPO3_mainDir . 'ext/', $this->content);
@@ -4111,22 +4237,6 @@ if (version == "n3") {
 			}
 		}
 		return $url;
-	}
-
-	/**
-	 * Prints error msg/header.
-	 * Echoes out the HTML content
-	 *
-	 * @param	string		Message string
-	 * @param	string		Header string
-	 * @return	void
-	 * @see t3lib_timeTrack::debug_typo3PrintError()
-	 * @see	t3lib_message_ErrorPageMessage
-	 * @deprecated since TYPO3 4.5, will be removed in TYPO3 4.7
-	 */
-	function printError($label,$header='Error!') {
-		t3lib_div::logDeprecatedFunction();
-		t3lib_timeTrack::debug_typo3PrintError($header, $label, 0, t3lib_div::getIndpEnv('TYPO3_SITE_URL'));
 	}
 
 	/**
@@ -4204,12 +4314,19 @@ if (version == "n3") {
 		}
 	}
 
+
+	/********************************************
+	 * PUBLIC ACCESSIBLE WORKSPACES FUNCTIONS
+	 *******************************************/
+
 	/**
 	 * Initialize workspace preview
 	 *
 	 * @return	void
+	 * @deprecated since TYPO3 4.7, will be removed in TYPO3 4.9 as this is part of Tx_Version now
 	 */
-	function workspacePreviewInit()	{
+	public function workspacePreviewInit()	{
+		t3lib_div::logDeprecatedFunction();
 		$previewWS = t3lib_div::_GP('ADMCMD_previewWS');
 		if ($this->beUserLogin && is_object($GLOBALS['BE_USER']) && t3lib_utility_Math::canBeInterpretedAsInteger($previewWS))	{
 			if ($previewWS==0 || ($previewWS>=-1 && $GLOBALS['BE_USER']->checkWorkspace($previewWS))) {	// Check Access to workspace. Live (0) is OK to preview for all.
@@ -4225,8 +4342,8 @@ if (version == "n3") {
 	 *
 	 * @return	boolean		Returns TRUE if workspace preview is enabled
 	 */
-	function doWorkspacePreview()	{
-		return (string)$this->workspacePreview!=='';
+	public function doWorkspacePreview() {
+		return ($this->workspacePreview !== 0 ? TRUE : FALSE);
 	}
 
 	/**
@@ -4521,6 +4638,14 @@ if (version == "n3") {
 				$calculatedCacheTimeout = $this->calculatePageCacheTimeout();
 				$cacheTimeout = ($calculatedCacheTimeout < $cacheTimeout) ? $calculatedCacheTimeout : $cacheTimeout;
 			}
+
+			if (is_array($this->TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['get_cache_timeout'])) {
+				foreach ($this->TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['get_cache_timeout'] as $_funcRef) {
+					$params = array('cacheTimeout' => $cacheTimeout);
+					$cacheTimeout = t3lib_div::callUserFunction($_funcRef, $params, $this);
+				}
+			}
+
 			$runtimeCache->set($cachedCacheLifetimeIdentifier, $cacheTimeout);
 			$cachedCacheLifetime = $cacheTimeout;
 		}
@@ -4667,13 +4792,13 @@ if (version == "n3") {
 		$this->getPageRenderer()->setLanguage($this->lang);
 
 			// Setting charsets:
-		$this->renderCharset = $this->csConvObj->parse_charset($this->config['config']['renderCharset'] ? $this->config['config']['renderCharset'] : ($this->TYPO3_CONF_VARS['BE']['forceCharset'] ? $this->TYPO3_CONF_VARS['BE']['forceCharset'] : $this->defaultCharSet));	// Rendering charset of HTML page.
+		$this->renderCharset = $this->csConvObj->parse_charset($this->config['config']['renderCharset'] ? $this->config['config']['renderCharset'] : 'utf-8');	// Rendering charset of HTML page.
 		$this->metaCharset = $this->csConvObj->parse_charset($this->config['config']['metaCharset'] ? $this->config['config']['metaCharset'] : $this->renderCharset);	// Output charset of HTML page.
 	}
 
 	/**
 	 * Converts the charset of the input string if applicable.
-	 * The "to" charset is determined by the currently used charset for the page which is "iso-8859-1" by default or set by $GLOBALS['TSFE']->config['config']['renderCharset']
+	 * The "to" charset is determined by the currently used charset for the page which is "utf-8" by default or set by $GLOBALS['TSFE']->config['config']['renderCharset']
 	 * Only if there is a difference between the two charsets will a conversion be made
 	 * The conversion is done real-time - no caching for performance at this point!
 	 *
@@ -4792,24 +4917,45 @@ if (version == "n3") {
 		$showHidden = ($tableName === 'pages' ? $this->showHiddenPage : $this->showHiddenRecords);
 		$enableFields = $this->sys_page->enableFields($tableName, $showHidden, array('starttime' => TRUE, 'endtime' => TRUE));
 
-			// For each start or end time field, get the minimum value
+			// saves the name of the starttime and endtime field in $tableName (if defined)
+		$timeFields = array();
+			// saves the SELECT parts of the SQL query
+		$selectFields = array();
+			// saves the WHERE parts of the SQL query
+		$whereConditions = array();
+
 		foreach (array('starttime', 'endtime') as $field) {
-				// Note: there is no need to load TCA because we need only enable columns!
+				// there is no need to load TCA because we need only enable columns!
 			if (isset($GLOBALS['TCA'][$tableName]['ctrl']['enablecolumns'][$field])) {
-				$timeField = $GLOBALS['TCA'][$tableName]['ctrl']['enablecolumns'][$field];
-				$selectField = 'MIN(' . $timeField . ') AS ' . $field;
-				$whereCondition = $timeField . ' > ' . $now;
-					// Find the smallest timestamp which could influence the cache duration (but is larger than 0)
-				$row = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow(
-					$selectField,
-					$tableName,
-					'pid = ' . intval($pid) . ' AND ' . $whereCondition . $enableFields
-				);
-				if ($row && !is_null($row[$timeField])) {
-					$result = min($result, $row[$timeField]);
+				$timeFields[$field] = $GLOBALS['TCA'][$tableName]['ctrl']['enablecolumns'][$field];
+				$selectFields[$field] = 'MIN(' . $timeFields[$field] . ') AS ' . $field;
+				$whereConditions[$field] = $timeFields[$field] . '>' . $now;
+			}
+		}
+
+			// if starttime or endtime are defined, evaluate them
+		if (count($timeFields)) {
+				// find the timestamp, when the current page's content changes the next time
+			$row = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow(
+					// MIN(starttime) AS starttime, MIN(endtime) AS endtime
+				implode(', ', $selectFields),
+				$tableName,
+					// pid=$pid AND starttime>$now AND $endtime>$now . $enablefields
+				'pid=' . intval($pid) . ' AND (' . implode(' OR ', $whereConditions) . ')' . $enableFields
+			);
+			if ($row) {
+				foreach ($timeFields as $timeField => $_) {
+						// if a MIN value is found, take it into account for the cache lifetime
+						// we have to filter out start/endtimes < $now, as the SQL query also returns
+						// rows with starttime < $now and endtime > $now (and using a starttime from the past
+						// would be wrong)
+					if (!is_null($row[$timeField]) && $row[$timeField] > $now) {
+						$result = min($result, $row[$timeField]);
+					}
 				}
 			}
 		}
+
 		return $result;
 	}
 }

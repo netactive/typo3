@@ -87,7 +87,7 @@ class t3lib_beUserAuth extends t3lib_userAuthGroup {
 	var $uc_default = Array(
 		'interfaceSetup' => '', // serialized content that is used to store interface pane and menu positions. Set by the logout.php-script
 		'moduleData' => Array(), // user-data for the modules
-		'thumbnailsByDefault' => 0,
+		'thumbnailsByDefault' => 1,
 		'emailMeAtLogin' => 0,
 		'condensedMode' => 0,
 		'noMenuMode' => 0,
@@ -140,14 +140,11 @@ class t3lib_beUserAuth extends t3lib_userAuthGroup {
 		$securityLevel = trim($GLOBALS['TYPO3_CONF_VARS']['BE']['loginSecurityLevel']);
 		$standardSecurityLevels = array('normal', 'challenged', 'superchallenged');
 
-			// No challenge is stored in the session if security level is normal
-		if ($securityLevel === 'normal') {
-			$this->challengeStoredInCookie = FALSE;
-		}
-
 			// The TYPO3 standard login service relies on $this->security_level being set
-			// to 'superchallenged' because of the password in the database is stored as md5 hash
-			// @see t3lib_userauth::processLoginData()
+			// to 'superchallenged' because of the password in the database is stored as md5 hash.
+			// @deprecated since 4.7
+			// These lines are here for compatibility purpose only, can be removed in 4.9.
+			// @see tx_sv_auth::processLoginData()
 		if (!empty($securityLevel) && !in_array($securityLevel, $standardSecurityLevels)) {
 			$this->security_level = $securityLevel;
 		} else {
@@ -218,16 +215,20 @@ class t3lib_beUserAuth extends t3lib_userAuthGroup {
 						if (!$this->isAdmin()) {
 							return TRUE;
 						} else {
-							die('ERROR: CLI backend user "' . $userName . '" was ADMIN which is not allowed!' . LF . LF);
+							fwrite(STDERR, 'ERROR: CLI backend user "' . $userName . '" was ADMIN which is not allowed!' . LF . LF);
+							exit(3);
 						}
 					} else {
-						die('ERROR: No backend user named "' . $userName . '" was found!' . LF . LF);
+						fwrite(STDERR, 'ERROR: No backend user named "' . $userName . '" was found!' . LF . LF);
+						exit(3);
 					}
 				} else {
-					die('ERROR: Module name, "' . $GLOBALS['MCONF']['name'] . '", was not prefixed with "_CLI_"' . LF . LF);
+					fwrite(STDERR, 'ERROR: Module name, "' . $GLOBALS['MCONF']['name'] . '", was not prefixed with "_CLI_"' . LF . LF);
+					exit(3);
 				}
 			} else {
-				die('ERROR: Another user was already loaded which is impossible in CLI mode!' . LF . LF);
+				fwrite(STDERR, 'ERROR: Another user was already loaded which is impossible in CLI mode!' . LF . LF);
+				exit(3);
 			}
 		}
 	}
@@ -366,6 +367,7 @@ class t3lib_beUserAuth extends t3lib_userAuthGroup {
 	 *	+ backend user is a regular user and adminOnly is not defined
 	 *	+ backend user is an admin user
 	 *	+ backend user is used in CLI context and adminOnly is explicitely set to "2"
+	 *	+ backend user is being controlled by an admin user
 	 *
 	 * @return	boolean		Whether a backend user is allowed to access the backend
 	 */
@@ -379,6 +381,13 @@ class t3lib_beUserAuth extends t3lib_userAuthGroup {
 			// Backend user is allowed if adminOnly is set to 2 (CLI) and a CLI process is running:
 		} elseif ($adminOnlyMode == 2 && (TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI)) {
 			$isUserAllowedToLogin = TRUE;
+			// Backend user is allowed if an admin has switched to that user
+		} elseif ($this->user['ses_backuserid']) {
+			$backendUserId = intval($this->user['ses_backuserid']);
+			$whereAdmin = 'uid=' . $backendUserId . ' AND admin=1' . t3lib_BEfunc::BEenableFields('be_users');
+			if ($GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', 'be_users', $whereAdmin) > 0) {
+				$isUserAllowedToLogin = TRUE;
+			}
 		}
 
 		return $isUserAllowedToLogin;

@@ -313,7 +313,7 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 
 		$source = $query->getSource();
 
-		$this->parseSource($source, $sql, $parameters);
+		$this->parseSource($source, $sql);
 		$this->parseConstraint($query->getConstraint(), $source, $sql, $parameters);
 		$this->parseOrderings($query->getOrderings(), $source, $sql);
 		$this->parseLimitAndOffset($query->getLimit(), $query->getOffset(), $sql);
@@ -403,7 +403,6 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 	 *
 	 * @param Tx_Extbase_Persistence_QOM_SourceInterface $source The source
 	 * @param array &$sql
-	 * @param array &$parameters
 	 * @return void
 	 */
 	protected function parseSource(Tx_Extbase_Persistence_QOM_SourceInterface $source, array &$sql) {
@@ -659,6 +658,8 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 			}
 			$columnName = $this->dataMapper->convertPropertyNameToColumnName($propertyName, $className);
 			$operator = $this->resolveOperator($operator);
+
+			$constraintSQL = '';
 			if ($valueFunction === NULL) {
 				$constraintSQL .= (!empty($tableName) ? $tableName . '.' : '') . $columnName .  ' ' . $operator . ' ?';
 			} else {
@@ -879,8 +880,6 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 				default:
 					throw new Tx_Extbase_Persistence_Exception_UnsupportedOrder('Unsupported order encountered.', 1242816074);
 			}
-			$className = '';
-			$tableName = '';
 			if ($source instanceof Tx_Extbase_Persistence_QOM_SelectorInterface) {
 				$className = $source->getNodeTypeName();
 				$tableName = $this->dataMapper->convertClassNameToTableName($className);
@@ -983,6 +982,9 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 				$tableName = $source->getRight()->getSelectorName();
 			}
 			$this->pageSelectObject->versionOL($tableName, $row, TRUE);
+			if ($this->pageSelectObject->versioningPreview && isset($row['_ORIG_uid'])) {
+				$row['uid'] = $row['_ORIG_uid'];
+			}
 			if($tableName == 'pages') {
 				$row = $this->pageSelectObject->getPageOverlay($row, $languageUid);
 			} elseif(isset($GLOBALS['TCA'][$tableName]['ctrl']['languageField']) && $GLOBALS['TCA'][$tableName]['ctrl']['languageField'] !== '') {

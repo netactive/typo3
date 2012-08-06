@@ -521,7 +521,7 @@ final class t3lib_extMgm {
 	 *					 Example: "before:password,after:email".
 	 * @return void
 	 */
-	public static function addFieldsToUserSettings($addFields, $insertionPosition = '') {
+	public function addFieldsToUserSettings($addFields, $insertionPosition = '') {
 		$GLOBALS['TYPO3_USER_SETTINGS']['showitem'] = self::executePositionedStringInsertion(
 			$GLOBALS['TYPO3_USER_SETTINGS']['showitem'],
 			$addFields,
@@ -748,6 +748,92 @@ final class t3lib_extMgm {
 	 */
 	public static function allowTableOnStandardPages($table) {
 		$GLOBALS['PAGES_TYPES']['default']['allowedTables'] .= ',' . $table;
+	}
+	/**
+	 * Adds a ExtJS module (main or sub) to the backend interface
+	 * FOR USE IN ext_tables.php FILES
+	 *
+	 * @static
+	 * @param string $extensionName
+	 * @param string $mainModuleName is the main module key
+	 * @param string $subModuleName is the submodule key, if blank a plain main module is generated
+	 * @param string $position passed to t3lib_extMgm::addModule, see reference there
+	 * @param array $moduleConfiguration icon with array keys: access, icon, labels to configure the module
+	 * @throws InvalidArgumentException
+	 */
+	public static function addExtJSModule($extensionName, $mainModuleName, $subModuleName = '', $position = '', array $moduleConfiguration = array()) {
+		if (empty($extensionName)) {
+			throw new InvalidArgumentException('The extension name must not be empty', 1325938973);
+		}
+
+		$extensionKey = t3lib_div::camelCaseToLowerCaseUnderscored($extensionName);
+		$extensionName = str_replace(' ', '', ucwords(str_replace('_', ' ', $extensionName)));
+
+		$defaultModuleConfiguration = array(
+			'access' => 'admin',
+			'icon' => 'gfx/typo3.png',
+			'labels' => '',
+			'extRelPath' => t3lib_extMgm::extRelPath($extensionKey) . 'Classes/'
+		);
+
+			// add mandatory parameter to use new pagetree
+		if ($mainModuleName === 'web') {
+			$defaultModuleConfiguration['navigationComponentId'] = 'typo3-pagetree';
+		}
+
+		$moduleConfiguration = t3lib_div::array_merge_recursive_overrule($defaultModuleConfiguration, $moduleConfiguration);
+
+		if ((strlen($subModuleName) > 0)) {
+			$moduleSignature = $mainModuleName . '_' . $subModuleName;
+		} else {
+			$moduleSignature = $mainModuleName;
+		}
+
+		$moduleConfiguration['name'] = $moduleSignature;
+		$moduleConfiguration['script'] = 'extjspaneldummy.html';
+		$moduleConfiguration['extensionName'] = $extensionName;
+		$moduleConfiguration['configureModuleFunction'] = array('t3lib_extMgm', 'configureModule');
+
+		$GLOBALS['TBE_MODULES']['_configuration'][$moduleSignature] = $moduleConfiguration;
+
+		t3lib_extMgm::addModule($mainModuleName, $subModuleName, $position);
+	}
+
+	/**
+	 * This method is called from t3lib_loadModules::checkMod and it replaces old conf.php.
+	 *
+	 * The original function for is called
+	 * Tx_Extbase_Utility_Extension::configureModule, the refered function can
+	 * be deprecated now
+	 *
+	 * @param string $moduleSignature The module name
+	 * @param string $modulePath Absolute path to module (not used by Extbase currently)
+	 * @return array Configuration of the module
+	 */
+	public static function configureModule($moduleSignature, $modulePath) {
+		$moduleConfiguration = $GLOBALS['TBE_MODULES']['_configuration'][$moduleSignature];
+		$iconPathAndFilename = $moduleConfiguration['icon'];
+		if (substr($iconPathAndFilename, 0, 4) === 'EXT:') {
+			list($extensionKey, $relativePath) = explode('/', substr($iconPathAndFilename, 4), 2);
+			$iconPathAndFilename = t3lib_extMgm::extPath($extensionKey) . $relativePath;
+		}
+		// TODO: skin support
+
+		$moduleLabels = array(
+			'tabs_images' => array(
+				'tab' => $iconPathAndFilename,
+			),
+			'labels' => array(
+				'tablabel' => $GLOBALS['LANG']->sL($moduleConfiguration['labels'] . ':mlang_labels_tablabel'),
+				'tabdescr' => $GLOBALS['LANG']->sL($moduleConfiguration['labels'] . ':mlang_labels_tabdescr'),
+			),
+			'tabs' => array(
+				'tab' => $GLOBALS['LANG']->sL($moduleConfiguration['labels'] . ':mlang_tabs_tab')
+			)
+		);
+		$GLOBALS['LANG']->addModuleLabels($moduleLabels, $moduleSignature . '_');
+
+		return $moduleConfiguration;
 	}
 
 	/**
@@ -1301,7 +1387,7 @@ tt_content.' . $key . $prefix . ' {
 	 * FOR USE IN ext_localconf.php FILES
 	 *
 	 * @param	string		$extKey is of course the extension key
-	 * @param	string		$path is the path where the template files (fixed names) include_static.txt (integer list of uids from the table "static_templates"), constants.txt, setup.txt, editorcfg.txt, and include_static_file.txt is found (relative to extPath, eg. 'static/'). The file include_static_file.txt, allows you to include other static templates defined in files, from your static template, and thus corresponds to the field 'include_static_file' in the sys_template table. The syntax for this is a commaseperated list of static templates to include, like:  EXT:css_styled_content/static/,EXT:da_newsletter_subscription/static/,EXT:cc_random_image/pi2/static/
+	 * @param	string		$path is the path where the template files (fixed names) include_static.txt (integer list of uids from the table "static_templates"), constants.txt, setup.txt, and include_static_file.txt is found (relative to extPath, eg. 'static/'). The file include_static_file.txt, allows you to include other static templates defined in files, from your static template, and thus corresponds to the field 'include_static_file' in the sys_template table. The syntax for this is a commaseperated list of static templates to include, like:  EXT:css_styled_content/static/,EXT:da_newsletter_subscription/static/,EXT:cc_random_image/pi2/static/
 	 * @param	string		$title is the title in the selector box.
 	 * @return	void
 	 * @see addTypoScript()
@@ -1340,18 +1426,18 @@ tt_content.' . $key . $prefix . ' {
 	}
 
 	/**
-	 * Adds $content to the default TypoScript code for either setup, constants or editorcfg as set in $GLOBALS['TYPO3_CONF_VARS'][FE]['defaultTypoScript_*']
+	 * Adds $content to the default TypoScript code for either setup or constants as set in $GLOBALS['TYPO3_CONF_VARS'][FE]['defaultTypoScript_*']
 	 * (Basically this function can do the same as addTypoScriptSetup and addTypoScriptConstants - just with a little more hazzle, but also with some more options!)
 	 * FOR USE IN ext_localconf.php FILES
 	 *
 	 * @param	string		$key is the extension key (informative only).
-	 * @param	string		$type is either "setup", "constants" or "editorcfg" and obviously determines which kind of TypoScript code we are adding.
+	 * @param	string		$type is either "setup" or "constants" and obviously determines which kind of TypoScript code we are adding.
 	 * @param	string		$content is the TS content, prefixed with a [GLOBAL] line and a comment-header.
 	 * @param	string		$afterStaticUid is either an integer pointing to a uid of a static_template or a string pointing to the "key" of a static_file template ([reduced extension_key]/[local path]). The points is that the TypoScript you add is included only IF that static template is included (and in that case, right after). So effectively the TypoScript you set can specifically overrule settings from those static templates.
 	 * @return	void
 	 */
 	public static function addTypoScript($key, $type, $content, $afterStaticUid = 0) {
-		if ($type == 'setup' || $type == 'editorcfg' || $type == 'constants') {
+		if ($type == 'setup' || $type == 'constants') {
 			$content = '
 
 [GLOBAL]
@@ -1419,7 +1505,7 @@ tt_content.' . $key . $prefix . ' {
 			} else { // ... but if not, configure...
 
 					// Prepare reserved filenames:
-				$files = array('ext_localconf.php', 'ext_tables.php', 'ext_tables.sql', 'ext_tables_static+adt.sql', 'ext_typoscript_constants.txt', 'ext_typoscript_editorcfg.txt', 'ext_typoscript_setup.txt');
+				$files = array('ext_localconf.php', 'ext_tables.php', 'ext_tables.sql', 'ext_tables_static+adt.sql', 'ext_typoscript_constants.txt', 'ext_typoscript_setup.txt');
 					// Traverse extensions and check their existence:
 				clearstatcache(); // Clear file state cache to make sure we get good results from is_dir()
 				$temp_extensions = array_unique(t3lib_div::trimExplode(',', $rawExtList, 1));

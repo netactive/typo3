@@ -169,11 +169,9 @@ final class t3lib_iconWorks {
 
 			// First, find the icon file name. This can depend on configuration in TCA, field values and more:
 		if ($table == 'pages') {
-			if (!$iconfile = $GLOBALS['PAGES_TYPES'][$row['doktype']]['icon']) {
+			$iconfile = $GLOBALS['PAGES_TYPES'][$row['doktype']]['icon'];
+			if (!$iconfile) {
 				$iconfile = $GLOBALS['PAGES_TYPES']['default']['icon'];
-			}
-			if ($row['module'] && $GLOBALS['ICON_TYPES'][$row['module']]['icon']) {
-				$iconfile = $GLOBALS['ICON_TYPES'][$row['module']]['icon'];
 			}
 		} else {
 			if (!$iconfile = $GLOBALS['TCA'][$table]['ctrl']['typeicons'][$row[$GLOBALS['TCA'][$table]['ctrl']['typeicon_column']]]) {
@@ -515,23 +513,22 @@ final class t3lib_iconWorks {
 	 * Of course it works only if ImageMagick is able to create valid png-images - which you cannot be sure of with older versions (still 5+)
 	 * The only drawback is (apparently) that IM creates true-color png's. The transparency of these will not be shown by MSIE on windows at this time (although it's straight 0%/100% transparency!) and the file size may be larger.
 	 *
-	 * For parameters, see PHP function "imagecopyresized()"
-	 *
-	 * @param	pointer		see PHP function "imagecopyresized()"
-	 * @param	pointer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @param	integer		see PHP function "imagecopyresized()"
-	 * @return	void
+	 * @param resource $dstImg destination image
+	 * @param resource $srcImg source image
+	 * @param integer $dstX destination x-coordinate
+	 * @param integer $dstY destination y-coordinate
+	 * @param integer $srcX source x-coordinate
+	 * @param integer $srcY source y-coordinate
+	 * @param integer $dstWidth destination width
+	 * @param integer $dstHeight destination height
+	 * @param integer $srcWidth source width
+	 * @param integer $srcHeight source height
+	 * @return void
 	 * @access private
+	 * @see t3lib_stdGraphic::imagecopyresized()
 	 */
-	public static function imagecopyresized(&$im, $cpImg, $Xstart, $Ystart, $cpImgCutX, $cpImgCutY, $w, $h, $w, $h) {
-		imagecopyresized($im, $cpImg, $Xstart, $Ystart, $cpImgCutX, $cpImgCutY, $w, $h, $w, $h);
+	public static function imagecopyresized(&$dstImg, $srcImg, $dstX, $dstY, $srcX, $srcY, $dstWidth, $dstHeight, $srcWidth, $srcHeight) {
+		imagecopyresized($dstImg, $srcImg, $Xstart, $Ystart, $cpImgCutX, $cpImgCutY, $dstWidth, $dstHeight, $srcWidth, $srcHeight);
 	}
 
 	/**
@@ -844,9 +841,11 @@ final class t3lib_iconWorks {
 			}
 		}
 		krsort($recordType);
-		foreach ($recordType as $iconName) {
-			if (in_array($iconName, $GLOBALS['TBE_STYLES']['spriteIconApi']['iconsAvailable'])) {
-				return $iconName;
+		if (is_array($GLOBALS['TBE_STYLES']['spriteIconApi']['iconsAvailable'])) {
+			foreach ($recordType as $iconName) {
+				if (in_array($iconName, $GLOBALS['TBE_STYLES']['spriteIconApi']['iconsAvailable'])) {
+					return $iconName;
+				}
 			}
 		}
 		return 'status-status-icon-missing';
@@ -945,10 +944,12 @@ final class t3lib_iconWorks {
 		$priorities = $GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayPriorities'];
 
 		$iconName = '';
-		foreach ($priorities as $priority) {
-			if ($status[$priority]) {
-				$iconName = $GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayNames'][$priority];
-				break;
+		if (is_array($priorities)) {
+			foreach ($priorities as $priority) {
+				if ($status[$priority]) {
+					$iconName = $GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayNames'][$priority];
+					break;
+				}
 			}
 		}
 

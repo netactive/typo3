@@ -77,7 +77,6 @@ class tx_form_System_Postprocessor_Mail {
 	 * @return string HTML message from this processor
 	 */
 	public function process() {
-		$this->setReturnPath();
 		$this->setSubject();
 		$this->setFrom();
 		$this->setTo();
@@ -96,18 +95,6 @@ class tx_form_System_Postprocessor_Mail {
 	}
 
 	/**
-	 * Set the return-path (the bounce address) of the mail message
-	 *
-	 * @return void
-	 */
-	protected function setReturnPath() {
-		if ($GLOBALS['TYPO3_CONF_VARS']['SYS']['forceReturnPath']) {
-			$returnPath = $GLOBALS['TYPO3_CONF_VARS']['SYS']['forceReturnPath'];
-			$this->mailMessage->setReturnPath($returnPath);
-		}
-	}
-
-	/**
 	 * Sets the subject of the mail message
 	 *
 	 * If not configured, it will use a default setting
@@ -117,6 +104,8 @@ class tx_form_System_Postprocessor_Mail {
 	protected function setSubject() {
 		if (isset($this->typoScript['subject'])) {
 			$subject = $this->typoScript['subject'];
+		} elseif ($this->requestHandler->has($this->typoScript['subjectField'])) {
+			$subject = $this->requestHandler->get($this->typoScript['subjectField']);
 		} else {
 			$subject = 'Formmail on ' . t3lib_div::getIndpEnv('HTTP_HOST');
 		}

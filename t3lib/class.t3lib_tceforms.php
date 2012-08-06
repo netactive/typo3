@@ -309,13 +309,14 @@ class t3lib_TCEforms {
 	 * Based on the $table and $row of content, this displays the complete TCEform for the record.
 	 * The input-$row is required to be preprocessed if necessary by eg. the t3lib_transferdata class. For instance the RTE content should be transformed through this class first.
 	 *
-	 * @param	string		The table name
-	 * @param	array		The record from the table for which to render a field.
-	 * @param	integer		Depth level
-	 * @return	string		HTML output
+	 * @param string $table The table name
+	 * @param array $row The record from the table for which to render a field.
+	 * @param integer $depth Depth level
+	 * @param array $overruleTypesArray Overrule types array. Can be used to override the showitem etc. configuration for the TCA types of the table. Can contain all settings which are possible in the TCA 'types' section. See e.g. $TCA['tt_content']['types'].
+	 * @return string HTML output
 	 * @see getSoloField()
 	 */
-	function getMainFields($table, $row, $depth = 0) {
+	function getMainFields($table, array $row, $depth = 0, array $overruleTypesArray = array()) {
 		$this->renderDepth = $depth;
 
 			// Init vars:
@@ -354,6 +355,9 @@ class t3lib_TCEforms {
 				// Find the list of fields to display:
 			if ($GLOBALS['TCA'][$table]['types'][$typeNum]) {
 				$itemList = $GLOBALS['TCA'][$table]['types'][$typeNum]['showitem'];
+				if (is_array($overruleTypesArray) && isset($overruleTypesArray[$typeNum]['showitem'])) {
+					$itemList = $overruleTypesArray[$typeNum]['showitem'];
+				}
 				if ($itemList) { // If such a list existed...
 						// Explode the field list and possibly rearrange the order of the fields, if configured for
 					$fields = t3lib_div::trimExplode(',', $itemList, 1);
@@ -621,8 +625,11 @@ class t3lib_TCEforms {
 
 				$collapsed = $this->isPalettesCollapsed($table, $palette);
 
+					// check if the palette is a hidden palette
+				$isHiddenPalette = !empty($GLOBALS['TCA'][$table]['palettes'][$palette]['isHiddenPalette']);
+
 				$thePalIcon = '';
-				if ($collapsed && $collapsedHeader !== NULL) {
+				if ($collapsed && $collapsedHeader !== NULL && !$isHiddenPalette) {
 					list($thePalIcon,) = $this->wrapOpenPalette(
 						t3lib_iconWorks::getSpriteIcon(
 							'actions-system-options-view',
@@ -713,9 +720,15 @@ class t3lib_TCEforms {
 					$PA['itemFormElValue'] = $this->defaultLanguageData[$table . ':' . $row['uid']][$field];
 				}
 
+				if(strpos($GLOBALS['TCA'][$table]['ctrl']['type'], ':') === FALSE) {
+					$typeField = $GLOBALS['TCA'][$table]['ctrl']['type'];
+				} else {
+					$typeField = substr($GLOBALS['TCA'][$table]['ctrl']['type'], 0, strpos($GLOBALS['TCA'][$table]['ctrl']['type'],':'));
+				}
+
 					// Create a JavaScript code line which will ask the user to save/update the form due to changing the element. This is used for eg. "type" fields and others configured with "requestUpdate"
 				if (
-					($GLOBALS['TCA'][$table]['ctrl']['type'] && !strcmp($field, $GLOBALS['TCA'][$table]['ctrl']['type']))
+					($GLOBALS['TCA'][$table]['ctrl']['type'] && !strcmp($field, $typeField))
 					|| ($GLOBALS['TCA'][$table]['ctrl']['requestUpdate']
 						&& t3lib_div::inList($GLOBALS['TCA'][$table]['ctrl']['requestUpdate'], $field))) {
 					if ($GLOBALS['BE_USER']->jsConfirmation(1)) {
@@ -1051,10 +1064,18 @@ class t3lib_TCEforms {
 		$mLgd = ($config['max'] ? $config['max'] : 256);
 		$iOnChange = implode('', $PA['fieldChangeFunc']);
 
-		$item .= '<input type="text" id="' . $inputId .
-				 '" class="' . implode(' ', $cssClasses) . '" name="' . $PA['itemFormElName'] .
-				 '_hr" value="" style="' . $cssStyle . '" maxlength="' . $mLgd . '" onchange="' .
-				 htmlspecialchars($iOnChange) . '"' . $PA['onFocus'] . ' />'; // This is the EDITABLE form field.
+		$cssClasses[] = 'hasDefaultValue';
+		$item .= '<input type="text" ' .
+				 $this->getPlaceholderAttribute($table, $field, $config, $row) .
+				 'id="' . $inputId . '" ' .
+				 'class="' . implode(' ', $cssClasses) . '" ' .
+				 'name="' . $PA['itemFormElName'] . '_hr" ' .
+				 'value=""' .
+				 'style="' . $cssStyle . '" ' .
+				 'maxlength="' . $mLgd . '" ' .
+				 'onchange="' . htmlspecialchars($iOnChange) . '"' .
+				 $PA['onFocus'] .
+				 ' />'; // This is the EDITABLE form field.
 		$item .= '<input type="hidden" name="' . $PA['itemFormElName'] . '" value="' .
 				 htmlspecialchars($PA['itemFormElValue']) . '" />'; // This is the ACTUAL form field - values from the EDITABLE field must be transferred to this field which is the one that is written to the database.
 		$item .= $fieldAppendix . '</span><div style="clear:both;"></div>';
@@ -1233,7 +1254,16 @@ class t3lib_TCEforms {
 
 				$iOnChange = implode('', $PA['fieldChangeFunc']);
 				$item .= '
-							<textarea id="' . uniqid('tceforms-textarea-') . '" name="' . $PA['itemFormElName'] . '"' . $formWidthText . $class . ' rows="' . $rows . '" wrap="' . $wrap . '" onchange="' . htmlspecialchars($iOnChange) . '"' . $PA['onFocus'] . '>' .
+							<textarea ' .
+						 'id="' . uniqid('tceforms-textarea-') . '" ' .
+						 'name="' . $PA['itemFormElName'] . '"' .
+						 $formWidthText .
+						 $class . ' ' .
+						 'rows="' . $rows . '" ' .
+						 'wrap="' . $wrap . '" ' .
+						 'onchange="' . htmlspecialchars($iOnChange) . '"' .
+						$this->getPlaceholderAttribute($table, $field, $config, $row) .
+						 $PA['onFocus'] . '>' .
 						 t3lib_div::formatForTextarea($PA['itemFormElValue']) .
 						 '</textarea>';
 				$item = $this->renderWizards(array($item, $altItem), $config['wizards'], $table, $row, $field, $PA, $PA['itemFormElName'], $specConf, $RTEwouldHaveBeenLoaded);
@@ -1681,9 +1711,13 @@ class t3lib_TCEforms {
 			foreach ($selItems as $p) {
 					// Non-selectable element:
 				if (!strcmp($p[1], '--div--')) {
+					$selIcon = '';
+					if (isset($p[2]) && $p[2] != 'empty-emtpy') {
+						$selIcon = $this->getIconHtml($p[2]) ;
+					}
 					$tRows[] = '
 						<tr class="c-header">
-							<td colspan="3">' . htmlspecialchars($p[0]) . '</td>
+							<td colspan="3">' . $selIcon . htmlspecialchars($p[0]) . '</td>
 						</tr>';
 				} else {
 						// Selected or not by default:
@@ -1698,7 +1732,7 @@ class t3lib_TCEforms {
 						$selIcon = $p[2];
 					} else {
 						$selIcon = t3lib_iconWorks::getSpriteIcon('empty-empty');
- 					}
+					}
 
 						// Compile row:
 					$rowId = uniqid('select_checkbox_row_');
@@ -2158,7 +2192,17 @@ class t3lib_TCEforms {
 				if (!$disabled && !(isset($config['disable_controls']) && t3lib_div::inList($config['disable_controls'], 'upload'))) {
 						// Adding the upload field:
 					if ($this->edit_docModuleUpload && $config['uploadfolder']) {
-						$item .= '<div id="' . $PA['itemFormElID_file'] . '"><input type="file" name="' . $PA['itemFormElName_file'] . '" size="35" onchange="' . implode('', $PA['fieldChangeFunc']) . '" /></div>';
+
+							// Insert the multiple attribute to enable HTML5 multiple file upload
+						$multipleAttribute = '';
+						$multipleFilenameSuffix = '';
+						if (isset($config['maxitems']) && $config['maxitems'] > 1) {
+							$multipleAttribute = ' multiple="multiple"';
+							$multipleFilenameSuffix = '[]';
+						}
+
+						$item .= '<div id="' . $PA['itemFormElID_file'] . '"><input type="file"'. $multipleAttribute .' name="' . $PA['itemFormElName_file'] . $multipleFilenameSuffix . '" size="35" onchange="' . implode('', $PA['fieldChangeFunc']) . '" /></div>';
+
 					}
 				}
 			break;
@@ -2472,14 +2516,47 @@ class t3lib_TCEforms {
 				if (!$langChildren && !$langDisabled) {
 					$item .= '<strong>' . $this->getLanguageIcon($table, $row, 'v' . $lKey) . $lKey . ':</strong>';
 				}
+				$lang = 'l' . $lKey; // Default language, other options are "lUK" or whatever country code (independant of system!!!)
 
 				$tabParts = array();
 				foreach ($tabsToTraverse as $sheet) {
 					list ($dataStruct, $sheet) = t3lib_div::resolveSheetDefInDS($dataStructArray, $sheet);
 
+						// If sheet has displayCond
+					if ($dataStruct['ROOT']['TCEforms']['displayCond']) {
+						$splittedCondition = t3lib_div::trimExplode(':', $dataStruct['ROOT']['TCEforms']['displayCond']);
+						$skipCondition = FALSE;
+						$fakeRow = array();
+						switch ($splittedCondition[0]) {
+							case 'FIELD':
+								list($sheetName, $fieldName) = t3lib_div::trimExplode('.', $splittedCondition[1]);
+								$fieldValue = $editData['data'][$sheetName][$lang][$fieldName];
+								$splittedCondition[1] = $fieldName;
+								$dataStruct['ROOT']['TCEforms']['displayCond'] = join(':', $splittedCondition);
+								$fakeRow = array($fieldName => $fieldValue);
+								break;
+							case 'HIDE_FOR_NON_ADMINS':
+							case 'VERSION':
+							case 'HIDE_L10N_SIBLINGS':
+							case 'EXT':
+								break;
+							case 'REC':
+								$fakeRow = array('uid' => $row['uid']);
+								break;
+							default:
+								$skipCondition = TRUE;
+								break;
+						}
+
+							// If sheets displayCond leads to false
+						if (!$skipCondition && !$this->isDisplayCondition($dataStruct['ROOT']['TCEforms']['displayCond'], $fakeRow, 'vDEF')) {
+								// don't create this sheet
+							continue;
+						}
+					}
+
 						// Render sheet:
 					if (is_array($dataStruct['ROOT']) && is_array($dataStruct['ROOT']['el'])) {
-						$lang = 'l' . $lKey; // Default language, other options are "lUK" or whatever country code (independant of system!!!)
 						$PA['_valLang'] = $langChildren && !$langDisabled ? $editData['meta']['currentLangId'] : 'DEF'; // Default language, other options are "lUK" or whatever country code (independant of system!!!)
 						$PA['_lang'] = $lang;
 							// Assemble key for loading the correct CSH file
@@ -2615,7 +2692,24 @@ class t3lib_TCEforms {
 						// Making the row:
 						// ********************
 						// Title of field:
-					$theTitle = htmlspecialchars(t3lib_div::fixed_lgd_cs($this->sL($value['tx_templavoila']['title']), 30));
+
+						// in previous versions (< 4.7), the flexform looked like this:
+						// <tx_templavoila>
+						//     <title>LLL:EXT:cms/locallang_ttc.xml:media.sources</title>
+						// </tx_templavoila>
+						// for whatever reason,
+						// now, only using <title> in an unnested way is fine.
+					$theTitle = $value['title'];
+						// old syntax is deprecated and will be removed in TYPO3 4.9
+					if (!$theTitle && isset($value['tx_templavoila']['title'])) {
+						t3lib_div::deprecationLog('The flexform XML, used in ' . htmlspecialchars($table) . ':' . htmlspecialchars($field) . ' is using legacy syntax, the <title> is wrapped in <tx_templavoila>, however should be moved outside of that XML tag container. This functionality will be removed in TYPO3 4.9.');
+						$theTitle = $value['tx_templavoila']['title'];
+					}
+
+						// if there is a title, check for LLL label
+					if (strlen($theTitle) > 0) {
+						$theTitle = htmlspecialchars(t3lib_div::fixed_lgd_cs($this->sL($theTitle), 30));
+					}
 
 						// If it's a "section" or "container":
 					if ($value['type'] == 'array') {
@@ -3041,23 +3135,55 @@ class t3lib_TCEforms {
 	 * @return	string		Return the "type" value for this record, ready to pick a "types" configuration from the $GLOBALS['TCA'] array.
 	 */
 	function getRTypeNum($table, $row) {
-			// If there is a "type" field configured...
-		if ($GLOBALS['TCA'][$table]['ctrl']['type']) {
-			$typeFieldName = $GLOBALS['TCA'][$table]['ctrl']['type'];
-			$typeFieldConfig = $GLOBALS['TCA'][$table]['columns'][$typeFieldName];
-			$typeNum = $this->getLanguageOverlayRawValue($table, $row, $typeFieldName, $typeFieldConfig);
-			if (!strcmp($typeNum, '')) {
-				$typeNum = 0;
-			} // If that value is an empty string, set it to "0" (zero)
-		} else {
-			$typeNum = 0; // If no "type" field, then set to "0" (zero)
+
+		$typeNum = 0;
+
+		$field = $GLOBALS['TCA'][$table]['ctrl']['type'];
+		if ($field) {
+			if (strpos($field, ':') !== FALSE) {
+				list($pointerField, $foreignTypeField) = explode(':', $field);
+
+				$fieldConfig = $GLOBALS['TCA'][$table]['columns'][$pointerField]['config'];
+				$relationType = $fieldConfig['type'];
+				if ($relationType === 'select') {
+					$foreignUid = $row[$pointerField];
+					$foreignTable = $fieldConfig['foreign_table'];
+				} elseif ($relationType === 'group') {
+					$values = $this->extractValuesOnlyFromValueLabelList($row[$pointerField]);
+					list(,$foreignUid) = t3lib_div::revExplode('_', $values[0], 2);
+					$allowedTables = explode(',', $fieldConfig['allowed']);
+					$foreignTable = $allowedTables[0]; // Always take the first configured table.
+				} else {
+					throw new RuntimeException('TCA Foreign field pointer fields are only allowed to be used with group or select field types.', 1325861239);
+				}
+
+				if($foreignUid) {
+					$foreignRow = t3lib_BEfunc::getRecord($foreignTable, $foreignUid, $foreignTypeField);
+
+					t3lib_div::loadTCA($foreignTable);
+					$this->registerDefaultLanguageData($foreignTable, $foreignRow);
+
+					if($foreignRow[$foreignTypeField]) {
+						$foreignTypeFieldConfig = $GLOBALS['TCA'][$table]['columns'][$field];
+						$typeNum = $this->getLanguageOverlayRawValue($foreignTable, $foreignRow, $foreignTypeField, $foreignTypeFieldConfig);
+					}
+				}
+			} else {
+				$typeFieldConfig = $GLOBALS['TCA'][$table]['columns'][$field];
+				$typeNum = $this->getLanguageOverlayRawValue($table, $row, $field, $typeFieldConfig);
+			}
 		}
 
-		$typeNum = (string) $typeNum; // Force to string. Necessary for eg '-1' to be recognized as a type value.
-		if (!$GLOBALS['TCA'][$table]['types'][$typeNum]) {
-				// However, if the type "0" is not found in the "types" array, then default to "1" (for historical reasons)
-			$typeNum = 1;
+		if (!strcmp($typeNum, '')) {  // If that value is an empty string, set it to "0" (zero)
+			$typeNum = 0;
 		}
+
+		// If current typeNum doesn't exist, set it to 0 (or to 1 for historical reasons, if 0 doesn't exist)
+		if (!$GLOBALS['TCA'][$table]['types'][$typeNum]) {
+			$typeNum = $GLOBALS['TCA'][$table]['types']["0"] ? 0 : 1;
+		}
+
+		$typeNum = (string)$typeNum; // Force to string. Necessary for eg '-1' to be recognized as a type value.
 
 		return $typeNum;
 	}
@@ -4423,7 +4549,7 @@ class t3lib_TCEforms {
 	function getDynTabMenu($parts, $idString, $dividersToTabsBehaviour = 1) {
 		if (is_object($GLOBALS['TBE_TEMPLATE'])) {
 			$GLOBALS['TBE_TEMPLATE']->backPath = $this->backPath;
-			return $GLOBALS['TBE_TEMPLATE']->getDynTabMenu($parts, $idString, 0, FALSE, 0, 1, FALSE, 1, $dividersToTabsBehaviour);
+			return $GLOBALS['TBE_TEMPLATE']->getDynTabMenu($parts, $idString, 0, FALSE, 1, FALSE, 1, $dividersToTabsBehaviour);
 		} else {
 			$output = '';
 			foreach ($parts as $singlePad) {
@@ -4551,7 +4677,6 @@ class t3lib_TCEforms {
 			switch ($fieldValue['config']['special']) {
 				case 'tables':
 					$temp_tc = array_keys($GLOBALS['TCA']);
-					$descr = '';
 
 					foreach ($temp_tc as $theTableNames) {
 						if (!$GLOBALS['TCA'][$theTableNames]['ctrl']['adminOnly']) {
@@ -4581,8 +4706,15 @@ class t3lib_TCEforms {
 					$theTypes = $GLOBALS['TCA']['pages']['columns']['doktype']['config']['items'];
 
 					foreach ($theTypes as $theTypeArrays) {
+
 							// Icon:
-						$icon = t3lib_iconWorks::mapRecordTypeToSpriteIconName('pages', array('doktype' => $theTypeArrays[1]));
+						$icon = 'empty-emtpy';
+						if ($theTypeArrays[1] != '--div--') {
+							$icon = t3lib_iconWorks::mapRecordTypeToSpriteIconName(
+								'pages',
+								array('doktype' => $theTypeArrays[1])
+							);
+						}
 
 							// Item configuration:
 						$items[] = array(
@@ -4594,13 +4726,22 @@ class t3lib_TCEforms {
 				break;
 				case 'exclude':
 					$theTypes = t3lib_BEfunc::getExcludeFields();
-					$descr = '';
 
 					foreach ($theTypes as $theTypeArrays) {
 						list($theTable, $theFullField) = explode(':', $theTypeArrays[1]);
 							// If the field comes from a FlexForm, the syntax is more complex
 						$theFieldParts = explode(';', $theFullField);
 						$theField = array_pop($theFieldParts);
+
+							// Add header if not yet set for table:
+						if (!array_key_exists($theTable, $items)){
+							$icon = t3lib_iconWorks::mapRecordTypeToSpriteIconName($theTable, array());
+							$items[$theTable] = array(
+								$this->sL($GLOBALS['TCA'][$theTable]['ctrl']['title']),
+								'--div--',
+								$icon,
+							);
+						}
 
 							// Add help text
 						$helpText = array();
@@ -4612,7 +4753,8 @@ class t3lib_TCEforms {
 
 							// Item configuration:
 						$items[] = array(
-							rtrim($theTypeArrays[0], ':') . ' (' . $theField . ')',
+							rtrim($GLOBALS['LANG']->sl($GLOBALS['TCA'][$theTable]['columns'][$theField]['label']), ':') .
+									' (' . $theField . ')',
 							$theTypeArrays[1],
 							'empty-empty',
 							$helpText
@@ -4699,7 +4841,6 @@ class t3lib_TCEforms {
 
 					$modList = $fieldValue['config']['special'] == 'modListUser' ? $loadModules->modListUser : $loadModules->modListGroup;
 					if (is_array($modList)) {
-						$descr = '';
 
 						foreach ($modList as $theMod) {
 
@@ -5128,124 +5269,6 @@ class t3lib_TCEforms {
 		$out .= '</fieldset>';
 		return $out;
 	}
-
-
-	/**
-	 * Returns help-text ICON if configured for.
-	 *
-	 * @param	string		The table name
-	 * @param	string		The field name
-	 * @param	boolean		Force the return of the help-text icon.
-	 * @return	string		HTML, <a>-tag with
-	 * @deprecated since TYPO3 4.5, will be removed in TYPO3 4.7
-	 */
-	function helpTextIcon($table, $field, $force = 0) {
-		t3lib_div::logDeprecatedFunction();
-		if ($this->globalShowHelp && $GLOBALS['TCA_DESCR'][$table]['columns'][$field] && (($this->edit_showFieldHelp == 'icon' && !$this->doLoadTableDescr($table)) || $force)) {
-			return t3lib_BEfunc::helpTextIcon($table, $field, $this->backPath, $force);
-		} else {
-				// Detects fields with no CSH and outputs dummy line to insert into CSH locallang file:
-			return '<span class="nbsp">&nbsp;</span>';
-		}
-	}
-
-	/**
-	 * Returns help text DESCRIPTION, if configured for.
-	 *
-	 * @param	string		The table name
-	 * @param	string		The field name
-	 * @return	string
-	 * @deprecated since TYPO3 4.5, will be removed in TYPO3 4.7
-	 */
-	function helpText($table, $field) {
-		t3lib_div::logDeprecatedFunction();
-		if ($this->globalShowHelp && $GLOBALS['TCA_DESCR'][$table]['columns'][$field] && ($this->edit_showFieldHelp == 'text' || $this->doLoadTableDescr($table))) {
-			$fDat = $GLOBALS['TCA_DESCR'][$table]['columns'][$field];
-			return '<table border="0" cellpadding="2" cellspacing="0" width="90%"><tr><td valign="top" width="14">' .
-				   $this->helpTextIcon(
-					   $table,
-					   $field,
-					   $fDat['details'] || $fDat['syntax'] || $fDat['image_descr'] || $fDat['image'] || $fDat['seeAlso']
-				   ) .
-				   '</td><td valign="top"><span class="typo3-TCEforms-helpText">' .
-				   htmlspecialchars(strip_tags($fDat['description'])) .
-				   '</span></td></tr></table>';
-		}
-	}
-
-	/**
-	 * Returns help-text ICON if configured for.
-	 *
-	 * @param	string		Field name
-	 * @param	string		Field title
-	 * @param	string		File name with CSH labels
-	 * @return	string		HTML, <a>-tag with
-	 * @deprecated since TYPO3 4.5, this function will be removed in TYPO3 4.7. Use t3lib_BEfunc::wrapInHelp() instead.
-	 */
-	function helpTextIcon_typeFlex($field, $fieldTitle, $cshFile) {
-		t3lib_div::logDeprecatedFunction();
-		if ($this->globalShowHelp && $cshFile) {
-			$value = $GLOBALS['LANG']->sL($cshFile . ':' . $field . '.description');
-			if (trim($value)) {
-				if (substr($fieldTitle, -1, 1) == ':') {
-					$fieldTitle = substr($fieldTitle, 0, strlen($fieldTitle) - 1);
-				}
-
-					// Hover popup textbox with alttitle and description
-				if ($this->edit_showFieldHelp == 'icon') {
-					$arrow = t3lib_iconWorks::getSpriteIcon('actions-view-go-forward');
-						// add description text
-					$hoverText = '<span class="paragraph">' . nl2br(htmlspecialchars($value)) . $arrow . '</span>';
-						// put header before the rest of the text
-					$alttitle = $GLOBALS['LANG']->sL($cshFile . ':' . $field . '.alttitle');
-					if ($alttitle) {
-						$hoverText = '<span class="header">' . $alttitle . '</span><br />' . $hoverText;
-					}
-					$hoverText = '<span class="typo3-csh-inline">' . $hoverText . '</span>';
-				}
-
-					// CSH exists
-				$params = base64_encode(serialize(array(
-													   'cshFile' => $cshFile,
-													   'field' => $field,
-													   'title' => $fieldTitle
-												  )));
-				$aOnClick = 'vHWin=window.open(\'' . $this->backPath . 'view_help.php?ffID=' . $params . '\',\'viewFieldHelp\',\'height=400,width=600,status=0,menubar=0,scrollbars=1\');vHWin.focus();return false;';
-				return '<a href="#" class="typo3-csh-link" onclick="' . htmlspecialchars($aOnClick) . '">' .
-					   t3lib_iconWorks::getSpriteIcon('actions-system-help-open') . $hoverText .
-					   '</a>';
-			}
-		}
-		return '';
-	}
-
-	/**
-	 * Returns help text DESCRIPTION, if configured for.
-	 *
-	 * @param	string		Field name
-	 * @param	string		CSH file name
-	 * @return	string		Description for the field with cion or empty string
-	 * @deprecated since TYPO3 4.5, this function will be removed in TYPO3 4.7. Use t3lib_BEfunc::wrapInHelp() instead.
-	 */
-	function helpText_typeFlex($field, $fieldTitle, $cshFile) {
-		t3lib_div::logDeprecatedFunction();
-		if ($this->globalShowHelp && $cshFile && $this->edit_showFieldHelp == 'text') {
-			$value = $GLOBALS['LANG']->sL($cshFile . ':' . $field . '.description');
-			if (trim($value)) {
-				return '<table border="0" cellpadding="2" cellspacing="0" width="90%"><tr><td valign="top" width="14">' .
-					   $this->helpTextIcon_typeFlex(
-						   $field,
-						   $fieldTitle,
-						   $cshFile
-					   ) .
-					   '</td><td valign="top"><span class="typo3-TCEforms-helpText-flexform">' .
-					   htmlspecialchars(strip_tags($value)) .
-					   '</span></td></tr></table>';
-			}
-		}
-		return '';
-	}
-
 
 	/**
 	 * Setting the current color scheme ($this->colorScheme) based on $this->defColorScheme plus input string.
@@ -6059,16 +6082,19 @@ class t3lib_TCEforms {
 	/**
 	 * Returns TRUE, if the palette, $palette, is collapsed (not shown, but found in top-frame) for the table.
 	 *
-	 * @param	string		The table name
-	 * @param	integer		The palette pointer/number
-	 * @return	boolean
+	 * @param string The table name
+	 * @param integer The palette pointer/number
+	 * @return boolean
 	 */
 	function isPalettesCollapsed($table, $palette) {
+		if (is_array($GLOBALS['TCA'][$table]['palettes'][$palette]) && $GLOBALS['TCA'][$table]['palettes'][$palette]['isHiddenPalette']) {
+			return TRUE;
+		}
 		if ($GLOBALS['TCA'][$table]['ctrl']['canNotCollapse']) {
-			return 0;
+			return FALSE;
 		}
 		if (is_array($GLOBALS['TCA'][$table]['palettes'][$palette]) && $GLOBALS['TCA'][$table]['palettes'][$palette]['canNotCollapse']) {
-			return 0;
+			return FALSE;
 		}
 		return $this->palettesCollapsed;
 	}
@@ -6515,6 +6541,54 @@ class t3lib_TCEforms {
 				'level' => $dynNestedStack,
 			);
 		}
+	}
+
+	/**
+	 * Determine and get the value for the placeholder and return the placeholder attribute
+	 *
+	 * @param string $table
+	 * @param string $field
+	 * @param array $config
+	 * @param array $row
+	 * @return string
+	 */
+	protected function getPlaceholderAttribute($table, $field, array $config, array $row) {
+		$value = trim($config['placeholder']);
+		if (!$value) {
+			return '';
+		}
+
+			// Check if we have a reference to another field value from the current record
+		if (substr($value, 0, 6) === '__row|') {
+			$keySegments = t3lib_div::trimExplode('|', substr($value, 6));
+
+			if (isset($row[$keySegments[0]])) {
+					// First segment (fieldname) exists in the current row
+				$value = $row[$keySegments[0]];
+
+				$fieldConf = $GLOBALS['TCA'][$table]['columns'][$keySegments[0]];
+				if ($fieldConf['config']['type'] === 'group' && $fieldConf['config']['internal_type'] === 'db') {
+						// The field is a relation to another record
+					list($foreignIdentifier, $foreignTitle) = t3lib_div::trimExplode('|', $value);
+
+						// Use the foreign title
+					$value = $foreignTitle;
+
+					if (!empty($keySegments[1])) {
+							// Use any field in the foreign record
+						list($foreignTable, $foreignUid) = t3lib_BEfunc::splitTable_Uid($foreignIdentifier);
+						$foreignRecord = t3lib_befunc::getRecord($foreignTable, $foreignUid);
+						if (isset($foreignRecord[$keySegments[1]])) {
+							$value = $foreignRecord[$keySegments[1]];
+						}
+					}
+				}
+			}
+		}
+
+			// Cleanup the string and support 'LLL:'
+		$value = htmlspecialchars(trim($this->sL($value)));
+		return empty($value) ? '' : (' placeholder="' . $value . '" ');
 	}
 
 	/**

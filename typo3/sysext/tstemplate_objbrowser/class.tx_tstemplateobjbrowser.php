@@ -214,14 +214,16 @@ class tx_tstemplateobjbrowser extends t3lib_extobjbase {
 		$bType= $this->pObj->MOD_SETTINGS["ts_browser_type"];
 		$existTemplate = $this->initialize_editor($this->pObj->id,$template_uid);		// initialize
 		if ($existTemplate)	{
-			$theOutput .= '<h4 style="margin-bottom:5px;">' . $GLOBALS['LANG']->getLL('currentTemplate') . ' <img ' .
-				t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], t3lib_iconWorks::getIcon('sys_template', $tplRow)) . ' align="top" /> <strong>' .
-				$this->pObj->linkWrapTemplateTitle($tplRow["title"], ($bType == "setup" ? "config" : "constants")) . '</strong>' .
-				htmlspecialchars(trim($tplRow["sitetitle"]) ? ' - (' . $tplRow["sitetitle"] . ')' : '') . '</h4>';
+			$theOutput .= $this->pObj->doc->section(
+				$GLOBALS['LANG']->getLL('currentTemplate'),
+				' <img ' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], t3lib_iconWorks::getIcon('sys_template', $tplRow)) . ' align="top" /> <strong>' .
+					$this->pObj->linkWrapTemplateTitle($tplRow["title"], ($bType == "setup" ? "config" : "constants")) . '</strong>' .
+					htmlspecialchars(trim($tplRow["sitetitle"]) ? ' (' . $tplRow["sitetitle"] . ')' : '')
+			);
 			if ($manyTemplatesMenu)	{
-				$theOutput.=$this->pObj->doc->section("",$manyTemplatesMenu);
-				$theOutput.=$this->pObj->doc->divider(5);
+				$theOutput.=$this->pObj->doc->section("", $manyTemplatesMenu);
 			}
+			$theOutput .= $this->pObj->doc->spacer(10);
 
 			if ($POST["add_property"] || $POST["update_value"] || $POST["clear_object"])	{
 					// add property
@@ -456,8 +458,17 @@ class tx_tstemplateobjbrowser extends t3lib_extobjbase {
 			$pEkey = ($bType=="setup"?"config":"constants");
 			if (count($tmpl->parserErrors[$pEkey]))	{
 				$errMsg=array();
+				$templateAnalyzerInstalled = t3lib_extMgm::isLoaded('tstemplate_analyzer');
+
 				foreach ($tmpl->parserErrors[$pEkey] as $inf) {
-					$errMsg[]=($inf[1]).": &nbsp; &nbsp;".$inf[0];
+					$errorLink = '';
+					if ($templateAnalyzerInstalled) {
+						$errorLink = ' <a href="index.php?id=' . $this->pObj->id . '&SET[function]=tx_tstemplateanalyzer&template=all&SET[ts_analyzer_checkLinenum]=1#line-' . $inf[2] . '">'
+							. $GLOBALS['LANG']->getLL('errorShowDetails')
+							. '</a>';
+					}
+
+					$errMsg[] = ($inf[1]) . ": &nbsp; &nbsp;" . $inf[0] . $errorLink;
 				}
 				$theOutput .= $this->pObj->doc->spacer(10);
 
@@ -472,7 +483,7 @@ class tx_tstemplateobjbrowser extends t3lib_extobjbase {
 
 
 
-			if (isset($this->pObj->MOD_SETTINGS["ts_browser_TLKeys_".$bType][$theKey]))	{
+			if (isset($this->pObj->MOD_SETTINGS["ts_browser_TLKeys_" . $bType][$theKey]))	{
 				$remove = '<td width="1%" nowrap><a href="index.php?id=' . $this->pObj->id . '&addKey[' . $theKey . ']=0&SET[ts_browser_toplevel_' . $bType . ']=0"><strong>' . $GLOBALS['LANG']->getLL('removeKey') . '</strong></a></td>';
 			} else {
 				$remove = '';
@@ -484,17 +495,12 @@ class tx_tstemplateobjbrowser extends t3lib_extobjbase {
 				);
 			$theOutput .= $this->pObj->doc->spacer(15);
 			$theOutput .= $this->pObj->doc->sectionEnd();
-			$theOutput .= '<table border="0" cellpadding="1" cellspacing="0" id="typo3-objectBrowser" width="100%">
-					<tr>
-						<td><img src="clear.gif" width="4px" height="1px" /></td>
-						<td class="bgColor2">
-							<table border="0" cellpadding="0" cellspacing="0" class="bgColor5" width="100%"><tr class="t3-row-header"><td nowrap="nowrap" width="99%"><strong>' . $label . '</strong></td>' . $remove . '</tr></table>
-						</td>
+			$theOutput .= '<table border="0" id="typo3-objectBrowser">
+					<tr class="t3-row-header">
+						<td nowrap="nowrap" width="99%"><strong>' . $label . '</strong></td>' . $remove . '
 					</tr>
 					<tr>
-						<td><img src="clear.gif" width="4px" height="1px" /></td>
-						<td class="bgColor2">
-							<table border="0" cellpadding="0" cellspacing="0" class="bgColor4" width="100%"><tr><td nowrap="nowrap">' . $tree . '</td></tr></table></td>
+						<td class="bgColor4" nowrap="nowrap">' . $tree . '</td>' . ($remove ? '<td></td>' : '') . '
 					</tr>
 				</table>
 			';

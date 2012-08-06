@@ -42,11 +42,6 @@
 // *******************************
 if (version_compare(phpversion(), '5.3', '<'))	die ('TYPO3 requires PHP 5.3.0 or higher.');
 
-// *******************************
-// Set error reporting
-// *******************************
-error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
-
 
 // ******************
 // Constants defined
@@ -55,28 +50,11 @@ $TYPO3_MISC['microtime_start'] = microtime(TRUE);
 define('TYPO3_OS', stristr(PHP_OS,'win')&&!stristr(PHP_OS,'darwin')?'WIN':'');
 define('TYPO3_MODE','FE');
 
-if(!defined('PATH_thisScript')) {
-	define('PATH_thisScript', str_replace('//', '/', str_replace('\\', '/',
-		(PHP_SAPI == 'fpm-fcgi' || PHP_SAPI == 'cgi' || PHP_SAPI == 'isapi' || PHP_SAPI == 'cgi-fcgi') &&
-		($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) ?
-		($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) :
-		($_SERVER['ORIG_SCRIPT_FILENAME'] ? $_SERVER['ORIG_SCRIPT_FILENAME'] : $_SERVER['SCRIPT_FILENAME']))));
-}
-
-if (!defined('PATH_site')) 			define('PATH_site', dirname(PATH_thisScript).'/');
 if (!defined('PATH_t3lib')) 		define('PATH_t3lib', PATH_site.'t3lib/');
 
 define('TYPO3_mainDir', 'typo3/');		// This is the directory of the backend administration for the sites of this TYPO3 installation.
 define('PATH_typo3', PATH_site.TYPO3_mainDir);
 define('PATH_typo3conf', PATH_site.'typo3conf/');
-
-if (!defined('PATH_tslib')) {
-	if (@is_dir(PATH_site.TYPO3_mainDir.'sysext/cms/tslib/')) {
-		define('PATH_tslib', PATH_site.TYPO3_mainDir.'sysext/cms/tslib/');
-	} elseif (@is_dir(PATH_site.'tslib/')) {
-		define('PATH_tslib', PATH_site.'tslib/');
-	}
-}
 
 if (!@is_dir(PATH_typo3conf))	die('Cannot find configuration. This file is probably executed from the wrong location.');
 
@@ -105,10 +83,6 @@ require_once(PATH_t3lib . 'class.t3lib_extmgm.php');
 require(PATH_t3lib.'config_default.php');
 if (!defined ('TYPO3_db')) 	die ('The configuration file was not included.');	// the name of the TYPO3 database is stored in this constant. Here the inclusion of the config-file is verified by checking if this var is set.
 if (!t3lib_extMgm::isLoaded('cms'))	die('<strong>Error:</strong> The main frontend extension "cms" was not loaded. Enable it in the extension manager in the backend.');
-
-if (!defined('PATH_tslib')) {
-	define('PATH_tslib', t3lib_extMgm::extPath('cms').'tslib/');
-}
 
 
 // *********************
@@ -240,12 +214,6 @@ $TT->pull();
 // *********
 /** @var $BE_USER t3lib_tsfeBeUserAuth */
 $BE_USER = $TSFE->initializeBackendUser();
-
-
-// ********************
-// Workspace preview:
-// ********************
-$TSFE->workspacePreviewInit();
 
 
 // *****************************************

@@ -29,10 +29,9 @@
  * It's deprecated since 4.5, use proper link generation.
  *
  * @author	Steffen Kamper <steffen@typo3.com>
- * @deprecated
+ * @deprecated since 4.5, will be removed in 4.8.
  *
  */
-
 
 require ('init.php');
 

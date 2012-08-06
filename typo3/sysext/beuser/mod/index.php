@@ -1123,10 +1123,7 @@ class SC_mod_tools_be_user_index {
 	 * @return	void
 	 */
 	function main()	{
-		$this->content='';
-
-		$this->content.=$this->doc->header($GLOBALS['LANG']->getLL('backendUserAdministration', TRUE));
-		$this->content.=$this->doc->spacer(5);
+		$this->content = $this->doc->header($GLOBALS['LANG']->getLL('backendUserAdministration', TRUE));
 
 		switch($this->MOD_SETTINGS['function'])	{
 			case 'compare':
@@ -1174,12 +1171,19 @@ class SC_mod_tools_be_user_index {
 	protected function getButtons()	{
 
 		$buttons = array(
+			'add' => '',
 			'csh' => '',
 			'shortcut' => '',
 			'save' => ''
 		);
 			// CSH
 		//$buttons['csh'] = t3lib_BEfunc::cshItem('_MOD_web_func', '', $GLOBALS['BACK_PATH']);
+
+			// Add user
+		if ($this->MOD_SETTINGS['function'] === 'compare') {
+			$buttons['add'] = '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::editOnClick('&edit[be_users][0]=new' , $this->doc->backPath, -1)) .
+				'" title="' . $GLOBALS['LANG']->getLL('newUser', TRUE) . '">' . t3lib_iconWorks::getSpriteIcon('actions-document-new') . '</a>';
+		}
 
 			// Shortcut
 		if ($GLOBALS['BE_USER']->mayMakeShortcut())	{
@@ -1262,7 +1266,7 @@ class SC_mod_tools_be_user_index {
 			$outTable.= '<strong><a href="'.htmlspecialchars($this->MCONF['_']).'">' . $GLOBALS['LANG']->getLL('backToOverview', TRUE) . '</a></strong><br />';
 
 			$outTable.= '<br /><table border="0" cellpadding="2" cellspacing="1">'.implode('',$lines).'</table>';
-			$content.= $this->doc->section($GLOBALS['LANG']->getLL('userInfo', TRUE),$outTable,0,1);
+			$content .= $this->doc->section($GLOBALS['LANG']->getLL('userInfo', TRUE), $outTable, FALSE, TRUE);
 		} else {
 			$menu = array(0 => array());
 			$rowCounter = 0;
@@ -1284,8 +1288,7 @@ class SC_mod_tools_be_user_index {
 			}
 			$outCode .= '</tr></table>';
 			$outCode.='<br /><input type="submit" name="ads" value="' . $GLOBALS['LANG']->getLL('update', TRUE) . '">';
-			$content = $this->doc->section($GLOBALS['LANG']->getLL('groupAndCompareUsers', TRUE),$outCode,0,1);
-
+			$content = $this->doc->section($GLOBALS['LANG']->getLL('groupAndCompareUsers', TRUE), $outCode, FALSE, TRUE);
 
 				// Traverse all users
 			$users = t3lib_BEfunc::getUserNames();
@@ -1336,11 +1339,7 @@ class SC_mod_tools_be_user_index {
 				// Header:
 			$allCells = array();
 
-			$link_createNewUser='<a href="#" onclick="'.htmlspecialchars(t3lib_BEfunc::editOnClick('&edit[be_users][0]=new',$this->doc->backPath,-1)).'" title="' . $GLOBALS['LANG']->getLL('newUser', TRUE) . '">'.
-					t3lib_iconWorks::getSpriteIcon('actions-document-new') .
-				'</a>';
-
-			$allCells['USERS'] = '<table border="0" cellspacing="0" cellpadding="0" width="100%"><tr><td><strong>' . $GLOBALS['LANG']->getLL('usernames', TRUE) . '</strong></td><td width="12">' . $link_createNewUser . '</td></tr></table>';
+			$allCells['USERS'] = '<table border="0" cellspacing="0" cellpadding="0" width="100%"><tr><td><strong>' . $GLOBALS['LANG']->getLL('usernames', TRUE) . '</strong></td></table>';
 
 			foreach ($options as $kk => $vv) {
 				if ($compareFlags[$kk])	{
@@ -1558,7 +1557,7 @@ class SC_mod_tools_be_user_index {
 				$outTable .= '
 					<tr class="bgColor4" height="17" valign="top">' .
 						'<td nowrap="nowrap">' .
-							date($GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy'].' '.$GLOBALS['TYPO3_CONF_VARS']['SYS']['hhmm'], $session['ses_tstamp']) .
+							t3lib_BEfunc::datetime($session['ses_tstamp']) .
 						'</td>' .
 						'<td nowrap="nowrap">' .
 							'<span'.$hostName.'>'.$ip.'</span>' .
@@ -1583,7 +1582,7 @@ class SC_mod_tools_be_user_index {
 			</tr>' . $outTable . '
 		</table>';
 
-		$content.= $this->doc->section($GLOBALS['LANG']->getLL('whoIsOnline', TRUE),$outTable,0,1);
+		$content .= $this->doc->section($GLOBALS['LANG']->getLL('whoIsOnline', TRUE), $outTable, FALSE, TRUE);
 		return $content;
 	}
 
