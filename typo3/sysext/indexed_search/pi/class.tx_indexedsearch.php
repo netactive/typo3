@@ -903,8 +903,8 @@ class tx_indexedsearch extends tslib_pibase {
 	 * @return pointer SQL result pointer
 	 */
 	function searchWord($sWord, $mode) {
-		$wildcard_left = ($mode & WILDCARD_LEFT) ? '%' : '';
-		$wildcard_right = ($mode & WILDCARD_RIGHT) ? '%' : '';
+		$wildcard_left = ($mode & self::WILDCARD_LEFT) ? '%' : '';
+		$wildcard_right = ($mode & self::WILDCARD_RIGHT) ? '%' : '';
 
 		$wSel = 'IW.baseword LIKE \'' . $wildcard_left.$GLOBALS['TYPO3_DB']->quoteStr($sWord, 'index_words') . $wildcard_right . '\'';
 		$res = $this->execPHashListQuery($wSel,' AND is_stopword=0');
@@ -1315,7 +1315,7 @@ class tx_indexedsearch extends tslib_pibase {
 	 *
 	 * @param string $stringToHash
 	 * @return int Integer intepretation of the md5 hash of input string.
-	 * @deprecated will be removed in 4.8
+	 * @deprecated will be removed in 6.0
 	 * @see tx_indexedsearch_util::md5inthash
 	 */
 	function md5inthash($stringToHash) {
