@@ -2724,8 +2724,18 @@ final class t3lib_BEfunc {
 			$mainParams .= (t3lib_div::_GET('M') ? '&M=' . rawurlencode(t3lib_div::_GET('M')) : '');
 		}
 
-		$onClick = 'jumpToUrl(\'' . $script . '?' . $mainParams . $addparams . '&' . $elementName . '=\'+(this.checked?1:0),this);';
-		return '<input type="checkbox" class="checkbox" name="' . $elementName . '"' . ($currentValue ? ' checked="checked"' : '') . ' onclick="' . htmlspecialchars($onClick) . '"' . ($tagParams ? ' ' . $tagParams : '') . ' />';
+		$onClick = 'jumpToUrl(' . t3lib_div::quoteJSvalue($script . '?' . $mainParams . $addparams . '&' . $elementName) . '=+(this.checked?1:0),this);';
+
+		return
+		'<input' .
+			' type="checkbox"' .
+			' class="checkbox"' .
+			' name="' . $elementName . '"' .
+			($currentValue ? ' checked="checked"' : '') .
+			' onclick="' . htmlspecialchars($onClick) . '"' .
+			($tagParams ? ' ' . $tagParams : '') .
+			' value="1"' .
+		' />';
 	}
 
 	/**
