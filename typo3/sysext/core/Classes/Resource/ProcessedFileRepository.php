@@ -134,7 +134,7 @@ class ProcessedFileRepository extends AbstractRepository {
 	 */
 	public function update($processedFile) {
 		if ($processedFile->isPersisted()) {
-			$uid = intval($processedFile->getProperty('uid'));
+			$uid = intval($processedFile->getUid());
 			$updateFields = $this->cleanUnavailableColumns($processedFile->toArray());
 			$updateFields['tstamp'] = time();
 			$this->databaseConnection->exec_UPDATEquery($this->table, 'uid=' . intval($uid), $updateFields);
@@ -142,7 +142,7 @@ class ProcessedFileRepository extends AbstractRepository {
 	}
 
 	/**
-	 * @param File $file
+	 * @param \TYPO3\CMS\Core\Resource\File|\TYPO3\CMS\Core\Resource\FileInterface $file
 	 * @param string $taskType The task that should be executed on the file
 	 * @param array $configuration
 	 *

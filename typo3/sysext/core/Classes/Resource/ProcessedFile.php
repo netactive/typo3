@@ -27,8 +27,6 @@ namespace TYPO3\CMS\Core\Resource;
  * This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-
-
 /**
  * Representation of a specific processed version of a file. These are created by the FileProcessingService,
  * which in turn uses helper classes for doing the actual file processing. See there for a detailed description.
@@ -77,12 +75,12 @@ class ProcessedFile extends AbstractFile {
 	protected $taskType;
 
 	/**
-	 * @var \TYPO3\CMS\Core\Resource\Processing\TaskInterface
+	 * @var Processing\TaskInterface
 	 */
 	protected $task;
 
 	/**
-	 * @var \TYPO3\CMS\Core\Resource\Processing\TaskTypeRegistry
+	 * @var Processing\TaskTypeRegistry
 	 */
 	protected $taskTypeRegistry;
 
@@ -419,11 +417,21 @@ class ProcessedFile extends AbstractFile {
 	 * @return mixed
 	 */
 	public function getProperty($key) {
-		if ($this->isUnchanged()) {
+		// The uid always (!) has to come from this file and never the original file (see getOriginalFile() to get this)
+		if ($this->isUnchanged() && $key !== 'uid') {
 			return $this->originalFile->getProperty($key);
 		} else {
 			return $this->properties[$key];
 		}
+	}
+
+	/**
+	 * Returns the uid of this file
+	 *
+	 * @return int
+	 */
+	public function getUid() {
+		return $this->properties['uid'];
 	}
 
 

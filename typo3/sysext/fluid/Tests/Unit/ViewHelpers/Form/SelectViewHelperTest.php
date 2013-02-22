@@ -36,7 +36,7 @@ class SelectViewHelperTest extends \TYPO3\CMS\Fluid\Tests\Unit\ViewHelpers\Form\
 			'LC_COLLATE' => setlocale(LC_COLLATE, 0),
 			'LC_CTYPE' => setlocale(LC_CTYPE, 0),
 			'LC_MONETARY' => setlocale(LC_MONETARY, 0),
-			'LC_TIME' => setlocale(LC_MONETARY, 0),
+			'LC_TIME' => setlocale(LC_TIME, 0),
 		);
 		$this->arguments['name'] = '';
 		$this->arguments['sortByOptionLabel'] = FALSE;
@@ -45,7 +45,7 @@ class SelectViewHelperTest extends \TYPO3\CMS\Fluid\Tests\Unit\ViewHelpers\Form\
 
 	public function tearDown() {
 		foreach ($this->backupLocales as $category => $locale) {
-			setlocale($category, $locale);
+			setlocale(constant($category), $locale);
 		}
 	}
 
@@ -143,6 +143,9 @@ class SelectViewHelperTest extends \TYPO3\CMS\Fluid\Tests\Unit\ViewHelpers\Form\
 		$locale = 'de_DE.UTF-8';
 		if (!setlocale(LC_COLLATE, $locale)) {
 			$this->markTestSkipped('Locale ' . $locale . ' is not available.');
+		}
+		if (stristr(PHP_OS, 'Darwin')) {
+			$this->markTestSkipped('Test skipped caused by a bug in the C libraries on BSD/OSX');
 		}
 
 		setlocale(LC_CTYPE, $locale);

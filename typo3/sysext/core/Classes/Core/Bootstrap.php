@@ -231,7 +231,10 @@ class Bootstrap {
 		define('TYPO3_db_username', $GLOBALS['TYPO3_CONF_VARS']['DB']['username']);
 		define('TYPO3_db_password', $GLOBALS['TYPO3_CONF_VARS']['DB']['password']);
 		define('TYPO3_db_host', $GLOBALS['TYPO3_CONF_VARS']['DB']['host']);
-		define('TYPO3_extTableDef_script', $GLOBALS['TYPO3_CONF_VARS']['DB']['extTablesDefinitionScript']);
+		define('TYPO3_extTableDef_script',
+			isset($GLOBALS['TYPO3_CONF_VARS']['DB']['extTablesDefinitionScript'])
+			? $GLOBALS['TYPO3_CONF_VARS']['DB']['extTablesDefinitionScript']
+			: 'extTables.php');
 		unset($GLOBALS['TYPO3_CONF_VARS']['DB']);
 		define('TYPO3_user_agent', 'User-Agent: ' . $GLOBALS['TYPO3_CONF_VARS']['HTTP']['userAgent']);
 		return $this;
@@ -791,9 +794,10 @@ class Bootstrap {
 		// Include standard tables.php file
 		require PATH_t3lib . 'stddb/tables.php';
 		\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::loadExtTables($allowCaching);
-		// Load additional ext tables script if registered
-		if (TYPO3_extTableDef_script) {
-			include PATH_typo3conf . TYPO3_extTableDef_script;
+		// Load additional ext tables script if the file exists
+		$extTablesFile = PATH_typo3conf . TYPO3_extTableDef_script;
+		if (file_exists($extTablesFile)) {
+			include $extTablesFile;
 		}
 		// Run post hook for additional manipulation
 		$this->runExtTablesPostProcessingHooks();

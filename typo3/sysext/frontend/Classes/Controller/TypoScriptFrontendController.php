@@ -153,7 +153,7 @@ class TypoScriptFrontendController {
 	/**
 	 * The FE user
 	 *
-	 * @var \TYPO3\CMS\Frontend\Authentication\FrontendUserAuthtenication
+	 * @var \TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication
 	 * @todo Define visibility
 	 */
 	public $fe_user = '';
@@ -713,6 +713,14 @@ class TypoScriptFrontendController {
 	public $LL_files_cache = array();
 
 	/**
+	 * List of language dependencies for actual language. This is used for local variants of a language
+	 * that depend on their "main" language, like Brazilian Portuguese or Canadian French.
+	 *
+	 * @var array
+	 */
+	protected $languageDependencies = array();
+
+	/**
 	 * Locking object for accessing "cache_pagesection"
 	 *
 	 * @var \TYPO3\CMS\Core\Locking\Locker
@@ -909,7 +917,7 @@ class TypoScriptFrontendController {
 	 * @todo Define visibility
 	 */
 	public function initFEuser() {
-		$this->fe_user = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Authentication\\FrontendUserAuthtenication');
+		$this->fe_user = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Authentication\\FrontendUserAuthentication');
 		$this->fe_user->lockIP = $this->TYPO3_CONF_VARS['FE']['lockIP'];
 		$this->fe_user->checkPid = $this->TYPO3_CONF_VARS['FE']['checkFeUserPid'];
 		$this->fe_user->lifetime = intval($this->TYPO3_CONF_VARS['FE']['lifetime']);
@@ -920,7 +928,7 @@ class TypoScriptFrontendController {
 			$fe_sParts = explode('-', \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('FE_SESSION_KEY'));
 			// If the session key hash check is OK:
 			if (!strcmp(md5(($fe_sParts[0] . '/' . $this->TYPO3_CONF_VARS['SYS']['encryptionKey'])), $fe_sParts[1])) {
-				$cookieName = \TYPO3\CMS\Frontend\Authentication\FrontendUserAuthtenication::getCookieName();
+				$cookieName = \TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication::getCookieName();
 				$_COOKIE[$cookieName] = $fe_sParts[0];
 				if (isset($_SERVER['HTTP_COOKIE'])) {
 					// See http://forge.typo3.org/issues/27740
@@ -4598,7 +4606,31 @@ if (version == "n3") {
 	 * @todo Define visibility
 	 */
 	public function readLLfile($fileRef) {
-		return \TYPO3\CMS\Core\Utility\GeneralUtility::readLLfile($fileRef, $this->lang, $this->renderCharset);
+		if ($this->lang !== 'default') {
+			$languages = array_reverse($this->languageDependencies);
+			// At least we need to have English
+			if (empty($languages)) {
+				$languages[] = 'default';
+			}
+		} else {
+			$languages = array('default');
+		}
+
+		$localLanguage = array();
+		foreach ($languages as $language) {
+			$tempLL = \TYPO3\CMS\Core\Utility\GeneralUtility::readLLfile($fileRef, $language, $this->renderCharset);
+			$localLanguage['default'] = $tempLL['default'];
+			if (!isset($localLanguage[$this->lang])) {
+				$localLanguage[$this->lang] = $localLanguage['default'];
+			}
+			if ($this->lang !== 'default' && isset($tempLL[$language])) {
+				// Merge current language labels onto labels from previous language
+				// This way we have a label with fall back applied
+				$localLanguage[$this->lang] = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($localLanguage[$this->lang], $tempLL[$language], FALSE, FALSE);
+			}
+		}
+
+		return $localLanguage;
 	}
 
 	/**
@@ -4628,6 +4660,20 @@ if (version == "n3") {
 		// Setting language key and split index:
 		$this->lang = $this->config['config']['language'] ? $this->config['config']['language'] : 'default';
 		$this->getPageRenderer()->setLanguage($this->lang);
+
+		// Finding the requested language in this list based
+		// on the $lang key being inputted to this function.
+		/** @var $locales \TYPO3\CMS\Core\Localization\Locales */
+		$locales = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Localization\\Locales');
+
+		// Language is found. Configure it:
+		if (in_array($this->lang, $locales->getLocales())) {
+			$this->languageDependencies[] = $this->lang;
+			foreach ($locales->getLocaleDependencies($this->lang) as $language) {
+				$this->languageDependencies[] = $language;
+			}
+		}
+
 		// Setting charsets:
 		$this->renderCharset = $this->csConvObj->parse_charset($this->config['config']['renderCharset'] ? $this->config['config']['renderCharset'] : 'utf-8');
 		// Rendering charset of HTML page.

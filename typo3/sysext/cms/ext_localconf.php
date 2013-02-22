@@ -6,7 +6,8 @@ if (!defined('TYPO3_MODE')) {
 	options.saveDocView = 1
 	options.saveDocNew = 1
 	options.saveDocNew.pages = 0
-	options.saveDocNew.pages_language_overlay = 1
+	options.saveDocNew.sys_file = 0
+	options.disableDelete.sys_file = 1
 ');
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig('
 mod.wizards.newContentElement {

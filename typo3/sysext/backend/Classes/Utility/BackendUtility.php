@@ -3858,7 +3858,7 @@ class BackendUtility {
 			$where_clause = 'username=' . $GLOBALS['TYPO3_DB']->fullQuoteStr('admin', 'be_users') . ' AND password=' . $GLOBALS['TYPO3_DB']->fullQuoteStr('5f4dcc3b5aa765d61d8327deb882cf99', 'be_users') . self::deleteClause('be_users');
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid, username, password', 'be_users', $where_clause);
 			if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-				$url = 'alt_doc.php?returnUrl=alt_intro.php&edit[be_users][' . $row['uid'] . ']=edit';
+				$url = 'alt_doc.php?returnUrl=' . urlencode('mod.php?M=help_AboutmodulesAboutmodules') . '&edit[be_users][' . $row['uid'] . ']=edit';
 				$warnings['backend_admin'] = sprintf($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:warning.backend_admin'), '<a href="' . htmlspecialchars($url) . '">', '</a>');
 			}
 			$GLOBALS['TYPO3_DB']->sql_free_result($res);
@@ -3894,7 +3894,7 @@ class BackendUtility {
 			$registry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Registry');
 			$lastRefIndexUpdate = $registry->get('core', 'sys_refindex_lastUpdate');
 			if (!$count && $lastRefIndexUpdate) {
-				$url = 'sysext/lowlevel/dbint/index.php?&id=0&SET[function]=refindex';
+				$url =  \TYPO3\CMS\Backend\Utility\BackendUtility::getModuleUrl('tools_dbint') . '&id=0&SET[function]=refindex';
 				$warnings['backend_reference'] = sprintf($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:warning.backend_reference_index'), '<a href="' . $url . '">', '</a>', self::dateTime($lastRefIndexUpdate));
 			}
 			// Check for memcached if configured
