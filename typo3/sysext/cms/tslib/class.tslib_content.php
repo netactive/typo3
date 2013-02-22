@@ -442,6 +442,31 @@ class tslib_cObj {
 	}
 
 	/**
+	 * Serialization (sleep) helper.
+	 *
+	 * Removes properties of this object from serialization.
+	 * This action is necessary, since there might be closures used
+	 * in the accordant content objects (e.g. in FLUIDTEMPLATE) which
+	 * cannot be serialized. It's fine to reset $this->contentObjects
+	 * since elements will be recreated and are just a local cache,
+	 * but not required for runtime logic and behaviour.
+	 *
+	 * @return array Names of the properties to be serialized
+	 * @see http://forge.typo3.org/issues/36820
+	 */
+	public function __sleep() {
+			// Use get_objects_vars() instead of
+			// a much more expensive Reflection:
+		$properties = get_object_vars($this);
+
+		if (isset($properties['contentObjects'])) {
+			unset($properties['contentObjects']);
+		}
+
+		return array_keys($properties);
+	}
+
+	/**
 	 * Gets the 'getImgResource' hook objects.
 	 * The first call initializes the accordant objects.
 	 *
@@ -2488,6 +2513,8 @@ class tslib_cObj {
 	 * @return	string		The processed input value
 	 */
 	public function stdWrap_strftime($content = '', $conf = array()) {
+			// Check for zero length string to mimic default case of strtime/gmstrftime
+		$content = $content == '' ? $GLOBALS['EXEC_TIME'] : intval($content);
 		$content = ($conf['strftime.']['GMT'] ? gmstrftime($conf['strftime'], $content) : strftime($conf['strftime'], $content));
 		$tmp_charset = $conf['strftime.']['charset'] ? $conf['strftime.']['charset'] : $GLOBALS['TSFE']->localeCharset;
 		if ($tmp_charset) {
