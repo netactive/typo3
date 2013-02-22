@@ -1,4 +1,5 @@
 <?php
+namespace TYPO3\CMS\Fluid\Tests\Unit\ViewHelpers\Security;
 
 /*                                                                        *
  * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
@@ -19,44 +20,32 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-require_once(dirname(__FILE__) . '/../ViewHelperBaseTestcase.php');
+require_once dirname(__FILE__) . '/../ViewHelperBaseTestcase.php';
 
 /**
  * Testcase for security.ifHasRole view helper
- *
  */
-class Tx_Fluid_Tests_Unit_ViewHelpers_Security_IfHasRoleViewHelperTest extends Tx_Fluid_ViewHelpers_ViewHelperBaseTestcase {
+class IfHasRoleViewHelperTest extends \TYPO3\CMS\Fluid\Tests\Unit\ViewHelpers\ViewHelperBaseTestcase {
 
 	/**
-	 * var Tx_Fluid_ViewHelpers_Security_IfHasRoleViewHelper
+	 * @var \TYPO3\CMS\Fluid\ViewHelpers\Security\IfHasRoleViewHelper
 	 */
 	protected $viewHelper;
 
-	/**
-	 * @var tslib_fe
-	 */
-	protected $tsfeBackup;
-
 	public function setUp() {
 		parent::setUp();
-
-		$this->tsfeBackup = isset($GLOBALS['TSFE']) ? $GLOBALS['TSFE'] : NULL;
-		$GLOBALS['TSFE'] = new stdClass();
+		$GLOBALS['TSFE'] = new \stdClass();
 		$GLOBALS['TSFE']->loginUser = 1;
+		$GLOBALS['TSFE']->fe_user = new \stdClass();
 		$GLOBALS['TSFE']->fe_user->groupData = array(
-			'uid' => array(1,2),
+			'uid' => array(1, 2),
 			'title' => array('Editor', 'OtherRole')
 		);
-		$this->viewHelper = $this->getAccessibleMock('Tx_Fluid_ViewHelpers_Security_IfHasRoleViewHelper', array('renderThenChild', 'renderElseChild'));
+		$this->viewHelper = $this->getAccessibleMock('TYPO3\\CMS\\Fluid\\ViewHelpers\\Security\\IfHasRoleViewHelper', array('renderThenChild', 'renderElseChild'));
 		$this->viewHelper->expects($this->any())->method('renderThenChild')->will($this->returnValue('then child'));
-		$this->viewHelper->expects($this->any())->method('renderElseChild')->will($this->returnValue("else child"));
+		$this->viewHelper->expects($this->any())->method('renderElseChild')->will($this->returnValue('else child'));
 		$this->injectDependenciesIntoViewHelper($this->viewHelper);
 		$this->viewHelper->initializeArguments();
-	}
-
-	public function tearDown() {
-		$GLOBALS['TSFE'] = $this->tsfeBackup;
 	}
 
 	/**

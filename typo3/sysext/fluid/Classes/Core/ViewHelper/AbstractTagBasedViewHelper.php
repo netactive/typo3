@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\Core\ViewHelper;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -9,8 +10,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-
 /**
  * Tag based view helper.
  * Sould be used as the base class for all view helpers which output simple tags, as it provides some
@@ -18,10 +17,11 @@
  *
  * @api
  */
-abstract class Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
+abstract class AbstractTagBasedViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
 
 	/**
 	 * Names of all registered tag attributes
+	 *
 	 * @var array
 	 */
 	static private $tagAttributes = array();
@@ -29,7 +29,7 @@ abstract class Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper extends Tx_Fl
 	/**
 	 * Tag builder instance
 	 *
-	 * @var Tx_Fluid_Core_ViewHelper_TagBuilder
+	 * @var \TYPO3\CMS\Fluid\Core\ViewHelper\TagBuilder
 	 * @api
 	 */
 	protected $tag = NULL;
@@ -45,10 +45,10 @@ abstract class Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper extends Tx_Fl
 	/**
 	 * Inject a TagBuilder
 	 *
-	 * @param Tx_Fluid_Core_ViewHelper_TagBuilder $tagBuilder Tag builder
+	 * @param \TYPO3\CMS\Fluid\Core\ViewHelper\TagBuilder $tagBuilder Tag builder
 	 * @return void
 	 */
-	public function injectTagBuilder(Tx_Fluid_Core_ViewHelper_TagBuilder $tagBuilder) {
+	public function injectTagBuilder(\TYPO3\CMS\Fluid\Core\ViewHelper\TagBuilder $tagBuilder) {
 		$this->tag = $tagBuilder;
 	}
 
@@ -78,7 +78,6 @@ abstract class Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper extends Tx_Fl
 		if ($this->hasArgument('additionalAttributes') && is_array($this->arguments['additionalAttributes'])) {
 			$this->tag->addAttributes($this->arguments['additionalAttributes']);
 		}
-
 		if (isset(self::$tagAttributes[get_class($this)])) {
 			foreach (self::$tagAttributes[get_class($this)] as $attributeName) {
 				if ($this->hasArgument($attributeName) && $this->arguments[$attributeName] !== '') {
@@ -95,11 +94,12 @@ abstract class Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper extends Tx_Fl
 	 * @param string $type Type of the tag attribute
 	 * @param string $description Description of tag attribute
 	 * @param boolean $required set to TRUE if tag attribute is required. Defaults to FALSE.
+	 * @param string $default Default value
 	 * @return void
 	 * @api
 	 */
-	protected function registerTagAttribute($name, $type, $description, $required = FALSE) {
-		$this->registerArgument($name, $type, $description, $required, NULL);
+	protected function registerTagAttribute($name, $type, $description, $required = FALSE, $default = NULL) {
+		$this->registerArgument($name, $type, $description, $required, $default);
 		self::$tagAttributes[get_class($this)][$name] = $name;
 	}
 
@@ -122,4 +122,5 @@ abstract class Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper extends Tx_Fl
 		$this->registerTagAttribute('onclick', 'string', 'JavaScript evaluated for the onclick event');
 	}
 }
+
 ?>

@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers\Form;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -19,7 +20,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
 /**
  * Error messages view helper, which is deprecated in Extbase 1.4.0, with the old property mapper.
  *
@@ -27,34 +27,34 @@
  *
  * <code title="Output error messages as a list">
  * <ul class="errors">
- *   <f:form.errors>
- *     <li>{error.code}: {error.message}</li>
- *   </f:form.errors>
+ * <f:form.errors>
+ * <li>{error.code}: {error.message}</li>
+ * </f:form.errors>
  * </ul>
  * </code>
  * <output>
  * <ul>
- *   <li>1234567890: Validation errors for argument "newBlog"</li>
+ * <li>1234567890: Validation errors for argument "newBlog"</li>
  * </ul>
  * </output>
  *
  * <code title="Output error messages for a single property">
  * <f:form.errors for="someProperty">
- *   <div class="error">
- *     <strong>{error.propertyName}</strong>: <f:for each="{error.errors}" as="errorDetail">{errorDetail.message}</f:for>
- *   </div>
+ * <div class="error">
+ * <strong>{error.propertyName}</strong>: <f:for each="{error.errors}" as="errorDetail">{errorDetail.message}</f:for>
+ * </div>
  * </f:form.errors>
  * </code>
  * <output>
  * <div class="error>
- *   <strong>someProperty:</strong> errorMessage1 errorMessage2
+ * <strong>someProperty:</strong> errorMessage1 errorMessage2
  * </div>
  * </output>
  *
  * @api
- * @deprecated since Extbase 1.4.0, will be removed with Extbase 1.6.0.
+ * @deprecated since Fluid 1.4.0, will be removed with Fluid 6.1.
  */
-class Tx_Fluid_ViewHelpers_Form_ErrorsViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
+class ErrorsViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
 
 	/**
 	 * Iterates through selected errors of the request.
@@ -90,7 +90,7 @@ class Tx_Fluid_ViewHelpers_Form_ErrorsViewHelper extends Tx_Fluid_Core_ViewHelpe
 	 */
 	protected function getErrorsForProperty($propertyName, $errors) {
 		foreach ($errors as $error) {
-			if ($error instanceof Tx_Extbase_Validation_PropertyError) {
+			if ($error instanceof \TYPO3\CMS\Extbase\Validation\PropertyError) {
 				if ($error->getPropertyName() === $propertyName) {
 					return $error->getErrors();
 				}

@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\Core\ViewHelper;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -9,45 +10,49 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
 /**
  * Argument definition of each view helper argument
- *
  */
-class Tx_Fluid_Core_ViewHelper_ArgumentDefinition {
+class ArgumentDefinition {
 
 	/**
 	 * Name of argument
+	 *
 	 * @var string
 	 */
 	protected $name;
 
 	/**
 	 * Type of argument
+	 *
 	 * @var string
 	 */
 	protected $type;
 
 	/**
 	 * Description of argument
+	 *
 	 * @var string
 	 */
 	protected $description;
 
 	/**
 	 * Is argument required?
+	 *
 	 * @var boolean
 	 */
 	protected $required = FALSE;
 
 	/**
 	 * Default value for argument
+	 *
 	 * @var mixed
 	 */
 	protected $defaultValue = NULL;
 
 	/**
 	 * TRUE if it is a method parameter
+	 *
 	 * @var boolean
 	 */
 	protected $isMethodParameter = FALSE;

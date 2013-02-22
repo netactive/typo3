@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers\Uri;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -9,8 +10,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-
 /**
  * A view helper for creating URIs to external targets.
  * Currently the specified URI is simply passed through.
@@ -33,7 +32,7 @@
  *
  * @api
  */
-class Tx_Fluid_ViewHelpers_Uri_ExternalViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
+class ExternalViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
 
 	/**
 	 * @param string $uri target URI
@@ -49,6 +48,5 @@ class Tx_Fluid_ViewHelpers_Uri_ExternalViewHelper extends Tx_Fluid_Core_ViewHelp
 		return $uri;
 	}
 }
-
 
 ?>

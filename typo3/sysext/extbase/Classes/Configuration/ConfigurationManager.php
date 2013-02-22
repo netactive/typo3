@@ -1,8 +1,10 @@
 <?php
+namespace TYPO3\CMS\Extbase\Configuration;
+
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2009 Jochen Rau <jochen.rau@typoplanet.de>
+ *  (c) 2010-2012 Extbase Team (http://forge.typo3.org/projects/typo3v4-mvc)
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -13,6 +15,9 @@
  *
  *  The GNU General Public License can be found at
  *  http://www.gnu.org/copyleft/gpl.html.
+ *  A copy is found in the textfile GPL.txt and important notices to the license
+ *  from the author is found in LICENSE.txt distributed with these scripts.
+ *
  *
  *  This script is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,34 +26,29 @@
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
-
 /**
  * A configuration manager following the strategy pattern (GoF315). It hides the concrete
  * implementation of the configuration manager and provides an unified acccess point.
  *
  * Use the shutdown() method to drop the concrete implementation.
- *
- * @package Extbase
- * @subpackage Configuration
- * @version $ID:$
  */
-class Tx_Extbase_Configuration_ConfigurationManager implements Tx_Extbase_Configuration_ConfigurationManagerInterface {
+class ConfigurationManager implements \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface {
 
 	/**
-	 * @var Tx_Extbase_Object_ObjectManagerInterface
+	 * @var \TYPO3\CMS\Extbase\Object\ObjectManagerInterface
 	 */
 	protected $objectManager;
 
 	/**
-	 * @var Tx_Extbase_Configuration_AbstractConfigurationManager
-	 **/
+	 * @var \TYPO3\CMS\Extbase\Configuration\AbstractConfigurationManager
+	 */
 	protected $concreteConfigurationManager;
 
 	/**
-	 * @param Tx_Extbase_Object_ObjectManagerInterface $objectManager
+	 * @param \TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager
 	 * @return void
 	 */
-	public function injectObjectManager(Tx_Extbase_Object_ObjectManagerInterface $objectManager) {
+	public function injectObjectManager(\TYPO3\CMS\Extbase\Object\ObjectManagerInterface $objectManager) {
 		$this->objectManager = $objectManager;
 		$this->initializeConcreteConfigurationManager();
 	}
@@ -58,22 +58,22 @@ class Tx_Extbase_Configuration_ConfigurationManager implements Tx_Extbase_Config
 	 */
 	protected function initializeConcreteConfigurationManager() {
 		if (TYPO3_MODE === 'FE') {
-			$this->concreteConfigurationManager = $this->objectManager->get('Tx_Extbase_Configuration_FrontendConfigurationManager');
+			$this->concreteConfigurationManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\FrontendConfigurationManager');
 		} else {
-			$this->concreteConfigurationManager = $this->objectManager->get('Tx_Extbase_Configuration_BackendConfigurationManager');
+			$this->concreteConfigurationManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\BackendConfigurationManager');
 		}
 	}
 
 	/**
-	 * @param tslib_cObj $contentObject
+	 * @param \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer $contentObject
 	 * @return void
 	 */
-	public function setContentObject(tslib_cObj $contentObject = NULL) {
+	public function setContentObject(\TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer $contentObject = NULL) {
 		$this->concreteConfigurationManager->setContentObject($contentObject);
 	}
 
 	/**
-	 * @return tslib_cObj
+	 * @return \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer
 	 */
 	public function getContentObject() {
 		return $this->concreteConfigurationManager->getContentObject();
@@ -94,24 +94,30 @@ class Tx_Extbase_Configuration_ConfigurationManager implements Tx_Extbase_Config
 	 * Returns the specified configuration.
 	 * The actual configuration will be merged from different sources in a defined order.
 	 *
+	 * You can get the following types of configuration invoking:
+	 * CONFIGURATION_TYPE_EXTBASE: Extbase settings
+	 * CONFIGURATION_TYPE_FRAMEWORK: the current module/plugin settings
+	 * CONFIGURATION_TYPE_TYPOSCRIPT: a raw TS array
+	 *
 	 * Note that this is a low level method and only makes sense to be used by Extbase internally.
 	 *
 	 * @param string $configurationType The kind of configuration to fetch - must be one of the CONFIGURATION_TYPE_* constants
 	 * @param string $extensionName if specified, the configuration for the given extension will be returned.
 	 * @param string $pluginName if specified, the configuration for the given plugin will be returned.
+	 * @throws Exception\InvalidConfigurationTypeException
 	 * @return array The configuration
 	 */
 	public function getConfiguration($configurationType, $extensionName = NULL, $pluginName = NULL) {
 		switch ($configurationType) {
-			case self::CONFIGURATION_TYPE_SETTINGS :
+			case self::CONFIGURATION_TYPE_SETTINGS:
 				$configuration = $this->concreteConfigurationManager->getConfiguration($extensionName, $pluginName);
 				return $configuration['settings'];
-			case self::CONFIGURATION_TYPE_FRAMEWORK :
+			case self::CONFIGURATION_TYPE_FRAMEWORK:
 				return $this->concreteConfigurationManager->getConfiguration($extensionName, $pluginName);
-			case self::CONFIGURATION_TYPE_FULL_TYPOSCRIPT :
+			case self::CONFIGURATION_TYPE_FULL_TYPOSCRIPT:
 				return $this->concreteConfigurationManager->getTypoScriptSetup();
-			default :
-				throw new Tx_Extbase_Configuration_Exception_InvalidConfigurationType('Invalid configuration type "' . $configurationType . '"', 1206031879);
+			default:
+				throw new \TYPO3\CMS\Extbase\Configuration\Exception\InvalidConfigurationTypeException('Invalid configuration type "' . $configurationType . '"', 1206031879);
 		}
 	}
 
@@ -127,8 +133,8 @@ class Tx_Extbase_Configuration_ConfigurationManager implements Tx_Extbase_Config
 	 */
 	public function isFeatureEnabled($featureName) {
 		$configuration = $this->getConfiguration(self::CONFIGURATION_TYPE_FRAMEWORK);
-		return (boolean)(isset($configuration['features'][$featureName]) && $configuration['features'][$featureName]);
+		return (boolean) (isset($configuration['features'][$featureName]) && $configuration['features'][$featureName]);
 	}
-
 }
+
 ?>

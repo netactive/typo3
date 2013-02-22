@@ -21,6 +21,7 @@ h1 {
 /* MAIN page header: */
 h2 {
 	font-size: 14px;
+	line-height: 18px;
 }
 
 /* Normal section headers */
@@ -81,6 +82,27 @@ em {
 th,
 strong {
 	font-weight: bold;
+}
+
+.clearfix:after {
+	content: ".";
+	display: block;
+	clear: both;
+	visibility: hidden;
+	line-height: 0;
+	height: 0;
+}
+
+.clearfix {
+	display: inline-block;
+}
+
+html[xmlns] .clearfix {
+	display: block;
+}
+
+* html .clearfix {
+	height: 1%;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - -

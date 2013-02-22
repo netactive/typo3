@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\Core\ViewHelper\Facets;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -9,7 +10,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
 /**
  * Child Node Access Facet. View Helpers should implement this interface if they
  * need access to the direct children in the Syntax Tree at rendering-time.
@@ -21,9 +21,9 @@
  * Right now it is only used internally for conditions, so by subclassing Tx_Fluid_Core_ViewHelpers_AbstractConditionViewHelper, this should be all you need.
  *
  * See Tx_Fluid_ViewHelpers_IfViewHelper for an example how it is used.
- *
  */
-interface Tx_Fluid_Core_ViewHelper_Facets_ChildNodeAccessInterface {
+interface ChildNodeAccessInterface {
+
 	/**
 	 * Sets the direct child nodes of the current syntax tree node.
 	 *

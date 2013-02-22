@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers\Be\Security;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -19,7 +20,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
 /**
  * This view helper implements an ifAuthenticated/else condition for BE users/groups.
  *
@@ -27,7 +27,7 @@
  *
  * <code title="Basic usage">
  * <f:be.security.ifAuthenticated>
- *   This is being shown whenever a BE user is logged in
+ * This is being shown whenever a BE user is logged in
  * </f:be.security.ifAuthenticated>
  * </code>
  * <output>
@@ -36,12 +36,12 @@
  *
  * <code title="IfAuthenticated / then / else">
  * <f:be.security.ifAuthenticated>
- *   <f:then>
- *     This is being shown in case you have access.
- *   </f:then>
- *   <f:else>
- *     This is being displayed in case you do not have access.
- *   </f:else>
+ * <f:then>
+ * This is being shown in case you have access.
+ * </f:then>
+ * <f:else>
+ * This is being displayed in case you do not have access.
+ * </f:else>
  * </f:be.security.ifAuthenticated>
  * </code>
  * <output>
@@ -51,7 +51,7 @@
  *
  * @api
  */
-class Tx_Fluid_ViewHelpers_Be_Security_IfAuthenticatedViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractConditionViewHelper {
+class IfAuthenticatedViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractConditionViewHelper {
 
 	/**
 	 * Renders <f:then> child if any BE user is currently authenticated, otherwise renders <f:else> child.
@@ -66,4 +66,5 @@ class Tx_Fluid_ViewHelpers_Be_Security_IfAuthenticatedViewHelper extends Tx_Flui
 		return $this->renderElseChild();
 	}
 }
+
 ?>

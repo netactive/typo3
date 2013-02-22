@@ -58,7 +58,7 @@ CREATE TABLE be_users (
   pid int(11) unsigned DEFAULT '0' NOT NULL,
   tstamp int(11) unsigned DEFAULT '0' NOT NULL,
   username varchar(50) DEFAULT '' NOT NULL,
-  password varchar(60) DEFAULT '' NOT NULL,
+  password varchar(100) DEFAULT '' NOT NULL,
   admin tinyint(4) unsigned DEFAULT '0' NOT NULL,
   usergroup varchar(255) DEFAULT '' NOT NULL,
   disable tinyint(1) unsigned DEFAULT '0' NOT NULL,
@@ -118,7 +118,6 @@ CREATE TABLE pages (
   t3ver_stage int(11) DEFAULT '0' NOT NULL,
   t3ver_count int(11) DEFAULT '0' NOT NULL,
   t3ver_tstamp int(11) DEFAULT '0' NOT NULL,
-  t3ver_swapmode tinyint(4) DEFAULT '0' NOT NULL,
   t3ver_move_id int(11) DEFAULT '0' NOT NULL,
   t3_origuid int(11) DEFAULT '0' NOT NULL,
   tstamp int(11) unsigned DEFAULT '0' NOT NULL,
@@ -134,7 +133,7 @@ CREATE TABLE pages (
   cruser_id int(11) unsigned DEFAULT '0' NOT NULL,
   hidden tinyint(4) unsigned DEFAULT '0' NOT NULL,
   title varchar(255) DEFAULT '' NOT NULL,
-  doktype tinyint(3) unsigned DEFAULT '0' NOT NULL,
+  doktype int(11) unsigned DEFAULT '0' NOT NULL,
   TSconfig text,
   storage_pid int(11) DEFAULT '0' NOT NULL,
   is_siteroot tinyint(4) DEFAULT '0' NOT NULL,
@@ -149,13 +148,14 @@ CREATE TABLE pages (
   no_cache int(10) unsigned DEFAULT '0' NOT NULL,
   fe_group varchar(100) DEFAULT '0' NOT NULL,
   subtitle varchar(255) DEFAULT '' NOT NULL,
-  layout tinyint(3) unsigned DEFAULT '0' NOT NULL,
+  layout int(11) unsigned DEFAULT '0' NOT NULL,
   url_scheme tinyint(3) unsigned DEFAULT '0' NOT NULL,
   target varchar(80) DEFAULT '' NOT NULL,
   media text,
   lastUpdated int(10) unsigned DEFAULT '0' NOT NULL,
   keywords text,
   cache_timeout int(10) unsigned DEFAULT '0' NOT NULL,
+  cache_tags varchar(255) DEFAULT '' NOT NULL,
   newUntil int(10) unsigned DEFAULT '0' NOT NULL,
   description text,
   no_search tinyint(3) unsigned DEFAULT '0' NOT NULL,
@@ -247,6 +247,200 @@ CREATE TABLE sys_filemounts (
   KEY parent (pid)
 );
 
+
+#
+# Table structure for table 'sys_file_storage'
+#
+CREATE TABLE sys_file_storage (
+	uid int(11) NOT NULL auto_increment,
+	pid int(11) DEFAULT '0' NOT NULL,
+	tstamp int(11) DEFAULT '0' NOT NULL,
+	crdate int(11) DEFAULT '0' NOT NULL,
+	cruser_id int(11) DEFAULT '0' NOT NULL,
+	deleted tinyint(4) DEFAULT '0' NOT NULL,
+	hidden tinyint(4) DEFAULT '0' NOT NULL,
+
+	name tinytext,
+	description text,
+	driver tinytext,
+	configuration text,
+	is_browsable tinyint(4) DEFAULT '0' NOT NULL,
+	is_public tinyint(4) DEFAULT '0' NOT NULL,
+	is_writable tinyint(4) DEFAULT '0' NOT NULL,
+	is_online tinyint(4) DEFAULT '1' NOT NULL,
+	processingfolder tinytext,
+
+	PRIMARY KEY (uid),
+	KEY parent (pid)
+);
+
+#
+# Table structure for table 'sys_file'
+#
+CREATE TABLE sys_file (
+	uid int(11) NOT NULL auto_increment,
+	pid int(11) DEFAULT '0' NOT NULL,
+	# update timestamp of the database record, not the file!
+	tstamp int(11) DEFAULT '0' NOT NULL,
+	crdate int(11) DEFAULT '0' NOT NULL,
+	cruser_id int(11) DEFAULT '0' NOT NULL,
+	deleted tinyint(4) DEFAULT '0' NOT NULL,
+
+	# Versioning fields
+	t3ver_oid int(11) DEFAULT '0' NOT NULL,
+	t3ver_id int(11) DEFAULT '0' NOT NULL,
+	t3ver_wsid int(11) DEFAULT '0' NOT NULL,
+	t3ver_label varchar(30) DEFAULT '' NOT NULL,
+	t3ver_state tinyint(4) DEFAULT '0' NOT NULL,
+	t3ver_stage int(11) DEFAULT '0' NOT NULL,
+	t3ver_count int(11) DEFAULT '0' NOT NULL,
+	t3ver_tstamp int(11) DEFAULT '0' NOT NULL,
+	t3ver_move_id int(11) DEFAULT '0' NOT NULL,
+	t3_origuid int(11) DEFAULT '0' NOT NULL,
+
+	type varchar(10) DEFAULT '' NOT NULL,
+	storage int(11) DEFAULT '0' NOT NULL,
+	identifier varchar(200) DEFAULT '' NOT NULL,
+	extension varchar(255) DEFAULT '' NOT NULL,
+	mime_type varchar(255) DEFAULT '' NOT NULL,
+	name tinytext,
+	title tinytext,
+	sha1 tinytext,
+	size int(11) DEFAULT '0' NOT NULL,
+	# creation/modification date of the file (not the record!)
+	creation_date int(11) DEFAULT '0' NOT NULL,
+	modification_date int(11) DEFAULT '0' NOT NULL,
+	width int(11) DEFAULT '0' NOT NULL,
+	height int(11) DEFAULT '0' NOT NULL,
+	description text,
+	alternative text,
+
+	PRIMARY KEY (uid),
+	KEY parent (pid),
+	KEY t3ver_oid (t3ver_oid,t3ver_wsid)
+);
+
+#
+# Table structure for table 'sys_file_processedfile'.
+# which is a "temporary" file, like an image preview
+# This table does not have a TCA representation, as it's only written do using direct SQL queries in the code
+#
+CREATE TABLE sys_file_processedfile (
+	uid int(11) NOT NULL auto_increment,
+	tstamp int(11) DEFAULT '0' NOT NULL,
+	crdate int(11) DEFAULT '0' NOT NULL,
+
+	storage int(11) DEFAULT '0' NOT NULL,
+	original int(11) DEFAULT '0' NOT NULL,
+	identifier varchar(200) DEFAULT '' NOT NULL,
+	name tinytext,
+	configuration text,
+	originalfilesha1 varchar(40) DEFAULT '' NOT NULL,
+	task_type varchar(200) DEFAULT '' NOT NULL,
+	checksum varchar(255) DEFAULT '' NOT NULL,
+	width int(11) DEFAULT '0',
+	height int(11) DEFAULT '0',
+
+	PRIMARY KEY (uid)
+);
+
+#
+# Table structure for table 'sys_file_reference'
+# which is one usage of a file with overloaded metadata
+#
+CREATE TABLE sys_file_reference (
+	uid int(11) NOT NULL auto_increment,
+	pid int(11) DEFAULT '0' NOT NULL,
+	tstamp int(11) DEFAULT '0' NOT NULL,
+	crdate int(11) DEFAULT '0' NOT NULL,
+	cruser_id int(11) DEFAULT '0' NOT NULL,
+	sorting int(10) DEFAULT '0' NOT NULL,
+	deleted tinyint(4) DEFAULT '0' NOT NULL,
+	hidden tinyint(4) DEFAULT '0' NOT NULL,
+
+	# Versioning fields
+	t3ver_oid int(11) DEFAULT '0' NOT NULL,
+	t3ver_id int(11) DEFAULT '0' NOT NULL,
+	t3ver_wsid int(11) DEFAULT '0' NOT NULL,
+	t3ver_label varchar(30) DEFAULT '' NOT NULL,
+	t3ver_state tinyint(4) DEFAULT '0' NOT NULL,
+	t3ver_stage int(11) DEFAULT '0' NOT NULL,
+	t3ver_count int(11) DEFAULT '0' NOT NULL,
+	t3ver_tstamp int(11) DEFAULT '0' NOT NULL,
+	t3ver_move_id int(11) DEFAULT '0' NOT NULL,
+	t3_origuid int(11) DEFAULT '0' NOT NULL,
+
+	# Language fields
+	sys_language_uid int(11) DEFAULT '0' NOT NULL,
+	l10n_parent int(11) DEFAULT '0' NOT NULL,
+	l10n_diffsource mediumblob NOT NULL,
+
+	# Reference fields (basically same as MM table)
+	uid_local int(11) DEFAULT '0' NOT NULL,
+	uid_foreign int(11) DEFAULT '0' NOT NULL,
+	tablenames varchar(255) DEFAULT '' NOT NULL,
+	fieldname tinytext,
+	sorting_foreign int(11) DEFAULT '0' NOT NULL,
+	table_local varchar(255) DEFAULT '' NOT NULL,
+
+	# Local usage overlay fields
+	title tinytext,
+	description text,
+	alternative tinytext,
+	link tinytext,
+	downloadname tinytext,
+
+	PRIMARY KEY (uid),
+	KEY uid_local (uid_local),
+	KEY uid_foreign (uid_foreign),
+	KEY parent (pid)
+);
+
+
+#
+# Table structure for table 'sys_file_collection'
+#
+CREATE TABLE sys_file_collection (
+	uid int(11) NOT NULL auto_increment,
+	pid int(11) DEFAULT '0' NOT NULL,
+	tstamp int(11) DEFAULT '0' NOT NULL,
+	crdate int(11) DEFAULT '0' NOT NULL,
+	cruser_id int(11) DEFAULT '0' NOT NULL,
+	t3ver_oid int(11) DEFAULT '0' NOT NULL,
+	t3ver_id int(11) DEFAULT '0' NOT NULL,
+	t3ver_wsid int(11) DEFAULT '0' NOT NULL,
+	t3ver_label varchar(30) DEFAULT '' NOT NULL,
+	t3ver_state tinyint(4) DEFAULT '0' NOT NULL,
+	t3ver_stage int(11) DEFAULT '0' NOT NULL,
+	t3ver_count int(11) DEFAULT '0' NOT NULL,
+	t3ver_tstamp int(11) DEFAULT '0' NOT NULL,
+	t3ver_move_id int(11) DEFAULT '0' NOT NULL,
+	t3_origuid int(11) DEFAULT '0' NOT NULL,
+	sys_language_uid int(11) DEFAULT '0' NOT NULL,
+	l10n_parent int(11) DEFAULT '0' NOT NULL,
+	l10n_diffsource mediumtext,
+	deleted tinyint(4) DEFAULT '0' NOT NULL,
+	hidden tinyint(4) DEFAULT '0' NOT NULL,
+	starttime int(11) DEFAULT '0' NOT NULL,
+	endtime int(11) DEFAULT '0' NOT NULL,
+
+	# Actual fields
+	title tinytext,
+	description text,
+	type varchar(6) DEFAULT 'static' NOT NULL,
+
+	# for type=static
+	files int(11) DEFAULT '0' NOT NULL,
+
+	# for type=folder:
+	storage int(11) DEFAULT '0' NOT NULL,
+	folder text NOT NULL,
+
+	PRIMARY KEY (uid),
+	KEY parent (pid),
+	KEY t3ver_oid (t3ver_oid,t3ver_wsid)
+);
+
 #
 # Table structure for table 'sys_collection'
 #
@@ -280,7 +474,6 @@ CREATE TABLE sys_collection (
 	type varchar(32) DEFAULT 'static' NOT NULL,
 	table_name tinytext,
 	items int(11) DEFAULT '0' NOT NULL,
-	criteria text NOT NULL,
 
 	PRIMARY KEY (uid),
 	KEY parent (pid),
@@ -307,6 +500,7 @@ CREATE TABLE sys_collection_entries (
 #
 CREATE TABLE sys_history (
   uid int(11) unsigned NOT NULL auto_increment,
+  pid int(11) unsigned DEFAULT '0' NOT NULL,
   sys_log_uid int(11) DEFAULT '0' NOT NULL,
   history_data mediumtext,
   fieldlist text,
@@ -314,8 +508,9 @@ CREATE TABLE sys_history (
   tablename varchar(255) DEFAULT '' NOT NULL,
   tstamp int(11) DEFAULT '0' NOT NULL,
   history_files mediumtext,
-  snapshot tinyint(4) DEFAULT '0' NOT NULL,
+  snapshot int(11) DEFAULT '0' NOT NULL,
   PRIMARY KEY (uid),
+  KEY parent (pid),
   KEY recordident_1 (tablename,recuid),
   KEY recordident_2 (tablename,tstamp),
   KEY sys_log_uid (sys_log_uid)
@@ -365,6 +560,7 @@ CREATE TABLE sys_refindex (
 #
 CREATE TABLE sys_log (
   uid int(11) unsigned NOT NULL auto_increment,
+  pid int(11) unsigned DEFAULT '0' NOT NULL,
   userid int(11) unsigned DEFAULT '0' NOT NULL,
   action tinyint(4) unsigned DEFAULT '0' NOT NULL,
   recuid int(11) unsigned DEFAULT '0' NOT NULL,
@@ -376,14 +572,22 @@ CREATE TABLE sys_log (
   type tinyint(3) unsigned DEFAULT '0' NOT NULL,
   details_nr tinyint(3) unsigned DEFAULT '0' NOT NULL,
   IP varchar(39) DEFAULT '' NOT NULL,
-  log_data varchar(255) DEFAULT '' NOT NULL,
+  log_data text,
   event_pid int(11) DEFAULT '-1' NOT NULL,
   workspace int(11) DEFAULT '0' NOT NULL,
   NEWid varchar(20) DEFAULT '' NOT NULL,
+  request_id varchar(13) DEFAULT '' NOT NULL,
+  time_micro float DEFAULT '0' NOT NULL,
+  component varchar(255) DEFAULT '' NOT NULL,
+  level tinyint(1) unsigned DEFAULT '0' NOT NULL,
+  message text,
+  data text,
   PRIMARY KEY (uid),
+  KEY parent (pid),
   KEY event (userid,event_pid),
   KEY recuidIdx (recuid,uid),
-  KEY user_auth (type,action,tstamp)
+  KEY user_auth (type,action,tstamp),
+  KEY request (request_id)
 ) ENGINE=InnoDB;
 
 #
@@ -399,4 +603,57 @@ CREATE TABLE sys_language (
   static_lang_isocode int(11) unsigned DEFAULT '0' NOT NULL,
   PRIMARY KEY (uid),
   KEY parent (pid)
+);
+
+#
+# Table structure for table 'sys_category'
+#
+CREATE TABLE sys_category (
+	uid int(11) NOT NULL auto_increment,
+	pid int(11) DEFAULT '0' NOT NULL,
+	tstamp int(11) DEFAULT '0' NOT NULL,
+	crdate int(11) DEFAULT '0' NOT NULL,
+	cruser_id int(11) DEFAULT '0' NOT NULL,
+	deleted tinyint(4) DEFAULT '0' NOT NULL,
+	hidden tinyint(4) DEFAULT '0' NOT NULL,
+	starttime int(11) unsigned DEFAULT '0' NOT NULL,
+	endtime int(11) unsigned DEFAULT '0' NOT NULL,
+
+	t3ver_oid int(11) DEFAULT '0' NOT NULL,
+	t3ver_id int(11) DEFAULT '0' NOT NULL,
+	t3ver_wsid int(11) DEFAULT '0' NOT NULL,
+	t3ver_label varchar(30) DEFAULT '' NOT NULL,
+	t3ver_state tinyint(4) DEFAULT '0' NOT NULL,
+	t3ver_stage int(11) DEFAULT '0' NOT NULL,
+	t3ver_count int(11) DEFAULT '0' NOT NULL,
+	t3ver_tstamp int(11) DEFAULT '0' NOT NULL,
+	t3ver_move_id int(11) DEFAULT '0' NOT NULL,
+	t3_origuid int(11) DEFAULT '0' NOT NULL,
+
+	sys_language_uid int(11) DEFAULT '0' NOT NULL,
+	l10n_parent int(11) DEFAULT '0' NOT NULL,
+	l10n_diffsource mediumblob NOT NULL,
+
+	title tinytext NOT NULL,
+	description text NOT NULL,
+	parent int(11) DEFAULT '0' NOT NULL,
+	items int(11) DEFAULT '0' NOT NULL,
+
+	PRIMARY KEY (uid),
+	KEY parent (pid),
+	KEY t3ver_oid (t3ver_oid,t3ver_wsid)
+);
+
+#
+# Table structure for table 'sys_category_record_mm'
+#
+CREATE TABLE sys_category_record_mm (
+	uid_local int(11) DEFAULT '0' NOT NULL,
+	uid_foreign int(11) DEFAULT '0' NOT NULL,
+	tablenames varchar(255) DEFAULT '' NOT NULL,
+	sorting int(11) DEFAULT '0' NOT NULL,
+	sorting_foreign int(11) DEFAULT '0' NOT NULL,
+
+	KEY uid_local_foreign (uid_local,uid_foreign),
+	KEY uid_foreign_tablenames (uid_foreign,tablenames)
 );

@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\Core\Compiler;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -9,15 +10,12 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-
 /**
  * Abstract Fluid Compiled template.
  *
  * INTERNAL!!
- *
  */
-abstract class Tx_Fluid_Core_Compiler_AbstractCompiledTemplate implements Tx_Fluid_Core_Parser_ParsedTemplateInterface {
+abstract class AbstractCompiledTemplate implements \TYPO3\CMS\Fluid\Core\Parser\ParsedTemplateInterface {
 
 	/**
 	 * @var array
@@ -26,9 +24,9 @@ abstract class Tx_Fluid_Core_Compiler_AbstractCompiledTemplate implements Tx_Flu
 
 	// These tokens are replaced by the Backporter for implementing different behavior in TYPO3 v4
 	/**
-	 * @var Tx_Extbase_Object_Container_Container
+	 * @var \TYPO3\CMS\Extbase\Object\Container\Container
 	 */
-	protected static $objectContainer;
+	static protected $objectContainer;
 
 	/**
 	 * @var string
@@ -39,26 +37,34 @@ abstract class Tx_Fluid_Core_Compiler_AbstractCompiledTemplate implements Tx_Flu
 	 * Public such that it is callable from within closures
 	 *
 	 * @param integer $uniqueCounter
-	 * @param Tx_Fluid_Core_Rendering_RenderingContextInterface $renderingContext
+	 * @param \TYPO3\CMS\Fluid\Core\Rendering\RenderingContextInterface $renderingContext
 	 * @param string $viewHelperName
-	 * @return Tx_Fluid_Core_ViewHelper_AbstractViewHelper
+	 * @return \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper
 	 * @internal
 	 */
-	public function getViewHelper($uniqueCounter, Tx_Fluid_Core_Rendering_RenderingContextInterface $renderingContext, $viewHelperName) {
+	public function getViewHelper($uniqueCounter, \TYPO3\CMS\Fluid\Core\Rendering\RenderingContextInterface $renderingContext, $viewHelperName) {
 		if (self::$objectContainer === NULL) {
-			self::$objectContainer = t3lib_div::makeInstance('Tx_Extbase_Object_Container_Container'); // Singleton
+			self::$objectContainer = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\Container\\Container');
 		}
 		if (isset($this->viewHelpersByPositionAndContext[$uniqueCounter])) {
 			if ($this->viewHelpersByPositionAndContext[$uniqueCounter]->contains($renderingContext)) {
-				return $this->viewHelpersByPositionAndContext[$uniqueCounter][$renderingContext];
+				$viewHelper = $this->viewHelpersByPositionAndContext[$uniqueCounter][$renderingContext];
+				$viewHelper->resetState();
+				return $viewHelper;
 			} else {
 				$viewHelperInstance = self::$objectContainer->getInstance($viewHelperName);
+				if ($viewHelperInstance instanceof \TYPO3\CMS\Core\SingletonInterface) {
+					$viewHelperInstance->resetState();
+				}
 				$this->viewHelpersByPositionAndContext[$uniqueCounter]->attach($renderingContext, $viewHelperInstance);
 				return $viewHelperInstance;
 			}
 		} else {
-			$this->viewHelpersByPositionAndContext[$uniqueCounter] = t3lib_div::makeInstance('Tx_Extbase_Persistence_ObjectStorage');
+			$this->viewHelpersByPositionAndContext[$uniqueCounter] = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Persistence\\ObjectStorage');
 			$viewHelperInstance = self::$objectContainer->getInstance($viewHelperName);
+			if ($viewHelperInstance instanceof \TYPO3\CMS\Core\SingletonInterface) {
+				$viewHelperInstance->resetState();
+			}
 			$this->viewHelpersByPositionAndContext[$uniqueCounter]->attach($renderingContext, $viewHelperInstance);
 			return $viewHelperInstance;
 		}
@@ -83,18 +89,11 @@ abstract class Tx_Fluid_Core_Compiler_AbstractCompiledTemplate implements Tx_Flu
 	 * @internal
 	 */
 	static public function resolveDefaultEncoding() {
-		if (self::$defaultEncoding === NULL) {
-			if (TYPO3_MODE === 'BE') {
-				self::$defaultEncoding = strtoupper($GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset']);
-			} else {
-				self::$defaultEncoding = strtoupper($GLOBALS['TSFE']->renderCharset);
-			}
-			if (self::$defaultEncoding === NULL) {
-				self::$defaultEncoding = 'UTF-8';
-			}
+		if (static::$defaultEncoding === NULL) {
+			static::$defaultEncoding = 'UTF-8';
 		}
-		return self::$defaultEncoding;
+		return static::$defaultEncoding;
 	}
-
 }
+
 ?>

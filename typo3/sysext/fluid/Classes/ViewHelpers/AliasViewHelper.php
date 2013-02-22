@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -9,8 +10,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-
 /**
  * Declares new variables which are aliases of other variables.
  * Takes a "map"-Parameter which is an associative array which defines the shorthand mapping.
@@ -29,7 +28,7 @@
  *
  * <code title="Multiple mappings">
  * <f:alias map="{x: foo.bar.baz, y: foo.bar.baz.name}">
- *   {x.name} or {y}
+ * {x.name} or {y}
  * </f:alias>
  * </code>
  * <output>
@@ -39,11 +38,12 @@
  *
  * @api
  */
-class Tx_Fluid_ViewHelpers_AliasViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
+class AliasViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
 
 	/**
+	 * Render alias
 	 *
-	 * @param array $map array that specifies which variables should be mapped to which alias
+	 * @param array $map Array that specifies which variables should be mapped to which alias
 	 * @return string Rendered string
 	 * @api
 	 */

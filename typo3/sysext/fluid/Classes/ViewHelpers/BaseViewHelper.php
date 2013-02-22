@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -9,12 +10,10 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-
 /**
  * View helper which creates a <base href="..."></base> tag. The Base URI
  * is taken from the current request.
- * In FLOW3, you should always include this ViewHelper to make the links work.
+ * In TYPO3 Flow, you should always include this ViewHelper to make the links work.
  *
  * = Examples =
  *
@@ -28,7 +27,7 @@
  *
  * @api
  */
-class Tx_Fluid_ViewHelpers_BaseViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
+class BaseViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
 
 	/**
 	 * Render the "Base" tag by outputting $request->getBaseUri()

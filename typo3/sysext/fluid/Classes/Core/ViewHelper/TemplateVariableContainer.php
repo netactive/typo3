@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\Core\ViewHelper;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -9,8 +10,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-
 /**
  * VariableContainer which stores template variables.
  * Is used in two contexts:
@@ -20,16 +19,18 @@
  *
  * @api
  */
-class Tx_Fluid_Core_ViewHelper_TemplateVariableContainer implements ArrayAccess {
+class TemplateVariableContainer implements \ArrayAccess {
 
 	/**
 	 * List of reserved words that can't be used as variable identifiers in Fluid templates
+	 *
 	 * @var array
 	 */
 	static protected $reservedVariableNames = array('true', 'false', 'on', 'off', 'yes', 'no', '_all');
 
 	/**
 	 * Variables stored in context
+	 *
 	 * @var array
 	 */
 	protected $variables = array();
@@ -49,12 +50,17 @@ class Tx_Fluid_Core_ViewHelper_TemplateVariableContainer implements ArrayAccess 
 	 *
 	 * @param string $identifier Identifier of the variable to add
 	 * @param mixed $value The variable's value
+	 * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException
 	 * @return void
 	 * @api
 	 */
 	public function add($identifier, $value) {
-		if (array_key_exists($identifier, $this->variables)) throw new Tx_Fluid_Core_ViewHelper_Exception_InvalidVariableException('Duplicate variable declarations!', 1224479063);
-		if (in_array(strtolower($identifier), self::$reservedVariableNames)) throw new Tx_Fluid_Core_ViewHelper_Exception_InvalidVariableException('"' . $identifier . '" is a reserved variable name and can\'t be used as variable identifier.', 1256730379);
+		if (array_key_exists($identifier, $this->variables)) {
+			throw new \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException('Duplicate variable declarations!', 1224479063);
+		}
+		if (in_array(strtolower($identifier), self::$reservedVariableNames)) {
+			throw new \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException('"' . $identifier . '" is a reserved variable name and can\'t be used as variable identifier.', 1256730379);
+		}
 		$this->variables[$identifier] = $value;
 	}
 
@@ -62,14 +68,17 @@ class Tx_Fluid_Core_ViewHelper_TemplateVariableContainer implements ArrayAccess 
 	 * Get a variable from the context. Throws exception if variable is not found in context.
 	 *
 	 * @param string $identifier
-	 * @return variable The variable identified by $identifier
+	 * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException
+	 * @return mixed The variable identified by $identifier
 	 * @api
 	 */
 	public function get($identifier) {
 		if ($identifier === '_all') {
 			return $this->variables;
 		}
-		if (!array_key_exists($identifier, $this->variables)) throw new Tx_Fluid_Core_ViewHelper_Exception_InvalidVariableException('Tried to get a variable "' . $identifier . '" which is not stored in the context!', 1224479370);
+		if (!array_key_exists($identifier, $this->variables)) {
+			throw new \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException('Tried to get a variable "' . $identifier . '" which is not stored in the context!', 1224479370);
+		}
 		return $this->variables[$identifier];
 	}
 
@@ -77,11 +86,14 @@ class Tx_Fluid_Core_ViewHelper_TemplateVariableContainer implements ArrayAccess 
 	 * Remove a variable from context. Throws exception if variable is not found in context.
 	 *
 	 * @param string $identifier The identifier to remove
+	 * @throws \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException
 	 * @return void
 	 * @api
 	 */
 	public function remove($identifier) {
-		if (!array_key_exists($identifier, $this->variables)) throw new Tx_Fluid_Core_ViewHelper_Exception_InvalidVariableException('Tried to remove a variable "' . $identifier . '" which is not stored in the context!', 1224479372);
+		if (!array_key_exists($identifier, $this->variables)) {
+			throw new \TYPO3\CMS\Fluid\Core\ViewHelper\Exception\InvalidVariableException('Tried to remove a variable "' . $identifier . '" which is not stored in the context!', 1224479372);
+		}
 		unset($this->variables[$identifier]);
 	}
 
@@ -114,7 +126,6 @@ class Tx_Fluid_Core_ViewHelper_TemplateVariableContainer implements ArrayAccess 
 		if ($identifier === '_all') {
 			return TRUE;
 		}
-
 		return array_key_exists($identifier, $this->variables);
 	}
 
@@ -162,10 +173,11 @@ class Tx_Fluid_Core_ViewHelper_TemplateVariableContainer implements ArrayAccess 
 	 * Get a variable from the context. Throws exception if variable is not found in context.
 	 *
 	 * @param string $identifier
-	 * @return variable The variable identified by $identifier
+	 * @return mixed The variable identified by $identifier
 	 */
 	public function offsetGet($identifier) {
 		return $this->get($identifier);
 	}
 }
+
 ?>

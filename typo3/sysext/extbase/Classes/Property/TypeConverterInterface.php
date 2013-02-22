@@ -1,4 +1,5 @@
 <?php
+namespace TYPO3\CMS\Extbase\Property;
 
 /*                                                                        *
  * This script belongs to the Extbase framework                           *
@@ -19,7 +20,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
 /**
  * Interface for type converters, which can convert from a simple type to an object or another simple type.
  *
@@ -28,7 +28,7 @@
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  * @api
  */
-interface Tx_Extbase_Property_TypeConverterInterface {
+interface TypeConverterInterface {
 
 	/**
 	 * Returns the list of source types the TypeConverter can handle.
@@ -71,6 +71,7 @@ interface Tx_Extbase_Property_TypeConverterInterface {
 	 * Return a list of sub-properties inside the source object.
 	 * The "key" is the sub-property name, and the "value" is the value of the sub-property.
 	 *
+	 * @param mixed $source
 	 * @return array<mixed>
 	 * @api
 	 */
@@ -81,11 +82,11 @@ interface Tx_Extbase_Property_TypeConverterInterface {
 	 *
 	 * @param string $targetType
 	 * @param string $propertyName
-	 * @param Tx_Extbase_Property_PropertyMappingConfigurationInterface $configuration
+	 * @param \TYPO3\CMS\Extbase\Property\PropertyMappingConfigurationInterface $configuration
 	 * @return string the type of $propertyName in $targetType
 	 * @api
 	 */
-	public function getTypeOfChildProperty($targetType, $propertyName, Tx_Extbase_Property_PropertyMappingConfigurationInterface $configuration);
+	public function getTypeOfChildProperty($targetType, $propertyName, \TYPO3\CMS\Extbase\Property\PropertyMappingConfigurationInterface $configuration);
 
 	/**
 	 * Actually convert from $source to $targetType, taking into account the fully
@@ -93,18 +94,19 @@ interface Tx_Extbase_Property_TypeConverterInterface {
 	 *
 	 * The return value can be one of three types:
 	 * - an arbitrary object, or a simple type (which has been created while mapping).
-	 *   This is the normal case.
+	 * This is the normal case.
 	 * - NULL, indicating that this object should *not* be mapped (i.e. a "File Upload" Converter could return NULL if no file has been uploaded, and a silent failure should occur.
-	 * - An instance of Tx_Extbase_Error_Error -- This will be a user-visible error message lateron.
+	 * - An instance of \TYPO3\CMS\Extbase\Error\Error - This will be a user-visible error message lateron.
 	 * Furthermore, it should throw an Exception if an unexpected failure occured or a configuration issue happened.
 	 *
 	 * @param mixed $source
 	 * @param string $targetType
 	 * @param array $convertedChildProperties
-	 * @param Tx_Extbase_Property_PropertyMappingConfigurationInterface $configuration
+	 * @param \TYPO3\CMS\Extbase\Property\PropertyMappingConfigurationInterface $configuration
 	 * @return mixed the target type
 	 * @api
 	 */
-	public function convertFrom($source, $targetType, array $convertedChildProperties = array(), Tx_Extbase_Property_PropertyMappingConfigurationInterface $configuration = NULL);
+	public function convertFrom($source, $targetType, array $convertedChildProperties = array(), \TYPO3\CMS\Extbase\Property\PropertyMappingConfigurationInterface $configuration = NULL);
 }
+
 ?>

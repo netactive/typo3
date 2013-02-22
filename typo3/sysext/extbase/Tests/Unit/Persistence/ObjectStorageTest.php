@@ -1,39 +1,41 @@
 <?php
-/***************************************************************
-*  Copyright notice
-*
-*  (c) 2009 Jochen Rau <jochen.rau@typoplanet.de>
-*  All rights reserved
-*
-*  This class is a backport of the corresponding class of FLOW3.
-*  All credits go to the v5 team.
-*
-*  This script is part of the TYPO3 project. The TYPO3 project is
-*  free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation; either version 2 of the License, or
-*  (at your option) any later version.
-*
-*  The GNU General Public License can be found at
-*  http://www.gnu.org/copyleft/gpl.html.
-*
-*  This script is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  This copyright notice MUST APPEAR in all copies of the script!
-***************************************************************/
+namespace TYPO3\CMS\Extbase\Tests\Unit\Persistence;
 
-class Tx_Extbase_Tests_Unit_Persistence_ObjectStorageTest extends Tx_Extbase_Tests_Unit_BaseTestCase {
+/***************************************************************
+ *  Copyright notice
+ *
+ *  This class is a backport of the corresponding class of TYPO3 Flow.
+ *  All credits go to the TYPO3 Flow team.
+ *  All rights reserved
+ *
+ *  This script is part of the TYPO3 project. The TYPO3 project is
+ *  free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The GNU General Public License can be found at
+ *  http://www.gnu.org/copyleft/gpl.html.
+ *  A copy is found in the textfile GPL.txt and important notices to the license
+ *  from the author is found in LICENSE.txt distributed with these scripts.
+ *
+ *
+ *  This script is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  This copyright notice MUST APPEAR in all copies of the script!
+ ***************************************************************/
+class ObjectStorageTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 
 	/**
 	 * @test
 	 */
 	public function anObjectCanBeAttached() {
-		$objectStorage = new Tx_Extbase_Persistence_ObjectStorage();
-		$object1 = new StdClass;
-		$object2 = new StdClass;
+		$objectStorage = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+		$object1 = new \StdClass();
+		$object2 = new \StdClass();
 		$objectStorage->attach($object1);
 		$objectStorage->attach($object2, 'foo');
 		$this->assertEquals($objectStorage[$object1], NULL);
@@ -44,9 +46,9 @@ class Tx_Extbase_Tests_Unit_Persistence_ObjectStorageTest extends Tx_Extbase_Tes
 	 * @test
 	 */
 	public function anObjectCanBeDetached() {
-		$objectStorage = new Tx_Extbase_Persistence_ObjectStorage();
-		$object1 = new StdClass;
-		$object2 = new StdClass;
+		$objectStorage = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+		$object1 = new \StdClass();
+		$object2 = new \StdClass();
 		$objectStorage->attach($object1);
 		$objectStorage->attach($object2, 'foo');
 		$this->assertEquals(count($objectStorage), 2);
@@ -60,9 +62,9 @@ class Tx_Extbase_Tests_Unit_Persistence_ObjectStorageTest extends Tx_Extbase_Tes
 	 * @test
 	 */
 	public function offsetSetAssociatesDataToAnObjectInTheStorage() {
-		$objectStorage = new Tx_Extbase_Persistence_ObjectStorage();
-		$object1 = new StdClass;
-		$object2 = new StdClass;
+		$objectStorage = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+		$object1 = new \StdClass();
+		$object2 = new \StdClass();
 		$objectStorage->offsetSet($object1, 'foo');
 		$this->assertEquals(count($objectStorage), 1);
 		$objectStorage[$object2] = 'bar';
@@ -73,9 +75,9 @@ class Tx_Extbase_Tests_Unit_Persistence_ObjectStorageTest extends Tx_Extbase_Tes
 	 * @test
 	 */
 	public function offsetUnsetRemovesAnObjectFromTheStorage() {
-		$objectStorage = new Tx_Extbase_Persistence_ObjectStorage();
-		$object1 = new StdClass;
-		$object2 = new StdClass;
+		$objectStorage = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+		$object1 = new \StdClass();
+		$object2 = new \StdClass();
 		$objectStorage->attach($object1);
 		$objectStorage->attach($object2, 'foo');
 		$this->assertEquals(count($objectStorage), 2);
@@ -89,9 +91,9 @@ class Tx_Extbase_Tests_Unit_Persistence_ObjectStorageTest extends Tx_Extbase_Tes
 	 * @test
 	 */
 	public function offsetGetReturnsTheDataAssociatedWithAnObject() {
-		$objectStorage = new Tx_Extbase_Persistence_ObjectStorage();
-		$object1 = new StdClass;
-		$object2 = new StdClass;
+		$objectStorage = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+		$object1 = new \StdClass();
+		$object2 = new \StdClass();
 		$objectStorage[$object1] = 'foo';
 		$objectStorage->attach($object2);
 		$this->assertEquals($objectStorage->offsetGet($object1), 'foo');
@@ -102,9 +104,9 @@ class Tx_Extbase_Tests_Unit_Persistence_ObjectStorageTest extends Tx_Extbase_Tes
 	 * @test
 	 */
 	public function offsetExistsChecksWhetherAnObjectExistsInTheStorage() {
-		$objectStorage = new Tx_Extbase_Persistence_ObjectStorage();
-		$object1 = new StdClass;
-		$object2 = new StdClass;
+		$objectStorage = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+		$object1 = new \StdClass();
+		$object2 = new \StdClass();
 		$objectStorage->attach($object1);
 		$this->assertEquals($objectStorage->offsetExists($object1), TRUE);
 		$this->assertEquals($objectStorage->offsetExists($object2), FALSE);
@@ -114,10 +116,10 @@ class Tx_Extbase_Tests_Unit_Persistence_ObjectStorageTest extends Tx_Extbase_Tes
 	 * @test
 	 */
 	public function getInfoReturnsTheDataAssociatedWithTheCurrentIteratorEntry() {
-		$objectStorage = new Tx_Extbase_Persistence_ObjectStorage();
-		$object1 = new StdClass;
-		$object2 = new StdClass;
-		$object3 = new StdClass;
+		$objectStorage = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+		$object1 = new \StdClass();
+		$object2 = new \StdClass();
+		$object3 = new \StdClass();
 		$objectStorage->attach($object1, 42);
 		$objectStorage->attach($object2, 'foo');
 		$objectStorage->attach($object3, array('bar', 'baz'));
@@ -133,9 +135,9 @@ class Tx_Extbase_Tests_Unit_Persistence_ObjectStorageTest extends Tx_Extbase_Tes
 	 * @test
 	 */
 	public function setInfoSetsTheDataAssociatedWithTheCurrentIteratorEntry() {
-		$objectStorage = new Tx_Extbase_Persistence_ObjectStorage();
-		$object1 = new StdClass;
-		$object2 = new StdClass;
+		$objectStorage = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+		$object1 = new \StdClass();
+		$object2 = new \StdClass();
 		$objectStorage->attach($object1);
 		$objectStorage->attach($object2, 'foo');
 		$objectStorage->rewind();
@@ -150,11 +152,11 @@ class Tx_Extbase_Tests_Unit_Persistence_ObjectStorageTest extends Tx_Extbase_Tes
 	 * @test
 	 */
 	public function removeAllRemovesObjectsContainedInAnotherStorageFromTheCurrentStorage() {
-		$object1 = new StdClass;
-		$object2 = new StdClass;
-		$objectStorageA = new Tx_Extbase_Persistence_ObjectStorage();
+		$object1 = new \StdClass();
+		$object2 = new \StdClass();
+		$objectStorageA = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
 		$objectStorageA->attach($object1, 'foo');
-		$objectStorageB = new Tx_Extbase_Persistence_ObjectStorage();
+		$objectStorageB = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
 		$objectStorageB->attach($object1, 'bar');
 		$objectStorageB->attach($object2, 'baz');
 		$this->assertEquals(count($objectStorageB), 2);
@@ -166,11 +168,12 @@ class Tx_Extbase_Tests_Unit_Persistence_ObjectStorageTest extends Tx_Extbase_Tes
 	 * @test
 	 */
 	public function addAllAddsAllObjectsFromAnotherStorage() {
-		$object1 = new StdClass;
-		$object2 = new StdClass;
-		$objectStorageA = new Tx_Extbase_Persistence_ObjectStorage(); // It might be better to mock this
+		$object1 = new \StdClass();
+		$object2 = new \StdClass();
+		$objectStorageA = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+		// It might be better to mock this
 		$objectStorageA->attach($object1, 'foo');
-		$objectStorageB = new Tx_Extbase_Persistence_ObjectStorage();
+		$objectStorageB = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
 		$objectStorageB->attach($object2, 'baz');
 		$this->assertEquals($objectStorageB->offsetExists($object1), FALSE);
 		$objectStorageB->addAll($objectStorageA);
@@ -178,18 +181,17 @@ class Tx_Extbase_Tests_Unit_Persistence_ObjectStorageTest extends Tx_Extbase_Tes
 		$this->assertEquals($objectStorageB[$object2], 'baz');
 	}
 
-
 	/**
 	 * @test
 	 */
 	public function theStorageCanBeRetrievedAsArray() {
-		$objectStorage = new Tx_Extbase_Persistence_ObjectStorage();
-		$object1 = new StdClass;
-		$object2 = new StdClass;
+		$objectStorage = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+		$object1 = new \StdClass();
+		$object2 = new \StdClass();
 		$objectStorage->attach($object1, 'foo');
 		$objectStorage->attach($object2, 'bar');
 		$this->assertEquals($objectStorage->toArray(), array($object1, $object2));
 	}
-
 }
+
 ?>

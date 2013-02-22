@@ -162,13 +162,13 @@ h1,
 }
 
 .t3-install-displaytwinimagetextarea {
-	width: 48em; 
+	width: 48em;
 	overflow: scroll;
 	border: 1px #797878 solid;
 }
 
 .t3-install-displaytwinimagetextarea textarea {
-	width: 300em; 
+	width: 300em;
 	border: 0;
 }
 
@@ -225,14 +225,14 @@ h1,
 
 /* 8: phpinfo() */
 #t3-install-debuginformation {
-	width: 48em; 
-	height: 20em; 
+	width: 48em;
+	height: 20em;
 	overflow: scroll;
 	border: 1px #797878 solid;
 }
 
 #t3-install-debuginformation textarea {
-	width: 200em; 
+	width: 200em;
 	height: 68em;
 	border: 0;
 }
@@ -299,7 +299,7 @@ h1,
 	overflow: hidden;
 }
 
-.phpinfo h1 {
+body.standalone .phpinfo h1, .phpinfo h1 {
 	font-size: 150%;
 	background-image: none;
 	text-indent: 0;
@@ -308,6 +308,7 @@ h1,
 	margin: 1em 0 1em 0;
 	text-align: center;
 	float: none;
+	display: block;
 }
 
 .phpinfo h2 {

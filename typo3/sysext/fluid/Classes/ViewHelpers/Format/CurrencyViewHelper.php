@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers\Format;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -9,8 +10,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-
 /**
  * Formats a given float to a currency representation.
  *
@@ -24,10 +23,10 @@
  * </output>
  *
  * <code title="All parameters">
- * <f:format.currency currencySign="$" decimalSeparator="." thousandsSeparator=",">54321</f:format.currency>
+ * <f:format.currency currencySign="$" decimalSeparator="." thousandsSeparator="," prependCurrency="TRUE" separateCurrency="FALSE">54321</f:format.currency>
  * </code>
  * <output>
- * 54,321.00 $
+ * $54,321.00
  * </output>
  *
  * <code title="Inline notation">
@@ -40,22 +39,35 @@
  *
  * @api
  */
-class Tx_Fluid_ViewHelpers_Format_CurrencyViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
+class CurrencyViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
 
 	/**
 	 * @param string $currencySign (optional) The currency sign, eg $ or €.
 	 * @param string $decimalSeparator (optional) The separator for the decimal point.
 	 * @param string $thousandsSeparator (optional) The thousands separator.
+	 * @param boolean $prependCurrency (optional) Select if the curreny sign should be prepended
+	 * @param boolean $separateCurrency (optional) Separate the currency sign from the number by a single space, defaults to true due to backwards compatibility
 	 * @return string the formatted amount.
 	 * @api
 	 */
-	public function render($currencySign = '', $decimalSeparator = ',', $thousandsSeparator = '.') {
-		$stringToFormat = $this->renderChildren();
-		$output = number_format($stringToFormat, 2, $decimalSeparator, $thousandsSeparator);
-		if($currencySign !== '') {
-			$output.= ' ' . $currencySign;
+	public function render($currencySign = '', $decimalSeparator = ',', $thousandsSeparator = '.', $prependCurrency = FALSE, $separateCurrency = TRUE) {
+		$floatToFormat = $this->renderChildren();
+		if (empty($floatToFormat)) {
+			$floatToFormat = 0.0;
+		} else {
+			$floatToFormat = floatval($floatToFormat);
+		}
+		$output = number_format($floatToFormat, 2, $decimalSeparator, $thousandsSeparator);
+		if ($currencySign !== '') {
+			$currencySeparator = $separateCurrency ? ' ' : '';
+			if ($prependCurrency === TRUE) {
+				$output = $currencySign . $currencySeparator . $output;
+			} else {
+				$output = $output . $currencySeparator . $currencySign;
+			}
 		}
 		return $output;
 	}
 }
+
 ?>

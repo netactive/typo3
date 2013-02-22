@@ -25,53 +25,60 @@
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 /**
- * Contains the initialization of global TYPO3 variables among which $TCA is the most significant.
+ * Contains the initialization of global TYPO3 variables among
+ * which $TCA is the most significant.
  *
- * The list in order of appearance is: $PAGES_TYPES, $TCA, $TBE_MODULES, $TBE_STYLES, $FILEICONS
- * These variables are first of all used in the backend but to some degree in the frontend as well. (See references)
- * See the document "Inside TYPO3" for a description of each variable in addition to the comment associated with each.
+ * The list in order of appearance is: $PAGES_TYPES, $TCA,
+ * $TBE_MODULES, $TBE_STYLES, $FILEICONS
+ * These variables are first of all used in the backend but to some degree in
+ * the frontend as well. (See references)
+ * See the document "Inside TYPO3" for a description of each variable in
+ * addition to the comment associated with each.
  *
- * This file is included from "typo3/init.php" (backend) and "index_ts.php" (frontend) as the first file of a three-fold inclusion session (see references):
- * 1) First this script is included (unless the constant "TYPO3_tables_script" instructs another filename to substitute it, see t3lib/config_default.php); This should initialize the variables shown above.
- * 2) Then either the "typo3conf/temp_CACHED_??????_ext_tables.php" cache file OR "stddb/load_ext_tables.php" is included in order to let extensions add/modify these variables as they desire.
- * 3) Finally if the constant "TYPO3_extTableDef_script" defines a file name from typo3conf/ it is included, also for overriding values (the old-school way before extensions came in). See config_default.php
+ * This file is included from "typo3/init.php" (backend) and "index_ts.php"
+ * (frontend) as the first file of a three-fold inclusion session
+ * (see references):
+ * 1) First this script is included.
+ * This should initialize the variables shown above.
+ * 2) Then either the concatenated ext_tables.php cache file of all extensions
+ * is loaded, or each ext_tables.php file of active extensions.
+ * 3) Finally if the constant "TYPO3_extTableDef_script" defines a file name
+ * from typo3conf/ it is included, also for overriding values (the old-school
+ * way before extensions came in). See bootstrap loadExtensionTables()
  *
- * Configuration in this file should NOT be edited directly. If you would like to alter
- * or extend this information, please make an extension which does so.
+ * Configuration in this file should NOT be edited directly. If you would like
+ * to alter or extend this information, please make an extension which does so.
  * Thus you preserve backwards compatibility.
  *
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
- * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
+ * @author Kasper Skårhøj <kasperYYYY@typo3.com>
  * @see tslib_fe::includeTCA(), typo3/init.php, t3lib/stddb/load_ext_tables.php
  */
-
-
 /**
- * $PAGES_TYPES defines the various types of pages (field: doktype) the system can handle and what restrictions may apply to them.
- * Here you can set the icon and especially you can define which tables are allowed on a certain pagetype (doktype)
- * NOTE: The 'default' entry in the $PAGES_TYPES-array is the 'base' for all types, and for every type the entries simply overrides the entries in the 'default' type!
- *
+ * $PAGES_TYPES defines the various types of pages (field: doktype) the system
+ * can handle and what restrictions may apply to them.
+ * Here you can set the icon and especially you can define which tables are
+ * allowed on a certain pagetype (doktype)
+ * NOTE: The 'default' entry in the $PAGES_TYPES-array is the 'base' for all
+ * types, and for every type the entries simply overrides the entries in the 'default' type!
  */
 $PAGES_TYPES = array(
-	(string) t3lib_pageSelect::DOKTYPE_LINK => array(
-	),
-	(string) t3lib_pageSelect::DOKTYPE_SHORTCUT => array(
-	),
-	(string) t3lib_pageSelect::DOKTYPE_BE_USER_SECTION => array(
+	(string) \TYPO3\CMS\Frontend\Page\PageRepository::DOKTYPE_LINK => array(),
+	(string) \TYPO3\CMS\Frontend\Page\PageRepository::DOKTYPE_SHORTCUT => array(),
+	(string) \TYPO3\CMS\Frontend\Page\PageRepository::DOKTYPE_BE_USER_SECTION => array(
 		'type' => 'web',
 		'allowedTables' => '*'
 	),
-	(string) t3lib_pageSelect::DOKTYPE_MOUNTPOINT => array(
-	),
-	(string) t3lib_pageSelect::DOKTYPE_SPACER => array( // TypoScript: Limit is 200. When the doktype is 200 or above, the page WILL NOT be regarded as a 'page' by TypoScript. Rather is it a system-type page
-		'type' => 'sys',
-	),
-	(string) t3lib_pageSelect::DOKTYPE_SYSFOLDER => array( //  Doktype 254 is a 'Folder' - a general purpose storage folder for whatever you like. In CMS context it's NOT a viewable page. Can contain any element.
+	(string) \TYPO3\CMS\Frontend\Page\PageRepository::DOKTYPE_MOUNTPOINT => array(),
+	(string) \TYPO3\CMS\Frontend\Page\PageRepository::DOKTYPE_SPACER => array('type' => 'sys'),
+	(string) \TYPO3\CMS\Frontend\Page\PageRepository::DOKTYPE_SYSFOLDER => array(
+		//  Doktype 254 is a 'Folder' - a general purpose storage folder for whatever you like. In CMS context it's NOT a viewable page. Can contain any element.
 		'type' => 'sys',
 		'allowedTables' => '*'
 	),
-	(string) t3lib_pageSelect::DOKTYPE_RECYCLER => array( // Doktype 255 is a recycle-bin.
+	(string) \TYPO3\CMS\Frontend\Page\PageRepository::DOKTYPE_RECYCLER => array(
+		// Doktype 255 is a recycle-bin.
 		'type' => 'sys',
 		'allowedTables' => '*'
 	),
@@ -81,26 +88,35 @@ $PAGES_TYPES = array(
 		'onlyAllowedTables' => '0'
 	)
 );
-
 /**
  * $TCA:
- * This array configures TYPO3 to work with the tables from the database by assigning meta information about data types, relations etc.
- * The global variable $TCA will contain the information needed to recognize and render each table in the backend
- * See documentation 'Inside TYPO3' for the syntax and list of required tables/fields!
+ * This array configures TYPO3 to work with the tables from the database by
+ * assigning meta information about data types, relations etc. The global
+ * variable $TCA will contain the information needed to recognize and
+ * render each table in the backend
+ * See documentation 'Inside TYPO3' for the syntax and list of
+ * required tables/fields!
  *
- * The tables configured in this document (and backed up by "tbl_be.php") is the required minimum set of tables/field that any TYPO3 system MUST have. These tables are therefore a part of the TYPO3 core.
- * The SQL definitions of these tables (and some more which are not defined in $TCA) is found in the file "tables.sql"
- * Only the "pages" table is defined fully in this file - the others are only defined for the "ctrl" part and the columns are defined in detail in the associated file, "tbl_be.php"
+ * The tables configured in this document (and backed up by "tbl_be.php")
+ * is the required minimum set of tables/field that any TYPO3 system MUST have.
+ * These tables are therefore a part of the TYPO3 core.
+ * The SQL definitions of these tables (and some more which are not defined in
+ * $TCA) is found in the file "tables.sql" Only the "pages" table is defined
+ * fully in this file - the others are only defined for the "ctrl" part and
+ * the columns are defined in detail in the associated file, "tbl_be.php"
  *
- * NOTE: The (default) icon for a table is defined 1) as a giffile named 'gfx/i/[tablename].gif' or 2) as the value of [table][ctrl][iconfile]
- * NOTE: [table][ctrl][rootLevel] goes NOT for pages. Apart from that if rootLevel is TRUE, records can ONLY be created on rootLevel. If it's FALSE records can ONLY be created OUTSIDE rootLevel
+ * NOTE: The (default) icon for a table is defined 1) as a giffile named
+ * 'gfx/i/[tablename].gif' or 2) as the value of [table][ctrl][iconfile]
+ * NOTE: [table][ctrl][rootLevel] goes NOT for pages. Apart from that if
+ * rootLevel is TRUE, records can ONLY be created on rootLevel. If it's
+ * FALSE records can ONLY be created OUTSIDE rootLevel
  */
 $TCA = array();
-
 /**
  * Table "pages":
  * The mandatory pages table. The backbone of the TYPO3 page tree structure.
- * All other records configured in $TCA must have a field, "pid", which relates the record to a page record's "uid" field.
+ * All other records configured in $TCA must have a field, "pid", which relates
+ * the record to a page record's "uid" field.
  * Must be COMPLETELY configured in tables.php
  */
 $TCA['pages'] = array(
@@ -124,7 +140,7 @@ $TCA['pages'] = array(
 			'disabled' => 'hidden',
 			'starttime' => 'starttime',
 			'endtime' => 'endtime',
-			'fe_group' => 'fe_group',
+			'fe_group' => 'fe_group'
 		),
 		'transForeignTable' => 'pages_language_overlay',
 		'typeicon_column' => 'doktype',
@@ -157,25 +173,24 @@ $TCA['pages'] = array(
 			'contains-fe_users' => 'apps-pagetree-folder-contains-fe_users',
 			'contains-board' => 'apps-pagetree-folder-contains-board',
 			'contains-news' => 'apps-pagetree-folder-contains-news',
-			'default' => 'apps-pagetree-page-default',
+			'default' => 'apps-pagetree-page-default'
 		),
 		'typeicons' => array(
 			'1' => 'pages.gif',
 			'254' => 'sysf.gif',
-			'255' => 'recycler.gif',
+			'255' => 'recycler.gif'
 		),
 		'dynamicConfigFile' => 'T3LIB:tbl_pages.php',
-		'searchFields' => 'title,alias,nav_title,subtitle,url,keywords,description,abstract,author,author_email',
+		'searchFields' => 'title,alias,nav_title,subtitle,url,keywords,description,abstract,author,author_email'
 	)
 );
-
 // Initialize the additional configuration of the table 'pages':
-t3lib_div::loadTCA('pages');
-
+\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA('pages');
 /**
  * Table "be_users":
  * Backend Users for TYPO3.
- * This is only the 'header' part (ctrl). The full configuration is found in t3lib/stddb/tbl_be.php
+ * This is only the 'header' part (ctrl). The full configuration is
+ * found in t3lib/stddb/tbl_be.php
  */
 $TCA['be_users'] = array(
 	'ctrl' => array(
@@ -185,7 +200,8 @@ $TCA['be_users'] = array(
 		'crdate' => 'crdate',
 		'cruser_id' => 'cruser_id',
 		'delete' => 'deleted',
-		'adminOnly' => 1, // Only admin users can edit
+		'adminOnly' => 1,
+		// Only admin users can edit
 		'rootLevel' => 1,
 		'default_sortby' => 'ORDER BY admin, username',
 		'enablecolumns' => array(
@@ -202,21 +218,21 @@ $TCA['be_users'] = array(
 		'typeicon_classes' => array(
 			'0' => 'status-user-backend',
 			'1' => 'status-user-admin',
-			'default' => 'status-user-backend',
+			'default' => 'status-user-backend'
 		),
 		'mainpalette' => '1',
 		'useColumnsForDefaultValues' => 'usergroup,lockToDomain,options,db_mountpoints,file_mountpoints,fileoper_perms,userMods',
 		'dividers2tabs' => TRUE,
 		'dynamicConfigFile' => 'T3LIB:tbl_be.php',
 		'versioningWS_alwaysAllowLiveEdit' => TRUE,
-		'searchFields' => 'username,email,realName',
+		'searchFields' => 'username,email,realName'
 	)
 );
-
 /**
  * Table "be_groups":
  * Backend Usergroups for TYPO3.
- * This is only the 'header' part (ctrl). The full configuration is found in t3lib/stddb/tbl_be.php
+ * This is only the 'header' part (ctrl).
+ * The full configuration is found in t3lib/stddb/tbl_be.php
  */
 $TCA['be_groups'] = array(
 	'ctrl' => array(
@@ -235,7 +251,7 @@ $TCA['be_groups'] = array(
 			'1' => 'be_groups_lists.gif'
 		),
 		'typeicon_classes' => array(
-			'default' => 'status-user-group-backend',
+			'default' => 'status-user-group-backend'
 		),
 		'enablecolumns' => array(
 			'disabled' => 'hidden'
@@ -245,14 +261,15 @@ $TCA['be_groups'] = array(
 		'dividers2tabs' => TRUE,
 		'dynamicConfigFile' => 'T3LIB:tbl_be.php',
 		'versioningWS_alwaysAllowLiveEdit' => TRUE,
-		'searchFields' => 'title',
+		'searchFields' => 'title'
 	)
 );
-
 /**
  * Table "sys_filemounts":
- * Defines filepaths on the server which can be mounted for users so they can upload and manage files online by eg. the Filelist module
- * This is only the 'header' part (ctrl). The full configuration is found in t3lib/stddb/tbl_be.php
+ * Defines filepaths on the server which can be mounted for users so they can
+ * upload and manage files online by eg. the Filelist module
+ * This is only the 'header' part (ctrl). The full configuration is found
+ * in t3lib/stddb/tbl_be.php
  */
 $TCA['sys_filemounts'] = array(
 	'ctrl' => array(
@@ -271,24 +288,56 @@ $TCA['sys_filemounts'] = array(
 		'useColumnsForDefaultValues' => 'path,base',
 		'dynamicConfigFile' => 'T3LIB:tbl_be.php',
 		'versioningWS_alwaysAllowLiveEdit' => TRUE,
-		'searchFields' => 'title,path',
+		'searchFields' => 'title,path'
 	)
 );
-
+/**
+ * Table "sys_category":
+ * Represents all categories to be used for record categorization
+ */
+$TCA['sys_category'] = array(
+	'ctrl' => array(
+		'title' => 'LLL:EXT:lang/locallang_tca.xlf:sys_category',
+		'label' => 'title',
+		'tstamp' => 'tstamp',
+		'crdate' => 'crdate',
+		'cruser_id' => 'cruser_id',
+		'delete' => 'deleted',
+		'default_sortby' => 'ORDER BY title ASC',
+		'dividers2tabs' => TRUE,
+		'versioningWS' => 2,
+		'versioning_followPages' => TRUE,
+		'origUid' => 't3_origuid',
+		'languageField' => 'sys_language_uid',
+		'transOrigPointerField' => 'l10n_parent',
+		'transOrigDiffSourceField' => 'l10n_diffsource',
+		'searchFields' => 'title,description',
+		'enablecolumns' => array(
+			'disabled' => 'hidden',
+			'starttime' => 'starttime',
+			'endtime' => 'endtime'
+		),
+		'dynamicConfigFile' => 'T3LIB:tca_sys_category.php',
+		'typeicon_classes' => array(
+			'default' => 'mimetypes-x-sys_category'
+		)
+	)
+);
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('sys_category');
 /**
  * Table "sys_collection":
  */
 $TCA['sys_collection'] = array(
 	'ctrl' => array(
-		'title'     => 'LLL:EXT:lang/locallang_tca.xlf:sys_collection',
-		'label'     => 'title',
-		'tstamp'    => 'tstamp',
-		'crdate'    => 'crdate',
+		'title' => 'LLL:EXT:lang/locallang_tca.xlf:sys_collection',
+		'label' => 'title',
+		'tstamp' => 'tstamp',
+		'crdate' => 'crdate',
 		'cruser_id' => 'cruser_id',
 		'versioningWS' => TRUE,
 		'origUid' => 't3_origuid',
-		'languageField'            => 'sys_language_uid',
-		'transOrigPointerField'    => 'l10n_parent',
+		'languageField' => 'sys_language_uid',
+		'transOrigPointerField' => 'l10n_parent',
 		'transOrigDiffSourceField' => 'l10n_diffsource',
 		'default_sortby' => 'ORDER BY crdate',
 		'delete' => 'deleted',
@@ -305,16 +354,166 @@ $TCA['sys_collection'] = array(
 			'disabled' => 'hidden',
 			'starttime' => 'starttime',
 			'endtime' => 'endtime',
-			'fe_group' => 'fe_group',
+			'fe_group' => 'fe_group'
 		),
-		'dynamicConfigFile' => 'T3LIB:tbl_be.php',
-	),
+		'dynamicConfigFile' => 'T3LIB:tbl_be.php'
+	)
 );
-
+/**
+ * Table "sys_file_storage":
+ * defines a root-point of a file storage, that is like a mount point.
+ * each storage is attached to a driver (local, webdav, amazons3) and
+ * thus is the entry-point for all files
+ */
+$TCA['sys_file_storage'] = array(
+	'ctrl' => array(
+		'title' => 'LLL:EXT:lang/locallang_tca.xlf:sys_file_storage',
+		'label' => 'name',
+		'tstamp' => 'tstamp',
+		'crdate' => 'crdate',
+		'cruser_id' => 'cruser_id',
+		'default_sortby' => 'ORDER BY name',
+		'delete' => 'deleted',
+		'rootLevel' => TRUE,
+		'versioningWS_alwaysAllowLiveEdit' => TRUE,
+		// only have LIVE records of file storages
+		'enablecolumns' => array(
+			'disabled' => 'hidden'
+		),
+		'dividers2tabs' => TRUE,
+		'requestUpdate' => 'driver',
+		'iconfile' => '_icon_ftp.gif',
+		'dynamicConfigFile' => 'T3LIB:tca_sys_file_storage.php'
+	)
+);
+/**
+ * Table "sys_file":
+ * Represents all files that are tracked by TYPO3
+ * which are assets, single entries of files with additional metadata
+ */
+$TCA['sys_file'] = array(
+	'ctrl' => array(
+		'title' => 'LLL:EXT:lang/locallang_tca.xlf:sys_file',
+		'label' => 'name',
+		'tstamp' => 'tstamp',
+		'crdate' => 'crdate',
+		'cruser_id' => 'cruser_id',
+		'type' => 'type',
+		'hideTable' => TRUE,
+		'rootLevel' => TRUE,
+		'versioningWS' => TRUE,
+		'origUid' => 't3_origuid',
+		'default_sortby' => 'ORDER BY crdate DESC',
+		'delete' => 'deleted',
+		'dividers2tabs' => TRUE,
+		'typeicon_column' => 'type',
+		'typeicon_classes' => array(
+			'1' => 'mimetypes-text-text',
+			'2' => 'mimetypes-media-image',
+			'3' => 'mimetypes-media-audio',
+			'4' => 'mimetypes-media-video',
+			'5' => 'mimetypes-application',
+			'default' => 'mimetypes-other-other'
+		),
+		'security' => array(
+			'ignoreWebMountRestriction' => TRUE,
+			'ignoreRootLevelRestriction' => TRUE,
+		),
+		'dynamicConfigFile' => 'T3LIB:tca_sys_file.php'
+	)
+);
+/**
+ * Table "sys_file_reference":
+ * Is a single usage of a sys_file record somewhere in the installation
+ * Is kind of like a MM-table between sys_file and e.g. tt_content:image that
+ * is shown up in TCA so additional metadata can be added for this specific
+ * kind of usage
+ */
+$TCA['sys_file_reference'] = array(
+	'ctrl' => array(
+		'title' => 'LLL:EXT:lang/locallang_tca.xlf:sys_file_reference',
+		'label' => 'uid',
+		'tstamp' => 'tstamp',
+		'crdate' => 'crdate',
+		'cruser_id' => 'cruser_id',
+		'type' => 'uid_local:type',
+		'hideTable' => TRUE,
+		'rootLevel' => TRUE,
+		'sortby' => 'sorting',
+		'delete' => 'deleted',
+		'versioningWS' => TRUE,
+		'languageField' => 'sys_language_uid',
+		'transOrigPointerField' => 'l10n_parent',
+		'transOrigDiffSourceField' => 'l10n_diffsource',
+		// records can and should be edited in workspaces
+		'shadowColumnsForNewPlaceholders' => 'tablenames,fieldname,uid_local,uid_foreign',
+		'enablecolumns' => array(
+			'disabled' => 'hidden'
+		),
+		'security' => array(
+			'ignoreWebMountRestriction' => TRUE,
+			'ignoreRootLevelRestriction' => TRUE,
+		),
+		'dynamicConfigFile' => 'T3LIB:tca_sys_file_reference.php'
+	)
+);
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::allowTableOnStandardPages('sys_file_reference');
+/**
+ * Table "sys_file_collection":
+ * Represents a list of sys_file records
+ */
+$TCA['sys_file_collection'] = array(
+	'ctrl' => array(
+		'title' => 'LLL:EXT:lang/locallang_tca.xlf:sys_file_collection',
+		'label' => 'title',
+		'tstamp' => 'tstamp',
+		'crdate' => 'crdate',
+		'cruser_id' => 'cruser_id',
+		'versioningWS' => TRUE,
+		'origUid' => 't3_origuid',
+		'languageField' => 'sys_language_uid',
+		'transOrigPointerField' => 'l10n_parent',
+		'transOrigDiffSourceField' => 'l10n_diffsource',
+		'default_sortby' => 'ORDER BY crdate',
+		'delete' => 'deleted',
+		'rootlevel' => -1,
+		'type' => 'type',
+		'typeicon_column' => 'type',
+		'typeicon_classes' => array(
+			'default' => 'apps-filetree-folder-media',
+			'static' => 'apps-clipboard-images',
+			'folder' => 'apps-filetree-folder-media'
+		),
+		'enablecolumns' => array(
+			'disabled' => 'hidden',
+			'starttime' => 'starttime',
+			'endtime' => 'endtime'
+		),
+		'dynamicConfigFile' => 'T3LIB:tca_sys_file_collection.php'
+	)
+);
+t3lib_extMgm::allowTableOnStandardPages('sys_file_collection');
+/**
+ * Table "sys_history":
+ * Holds history records, the config part is defined in t3lib/stddb/tbl_be.php
+ */
+$TCA['sys_history'] = array(
+	'ctrl' => array(
+		'title' => 'LLL:EXT:lang/locallang_tca.xlf:sys_history',
+		'label' => 'tablename',
+		'tstamp' => 'tstamp',
+		'adminOnly' => TRUE,
+		'rootLevel' => TRUE,
+		'hideTable' => TRUE,
+		'default_sortby' => 'uid DESC',
+		'dynamicConfigFile' => 'T3LIB:tbl_be.php'
+	)
+);
 /**
  * Table "sys_languages":
  * Defines possible languages used for translation of records in the system
- * This is only the 'header' part (ctrl). The full configuration is found in t3lib/stddb/tbl_be.php
+ * This is only the 'header' part (ctrl). The full configuration is found
+ * in t3lib/stddb/tbl_be.php
  */
 $TCA['sys_language'] = array(
 	'ctrl' => array(
@@ -328,14 +527,28 @@ $TCA['sys_language'] = array(
 			'disabled' => 'hidden'
 		),
 		'typeicon_classes' => array(
-			'default' => 'mimetypes-x-sys_language',
+			'default' => 'mimetypes-x-sys_language'
 		),
 		'dynamicConfigFile' => 'T3LIB:tbl_be.php',
 		'versioningWS_alwaysAllowLiveEdit' => TRUE
 	)
 );
-
-
+/**
+ * Table "sys_log":
+ * Holds log records, the config part is defined in t3lib/stddb/tbl_be.php
+ */
+$TCA['sys_log'] = array(
+	'ctrl' => array(
+		'title' => 'LLL:EXT:lang/locallang_tca.xlf:sys_log',
+		'label' => 'details',
+		'tstamp' => 'tstamp',
+		'adminOnly' => TRUE,
+		'rootLevel' => TRUE,
+		'hideTable' => TRUE,
+		'default_sortby' => 'uid DESC',
+		'dynamicConfigFile' => 'T3LIB:tbl_be.php'
+	)
+);
 /**
  * Table "sys_news":
  * Holds news records to be displayed in the login screen
@@ -359,63 +572,67 @@ $TCA['sys_news'] = array(
 		),
 		'default_sortby' => 'crdate DESC',
 		'typeicon_classes' => array(
-			'default' => 'mimetypes-x-sys_news',
+			'default' => 'mimetypes-x-sys_news'
 		),
 		'dynamicConfigFile' => 'T3LIB:tbl_be.php',
 		'dividers2tabs' => TRUE
 	)
 );
-
-
 /**
- * $TBE_MODULES contains the structure of the backend modules as they are arranged in main- and sub-modules.
- * Every entry in this array represents a menu item on either first (key) or second level (value from list) in the left menu in the TYPO3 backend
- * For information about adding modules to TYPO3 you should consult the documentation found in "Inside TYPO3"
+ * $TBE_MODULES contains the structure of the backend modules as they are
+ * arranged in main- and sub-modules. Every entry in this array represents a
+ * menu item on either first (key) or second level (value from list) in the
+ * left menu in the TYPO3 backend
+ * For information about adding modules to TYPO3 you should consult the
+ * documentation found in "Inside TYPO3"
  */
 $TBE_MODULES = array(
 	'web' => 'list',
 	'file' => '',
 	'user' => '',
 	'tools' => '',
-	'help' => '',
+	'help' => ''
 );
-
-	// register the pagetree core navigation component
-t3lib_extMgm::addCoreNavigationComponent('web', 'typo3-pagetree');
-
+// Register the pagetree core navigation component
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addCoreNavigationComponent('web', 'typo3-pagetree');
 /**
- * $TBE_STYLES configures backend styles and colors; Basically this contains all the values that can be used to create new skins for TYPO3.
- * For information about making skins to TYPO3 you should consult the documentation found in "Inside TYPO3"
+ * $TBE_STYLES configures backend styles and colors; Basically this contains
+ * all the values that can be used to create new skins for TYPO3.
+ * For information about making skins to TYPO3 you should consult the
+ * documentation found in "Inside TYPO3"
  */
 $TBE_STYLES = array(
 	'colorschemes' => array(
-		'0' => '#E4E0DB,#CBC7C3,#EDE9E5',
+		'0' => '#E4E0DB,#CBC7C3,#EDE9E5'
 	),
 	'borderschemes' => array(
 		'0' => array('border:solid 1px black;', 5)
 	)
 );
-
-
 /**
  * Setting up $TCA_DESCR - Context Sensitive Help (CSH)
- * For information about using the CSH API in TYPO3 you should consult the documentation found in "Inside TYPO3"
+ * For information about using the CSH API in TYPO3 you should consult the
+ * documentation found in "Inside TYPO3"
  */
-t3lib_extMgm::addLLrefForTCAdescr('pages', 'EXT:lang/locallang_csh_pages.xml');
-t3lib_extMgm::addLLrefForTCAdescr('be_users', 'EXT:lang/locallang_csh_be_users.xml');
-t3lib_extMgm::addLLrefForTCAdescr('be_groups', 'EXT:lang/locallang_csh_be_groups.xml');
-t3lib_extMgm::addLLrefForTCAdescr('sys_filemounts', 'EXT:lang/locallang_csh_sysfilem.xml');
-t3lib_extMgm::addLLrefForTCAdescr('sys_language', 'EXT:lang/locallang_csh_syslang.xml');
-t3lib_extMgm::addLLrefForTCAdescr('sys_news', 'EXT:lang/locallang_csh_sysnews.xml');
-t3lib_extMgm::addLLrefForTCAdescr('xMOD_csh_corebe', 'EXT:lang/locallang_csh_corebe.xml'); // General Core
-t3lib_extMgm::addLLrefForTCAdescr('_MOD_tools_em', 'EXT:lang/locallang_csh_em.xml'); // Extension manager
-t3lib_extMgm::addLLrefForTCAdescr('_MOD_web_info', 'EXT:lang/locallang_csh_web_info.xml'); // Web > Info
-t3lib_extMgm::addLLrefForTCAdescr('_MOD_web_func', 'EXT:lang/locallang_csh_web_func.xml'); // Web > Func
-
-// Labels for TYPO3 4.5 and greater.  These labels override the ones set above, while still falling back to the original labels if no translation is available.
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('pages', 'EXT:lang/locallang_csh_pages.xml');
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('be_users', 'EXT:lang/locallang_csh_be_users.xml');
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('be_groups', 'EXT:lang/locallang_csh_be_groups.xml');
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('sys_filemounts', 'EXT:lang/locallang_csh_sysfilem.xml');
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('sys_language', 'EXT:lang/locallang_csh_syslang.xml');
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('sys_news', 'EXT:lang/locallang_csh_sysnews.xml');
+// General Core
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('xMOD_csh_corebe', 'EXT:lang/locallang_csh_corebe.xml');
+// Extension manager
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('_MOD_tools_em', 'EXT:lang/locallang_csh_em.xml');
+// Web > Info
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('_MOD_web_info', 'EXT:lang/locallang_csh_web_info.xml');
+// Web > Func
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addLLrefForTCAdescr('_MOD_web_func', 'EXT:lang/locallang_csh_web_func.xml');
+// Labels for TYPO3 4.5 and greater.
+// These labels override the ones set above, while still falling back to the original labels
+// if no translation is available.
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['locallangXMLOverride']['EXT:lang/locallang_csh_pages.xml'][] = 'EXT:lang/4.5/locallang_csh_pages.xml';
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['locallangXMLOverride']['EXT:lang/locallang_csh_corebe.xml'][] = 'EXT:lang/4.5/locallang_csh_corebe.xml';
-
 /**
  * $FILEICONS defines icons for the various file-formats
  */
@@ -486,9 +703,8 @@ $FILEICONS = array(
 	'wrl' => 'wrl.gif',
 	'default' => 'default.gif'
 );
-
 /**
- * backend sprite icon-names
+ * Backend sprite icon-names
  */
 $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'actions-document-close',
@@ -557,10 +773,12 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'actions-system-cache-clear-impact-low',
 	'actions-system-cache-clear-impact-medium',
 	'actions-system-cache-clear-rte',
+	'actions-system-extension-configure',
 	'actions-system-extension-documentation',
 	'actions-system-extension-download',
 	'actions-system-extension-import',
 	'actions-system-extension-install',
+	'actions-system-extension-sqldump',
 	'actions-system-extension-uninstall',
 	'actions-system-extension-update',
 	'actions-system-help-open',
@@ -610,6 +828,8 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'apps-filetree-folder-user',
 	'apps-filetree-mount',
 	'apps-filetree-root',
+	'apps-irre-collapsed',
+	'apps-irre-expanded',
 	'apps-pagetree-backend-user',
 	'apps-pagetree-backend-user-hideinmenu',
 	'apps-pagetree-collapse',
@@ -705,6 +925,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'mimetypes-x-content-text',
 	'mimetypes-x-content-text-picture',
 	'mimetypes-x-sys_action',
+	'mimetypes-x-sys_category',
 	'mimetypes-x-sys_language',
 	'mimetypes-x-sys_news',
 	'mimetypes-x-sys_workspace',
@@ -730,8 +951,13 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'status-status-locked',
 	'status-status-permission-denied',
 	'status-status-permission-granted',
+	'status-status-readonly',
 	'status-status-reference-hard',
 	'status-status-reference-soft',
+	'status-status-sorting-asc',
+	'status-status-sorting-desc',
+	'status-status-sorting-light-asc',
+	'status-status-sorting-light-desc',
 	'status-status-workspace-draft',
 	'status-system-extension-required',
 	'status-user-admin',
@@ -794,10 +1020,6 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'status-warning-lock'
 );
 
-
-
-
-
 $GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayPriorities'] = array(
 	'deleted',
 	'hidden',
@@ -817,7 +1039,6 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayNames'] = array(
 	'deleted' => 'status-overlay-deleted',
 	'missing' => 'status-overlay-missing',
 	'translated' => 'status-overlay-translated',
-	'protectedSection' => 'status-overlay-includes-subpages',
+	'protectedSection' => 'status-overlay-includes-subpages'
 );
-
 ?>

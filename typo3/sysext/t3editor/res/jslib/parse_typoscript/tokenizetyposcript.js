@@ -25,9 +25,6 @@ var typoscriptWords = {
 	'DOCUMENT_BODY': 'keyword',
 	'EDITPANEL': 'keyword',
 	'EFFECT': 'keyword',
-	'FE_DATA': 'keyword',
-	'FE_TABLE': 'keyword',
-	'FEData': 'keyword',
 	'FILE': 'keyword',
 	'FORM': 'keyword',
 	'FRAME': 'keyword',
@@ -63,9 +60,6 @@ var typoscriptWords = {
 	'PAGE_TSCONFIG_ID': 'keyword',
 	'PAGE_TSCONFIG_IDLIST': 'keyword',
 	'PAGE_TSCONFIG_STR': 'keyword',
-	'PHP_SCRIPT': 'keyword',
-	'PHP_SCRIPT_EXT': 'keyword',
-	'PHP_SCRIPT_INT': 'keyword',
 	'RECORDS': 'keyword',
 	'REMOTE_ADDR': 'keyword',
 	'RESTORE_REGISTER': 'keyword',
@@ -83,7 +77,7 @@ var typoscriptWords = {
 	'TSFE': 'keyword',
 	'USER': 'keyword',
 	'USER_INT': 'keyword',
-	
+
 	'userFunc': 'keyword',
 
 	'_offset': 'reserved',
@@ -114,9 +108,7 @@ var typoscriptWords = {
 	'allowedAttribs': 'reserved',
 	'allowedClasses': 'reserved',
 	'allowedCols': 'reserved',
-	'allowEdit': 'reserved',
 	'allowedNewTables': 'reserved',
-	'allowNew': 'reserved',
 	'allowTags': 'reserved',
 	'allowTVlisting': 'reserved',
 	'allSaveFunctions': 'reserved',
@@ -153,7 +145,6 @@ var typoscriptWords = {
 	'ATagParams': 'reserved',
 	'ATagTitle': 'reserved',
 	'attribute': 'reserved',
-	'autoInsertPID': 'reserved',
 	'autoLevels': 'reserved',
 	'autonumber': 'reserved',
 	'backColor': 'reserved',
@@ -302,7 +293,6 @@ var typoscriptWords = {
 	'disableBigButtons': 'reserved',
 	'disableCacheSelector': 'reserved',
 	'disableCharsetHeader': 'reserved',
-	'disableCMlayers': 'reserved',
 	'disabled': 'reserved',
 	'disableDelete': 'reserved',
 	'disableDocModuleInAB': 'reserved',
@@ -316,7 +306,6 @@ var typoscriptWords = {
 	'disablePrefixComment': 'reserved',
 	'disablePrependAtCopy': 'reserved',
 	'disableSearchBox': 'reserved',
-	'disablePageInformation': 'reserved',
 	'disableSingleTableView': 'reserved',
 	'disableTabInTextarea': 'reserved',
 	'displayActiveOnLoad': 'reserved',
@@ -343,13 +332,11 @@ var typoscriptWords = {
 	'dontShowPalettesOnFocusInAB': 'reserved',
 	'dontWrapInTable': 'reserved',
 	'doubleBrTag': 'reserved',
-	'doublePostCheck': 'reserved',
 	'dWorkArea': 'reserved',
 	'edge': 'reserved',
 	'edit_docModuleUplaod': 'reserved',
 	'edit_docModuleUpload': 'reserved',
 	'edit_RTE': 'reserved',
-	'edit_showFieldHelp': 'reserved',
 	'edit_wideDocument': 'reserved',
 	'editFieldsAtATime': 'reserved',
 	'editFormsOnPage': 'reserved',
@@ -449,8 +436,6 @@ var typoscriptWords = {
 	'hideSubmoduleIcons': 'reserved',
 	'highColor': 'reserved',
 	'history': 'reserved',
-	'hover': 'reserved',
-	'hoverStyle': 'reserved',
 	'HTMLparser': 'reserved',
 	'HTMLparser_tags': 'reserved',
 	'htmlSpecialChars': 'reserved',
@@ -572,7 +557,6 @@ var typoscriptWords = {
 	'mask': 'reserved',
 	'max': 'reserved',
 	'maxAge': 'reserved',
-	'maxAgeDays': 'reserved',
 	'maxChars': 'reserved',
 	'maxH': 'reserved',
 	'maxHeight': 'reserved',
@@ -617,12 +601,10 @@ var typoscriptWords = {
 	'no_cache': 'reserved',
 	'no_search': 'reserved',
 	'noAttrib': 'reserved',
-	'noBlur': 'reserved',
 	'noCache': 'reserved',
 	'noCols': 'reserved',
 	'noCreateRecordsLink': 'reserved',
 	'noLink': 'reserved',
-	'noLinkUnderline': 'reserved',
 	'noMatchingValue_label': 'reserved',
 	'noMenuMode': 'reserved',
 	'nonCachedSubst': 'reserved',
@@ -653,7 +635,6 @@ var typoscriptWords = {
 	'outputLevels': 'reserved',
 	'override': 'reserved',
 	'overrideAttribs': 'reserved',
-	'overrideEdit': 'reserved',
 	'overrideId': 'reserved',
 	'overridePageModule': 'reserved',
 	'overrideWithExtension': 'reserved',
@@ -697,7 +678,6 @@ var typoscriptWords = {
 	'printheader': 'reserved',
 	'prioriCalc': 'reserved',
 	'proc': 'reserved',
-	'processScript': 'reserved',
 	'properties': 'reserved',
 	'protect': 'reserved',
 	'protectLvar': 'reserved',
@@ -788,12 +768,6 @@ var typoscriptWords = {
 	'showPageIdWithTitle': 'reserved',
 	'showTagFreeClasses': 'reserved',
 	'simulateDate': 'reserved',
-	'simulateStaticDocuments': 'reserved',
-	'simulateStaticDocuments_addTitle': 'reserved',
-	'simulateStaticDocuments_dontRedirectPathInfoError': 'reserved',
-	'simulateStaticDocuments_noTypeIfNoTitle': 'reserved',
-	'simulateStaticDocuments_pEnc': 'reserved',
-	'simulateStaticDocuments_pEnc_onlyP': 'reserved',
 	'simulateUserGroup': 'reserved',
 	'singlePid': 'reserved',
 	'site_author': 'reserved',
@@ -801,7 +775,6 @@ var typoscriptWords = {
 	'sitetitle': 'reserved',
 	'siteUrl': 'reserved',
 	'size': 'reserved',
-	'smallFormFields': 'reserved',
 	'solarize': 'reserved',
 	'sorting': 'reserved',
 	'source': 'reserved',
@@ -896,7 +869,6 @@ var typoscriptWords = {
 	'userdefined': 'reserved',
 	'userfunction': 'reserved',
 	'userid': 'reserved',
-	'userIdColumn': 'reserved',
 	'USERNAME_substToken': 'reserved',
 	'userProc': 'reserved',
 	'value': 'reserved',
@@ -994,17 +966,6 @@ var typoscriptWords = {
 	'select': 'keyword2',
 	'setup': 'keyword2',
 	'split': 'keyword2',
-	'stat': 'keyword2',
-	'stat_apache': 'keyword2',
-	'stat_apache_logfile': 'keyword2',
-	'stat_apache_noHost': 'keyword2',
-	'stat_apache_notExtended': 'keyword2',
-	'stat_apache_pagenames': 'keyword2',
-	'stat_excludeBEuserHits': 'keyword2',
-	'stat_excludeIPList': 'keyword2',
-	'stat_mysql': 'keyword2',
-	'stat_titleLen': 'keyword2',
-	'stat_typeNumList': 'keyword2',
 	'stdWrap': 'keyword2',
 	'subparts': 'keyword2',
 	'system': 'keyword2',
@@ -1091,12 +1052,10 @@ var typoscriptWords = {
 	'required': 'keyword3',
 	'RO': 'keyword3',
 	'rootline': 'keyword3',
-	'script': 'keyword3',
 	'search': 'keyword3',
 	'shortcut': 'keyword3',
 	'sitemap': 'keyword3',
 	'SPC': 'keyword3',
-	'splash': 'keyword3',
 	'sys_dmail': 'keyword3',
 	'sys_domain': 'keyword3',
 	'sys_filemounts': 'keyword3',
@@ -1273,7 +1232,7 @@ var tokenizeTypoScript = function() {
 
 			} else if (!this.inValue && this.inComment) {
 				token = readMultilineComment.call(this, ch);
-			
+
 			/*
 			} else if (this.inValue) {
 				token = nextUntilUnescaped(null) || {
@@ -1291,10 +1250,10 @@ var tokenizeTypoScript = function() {
 				token = nextUntilUnescaped(ch) || result("string", "string");
 
 			} else if (
-			   ( ch == "<" || 
+			   ( ch == "<" ||
 				   ch == ">" ||
-  				 ( ch == "=" 
-  				   && source.peek() != "<" 
+  				 ( ch == "="
+  				   && source.peek() != "<"
   				 )
 			   )
 			   && source.peek() != "\n" ) { // there must be some value behind the operator!
@@ -1394,9 +1353,6 @@ var typoscriptWords = {
 	'DOCUMENT_BODY': 'keyword',
 	'EDITPANEL': 'keyword',
 	'EFFECT': 'keyword',
-	'FE_DATA': 'keyword',
-	'FE_TABLE': 'keyword',
-	'FEData': 'keyword',
 	'FILE': 'keyword',
 	'FORM': 'keyword',
 	'FRAME': 'keyword',
@@ -1432,9 +1388,6 @@ var typoscriptWords = {
 	'PAGE_TSCONFIG_ID': 'keyword',
 	'PAGE_TSCONFIG_IDLIST': 'keyword',
 	'PAGE_TSCONFIG_STR': 'keyword',
-	'PHP_SCRIPT': 'keyword',
-	'PHP_SCRIPT_EXT': 'keyword',
-	'PHP_SCRIPT_INT': 'keyword',
 	'RECORDS': 'keyword',
 	'REMOTE_ADDR': 'keyword',
 	'RESTORE_REGISTER': 'keyword',
@@ -1452,7 +1405,7 @@ var typoscriptWords = {
 	'TSFE': 'keyword',
 	'USER': 'keyword',
 	'USER_INT': 'keyword',
-	
+
 	'userFunc': 'keyword',
 
 	'_offset': 'reserved',
@@ -1483,9 +1436,7 @@ var typoscriptWords = {
 	'allowedAttribs': 'reserved',
 	'allowedClasses': 'reserved',
 	'allowedCols': 'reserved',
-	'allowEdit': 'reserved',
 	'allowedNewTables': 'reserved',
-	'allowNew': 'reserved',
 	'allowTags': 'reserved',
 	'allowTVlisting': 'reserved',
 	'allSaveFunctions': 'reserved',
@@ -1522,7 +1473,6 @@ var typoscriptWords = {
 	'ATagParams': 'reserved',
 	'ATagTitle': 'reserved',
 	'attribute': 'reserved',
-	'autoInsertPID': 'reserved',
 	'autoLevels': 'reserved',
 	'autonumber': 'reserved',
 	'backColor': 'reserved',
@@ -1671,7 +1621,6 @@ var typoscriptWords = {
 	'disableBigButtons': 'reserved',
 	'disableCacheSelector': 'reserved',
 	'disableCharsetHeader': 'reserved',
-	'disableCMlayers': 'reserved',
 	'disabled': 'reserved',
 	'disableDelete': 'reserved',
 	'disableDocModuleInAB': 'reserved',
@@ -1685,7 +1634,6 @@ var typoscriptWords = {
 	'disablePrefixComment': 'reserved',
 	'disablePrependAtCopy': 'reserved',
 	'disableSearchBox': 'reserved',
-	'disablePageInformation': 'reserved',
 	'disableSingleTableView': 'reserved',
 	'disableTabInTextarea': 'reserved',
 	'displayActiveOnLoad': 'reserved',
@@ -1712,13 +1660,11 @@ var typoscriptWords = {
 	'dontShowPalettesOnFocusInAB': 'reserved',
 	'dontWrapInTable': 'reserved',
 	'doubleBrTag': 'reserved',
-	'doublePostCheck': 'reserved',
 	'dWorkArea': 'reserved',
 	'edge': 'reserved',
 	'edit_docModuleUplaod': 'reserved',
 	'edit_docModuleUpload': 'reserved',
 	'edit_RTE': 'reserved',
-	'edit_showFieldHelp': 'reserved',
 	'edit_wideDocument': 'reserved',
 	'editFieldsAtATime': 'reserved',
 	'editFormsOnPage': 'reserved',
@@ -1818,8 +1764,6 @@ var typoscriptWords = {
 	'hideSubmoduleIcons': 'reserved',
 	'highColor': 'reserved',
 	'history': 'reserved',
-	'hover': 'reserved',
-	'hoverStyle': 'reserved',
 	'HTMLparser': 'reserved',
 	'HTMLparser_tags': 'reserved',
 	'htmlSpecialChars': 'reserved',
@@ -1941,7 +1885,6 @@ var typoscriptWords = {
 	'mask': 'reserved',
 	'max': 'reserved',
 	'maxAge': 'reserved',
-	'maxAgeDays': 'reserved',
 	'maxChars': 'reserved',
 	'maxH': 'reserved',
 	'maxHeight': 'reserved',
@@ -1986,12 +1929,10 @@ var typoscriptWords = {
 	'no_cache': 'reserved',
 	'no_search': 'reserved',
 	'noAttrib': 'reserved',
-	'noBlur': 'reserved',
 	'noCache': 'reserved',
 	'noCols': 'reserved',
 	'noCreateRecordsLink': 'reserved',
 	'noLink': 'reserved',
-	'noLinkUnderline': 'reserved',
 	'noMatchingValue_label': 'reserved',
 	'noMenuMode': 'reserved',
 	'nonCachedSubst': 'reserved',
@@ -2022,7 +1963,6 @@ var typoscriptWords = {
 	'outputLevels': 'reserved',
 	'override': 'reserved',
 	'overrideAttribs': 'reserved',
-	'overrideEdit': 'reserved',
 	'overrideId': 'reserved',
 	'overridePageModule': 'reserved',
 	'overrideWithExtension': 'reserved',
@@ -2066,7 +2006,6 @@ var typoscriptWords = {
 	'printheader': 'reserved',
 	'prioriCalc': 'reserved',
 	'proc': 'reserved',
-	'processScript': 'reserved',
 	'properties': 'reserved',
 	'protect': 'reserved',
 	'protectLvar': 'reserved',
@@ -2157,12 +2096,6 @@ var typoscriptWords = {
 	'showPageIdWithTitle': 'reserved',
 	'showTagFreeClasses': 'reserved',
 	'simulateDate': 'reserved',
-	'simulateStaticDocuments': 'reserved',
-	'simulateStaticDocuments_addTitle': 'reserved',
-	'simulateStaticDocuments_dontRedirectPathInfoError': 'reserved',
-	'simulateStaticDocuments_noTypeIfNoTitle': 'reserved',
-	'simulateStaticDocuments_pEnc': 'reserved',
-	'simulateStaticDocuments_pEnc_onlyP': 'reserved',
 	'simulateUserGroup': 'reserved',
 	'singlePid': 'reserved',
 	'site_author': 'reserved',
@@ -2170,7 +2103,6 @@ var typoscriptWords = {
 	'sitetitle': 'reserved',
 	'siteUrl': 'reserved',
 	'size': 'reserved',
-	'smallFormFields': 'reserved',
 	'solarize': 'reserved',
 	'sorting': 'reserved',
 	'source': 'reserved',
@@ -2265,7 +2197,6 @@ var typoscriptWords = {
 	'userdefined': 'reserved',
 	'userfunction': 'reserved',
 	'userid': 'reserved',
-	'userIdColumn': 'reserved',
 	'USERNAME_substToken': 'reserved',
 	'userProc': 'reserved',
 	'value': 'reserved',
@@ -2363,17 +2294,6 @@ var typoscriptWords = {
 	'select': 'keyword2',
 	'setup': 'keyword2',
 	'split': 'keyword2',
-	'stat': 'keyword2',
-	'stat_apache': 'keyword2',
-	'stat_apache_logfile': 'keyword2',
-	'stat_apache_noHost': 'keyword2',
-	'stat_apache_notExtended': 'keyword2',
-	'stat_apache_pagenames': 'keyword2',
-	'stat_excludeBEuserHits': 'keyword2',
-	'stat_excludeIPList': 'keyword2',
-	'stat_mysql': 'keyword2',
-	'stat_titleLen': 'keyword2',
-	'stat_typeNumList': 'keyword2',
 	'stdWrap': 'keyword2',
 	'subparts': 'keyword2',
 	'system': 'keyword2',
@@ -2465,7 +2385,6 @@ var typoscriptWords = {
 	'shortcut': 'keyword3',
 	'sitemap': 'keyword3',
 	'SPC': 'keyword3',
-	'splash': 'keyword3',
 	'sys_dmail': 'keyword3',
 	'sys_domain': 'keyword3',
 	'sys_filemounts': 'keyword3',
@@ -2642,7 +2561,7 @@ var tokenizeTypoScript = function() {
 
 			} else if (!this.inValue && this.inComment) {
 				token = readMultilineComment.call(this, ch);
-			
+
 			/*
 			} else if (this.inValue) {
 				token = nextUntilUnescaped(null) || {
@@ -2660,10 +2579,10 @@ var tokenizeTypoScript = function() {
 				token = nextUntilUnescaped(ch) || result("string", "string");
 
 			} else if (
-			   ( ch == "<" || 
+			   ( ch == "<" ||
 				   ch == ">" ||
-  				 ( ch == "=" 
-  				   && source.peek() != "<" 
+  				 ( ch == "="
+  				   && source.peek() != "<"
   				 )
 			   )
 			   && source.peek() != "\n" ) { // there must be some value behind the operator!

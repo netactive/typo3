@@ -40,7 +40,7 @@ var TsRefProperty = function(parentType,name,value) {
 	var descriptionCache = null;
 	this.getDescription = function(callBack) {
 		if(descriptionCache == null){
-			var urlParameters = '&ajaxID=tx_t3editor_TSrefLoader::getDescription' +
+			var urlParameters = '&ajaxID=T3Editor_TSrefLoader::getDescription' +
 				'&typeId=' + this.parentType +
 				'&parameterName=' + this.name;
 
@@ -84,12 +84,12 @@ var TsRefType = function(typeId) {
  * @return A new TsRef instance
  */
 var TsRef = function() {
-	var typeTree = new Array();	
+	var typeTree = new Array();
 
 	var doc;
 
 	this.loadTsrefAsync = function() {
-		var urlParameters = '&ajaxID=tx_t3editor_TSrefLoader::getTypes';
+		var urlParameters = '&ajaxID=T3Editor_TSrefLoader::getTypes';
 		new Ajax.Request(
 			T3editor.URL_typo3 + 'ajax.php',
 			{
@@ -102,8 +102,6 @@ var TsRef = function() {
 			}
 		);
 	}
-
-
 
 	function buildTree() {
 
@@ -129,7 +127,6 @@ var TsRef = function() {
 		}
 	}
 
-
 	function addPropertiesToType(addToType,addFromTypeNames,maxRecDepth){
 		if(maxRecDepth<0){
 			throw "Maximum recursion depth exceeded while trying to resolve the extends in the TSREF!";
@@ -154,7 +151,6 @@ var TsRef = function() {
 				}
 			}
 		}
-
 	}
 
 	this.getPropertiesFromTypeId = function(tId) {
@@ -166,7 +162,7 @@ var TsRef = function() {
 					result[key] = new TsRefProperty(this[key].parentType,this[key].name,this[key].value);
 				}
 				return result;
-			}	
+			}
 			return typeTree[tId].properties;
 		} else {
 			return new Array();

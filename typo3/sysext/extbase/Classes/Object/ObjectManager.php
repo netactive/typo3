@@ -1,40 +1,39 @@
 <?php
-/***************************************************************
-*  Copyright notice
-*
-*  (c) 2009 Jochen Rau <jochen.rau@typoplanet.de>
-*  All rights reserved
-*
-*  This class is a backport of the corresponding class of FLOW3.
-*  All credits go to the v5 team.
-*
-*  This script is part of the TYPO3 project. The TYPO3 project is
-*  free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation; either version 2 of the License, or
-*  (at your option) any later version.
-*
-*  The GNU General Public License can be found at
-*  http://www.gnu.org/copyleft/gpl.html.
-*
-*  This script is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  This copyright notice MUST APPEAR in all copies of the script!
-***************************************************************/
+namespace TYPO3\CMS\Extbase\Object;
 
+/***************************************************************
+ *  Copyright notice
+ *
+ *  This class is a backport of the corresponding class of TYPO3 Flow.
+ *  All credits go to the TYPO3 Flow team.
+ *  All rights reserved
+ *
+ *  This script is part of the TYPO3 project. The TYPO3 project is
+ *  free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The GNU General Public License can be found at
+ *  http://www.gnu.org/copyleft/gpl.html.
+ *  A copy is found in the textfile GPL.txt and important notices to the license
+ *  from the author is found in LICENSE.txt distributed with these scripts.
+ *
+ *
+ *  This script is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  This copyright notice MUST APPEAR in all copies of the script!
+ ***************************************************************/
 /**
  * Implementation of the default Extbase Object Manager
- *
- * @package Extbase
- * @subpackage Object
  */
-class Tx_Extbase_Object_ObjectManager implements Tx_Extbase_Object_ObjectManagerInterface {
+class ObjectManager implements ObjectManagerInterface {
 
 	/**
-	 * @var Tx_Extbase_Object_Container_Container
+	 * @var \TYPO3\CMS\Extbase\Object\Container\Container
 	 */
 	protected $objectContainer;
 
@@ -42,13 +41,47 @@ class Tx_Extbase_Object_ObjectManager implements Tx_Extbase_Object_ObjectManager
 	 * Constructs a new Object Manager
 	 */
 	public function __construct() {
-		$this->objectContainer = t3lib_div::makeInstance('Tx_Extbase_Object_Container_Container'); // Singleton
+		$this->objectContainer = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\Container\\Container');
+	}
+
+	/**
+	 * Serialization (sleep) helper.
+	 *
+	 * Removes properties of this object from serialization.
+	 * This action is necessary, since there might be closures used
+	 * in the accordant content objects (e.g. in FLUIDTEMPLATE) which
+	 * cannot be serialized. It's fine to reset $this->contentObjects
+	 * since elements will be recreated and are just a local cache,
+	 * but not required for runtime logic and behaviour.
+	 *
+	 * @see http://forge.typo3.org/issues/36820
+	 * @return array Names of the properties to be serialized
+	 */
+	public function __sleep() {
+		// Use get_objects_vars() instead of
+		// a much more expensive Reflection:
+		$properties = get_object_vars($this);
+		unset($properties['objectContainer']);
+		return array_keys($properties);
+	}
+
+	/**
+	 * Unserialization (wakeup) helper.
+	 *
+	 * Initializes the properties again that have been removed by
+	 * a call to the __sleep() method on serialization before.
+	 *
+	 * @see http://forge.typo3.org/issues/36820
+	 * @return void
+	 */
+	public function __wakeup() {
+		$this->__construct();
 	}
 
 	/**
 	 * Returns TRUE if an object with the given name is registered
 	 *
-	 * @param  string $objectName Name of the object
+	 * @param string $objectName Name of the object
 	 * @return boolean TRUE if the object has been registered, otherwise FALSE
 	 */
 	public function isRegistered($objectName) {
@@ -84,7 +117,7 @@ class Tx_Extbase_Object_ObjectManager implements Tx_Extbase_Object_ObjectManager
 	 *
 	 * @param string $objectName The name of the object to create
 	 * @return object The new object instance
-	 * @throws Tx_Extbase_Object_Exception_WrongScropeException if the created object is not of scope prototype
+	 * @throws \TYPO3\CMS\Extbase\Object\Exception\WrongScopeException if the created object is not of scope prototype
 	 * @api
 	 */
 	public function create($objectName) {
@@ -92,16 +125,26 @@ class Tx_Extbase_Object_ObjectManager implements Tx_Extbase_Object_ObjectManager
 		array_shift($arguments);
 		if ($objectName === 'DateTime') {
 			array_unshift($arguments, $objectName);
-			$instance = call_user_func_array(array('t3lib_div', 'makeInstance'), $arguments);
+			$instance = call_user_func_array(array('TYPO3\\CMS\\Core\\Utility\\GeneralUtility', 'makeInstance'), $arguments);
 		} else {
 			$instance = $this->objectContainer->getInstance($objectName, $arguments);
 		}
-
-		if ($instance instanceof t3lib_Singleton) {
-			throw new Tx_Extbase_Object_Exception_WrongScope('Object "' . $objectName . '" is of not of scope prototype, but only prototype is supported by create()', 1265203124);
+		if ($instance instanceof \TYPO3\CMS\Core\SingletonInterface) {
+			throw new \TYPO3\CMS\Extbase\Object\Exception\WrongScopeException('Object "' . $objectName . '" is of not of scope prototype, but only prototype is supported by create()', 1265203124);
 		}
-
 		return $instance;
 	}
+
+	/**
+	 * Create an instance of $className without calling its constructor
+	 *
+	 * @param string $className
+	 * @return object
+	 * @api
+	 */
+	public function getEmptyObject($className) {
+		return $this->objectContainer->getEmptyObject($className);
+	}
 }
+
 ?>

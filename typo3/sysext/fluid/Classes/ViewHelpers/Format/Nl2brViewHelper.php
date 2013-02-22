@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers\Format;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -9,31 +10,13 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-
 /**
  * Wrapper for PHPs nl2br function.
+ *
  * @see http://www.php.net/manual/en/function.nl2br.php
- *
- * = Examples =
- *
- * <code title="Example">
- * <f:format.nl2br>{text_with_linebreaks}</f:format.nl2br>
- * </code>
- * <output>
- * text with line breaks replaced by <br />
- * </output>
- *
- * <code title="Inline notation">
- * {text_with_linebreaks -> f:format.nl2br()}
- * </code>
- * <output>
- * text with line breaks replaced by <br />
- * </output>
- *
  * @api
  */
-class Tx_Fluid_ViewHelpers_Format_Nl2brViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
+class Nl2brViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
 
 	/**
 	 * Replaces newline characters by HTML line breaks.
@@ -46,4 +29,5 @@ class Tx_Fluid_ViewHelpers_Format_Nl2brViewHelper extends Tx_Fluid_Core_ViewHelp
 		return nl2br($content);
 	}
 }
+
 ?>

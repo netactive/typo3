@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers\Widget\Controller;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -19,18 +20,15 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-/**
- */
-class Tx_Fluid_ViewHelpers_Widget_Controller_PaginateController extends Tx_Fluid_Core_Widget_AbstractWidgetController {
+class PaginateController extends \TYPO3\CMS\Fluid\Core\Widget\AbstractWidgetController {
 
 	/**
 	 * @var array
 	 */
-	protected $configuration = array('itemsPerPage' => 10, 'insertAbove' => FALSE, 'insertBelow' => TRUE, 'maximumNumberOfLinks' => 99 );
+	protected $configuration = array('itemsPerPage' => 10, 'insertAbove' => FALSE, 'insertBelow' => TRUE, 'maximumNumberOfLinks' => 99);
 
 	/**
-	 * @var Tx_Extbase_Persistence_QueryResultInterface
+	 * @var \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
 	 */
 	protected $objects;
 
@@ -54,9 +52,9 @@ class Tx_Fluid_ViewHelpers_Widget_Controller_PaginateController extends Tx_Fluid
 	 */
 	public function initializeAction() {
 		$this->objects = $this->widgetConfiguration['objects'];
-		$this->configuration = t3lib_div::array_merge_recursive_overrule($this->configuration, $this->widgetConfiguration['configuration'], TRUE);
-		$this->numberOfPages = ceil(count($this->objects) / (integer)$this->configuration['itemsPerPage']);
-		$this->maximumNumberOfLinks = (integer)$this->configuration['maximumNumberOfLinks'];
+		$this->configuration = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($this->configuration, $this->widgetConfiguration['configuration'], TRUE);
+		$this->numberOfPages = ceil(count($this->objects) / (integer) $this->configuration['itemsPerPage']);
+		$this->maximumNumberOfLinks = (integer) $this->configuration['maximumNumberOfLinks'];
 	}
 
 	/**
@@ -64,23 +62,24 @@ class Tx_Fluid_ViewHelpers_Widget_Controller_PaginateController extends Tx_Fluid
 	 * @return void
 	 */
 	public function indexAction($currentPage = 1) {
-			// set current page
-		$this->currentPage = (integer)$currentPage;
+		// set current page
+		$this->currentPage = (integer) $currentPage;
 		if ($this->currentPage < 1) {
 			$this->currentPage = 1;
-		} elseif ($this->currentPage > $this->numberOfPages) {
-			$this->currentPage = $this->numberOfPages;
 		}
-
+		if ($this->currentPage > $this->numberOfPages) {
+			// set $modifiedObjects to NULL if the page does not exist
+			$modifiedObjects = NULL;
+		} else {
 			// modify query
-		$itemsPerPage = (integer)$this->configuration['itemsPerPage'];
-		$query = $this->objects->getQuery();
-		$query->setLimit($itemsPerPage);
-		if ($this->currentPage > 1) {
-			$query->setOffset((integer)($itemsPerPage * ($this->currentPage - 1)));
+			$itemsPerPage = (integer) $this->configuration['itemsPerPage'];
+			$query = $this->objects->getQuery();
+			$query->setLimit($itemsPerPage);
+			if ($this->currentPage > 1) {
+				$query->setOffset((integer) ($itemsPerPage * ($this->currentPage - 1)));
+			}
+			$modifiedObjects = $query->execute();
 		}
-		$modifiedObjects = $query->execute();
-
 		$this->view->assign('contentArguments', array(
 			$this->widgetConfiguration['as'] => $modifiedObjects
 		));
@@ -106,7 +105,7 @@ class Tx_Fluid_ViewHelpers_Widget_Controller_PaginateController extends Tx_Fluid
 			$this->displayRangeEnd -= $this->displayRangeStart - 1;
 		}
 		if ($this->displayRangeEnd > $this->numberOfPages) {
-			$this->displayRangeStart -= ($this->displayRangeEnd - $this->numberOfPages);
+			$this->displayRangeStart -= $this->displayRangeEnd - $this->numberOfPages;
 		}
 		$this->displayRangeStart = (integer) max($this->displayRangeStart, 1);
 		$this->displayRangeEnd = (integer) min($this->displayRangeEnd, $this->numberOfPages);
@@ -121,7 +120,7 @@ class Tx_Fluid_ViewHelpers_Widget_Controller_PaginateController extends Tx_Fluid
 		$this->calculateDisplayRange();
 		$pages = array();
 		for ($i = $this->displayRangeStart; $i <= $this->displayRangeEnd; $i++) {
-			$pages[] = array('number' => $i, 'isCurrent' => ($i === $this->currentPage));
+			$pages[] = array('number' => $i, 'isCurrent' => $i === $this->currentPage);
 		}
 		$pagination = array(
 			'pages' => $pages,

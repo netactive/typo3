@@ -1,4 +1,5 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers\Link;
 
 /*                                                                        *
  * This script is part of the TYPO3 project - inspiring people to share!  *
@@ -12,10 +13,6 @@
  * TABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General      *
  * Public License for more details.                                       *
  *                                                                        */
-
-/**
- */
-
 /**
  * Email link view helper.
  * Generates an email link incorporating TYPO3s spamProtectEmailAddresses-settings.
@@ -36,9 +33,8 @@
  * <output>
  * <a href="javascript:linkTo_UnCryptMailto('ocknvq,hqqBdct0vnf');">some custom content</a>
  * </output>
- *
  */
-class Tx_Fluid_ViewHelpers_Link_EmailViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractTagBasedViewHelper {
+class EmailViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper {
 
 	/**
 	 * @var string
@@ -74,12 +70,11 @@ class Tx_Fluid_ViewHelpers_Link_EmailViewHelper extends Tx_Fluid_Core_ViewHelper
 			$linkText = $tagContent;
 		}
 		$this->tag->setContent($linkText);
-		$this->tag->addAttribute('href', $linkHref);
+		$escapeSpecialCharacters = !isset($GLOBALS['TSFE']->spamProtectEmailAddresses) || $GLOBALS['TSFE']->spamProtectEmailAddresses !== 'ascii';
+		$this->tag->addAttribute('href', $linkHref, $escapeSpecialCharacters);
 		$this->tag->forceClosingTag(TRUE);
-
 		return $this->tag->render();
 	}
 }
-
 
 ?>

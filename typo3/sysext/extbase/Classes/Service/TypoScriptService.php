@@ -1,35 +1,33 @@
 <?php
-/***************************************************************
-*  Copyright notice
-*
-*  (c) 2009 Christian Müller <christian@kitsunet.de>
-*  (c) 2011 Bastian Waidelich <bastian@typo3.org>
-*  All rights reserved
-*
-*  This script is part of the TYPO3 project. The TYPO3 project is
-*  free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation; either version 2 of the License, or
-*  (at your option) any later version.
-*
-*  The GNU General Public License can be found at
-*  http://www.gnu.org/copyleft/gpl.html.
-*
-*  This script is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  This copyright notice MUST APPEAR in all copies of the script!
-***************************************************************/
+namespace TYPO3\CMS\Extbase\Service;
 
+/***************************************************************
+ *  Copyright notice
+ *
+ *  (c) 2009 Christian Müller <christian@kitsunet.de>
+ *  (c) 2011 Bastian Waidelich <bastian@typo3.org>
+ *  All rights reserved
+ *
+ *  This script is part of the TYPO3 project. The TYPO3 project is
+ *  free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The GNU General Public License can be found at
+ *  http://www.gnu.org/copyleft/gpl.html.
+ *
+ *  This script is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  This copyright notice MUST APPEAR in all copies of the script!
+ ***************************************************************/
 /**
  * Utilities to manage and convert TypoScript
- *
- * @package Extbase
- * @subpackage Service
  */
-class Tx_Extbase_Service_TypoScriptService implements t3lib_Singleton {
+class TypoScriptService implements \TYPO3\CMS\Core\SingletonInterface {
 
 	/**
 	 * Removes all trailing dots recursively from TS settings array
@@ -38,19 +36,19 @@ class Tx_Extbase_Service_TypoScriptService implements t3lib_Singleton {
 	 * to be more future-proof and not to have any conflicts with Fluid object accessor syntax.
 	 *
 	 * @param array $typoScriptArray The TypoScript array (e.g. array('foo' => 'TEXT', 'foo.' => array('bar' => 'baz')))
-	 * @return void
+	 * @return array
 	 * @api
 	 */
 	public function convertTypoScriptArrayToPlainArray(array $typoScriptArray) {
 		foreach ($typoScriptArray as $key => &$value) {
-			if(substr($key, -1) === '.') {
+			if (substr($key, -1) === '.') {
 				$keyWithoutDot = substr($key, 0, -1);
 				$hasNodeWithoutDot = array_key_exists($keyWithoutDot, $typoScriptArray);
 				$typoScriptNodeValue = $hasNodeWithoutDot ? $typoScriptArray[$keyWithoutDot] : NULL;
-				if(is_array($value)) {
+				if (is_array($value)) {
 					$typoScriptArray[$keyWithoutDot] = $this->convertTypoScriptArrayToPlainArray($value);
-					if(!is_null($typoScriptNodeValue)) {
-						$typoScriptArray[$keyWithoutDot]['_typoScriptNodeValue']  = $typoScriptNodeValue;
+					if (!is_null($typoScriptNodeValue)) {
+						$typoScriptArray[$keyWithoutDot]['_typoScriptNodeValue'] = $typoScriptNodeValue;
 					}
 					unset($typoScriptArray[$key]);
 				} else {
@@ -89,4 +87,5 @@ class Tx_Extbase_Service_TypoScriptService implements t3lib_Singleton {
 		return $typoScriptArray;
 	}
 }
+
 ?>

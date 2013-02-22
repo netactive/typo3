@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers\Form;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -9,8 +10,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-
 /**
  * Textarea view helper.
  * The value of the text area needs to be set via the "value" attribute, as with all other form ViewHelpers.
@@ -26,7 +25,7 @@
  *
  * @api
  */
-class Tx_Fluid_ViewHelpers_Form_TextareaViewHelper extends Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper {
+class TextareaViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\AbstractFormFieldViewHelper {
 
 	/**
 	 * @var string
@@ -41,8 +40,8 @@ class Tx_Fluid_ViewHelpers_Form_TextareaViewHelper extends Tx_Fluid_ViewHelpers_
 	 */
 	public function initializeArguments() {
 		parent::initializeArguments();
-		$this->registerTagAttribute('rows', 'int', 'The number of rows of a text area', TRUE);
-		$this->registerTagAttribute('cols', 'int', 'The number of columns of a text area', TRUE);
+		$this->registerTagAttribute('rows', 'int', 'The number of rows of a text area');
+		$this->registerTagAttribute('cols', 'int', 'The number of columns of a text area');
 		$this->registerTagAttribute('disabled', 'string', 'Specifies that the input element should be disabled when the page loads');
 		$this->registerArgument('errorClass', 'string', 'CSS class to set if there are errors for this view helper', FALSE, 'f3-form-error');
 		$this->registerUniversalTagAttributes();
@@ -57,13 +56,10 @@ class Tx_Fluid_ViewHelpers_Form_TextareaViewHelper extends Tx_Fluid_ViewHelpers_
 	public function render() {
 		$name = $this->getName();
 		$this->registerFieldNameForFormTokenGeneration($name);
-
 		$this->tag->forceClosingTag(TRUE);
 		$this->tag->addAttribute('name', $name);
 		$this->tag->setContent(htmlspecialchars($this->getValue()));
-
 		$this->setErrorClassAttribute();
-
 		return $this->tag->render();
 	}
 }

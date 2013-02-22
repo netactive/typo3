@@ -84,8 +84,11 @@
 			<trans-unit id="special_sitemap_title" xml:space="preserve">
 				<source>Sitemap</source>
 			</trans-unit>
-			<trans-unit id="special_sitemap_description" xml:space="preserve">
-				<source>Creates a sitemap of the website.</source>
+			<trans-unit id="special_menus_title" xml:space="preserve">
+				<source>Special Menus</source>
+			</trans-unit>
+			<trans-unit id="special_menus_description" xml:space="preserve">
+				<source>Creates a menu of pages, sitemap or other special menus.</source>
 			</trans-unit>
 			<trans-unit id="special_plainHTML_title" xml:space="preserve">
 				<source>Plain HTML</source>
@@ -98,6 +101,12 @@
 			</trans-unit>
 			<trans-unit id="special_divider_description" xml:space="preserve">
 				<source>This element inserts a visual divider, which is by default a horizontal line.</source>
+			</trans-unit>
+			<trans-unit id="special_shortcut_title" xml:space="preserve">
+				<source>Insert records</source>
+			</trans-unit>
+			<trans-unit id="special_shortcut_description" xml:space="preserve">
+				<source>With this element you can embed other content elements.</source>
 			</trans-unit>
 			<trans-unit id="forms" xml:space="preserve">
 				<source>Form elements</source>

@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers\Form;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -9,8 +10,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-
 /**
  * View Helper which creates a simple Password Text Box (<input type="password">).
  *
@@ -25,7 +24,7 @@
  *
  * @api
  */
-class Tx_Fluid_ViewHelpers_Form_PasswordViewHelper extends Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper {
+class PasswordViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\AbstractFormFieldViewHelper {
 
 	/**
 	 * @var string
@@ -57,16 +56,12 @@ class Tx_Fluid_ViewHelpers_Form_PasswordViewHelper extends Tx_Fluid_ViewHelpers_
 	public function render() {
 		$name = $this->getName();
 		$this->registerFieldNameForFormTokenGeneration($name);
-
 		$this->tag->addAttribute('type', 'password');
 		$this->tag->addAttribute('name', $name);
 		$this->tag->addAttribute('value', $this->getValue());
-
 		$this->setErrorClassAttribute();
-
 		return $this->tag->render();
 	}
-
 }
 
 ?>

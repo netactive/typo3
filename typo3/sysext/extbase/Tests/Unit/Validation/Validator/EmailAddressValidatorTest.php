@@ -1,4 +1,5 @@
 <?php
+namespace TYPO3\CMS\Extbase\Tests\Unit\Validation\Validator;
 
 /*                                                                        *
  * This script belongs to the Extbase framework.                            *
@@ -19,17 +20,16 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-require_once('AbstractValidatorTestcase.php');
+require_once 'AbstractValidatorTestcase.php';
 
 /**
  * Testcase for the email address validator
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
-class Tx_Extbase_Tests_Unit_Validation_Validator_EmailAddressValidatorTest extends Tx_Extbase_Tests_Unit_Validation_Validator_AbstractValidatorTestcase {
+class EmailAddressValidatorTest extends \TYPO3\CMS\Extbase\Tests\Unit\Validation\Validator\AbstractValidatorTestcase {
 
-	protected $validatorClassName = 'Tx_Extbase_Validation_Validator_EmailAddressValidator';
+	protected $validatorClassName = 'TYPO3\\CMS\\Extbase\\Validation\\Validator\\EmailAddressValidator';
 
 	/**
 	 * Data provider with valid email addresses
@@ -40,13 +40,10 @@ class Tx_Extbase_Tests_Unit_Validation_Validator_EmailAddressValidatorTest exten
 	public function validAddresses() {
 		return array(
 			array('andreas.foerthner@netlogix.de'),
-			array('user@localhost'),
 			array('user@localhost.localdomain'),
 			array('info@guggenheim.museum'),
 			array('just@test.invalid'),
-			array('just+spam@test.de'),
-			array('just+spam@192.168.249.100'),
-			array('local@192.168.0.2')
+			array('just+spam@test.de')
 		);
 	}
 
@@ -54,6 +51,7 @@ class Tx_Extbase_Tests_Unit_Validation_Validator_EmailAddressValidatorTest exten
 	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @test
 	 * @dataProvider validAddresses
+	 * @param mixed $address
 	 */
 	public function emailAddressValidatorReturnsNoErrorsForAValidEmailAddress($address) {
 		$this->assertFalse($this->validator->validate($address)->hasErrors());
@@ -83,6 +81,7 @@ class Tx_Extbase_Tests_Unit_Validation_Validator_EmailAddressValidatorTest exten
 	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @test
 	 * @dataProvider invalidAddresses
+	 * @param mixed $address
 	 */
 	public function emailAddressValidatorReturnsFalseForAnInvalidEmailAddress($address) {
 		$this->assertTrue($this->validator->validate($address)->hasErrors());
@@ -96,4 +95,5 @@ class Tx_Extbase_Tests_Unit_Validation_Validator_EmailAddressValidatorTest exten
 		$this->assertEquals(1, count($this->validator->validate('notAValidMail@Address')->getErrors()));
 	}
 }
+
 ?>

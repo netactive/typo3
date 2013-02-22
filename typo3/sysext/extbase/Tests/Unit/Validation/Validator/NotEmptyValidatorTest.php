@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Extbase\Tests\Unit\Validation\Validator;
 
 /*                                                                        *
- * This script belongs to the Extbase framework.                            *
+ * This script belongs to the Extbase framework.                          *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License as published by the *
@@ -19,17 +20,16 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-require_once('AbstractValidatorTestcase.php');
+require_once 'AbstractValidatorTestcase.php';
 
 /**
  * Testcase for the not empty validator
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
-class Tx_Extbase_Tests_Unit_Validation_Validator_NotEmptyValidatorTest extends Tx_Extbase_Tests_Unit_Validation_Validator_AbstractValidatorTestcase {
+class NotEmptyValidatorTest extends \TYPO3\CMS\Extbase\Tests\Unit\Validation\Validator\AbstractValidatorTestcase {
 
-	protected $validatorClassName = 'Tx_Extbase_Validation_Validator_NotEmptyValidator';
+	protected $validatorClassName = 'TYPO3\\CMS\\Extbase\\Validation\\Validator\\NotEmptyValidator';
 
 	/**
 	 * @test
@@ -69,6 +69,33 @@ class Tx_Extbase_Tests_Unit_Validation_Validator_NotEmptyValidatorTest extends T
 	 */
 	public function notEmptyValidatorCreatesTheCorrectErrorForANullValue() {
 		$this->assertEquals(1, count($this->validator->validate(NULL)->getErrors()));
+	}
+
+	/**
+	 * @test
+	 * @author Ingo Pfennigstorf <i.pfennigstorf@gmail.com>
+	 */
+	public function notEmptyValidatorWorksForEmptyArrays() {
+		$this->assertTrue($this->validator->validate(array())->hasErrors());
+		$this->assertFalse($this->validator->validate(array(1 => 2))->hasErrors());
+	}
+
+	/**
+	 * @test
+	 * @author Ingo Pfennigstorf <i.pfennigstorf@gmail.com>
+	 */
+	public function notEmptyValidatorWorksForEmptyCountableObjects() {
+		$this->assertTrue($this->validator->validate(new \SplObjectStorage())->hasErrors());
+	}
+
+	/**
+	 * @test
+	 * @author Alexander Schnitzler <alex.schnitzler@typovision.de>
+	 */
+	public function notEmptyValidatorWorksForNotEmptyCountableObjects() {
+		$countableObject = new \SplObjectStorage();
+		$countableObject->attach(new \StdClass());
+		$this->assertFalse($this->validator->validate($countableObject)->hasErrors());
 	}
 }
 

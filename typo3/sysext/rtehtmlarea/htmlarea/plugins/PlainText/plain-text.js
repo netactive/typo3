@@ -79,11 +79,11 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 	 */
 	cleanerConfig: {
 	 	pasteStructure: {
-	 	 	keepTags: /^(a|p|h[0-6]|pre|address|blockquote|div|hr|br|table|thead|tbody|tfoot|caption|tr|th|td|ul|ol|dl|li|dt|dd)$/i,
+	 	 	keepTags: /^(a|p|h[0-6]|pre|address|article|aside|blockquote|div|footer|header|nav|section|hr|br|table|thead|tbody|tfoot|caption|tr|th|td|ul|ol|dl|li|dt|dd)$/i,
 	 	 	removeAttributes: /^(id|on*|style|class|className|lang|align|valign|bgcolor|color|border|face|.*:.*)$/i
 	 	},
 		pasteFormat: {
-			keepTags: /^(a|p|h[0-6]|pre|address|blockquote|div|hr|br|table|thead|tbody|tfoot|caption|tr|th|td|ul|ol|dl|li|dt|dd|b|bdo|big|cite|code|del|dfn|em|i|ins|kbd|label|q|samp|small|strike|strong|sub|sup|tt|u|var)$/i,
+			keepTags: /^(a|p|h[0-6]|pre|address|article|aside|blockquote|div|footer|header|nav|section|hr|br|table|thead|tbody|tfoot|caption|tr|th|td|ul|ol|dl|li|dt|dd|b|bdo|big|cite|code|del|dfn|em|i|ins|kbd|label|q|samp|small|strike|strong|sub|sup|tt|u|var)$/i,
 			removeAttributes:  /^(id|on*|style|class|className|lang|align|valign|bgcolor|color|border|face|.*:.*)$/i
 	 	}
 	},
@@ -182,8 +182,6 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 			border: false,
 			width: dimensions.width,
 			height: 'auto',
-				// As of ExtJS 3.1, JS error with IE when the window is resizable
-			resizable: !Ext.isIE,
 			iconCls: this.getButton(buttonId).iconCls,
 			listeners: {
 				close: {
@@ -251,8 +249,8 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 		if (!this.getButton('PasteToggle').inactive) {
 			switch (this.currentBehaviour) {
 				case 'plainText':
-						// Only IE and WebKit will allow access to the clipboard content, in plain text only however
-					if (Ext.isIE || Ext.isWebKit) {
+					// Only IE before IE9 and Chrome will allow access to the clipboard content by default, in plain text only however
+					if (HTMLArea.isIEBeforeIE9 || Ext.isChrome) {
 						var clipboardText = this.grabClipboardText(event);
 						if (clipboardText) {
 							this.editor.getSelection().insertHtml(clipboardText);
@@ -262,8 +260,6 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 				case 'pasteStructure':
 				case 'pasteFormat':
 					if (Ext.isIE) {
-							// Save the current selection
-						this.bookmark = this.editor.getBookMark().get(this.editor.getSelection().createRange());
 							// Show the pasting pad
 						this.openPastingPad(
 							'PasteToggle',
@@ -274,8 +270,13 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 									height: 550
 								},
 								'PasteToggle'
-							));
-						event.browserEvent.returnValue = false;
+							)
+						);
+						if (HTMLArea.isIEBeforeIE9) {
+							event.browserEvent.returnValue = false;
+						} else {
+							event.stopEvent();
+						}
 						return false;
 					} else {
 							// Redirect the paste operation to a hidden section
@@ -389,8 +390,6 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 			border: false,
 			width: dimensions.width,
 			height: 'auto',
-				// As of ExtJS 3.1, JS error with IE when the window is resizable
-			resizable: !Ext.isIE,
 			iconCls: this.getButton(buttonId).iconCls,
 			listeners: {
 				afterrender: {
@@ -433,12 +432,24 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 	 */
 	onPastingPadAfterRender: function () {
 		var iframe = this.dialog.getComponent('pasting-pad-iframe').getEl().dom;
-		var pastingPadDocument = iframe.contentWindow ? iframe.contentWindow.document : iframe.contentDocument;
-		this.pastingPadBody = pastingPadDocument.body;
+		this.pastingPadDocument = iframe.contentWindow ? iframe.contentWindow.document : iframe.contentDocument;
+		this.pastingPadBody = this.pastingPadDocument.body;
 		this.pastingPadBody.contentEditable = true;
-			// Start monitoring paste events
+		// Start monitoring paste events
 		this.dialog.mon(Ext.get(this.pastingPadBody), 'paste', this.onPastingPadPaste, this);
+		// Try to keep focus on the pasting pad
+		this.dialog.mon(Ext.get(this.editor.document.documentElement), 'mouseover', function (event) { this.focusOnPastingPad(); }, this);
+		this.dialog.mon(Ext.get(this.editor.document.body), 'focus', function (event) { this.focusOnPastingPad(); }, this);
+		this.dialog.mon(Ext.get(this.pastingPadDocument.documentElement), 'mouseover', function (event) { this.focusOnPastingPad(); }, this);
+		this.focusOnPastingPad();
+	},
+	/*
+	 * Bring focus and selection on the pasting pad
+	 */
+	focusOnPastingPad: function () {
 		this.pastingPadBody.focus();
+		this.pastingPadDocument.getSelection().selectAllChildren(this.pastingPadBody);
+		this.pastingPadDocument.getSelection().collapseToEnd();
 	},
 	/*
 	 * Handler invoked when content is pasted into the pasting pad
@@ -451,7 +462,19 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 	 * Clean the contents of the pasting pad
 	 */
 	cleanPastingPadContents: function () {
-		this.pastingPadBody.innerHTML = this.cleaners[this.currentBehaviour].render(this.pastingPadBody, false);
+		var content = '';
+		switch (this.currentBehaviour) {
+			case 'plainText':
+				// Get plain text content
+				content = this.pastingPadBody.textContent;
+				break;
+			case 'pasteStructure':
+			case 'pasteFormat':
+				// Get clean content
+				content = this.cleaners[this.currentBehaviour].render(this.pastingPadBody, false);
+				break;
+		}
+		this.pastingPadBody.innerHTML = content;
 		this.pastingPadBody.focus();
 	},
 	/*

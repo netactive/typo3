@@ -29,11 +29,13 @@ Ext.ns('TYPO3.Workspaces');
 TYPO3.Workspaces.App = {
 
 	init : function() {
+		TYPO3.Workspaces.WorkspaceGrid.initColModel();
+		TYPO3.Workspaces.WorkspaceGrid.render('workspacegrid');
+
 		TYPO3.Workspaces.MainStore.load();
 		TYPO3.Workspaces.Toolbar.selectActionStore.load();
 		TYPO3.Workspaces.Toolbar.selectMassActionStore.load();
-		TYPO3.Workspaces.WorkspaceGrid.initColModel();
-		TYPO3.Workspaces.WorkspaceGrid.render('workspacegrid');
+		TYPO3.Workspaces.Toolbar.LanguageSelector.getStore().load();
 	}
 };
 
@@ -61,6 +63,10 @@ Ext.onReady(function() {
 	TYPO3.Workspaces.Toolbar.selectActionStore.proxy = new Ext.data.DirectProxy({
 		directFn : TYPO3.Workspaces.ExtDirect.getStageActions
 	});
+	// late binding of ExtDirect
+	TYPO3.Workspaces.Toolbar.LanguageSelector.getStore().proxy = new Ext.data.DirectProxy({
+		directFn : TYPO3.Workspaces.ExtDirect.getSystemLanguages
+	});
 
 	TYPO3.Workspaces.RowDetail.rowDataStore.proxy = new Ext.data.DirectProxy({
 		directFn: TYPO3.Workspaces.ExtDirect.getRowDetails
@@ -71,6 +77,5 @@ Ext.onReady(function() {
 	});
 	// fire grid
 	var WS = new TYPO3.Workspaces.App.init();
-
 
 });

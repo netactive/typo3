@@ -1,8 +1,10 @@
 <?php
+namespace TYPO3\CMS\Extbase\Configuration;
+
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2009 Jochen Rau <jochen.rau@typoplanet.de>
+ *  (c) 2010-2012 Extbase Team (http://forge.typo3.org/projects/typo3v4-mvc)
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -13,6 +15,9 @@
  *
  *  The GNU General Public License can be found at
  *  http://www.gnu.org/copyleft/gpl.html.
+ *  A copy is found in the textfile GPL.txt and important notices to the license
+ *  from the author is found in LICENSE.txt distributed with these scripts.
+ *
  *
  *  This script is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,30 +26,22 @@
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
-
-/**
- *
- *
- * @package Extbase
- * @subpackage Configuration
- * @version $ID:$
- */
-interface Tx_Extbase_Configuration_ConfigurationManagerInterface extends t3lib_Singleton {
+interface ConfigurationManagerInterface extends \TYPO3\CMS\Core\SingletonInterface {
 
 	const CONFIGURATION_TYPE_FRAMEWORK = 'Framework';
 	const CONFIGURATION_TYPE_SETTINGS = 'Settings';
 	const CONFIGURATION_TYPE_FULL_TYPOSCRIPT = 'FullTypoScript';
 
 	/**
-	 * @param tslib_cObj $contentObject
+	 * @param \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer $contentObject
 	 * @return void
 	 */
-	public function setContentObject(tslib_cObj $contentObject = NULL);
+	public function setContentObject(\TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer $contentObject = NULL);
 
 	/**
 	 * Get the content object
 	 *
-	 * @return tslib_cObj
+	 * @return \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer
 	 * @api (v4 only)
 	 */
 	public function getContentObject();
@@ -82,6 +79,6 @@ interface Tx_Extbase_Configuration_ConfigurationManagerInterface extends t3lib_S
 	 * @return boolean
 	 */
 	public function isFeatureEnabled($featureName);
-
 }
+
 ?>

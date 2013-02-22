@@ -26,20 +26,6 @@ CREATE TABLE cache_md5params (
 
 
 #
-# Table structure for table 'cache_imagesizes'
-#
-CREATE TABLE cache_imagesizes (
-  md5hash varchar(32) DEFAULT '' NOT NULL,
-  md5filename varchar(32) DEFAULT '' NOT NULL,
-  tstamp int(11) DEFAULT '0' NOT NULL,
-  filename varchar(255) DEFAULT '' NOT NULL,
-  imagewidth mediumint(11) unsigned DEFAULT '0' NOT NULL,
-  imageheight mediumint(11) unsigned DEFAULT '0' NOT NULL,
-  PRIMARY KEY (md5filename)
-) ENGINE=InnoDB;
-
-
-#
 # Table structure for table 'cache_treelist'
 #
 CREATE TABLE cache_treelist (
@@ -110,7 +96,7 @@ CREATE TABLE fe_users (
   pid int(11) unsigned DEFAULT '0' NOT NULL,
   tstamp int(11) unsigned DEFAULT '0' NOT NULL,
   username varchar(50) DEFAULT '' NOT NULL,
-  password varchar(60) DEFAULT '' NOT NULL,
+  password varchar(100) DEFAULT '' NOT NULL,
   usergroup tinytext,
   disable tinyint(4) unsigned DEFAULT '0' NOT NULL,
   starttime int(11) unsigned DEFAULT '0' NOT NULL,
@@ -152,7 +138,7 @@ CREATE TABLE fe_users (
 CREATE TABLE pages_language_overlay (
   uid int(11) NOT NULL auto_increment,
   pid int(11) DEFAULT '0' NOT NULL,
-  doktype tinyint(3) unsigned DEFAULT '0' NOT NULL,
+  doktype int(11) unsigned DEFAULT '0' NOT NULL,
   t3ver_oid int(11) DEFAULT '0' NOT NULL,
   t3ver_id int(11) DEFAULT '0' NOT NULL,
   t3ver_wsid int(11) DEFAULT '0' NOT NULL,
@@ -244,7 +230,6 @@ CREATE TABLE sys_template (
   include_static_file text,
   constants text,
   config text,
-  resources text,
   nextLevel varchar(5) DEFAULT '' NOT NULL,
   description text,
   basedOn tinytext,
@@ -279,25 +264,28 @@ CREATE TABLE tt_content (
   cruser_id int(11) unsigned DEFAULT '0' NOT NULL,
   hidden tinyint(4) unsigned DEFAULT '0' NOT NULL,
   sorting int(11) unsigned DEFAULT '0' NOT NULL,
-  CType varchar(30) DEFAULT '' NOT NULL,
+  CType varchar(255) DEFAULT '' NOT NULL,
   header varchar(255) DEFAULT '' NOT NULL,
   header_position varchar(6) DEFAULT '' NOT NULL,
   bodytext mediumtext,
+
+  # Even though we're using FAL and an IRRE field for images now, it needs to stay "text" for the migration to work
   image text,
+
   imagewidth mediumint(11) unsigned DEFAULT '0' NOT NULL,
   imageorient tinyint(4) unsigned DEFAULT '0' NOT NULL,
   imagecaption text,
   imagecols tinyint(4) unsigned DEFAULT '0' NOT NULL,
   imageborder tinyint(4) unsigned DEFAULT '0' NOT NULL,
   media text,
-  layout tinyint(3) unsigned DEFAULT '0' NOT NULL,
+  layout int(11) unsigned DEFAULT '0' NOT NULL,
   deleted tinyint(4) unsigned DEFAULT '0' NOT NULL,
-  cols tinyint(3) unsigned DEFAULT '0' NOT NULL,
+  cols int(11) unsigned DEFAULT '0' NOT NULL,
   records text,
   pages tinytext,
   starttime int(11) unsigned DEFAULT '0' NOT NULL,
   endtime int(11) unsigned DEFAULT '0' NOT NULL,
-  colPos tinyint(3) unsigned DEFAULT '0' NOT NULL,
+  colPos int(11) unsigned DEFAULT '0' NOT NULL,
   subheader varchar(255) DEFAULT '' NOT NULL,
   spaceBefore smallint(5) unsigned DEFAULT '0' NOT NULL,
   spaceAfter smallint(5) unsigned DEFAULT '0' NOT NULL,
@@ -323,17 +311,18 @@ CREATE TABLE tt_content (
   table_border tinyint(3) unsigned DEFAULT '0' NOT NULL,
   table_cellspacing tinyint(3) unsigned DEFAULT '0' NOT NULL,
   table_cellpadding tinyint(3) unsigned DEFAULT '0' NOT NULL,
-  table_bgColor tinyint(3) unsigned DEFAULT '0' NOT NULL,
+  table_bgColor int(11) unsigned DEFAULT '0' NOT NULL,
   select_key varchar(80) DEFAULT '' NOT NULL,
   sectionIndex tinyint(3) unsigned DEFAULT '0' NOT NULL,
   linkToTop tinyint(3) unsigned DEFAULT '0' NOT NULL,
+  file_collections text,
   filelink_size tinyint(3) unsigned DEFAULT '0' NOT NULL,
+  filelink_sorting tinytext NOT NULL,
   target varchar(30) DEFAULT '' NOT NULL,
-  section_frame tinyint(3) unsigned DEFAULT '0' NOT NULL,
+  section_frame int(11) unsigned DEFAULT '0' NOT NULL,
   date int(10) unsigned DEFAULT '0' NOT NULL,
-  splash_layout varchar(30) DEFAULT '0' NOT NULL,
   multimedia tinytext,
-  image_frames tinyint(3) unsigned DEFAULT '0' NOT NULL,
+  image_frames int(11) unsigned DEFAULT '0' NOT NULL,
   recursive tinyint(3) unsigned DEFAULT '0' NOT NULL,
   imageheight mediumint(8) unsigned DEFAULT '0' NOT NULL,
   rte_enabled tinyint(4) DEFAULT '0' NOT NULL,

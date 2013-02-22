@@ -1,6 +1,6 @@
 <?php
-if (!defined ('TYPO3_MODE')) 	die ('Access denied.');
-
-$TYPO3_CONF_VARS['BE']['AJAX']['tx_recycler::controller'] = t3lib_extMgm::extPath($_EXTKEY) . 'classes/controller/class.tx_recycler_controller_ajax.php:tx_recycler_controller_ajax->init';
-
+if (!defined('TYPO3_MODE')) {
+	die('Access denied.');
+}
+$TYPO3_CONF_VARS['BE']['AJAX']['RecyclerAjaxController::init'] = \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($_EXTKEY) . 'Classes/Controller/class.tx_recycler_controller_ajax.php:TYPO3\\CMS\\Recycler\\Controller\\RecyclerAjaxController->init';
 ?>

@@ -1,54 +1,8 @@
 <?php
-/***************************************************************
-*  Copyright notice
-*
-*  (c) 2009-2011 Dmitry Dulepov <dmitry@typo3.org>
-*  All rights reserved
-*
-*  This script is part of the TYPO3 project. The TYPO3 project is
-*  free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation; either version 2 of the License, or
-*  (at your option) any later version.
-*
-*  The GNU General Public License can be found at
-*  http://www.gnu.org/copyleft/gpl.html.
-*
-*  This script is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  This copyright notice MUST APPEAR in all copies of the script!
-***************************************************************/
-
-
-/**
- * This class contains the abstract storage for the RSA private keys
- *
- * @author	Dmitry Dulepov <dmitry@typo3.org>
- * @package	TYPO3
- * @subpackage	tx_rsaauth
+/*
+ * @deprecated since 6.0, the classname tx_rsaauth_abstract_storage and this file is obsolete
+ * and will be removed with 6.2. The class was renamed and is now located at:
+ * typo3/sysext/rsaauth/Classes/Storage/AbstractStorage.php
  */
-abstract class tx_rsaauth_abstract_storage {
-
-	/**
-	 * Retrieves the key from the storage
-	 *
-	 * @return	string	The key or NULL
-	 */
-	abstract public function get();
-
-	/**
-	 * Stores the key in the storage
-	 *
-	 * @param	string	$key	The key
-	 */
-	abstract public function put($key);
-}
-
-if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rsaauth/storage/class.tx_rsaauth_abstract_storage.php'])) {
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rsaauth/storage/class.tx_rsaauth_abstract_storage.php']);
-}
-
+require_once \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('rsaauth') . 'Classes/Storage/AbstractStorage.php';
 ?>

@@ -229,7 +229,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 				// Cleanup selected range
 			range = this.editor.getSelection().createRange();
 				// Clean existing anchors otherwise Mozilla may create nested anchors while IE may update existing link
-			if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+			if (HTMLArea.isIEBeforeIE9) {
 				this.cleanAllLinks(node, range, true);
 				this.editor.getSelection().execCommand('UnLink', false, null);
 			} else {
@@ -245,8 +245,10 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 			} else {
 				this.editor.getSelection().execCommand('CreateLink', false, theLink);
 			}
-				// Get the created link or parent
+			// Get the created link or parent
 			node = this.editor.getSelection().getParentElement();
+			// Re-establish the range of the selection
+			range = this.editor.getSelection().createRange();
 			if (node) {
 					// Export trailing br that IE may include in the link
 				if (Ext.isIE) {
@@ -261,7 +263,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 		}
 		this.close();
 	},
-	
+
 	/*
 	 * Unlink the selection.
 	 * This function is called from the TYPO3 link popup and from unlink button pressed in toolbar or context menu.
@@ -285,7 +287,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 		}
 		if (HTMLArea.classesAnchorSetup) {
 			var range = this.editor.getSelection().createRange();
-			if (!Ext.isIE) {
+			if (!HTMLArea.isIEBeforeIE9) {
 				this.cleanAllLinks(node, range, false);
 			} else {
 				this.cleanAllLinks(node, range, true);
@@ -298,7 +300,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 			this.close();
 		}
 	},
-	
+
 	/*
 	* Set attributes of anchors intersecting a range in the given node
 	*
@@ -316,7 +318,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 	setLinkAttributes: function(node, range, cur_target, cur_class, cur_title, imageNode, addIconAfterLink, additionalValues) {
 		if (/^a$/i.test(node.nodeName)) {
 			var nodeInRange = false;
-			if (!Ext.isIE) {
+			if (!HTMLArea.isIEBeforeIE9) {
 				this.editor.focus();
 				nodeInRange = HTMLArea.DOM.rangeIntersectsNode(range, node);
 			} else {
@@ -347,7 +349,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 				} else {
 					if (!Ext.isOpera) {
 						node.removeAttribute('class');
-						if (Ext.isIE) {
+						if (HTMLArea.isIEBeforeIE9) {
 							node.removeAttribute('className');
 						}
 					} else {
@@ -380,7 +382,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 			}
 		}
 	},
-	
+
 	/*
 	 * Clean up images in special anchor classes
 	 */
@@ -404,14 +406,14 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 			node.removeChild(nodeArray[i]);
 		}
 	},
-	
+
 	/*
 	 * Clean up all anchors intesecting with the range in the given node
 	 */
 	cleanAllLinks: function(node, range, keepLinks) {
 		if (/^a$/i.test(node.nodeName)) {
 			var intersection = false;
-			if (!Ext.isIE) {
+			if (!HTMLArea.isIEBeforeIE9) {
 				this.editor.focus();
 				intersection = HTMLArea.DOM.rangeIntersectsNode(range, node);
 			} else {

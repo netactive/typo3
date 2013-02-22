@@ -1,8 +1,10 @@
 <?php
+namespace TYPO3\CMS\Extbase\Domain\Model;
+
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2009 Jochen Rau <jochen.rau@typoplanet.de>
+ *  (c) 2010-2012 Extbase Team (http://forge.typo3.org/projects/typo3v4-mvc)
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -13,6 +15,9 @@
  *
  *  The GNU General Public License can be found at
  *  http://www.gnu.org/copyleft/gpl.html.
+ *  A copy is found in the textfile GPL.txt and important notices to the license
+ *  from the author is found in LICENSE.txt distributed with these scripts.
+ *
  *
  *  This script is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,53 +26,47 @@
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
-
 /**
  * A Frontend User
  *
- * @package Extbase
- * @subpackage Domain\Model
- * @version $Id$
- * @scope prototype
- * @entity
  * @api
  */
-class Tx_Extbase_Domain_Model_FrontendUser extends Tx_Extbase_DomainObject_AbstractEntity {
+class FrontendUser extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 	/**
 	 * @var string
 	 */
-	protected $username;
+	protected $username = '';
 
 	/**
 	 * @var string
 	 */
-	protected $password;
+	protected $password = '';
 
 	/**
-	 * @var Tx_Extbase_Persistence_ObjectStorage<Tx_Extbase_Domain_Model_FrontendUserGroup>
+	 * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup>
 	 */
 	protected $usergroup;
 
 	/**
 	 * @var string
 	 */
-	protected $name;
+	protected $name = '';
 
 	/**
 	 * @var string
 	 */
-	protected $firstName;
+	protected $firstName = '';
 
 	/**
 	 * @var string
 	 */
-	protected $middleName;
+	protected $middleName = '';
 
 	/**
 	 * @var string
 	 */
-	protected $lastName;
+	protected $lastName = '';
 
 	/**
 	 * @var string
@@ -130,24 +129,21 @@ class Tx_Extbase_Domain_Model_FrontendUser extends Tx_Extbase_DomainObject_Abstr
 	protected $image = '';
 
 	/**
-	 * @var DateTime
+	 * @var \DateTime|NULL
 	 */
-	protected $lastlogin = '';
-
-	/**
-	 * @var DateTime
-	 */
-	protected $isOnline = '';
+	protected $lastlogin = NULL;
 
 	/**
 	 * Constructs a new Front-End User
 	 *
 	 * @api
+	 * @param string $username
+	 * @param string $password
 	 */
 	public function __construct($username = '', $password = '') {
 		$this->username = $username;
 		$this->password = $password;
-		$this->usergroup = new Tx_Extbase_Persistence_ObjectStorage();
+		$this->usergroup = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
 	}
 
 	/**
@@ -196,33 +192,33 @@ class Tx_Extbase_Domain_Model_FrontendUser extends Tx_Extbase_DomainObject_Abstr
 	 * Sets the usergroups. Keep in mind that the property is called "usergroup"
 	 * although it can hold several usergroups.
 	 *
-	 * @param Tx_Extbase_Persistence_ObjectStorage<Tx_Extbase_Domain_Model_FrontendUserGroup> $usergroup An object storage containing the usergroups to add
+	 * @param \TYPO3\CMS\Extbase\Persistence\ObjectStorage $usergroup
 	 * @return void
 	 * @api
 	 */
-	public function setUsergroup(Tx_Extbase_Persistence_ObjectStorage $usergroup) {
+	public function setUsergroup(\TYPO3\CMS\Extbase\Persistence\ObjectStorage $usergroup) {
 		$this->usergroup = $usergroup;
 	}
 
 	/**
 	 * Adds a usergroup to the frontend user
 	 *
-	 * @param Tx_Extbase_Domain_Model_FrontendUserGroup $usergroup
+	 * @param \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup $usergroup
 	 * @return void
 	 * @api
 	 */
-	public function addUsergroup(Tx_Extbase_Domain_Model_FrontendUserGroup $usergroup) {
+	public function addUsergroup(\TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup $usergroup) {
 		$this->usergroup->attach($usergroup);
 	}
 
 	/**
 	 * Removes a usergroup from the frontend user
 	 *
-	 * @param Tx_Extbase_Domain_Model_FrontendUserGroup $usergroup
+	 * @param \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup $usergroup
 	 * @return void
 	 * @api
 	 */
-	public function removeUsergroup(Tx_Extbase_Domain_Model_FrontendUserGroup $usergroup) {
+	public function removeUsergroup(\TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup $usergroup) {
 		$this->usergroup->detach($usergroup);
 	}
 
@@ -230,20 +226,7 @@ class Tx_Extbase_Domain_Model_FrontendUser extends Tx_Extbase_DomainObject_Abstr
 	 * Returns the usergroups. Keep in mind that the property is called "usergroup"
 	 * although it can hold several usergroups.
 	 *
-	 * @return Tx_Extbase_Persistence_ObjectStorage An object storage containing the usergroup
-	 * @api
-	 * @deprecated since Extbase 1.3.0; will be removed in Extbase 1.5.0 - use Tx_Extbase_Domain_Model_FrontendUser::getUsergroup() instead
-	 */
-	public function getUsergroups() {
-		t3lib_div::logDeprecatedFunction();
-		return $this->usergroup;
-	}
-
-	/**
-	 * Returns the usergroups. Keep in mind that the property is called "usergroup"
-	 * although it can hold several usergroups.
-	 *
-	 * @return Tx_Extbase_Persistence_ObjectStorage An object storage containing the usergroup
+	 * @return \TYPO3\CMS\Extbase\Persistence\ObjectStorage An object storage containing the usergroup
 	 * @api
 	 */
 	public function getUsergroup() {
@@ -589,44 +572,23 @@ class Tx_Extbase_Domain_Model_FrontendUser extends Tx_Extbase_DomainObject_Abstr
 	/**
 	 * Sets the lastlogin value
 	 *
-	 * @param DateTime $lastlogin
+	 * @param \DateTime $lastlogin
 	 * @return void
 	 * @api
 	 */
-	public function setLastlogin(DateTime $lastlogin) {
+	public function setLastlogin(\DateTime $lastlogin) {
 		$this->lastlogin = $lastlogin;
 	}
 
 	/**
 	 * Returns the lastlogin value
 	 *
-	 * @return DateTime
+	 * @return \DateTime
 	 * @api
 	 */
 	public function getLastlogin() {
 		return $this->lastlogin;
 	}
-
-	/**
-	 * Sets the isOnline value
-	 *
-	 * @param DateTime $isOnline
-	 * @return void
-	 * @api
-	 */
-	public function setIsOnline($isOnline) {
-		$this->isOnline = $isOnline;
-	}
-
-	/**
-	 * Returns the isOnline value
-	 *
-	 * @return DateTime
-	 * @api
-	 */
-	public function getIsOnline() {
-		return $this->isOnline;
-	}
-
 }
+
 ?>

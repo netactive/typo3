@@ -129,8 +129,6 @@ HTMLArea.SpellChecker = Ext.extend(HTMLArea.Plugin, {
 			border: false,
 			width: dimensions.width,
 			height: Ext.isIE ? dimensions.height - 50 : 'auto',
-				// As of ExtJS 3.1, JS error with IE when the window is resizable
-			resizable: !Ext.isIE,
 			iconCls: this.getButton(buttonId).iconCls,
 			listeners: {
 				afterrender: {
@@ -414,7 +412,7 @@ HTMLArea.SpellChecker = Ext.extend(HTMLArea.Plugin, {
 				cmd: 'learn',
 				enablePersonalDicts: this.enablePersonalDicts,
 				userUid: this.userUid,
-				dictionary: this.contentISOLanguage,
+				dictionary: this.dialog.find('itemId', 'dictionary')[0].getValue(),
 				pspell_charset: this.contentCharset,
 				pspell_mode: this.spellCheckerMode
 			};
@@ -438,7 +436,7 @@ HTMLArea.SpellChecker = Ext.extend(HTMLArea.Plugin, {
 			TYPO3.Dialog.QuestionDialog({
 				title: this.getButton('SpellCheck').tooltip.title,
 				msg: this.localize('QUIT_CONFIRMATION'),
-				fn: function (button) { 
+				fn: function (button) {
 					if (button == 'yes') {
 						this.close();
 					}

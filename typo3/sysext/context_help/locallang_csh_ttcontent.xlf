@@ -79,9 +79,6 @@ This is a placeholder for other records. In other words, by this element you can
 &lt;strong&gt;Insert plugin&lt;/strong&gt;
 This will allow you to insert a forum, guestbook, list of addresses, shopping basket etc. The various features are available &lt;em&gt;only&lt;/em&gt; if they are configured correctly in the template of your website. So before you use it, make sure this is the case.
 
-&lt;strong&gt;Script&lt;/strong&gt;
-This is reserved for custom purposes where the template developer can allow you to insert specialized page content by this element type along with a code to identify which special content you want.
-
 &lt;strong&gt;HTML&lt;/strong&gt;
 This is plain HTML content. Everything put here will be displayed directly on the page without any preprocessing.</source>
 			</trans-unit>
@@ -231,7 +228,7 @@ If you insert an URL or domain, eg. "www.typo3.org" or "http://www.my-domain.org
 			<trans-unit id="header_layout.details" xml:space="preserve">
 				<source>If you select "Default" the standard design (which is one of the layouts 1-5) will be used.
 Alternatively you can select from Layout 1 through 5 which are configured in the website template with individual visual designs.
-If you select "Hidden" the header will simply not appear. This is usefull if you wish a header for the content element (in order to identify it in the backend) but do not wish the header to be displayed on the website.</source>
+If you select "Hidden" the header will simply not appear. This is useful if you wish a header for the content element (in order to identify it in the backend) but do not wish the header to be displayed on the website.</source>
 			</trans-unit>
 			<trans-unit id="_header_layout.seeAlso" xml:space="preserve">
 				<source>tt_content:header</source>

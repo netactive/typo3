@@ -1,4 +1,5 @@
 <?php
+namespace TYPO3\CMS\Extbase\Tests\Unit\Validation\Validator;
 
 /*                                                                        *
  * This script belongs to the Extbase framework.                            *
@@ -19,17 +20,16 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
-require_once('AbstractValidatorTestcase.php');
+require_once 'AbstractValidatorTestcase.php';
 
 /**
  * Testcase for the integer validator
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
-class Tx_Extbase_Tests_Unit_Validation_Validator_IntegerValidatorTest extends Tx_Extbase_Tests_Unit_Validation_Validator_AbstractValidatorTestcase {
+class IntegerValidatorTest extends \TYPO3\CMS\Extbase\Tests\Unit\Validation\Validator\AbstractValidatorTestcase {
 
-	protected $validatorClassName = 'Tx_Extbase_Validation_Validator_IntegerValidator';
+	protected $validatorClassName = 'TYPO3\\CMS\\Extbase\\Validation\\Validator\\IntegerValidator';
 
 	/**
 	 * Data provider with valid integers
@@ -50,6 +50,7 @@ class Tx_Extbase_Tests_Unit_Validation_Validator_IntegerValidatorTest extends Tx
 	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @test
 	 * @dataProvider validIntegers
+	 * @param mixed $integer
 	 */
 	public function integerValidatorReturnsNoErrorsForAValidInteger($integer) {
 		$this->assertFalse($this->validator->validate($integer)->hasErrors());
@@ -73,6 +74,7 @@ class Tx_Extbase_Tests_Unit_Validation_Validator_IntegerValidatorTest extends Tx
 	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @test
 	 * @dataProvider invalidIntegers
+	 * @param mixed $invalidInteger
 	 */
 	public function integerValidatorReturnsErrorForAnInvalidInteger($invalidInteger) {
 		$this->assertTrue($this->validator->validate($invalidInteger)->hasErrors());
@@ -85,7 +87,6 @@ class Tx_Extbase_Tests_Unit_Validation_Validator_IntegerValidatorTest extends Tx
 	public function integerValidatorCreatesTheCorrectErrorForAnInvalidSubject() {
 		$this->assertEquals(1, count($this->validator->validate('not a number')->getErrors()));
 	}
-
 }
 
 ?>

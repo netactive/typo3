@@ -1,7 +1,8 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers\Form;
 
 /*                                                                        *
- * This script is backported from the FLOW3 package "TYPO3.Fluid".        *
+ * This script is backported from the TYPO3 Flow package "TYPO3.Fluid".   *
  *                                                                        *
  * It is free software; you can redistribute it and/or modify it under    *
  * the terms of the GNU Lesser General Public License, either version 3   *
@@ -19,7 +20,6 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
 /**
  * A view helper which generates an <input type="file"> HTML element.
  * Make sure to set enctype="multipart/form-data" on the form!
@@ -35,7 +35,7 @@
  *
  * @api
  */
-class Tx_Fluid_ViewHelpers_Form_UploadViewHelper extends Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper {
+class UploadViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Form\AbstractFormFieldViewHelper {
 
 	/**
 	 * @var string
@@ -63,16 +63,15 @@ class Tx_Fluid_ViewHelpers_Form_UploadViewHelper extends Tx_Fluid_ViewHelpers_Fo
 	 */
 	public function render() {
 		$name = $this->getName();
-		$this->registerFieldNameForFormTokenGeneration($name);
-
+		$allowedFields = array('name', 'type', 'tmp_name', 'error', 'size');
+		foreach ($allowedFields as $fieldName) {
+			$this->registerFieldNameForFormTokenGeneration($name . '[' . $fieldName . ']');
+		}
 		$this->tag->addAttribute('type', 'file');
 		$this->tag->addAttribute('name', $name);
-
 		$this->setErrorClassAttribute();
-
 		return $this->tag->render();
 	}
 }
-
 
 ?>

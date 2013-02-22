@@ -48,13 +48,11 @@ Ext.apply(HTMLArea, {
 	reservedClassNames	: /htmlarea/,
 	RE_email		: /([0-9a-z]+([a-z0-9_-]*[0-9a-z])*){1}(\.[0-9a-z]+([a-z0-9_-]*[0-9a-z])*)*@([0-9a-z]+([a-z0-9_-]*[0-9a-z])*\.)+[a-z]{2,9}/i,
 	RE_url			: /(([^:/?#]+):\/\/)?(([a-z0-9_]+:[a-z0-9_]+@)?[a-z0-9_-]{2,}(\.[a-z0-9_-]{2,})+\.[a-z]{2,5}(:[0-9]+)?(\/\S+)*\/?)/i,
-		// This expression is deprecated as of TYPO3 4.6
-	RE_blockTags		: /^(address|article|aside|body|blockquote|caption|dd|div|dl|dt|fieldset|footer|form|header|hr|h1|h2|h3|h4|h5|h6|iframe|li|ol|p|pre|nav|noscript|section|table|tbody|td|tfoot|th|thead|tr|ul)$/i,
-		// This expression is deprecated as of TYPO3 4.6
-	RE_closingTags		: /^(p|blockquote|a|li|ol|ul|dl|dt|td|th|tr|tbody|thead|tfoot|caption|colgroup|table|div|b|bdo|big|cite|code|del|dfn|em|i|ins|kbd|label|q|samp|small|span|strike|strong|sub|sup|tt|u|var|abbr|acronym|font|center|object|embed|style|script|title|head)$/i,
-		// This expression is deprecated as of TYPO3 4.6
-	RE_noClosingTag		: /^(area|base|br|col|command|embed|hr|img|input|keygen|meta|param|source|track|wbr)$/i,
 	RE_numberOrPunctuation	: /[0-9.(),;:!¡?¿%#$'"_+=\\\/-]*/g,
+	/***************************************************
+	 * BROWSER IDENTIFICATION                          *
+	 ***************************************************/
+	isIEBeforeIE9: Ext.isIE6 || Ext.isIE7 || Ext.isIE8 || (Ext.isIE && typeof(document.documentMode) !== 'undefined' && document.documentMode < 9),
 	/***************************************************
 	 * LOCALIZATION                                    *
 	 ***************************************************/
@@ -138,12 +136,13 @@ Ext.apply(HTMLArea, {
 			var type = 'info';
 		}
 		if (typeof(console) !== 'undefined' && typeof(console) === 'object') {
-				// If console is TYPO3.Backend.DebugConsole, write only error messages
+			// If console is TYPO3.Backend.DebugConsole, write only error messages
 			if (Ext.isFunction(console.addTab)) {
 				if (type === 'error') {
 					console[type](str);
 				}
-			} else {
+			// IE may not have any console
+			} else if (typeof(console[type]) !== 'undefined') {
 				console[type](str);
 			}
 		}
@@ -174,8 +173,8 @@ HTMLArea.Config = function (editorId) {
 	this.htmlRemoveTagsAndContents = /none/i;
 		// Remove comments
 	this.htmlRemoveComments = false;
-		// Custom tags (must be a regular expression)
-	this.customTags = /none/i;
+		// Array of custom tags
+	this.customTags = [];
 		// BaseURL to be included in the iframe document
 	this.baseURL = document.baseURI;
 		// IE does not support document.baseURI
@@ -885,7 +884,7 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 	 * In all browsers, it breaks the evaluation of the framework dimensions
 	 */
 	initStyleChangeEventListener: function () {
-		if (this.isNested  && Ext.isGecko) {
+		if (this.isNested && Ext.isGecko) {
 			var options = {
 				stopEvent: true,
 				delay: 50
@@ -976,6 +975,7 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 			this.getEditor().document = this.document;
 			this.getEditor()._doc = this.document;
 			this.getEditor()._iframe = iframe;
+			this.initializeCustomTags();
 			this.createHead();
 				// Style the document body
 			Ext.get(this.document.body).addClass('htmlarea-content-body');
@@ -989,6 +989,19 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 				// Set iframe ready
 			this.ready = true;
 			this.fireEvent('HTMLAreaEventIframeReady');
+		}
+	},
+	/*
+	 * Create one of each of the configured custom tags so they are properly parsed by the walker when using IE
+	 * See: http://en.wikipedia.org/wiki/HTML5_Shiv
+	 *
+	 * @return	void
+	 */
+	initializeCustomTags: function () {
+		if (HTMLArea.isIEBeforeIE9) {
+			Ext.each(this.config.customTags, function (tag) {
+				this.document.createElement(tag);
+			}, this);
 		}
 	},
 	/*
@@ -1020,19 +1033,8 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 			head.appendChild(link0);
 			this.getEditor().appendToLog('HTMLArea.Iframe', 'createHead', 'Skin CSS set to: ' + link0.href, 'info');
 		}
-		if (this.config.defaultPageStyle) {
-			var link = this.document.getElementsByTagName('link')[1];
-			if (!link) {
-				link = this.document.createElement('link');
-				link.rel = 'stylesheet';
-				link.type = 'text/css';
-				link.href = ((Ext.isGecko && navigator.productSub < 2010072200 && !/^https?:\/{2}/.test(this.config.defaultPageStyle)) ? this.config.baseURL : '') + this.config.defaultPageStyle;
-				head.appendChild(link);
-			}
-			this.getEditor().appendToLog('HTMLArea.Iframe', 'createHead', 'Override CSS set to: ' + link.href, 'info');
-		}
 		if (this.config.pageStyle) {
-			var link = this.document.getElementsByTagName('link')[2];
+			var link = this.document.getElementsByTagName('link')[1];
 			if (!link) {
 				link = this.document.createElement('link');
 				link.rel = 'stylesheet';
@@ -1695,7 +1697,7 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 	selectElement: function (element) {
 		var editor = this.getEditor();
 		element.blur();
-		if (!Ext.isIE) {
+		if (!HTMLArea.isIEBeforeIE9) {
 			if (/^(img|table)$/i.test(element.ancestor.nodeName)) {
 				editor.getSelection().selectNode(element.ancestor);
 			} else {
@@ -2113,7 +2115,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 	/*
 	 * Determine whether the editor document is currently contentEditable
 	 *
-	 * @return	boolean		true, if the document is contentEditable	
+	 * @return	boolean		true, if the document is contentEditable
 	 */
  	isEditable: function () {
  		return Ext.isIE ? this.document.body.contentEditable : (this.document.designMode === 'on');
@@ -2372,6 +2374,43 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 				this.textArea.set({ value: html }, false);;
 				break;
 		}
+	},
+	/*
+	 * Get the node given its position in the document tree.
+	 * Adapted from FCKeditor
+	 * See HTMLArea.DOM.Node::getPositionWithinTree
+	 *
+	 * @param	array		position: the position of the node in the document tree
+	 * @param	boolean		normalized: if true, a normalized position is given
+	 *
+	 * @return	objet		the node
+	 */
+	getNodeByPosition: function (position, normalized) {
+		var current = this.document.documentElement;
+		for (var i = 0, n = position.length; current && i < n; i++) {
+			var target = position[i];
+			if (normalized) {
+				var currentIndex = -1;
+				for (var j = 0, m = current.childNodes.length; j < m; j++) {
+					var candidate = current.childNodes[j];
+					if (
+						candidate.nodeType == HTMLArea.DOM.TEXT_NODE
+						&& candidate.previousSibling
+						&& candidate.previousSibling.nodeType == HTMLArea.DOM.TEXT_NODE
+					) {
+						continue;
+					}
+					currentIndex++;
+					if (currentIndex == target) {
+						current = candidate;
+						break;
+					}
+				}
+			} else {
+				current = current.childNodes[target];
+			}
+		}
+		return current ? current : null;
 	},
 	/*
 	 * Instantiate the specified plugin and register it with the editor
@@ -2848,7 +2887,7 @@ Ext.apply(HTMLArea.util, {
 		str = str.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 		str = str.replace(/&nbsp;/g, '\xA0'); // Decimal 160, non-breaking-space
 		str = str.replace(/&quot;/g, '\x22');
-		str = str.replace(/&#39;/g, "'") ;
+		str = str.replace(/&#39;/g, "'");
 		str = str.replace(/&amp;/g, '&');
 		return str;
 	},
@@ -3020,7 +3059,7 @@ HTMLArea.DOM = function () {
 				} else {
 					if (!Ext.isOpera) {
 						node.removeAttribute('class');
-						if (Ext.isIE) {
+						if (HTMLArea.isIEBeforeIE9) {
 							node.removeAttribute('className');
 						}
 					} else {
@@ -3037,7 +3076,7 @@ HTMLArea.DOM = function () {
 		 * @return	string		the text inside the node
 		 */
 		getInnerText: function (node) {
-			return (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) ? node.innerText : node.textContent;;
+			return HTMLArea.isIEBeforeIE9 ? node.innerText : node.textContent;;
 		},
 		/*
 		 * Get the block ancestors of a node within a given block
@@ -3084,6 +3123,31 @@ HTMLArea.DOM = function () {
 				}
 			}
 			return ancestor;
+		},
+		/*
+		 * Get the position of the node within the children of its parent
+		 * Adapted from FCKeditor
+		 *
+		 * @param	object		node: the DOM node
+		 * @param	boolean		normalized: if true, a normalized position is calculated
+		 *
+		 * @return	integer		the position of the node
+		 */
+		getPositionWithinParent: function (node, normalized) {
+			var current = node,
+				position = 0;
+			while (current = current.previousSibling) {
+				// For a normalized position, do not count any empty text node or any text node following another one
+				if (
+					normalized
+					&& current.nodeType == HTMLArea.DOM.TEXT_NODE
+					&& (!current.nodeValue.length || (current.previousSibling && current.previousSibling.nodeType == HTMLArea.DOM.TEXT_NODE))
+				) {
+					continue;
+				}
+				position++;
+			}
+			return position;
 		},
 		/*
 		 * Determine whether a given node has any allowed attributes
@@ -3163,7 +3227,7 @@ HTMLArea.DOM = function () {
 			var rangeIntersectsNode = false,
 				ownerDocument = node.ownerDocument;
 			if (ownerDocument) {
-				if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+				if (HTMLArea.isIEBeforeIE9) {
 					var nodeRange = ownerDocument.body.createTextRange();
 					nodeRange.moveToElementText(node);
 					rangeIntersectsNode = (range.compareEndPoints('EndToStart', nodeRange) == -1 && range.compareEndPoints('StartToEnd', nodeRange) == 1) ||
@@ -3384,7 +3448,7 @@ HTMLArea.DOM.Walker = Ext.extend(HTMLArea.DOM.Walker, {
 		var attributes = node.attributes;
 		var filterededAttributes = [];
 		var attribute, attributeName, attributeValue;
-		for (var i = attributes.length; --i >= 0 ;) {
+		for (var i = attributes.length; --i >= 0;) {
 			attribute = attributes.item(i);
 			attributeName = attribute.nodeName.toLowerCase();
 			attributeValue = attribute.nodeValue;
@@ -3397,9 +3461,11 @@ HTMLArea.DOM.Walker = Ext.extend(HTMLArea.DOM.Walker, {
 				continue;
 			}
 			if (Ext.isIE) {
-					// IE fails to put style in attributes list.
+					// IE before I9 fails to put style in attributes list.
 				if (attributeName === 'style') {
-					attributeValue = node.style.cssText;
+					if (HTMLArea.isIEBeforeIE9) {
+						attributeValue = node.style.cssText;
+					}
 					// May need to strip the base url
 				} else if (attributeName === 'href' || attributeName === 'src') {
 					attributeValue = this.stripBaseURL(attributeValue);
@@ -3525,7 +3591,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	 * Get the current selection object
 	 *
 	 * @return	object		this
-	 */		
+	 */
 	get: function () {
 		this.editor.focus();
 	 	this.selection = this.window.getSelection ? this.window.getSelection() : this.document.selection;
@@ -3594,7 +3660,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 		var isEmpty = true;
 		this.get();
 		if (!Ext.isEmpty(this.selection)) {
-			if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+			if (HTMLArea.isIEBeforeIE9) {
 				switch (this.selection.type) {
 					case 'None':
 						isEmpty = true;
@@ -3620,7 +3686,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	createRange: function () {
 		var range;
 		this.get();
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			range = this.selection.createRange();
 		} else {
 			if (Ext.isEmpty(this.selection)) {
@@ -3732,7 +3798,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	selectNode: function (node, endPoint) {
 		this.get();
 		if (!Ext.isEmpty(this.selection)) {
-			if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+			if (HTMLArea.isIEBeforeIE9) {
 					// IE8/7/6 cannot set this type of selection
 				this.selectNodeContents(node, endPoint);
 			} else if (Ext.isWebKit && /^(img)$/i.test(node.nodeName)) {
@@ -3769,7 +3835,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 		var range;
 		this.get();
 		if (!Ext.isEmpty(this.selection)) {
-			if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+			if (HTMLArea.isIEBeforeIE9) {
 				range = this.document.body.createTextRange();
 				range.moveToElementText(node);
 			} else {
@@ -3795,13 +3861,13 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	/*
 	 * Get the deepest node that contains both endpoints of the current selection.
 	 *
-	 * @return	object		the deepest node that contains both endpoints of the current selection.	
+	 * @return	object		the deepest node that contains both endpoints of the current selection.
 	 */
 	getParentElement: function () {
 		var parentElement,
 			range;
 		this.get();
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			range = this.createRange();
 			switch (this.selection.type) {
 				case 'Text':
@@ -3930,7 +3996,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 			var range = this.createRange();
 			var ancestors = this.getAllAncestors();
 			Ext.each(ancestors, function (ancestor) {
-				if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+				if (HTMLArea.isIEBeforeIE9) {
 					isFullySelected = (type !== 'Control' && ancestor.innerText == range.text) || (type === 'Control' && ancestor.innerText == range.item(0).text);
 				} else {
 					isFullySelected = (ancestor.textContent == range.toString());
@@ -3960,7 +4026,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 		var range = this.createRange(),
 			parentStart,
 			parentEnd;
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			if (this.getType() === 'Control') {
 				parentStart = range.item(0);
 				parentEnd = parentStart;
@@ -4015,7 +4081,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	getHtml: function () {
 		var range = this.createRange(),
 			html = '';
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			if (this.getType() === 'Control') {
 					// We have a controlRange collection
 				var bodyRange = this.document.body.createTextRange();
@@ -4043,7 +4109,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	 * @return	object		this
 	 */
 	insertNode: function (toBeInserted) {
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			this.insertHtml(toBeInserted.outerHTML);
 		} else {
 			var range = this.createRange();
@@ -4063,7 +4129,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	 * @return	object		this
 	 */
 	insertHtml: function (html) {
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			this.get();
 			if (this.getType() === 'Control') {
 				this.selection.clear();
@@ -4099,23 +4165,22 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	 * Execute some native execCommand command on the current selection
 	 *
 	 * @param	string		cmdID: the command name or id
-	 * @param	object		UI: 
+	 * @param	object		UI:
 	 * @param	object		param:
 	 *
 	 * @return	boolean		false
 	 */
 	execCommand: function (cmdID, UI, param) {
+		var success = true;
 		this.editor.focus();
-		switch (cmdID) {
-			default:
-				try {
-					this.document.execCommand(cmdID, UI, param);
-				} catch(e) {
-					this.editor.appendToLog('HTMLArea.DOM.Selection', 'execCommand', e + ' by execCommand(' + cmdID + ')', 'error');
-				}
+		try {
+			this.document.execCommand(cmdID, UI, param);
+		} catch (e) {
+			success = false;
+			this.editor.appendToLog('HTMLArea.DOM.Selection', 'execCommand', e + ' by execCommand(' + cmdID + ')', 'error');
 		}
 		this.editor.updateToolbar();
-		return false;
+		return success;
 	},
 	/*
 	 * Handle backspace event on the current selection
@@ -4124,7 +4189,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	 */
 	handleBackSpace: function () {
 		var range = this.createRange();
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			if (this.getType() === 'Control') {
 					// Deleting or backspacing on a control selection : delete the element
 				var element = this.getParentElement();
@@ -4203,14 +4268,14 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 					}
 				}
 			}, 10);
-			return false;	
+			return false;
 		}
 	},
 	/*
 	 * Detect emails and urls as they are typed in non-IE browsers
 	 * Borrowed from Xinha (is not htmlArea) - http://xinha.gogo.co.nz/
 	 *
-	 * @param	object		event: the ExtJS key event 
+	 * @param	object		event: the ExtJS key event
 	 *
 	 * @return	void
 	 */
@@ -4229,7 +4294,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 				a.appendChild(textNode);
 				selection.collapse(rightText, 0);
 				rightText.parentNode.normalize();
-		
+
 				editor.unLink = function() {
 					var t = a.firstChild;
 					a.removeChild(t);
@@ -4239,7 +4304,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 					editor.unLink = null;
 					editor.unlinkOnUndo = false;
 				};
-		
+
 				editor.unlinkOnUndo = true;
 				return a;
 			};
@@ -4311,7 +4376,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 									break;
 								}
 								var m = selection.anchorNode.data.match(HTMLArea.RE_url);
-								if (m &&  a.href.match(selection.anchorNode.data.trim())) {
+								if (m && a.href.match(selection.anchorNode.data.trim())) {
 									var textNode = selection.anchorNode;
 									var fn = function() {
 										var m = textNode.data.match(HTMLArea.RE_url);
@@ -4543,6 +4608,32 @@ HTMLArea.DOM.BookMark = Ext.extend(HTMLArea.DOM.BookMark, {
 	},
 	/*
 	 * Get a bookMark
+	 *
+	 * @param	object		range: the range to bookMark
+	 * @param	boolean		nonIntrusive: if true, a non-intrusive bookmark is requested
+	 *
+	 * @return	object		the bookMark
+	 */
+	get: function (range, nonIntrusive) {
+		var bookMark;
+		if (HTMLArea.isIEBeforeIE9) {
+			// Bookmarking will not work on control ranges
+			try {
+				bookMark = range.getBookmark();
+			} catch (e) {
+				bookMark = null;
+			}
+		} else {
+			if (nonIntrusive) {
+				bookMark = this.getNonIntrusiveBookMark(range, true);
+			} else {
+				bookMark = this.getIntrusiveBookMark(range);
+			}
+		}
+		return bookMark;
+	},
+	/*
+	 * Get an intrusive bookMark
 	 * Adapted from FCKeditor
 	 * This is an "intrusive" way to create a bookMark. It includes <span> tags
 	 * in the range boundaries. The advantage of it is that it is possible to
@@ -4552,54 +4643,141 @@ HTMLArea.DOM.BookMark = Ext.extend(HTMLArea.DOM.BookMark, {
 	 *
 	 * @return	object		the bookMark
 	 */
-	get: function (range) {
-		var bookMark;
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
-				// Bookmarking will not work on control ranges
-			try {
-				bookMark = range.getBookmark();
-			} catch (e) {
-				bookMark = null;
-			}
-		} else {
-				// Create the bookmark info (random IDs).
-			var bookMark = {
-				startId : (new Date()).valueOf() + Math.floor(Math.random()*1000) + 'S',
-				endId   : (new Date()).valueOf() + Math.floor(Math.random()*1000) + 'E'
-			};
-			var startSpan;
-			var endSpan;
-			var rangeClone = range.cloneRange();
-				// For collapsed ranges, add just the start marker
-			if (!range.collapsed ) {
-				endSpan = this.document.createElement('span');
-				endSpan.style.display = 'none';
-				endSpan.id = bookMark.endId;
-				endSpan.setAttribute('data-htmlarea-bookmark', true);
-				endSpan.innerHTML = '&nbsp;';
-				rangeClone.collapse(false);
-				rangeClone.insertNode(endSpan);
-			}
-			startSpan = this.document.createElement('span');
-			startSpan.style.display = 'none';
-			startSpan.id = bookMark.startId;
-			startSpan.setAttribute('data-htmlarea-bookmark', true);
-			startSpan.innerHTML = '&nbsp;';
-			var rangeClone = range.cloneRange();
-			rangeClone.collapse(true);
-			rangeClone.insertNode(startSpan);
-			bookMark.startNode = startSpan;
-			bookMark.endNode = endSpan;
-				// Update the range position.
-			if (endSpan) {
-				range.setEndBefore(endSpan);
-				range.setStartAfter(startSpan);
-			} else {
-				range.setEndAfter(startSpan);
-				range.collapse(false);
-			}
-			return bookMark;
+	getIntrusiveBookMark: function (range) {
+		// Create the bookmark info (random IDs).
+		var bookMark = {
+			nonIntrusive: false,
+			startId: (new Date()).valueOf() + Math.floor(Math.random()*1000) + 'S',
+			endId: (new Date()).valueOf() + Math.floor(Math.random()*1000) + 'E'
+		};
+		var startSpan;
+		var endSpan;
+		var rangeClone = range.cloneRange();
+		// For collapsed ranges, add just the start marker
+		if (!range.collapsed ) {
+			endSpan = this.document.createElement('span');
+			endSpan.style.display = 'none';
+			endSpan.id = bookMark.endId;
+			endSpan.setAttribute('data-htmlarea-bookmark', true);
+			endSpan.innerHTML = '&nbsp;';
+			rangeClone.collapse(false);
+			rangeClone.insertNode(endSpan);
 		}
+		startSpan = this.document.createElement('span');
+		startSpan.style.display = 'none';
+		startSpan.id = bookMark.startId;
+		startSpan.setAttribute('data-htmlarea-bookmark', true);
+		startSpan.innerHTML = '&nbsp;';
+		var rangeClone = range.cloneRange();
+		rangeClone.collapse(true);
+		rangeClone.insertNode(startSpan);
+		bookMark.startNode = startSpan;
+		bookMark.endNode = endSpan;
+		// Update the range position.
+		if (endSpan) {
+			range.setEndBefore(endSpan);
+			range.setStartAfter(startSpan);
+		} else {
+			range.setEndAfter(startSpan);
+			range.collapse(false);
+		}
+		return bookMark;
+	},
+	/*
+	 * Get a non-intrusive bookMark
+	 * Adapted from FCKeditor
+	 *
+	 * @param	object		range: the range to bookMark
+	 * @param	boolean		normalized: if true, normalized enpoints are calculated
+	 *
+	 * @return	object		the bookMark
+	 */
+	getNonIntrusiveBookMark: function (range, normalized) {
+		var startContainer = range.startContainer,
+			endContainer = range.endContainer,
+			startOffset = range.startOffset,
+			endOffset = range.endOffset,
+			collapsed = range.collapsed,
+			child,
+			previous,
+			bookMark = {};
+		if (!startContainer || !endContainer) {
+			bookMark = {
+				nonIntrusive: true,
+				start: 0,
+				end: 0
+			};
+		} else {
+			if (normalized) {
+				// Find out if the start is pointing to a text node that might be normalized
+				if (startContainer.nodeType == HTMLArea.DOM.NODE_ELEMENT) {
+					child = startContainer.childNodes[startOffset];
+					// In this case, move the start to that text node
+					if (
+						child
+						&& child.nodeType == HTMLArea.DOM.NODE_TEXT
+						&& startOffset > 0
+						&& child.previousSibling.nodeType == HTMLArea.DOM.NODE_TEXT
+					) {
+						startContainer = child;
+						startOffset = 0;
+					}
+					// Get the normalized offset
+					if (child && child.nodeType == HTMLArea.DOM.NODE_ELEMENT) {
+						startOffset = HTMLArea.DOM.getPositionWithinParent(child, true);
+					}
+				}
+				// Normalize the start
+				while (
+					startContainer.nodeType == HTMLArea.DOM.NODE_TEXT
+					&& (previous = startContainer.previousSibling)
+					&& previous.nodeType == HTMLArea.DOM.NODE_TEXT
+				) {
+					startContainer = previous;
+					startOffset += previous.nodeValue.length;
+				}
+				// Process the end only if not collapsed
+				if (!collapsed) {
+					// Find out if the start is pointing to a text node that will be normalized
+					if (endContainer.nodeType == HTMLArea.DOM.NODE_ELEMENT) {
+						child = endContainer.childNodes[endOffset];
+						// In this case, move the end to that text node
+						if (
+							child
+							&& child.nodeType == HTMLArea.DOM.NODE_TEXT
+							&& endOffset > 0
+							&& child.previousSibling.nodeType == HTMLArea.DOM.NODE_TEXT
+						) {
+							endContainer = child;
+							endOffset = 0;
+						}
+						// Get the normalized offset
+						if (child && child.nodeType == HTMLArea.DOM.NODE_ELEMENT) {
+							endOffset = HTMLArea.DOM.getPositionWithinParent(child, true);
+						}
+					}
+					// Normalize the end
+					while (
+						endContainer.nodeType == HTMLArea.DOM.NODE_TEXT
+						&& (previous = endContainer.previousSibling)
+						&& previous.nodeType == HTMLArea.DOM.NODE_TEXT
+					) {
+						endContainer = previous;
+						endOffset += previous.nodeValue.length;
+					}
+				}
+			}
+			bookMark = {
+				start: this.editor.domNode.getPositionWithinTree(startContainer, normalized),
+				end: collapsed ? null : getPositionWithinTree(endContainer, normalized),
+				startOffset: startOffset,
+				endOffset: endOffset,
+				normalized: normalized,
+				collapsed: collapsed,
+				nonIntrusive: true
+			};
+		}
+		return bookMark;
 	},
 	/*
 	 * Get the end point of the bookMark
@@ -4618,8 +4796,7 @@ HTMLArea.DOM.BookMark = Ext.extend(HTMLArea.DOM.BookMark, {
 		}
 	},
 	/*
-	 * Move the range to the bookmark
-	 * Adapted from FCKeditor
+	 * Get a range and move it to the bookMark
 	 *
 	 * @param	object		bookMark: the bookmark to move to
 	 *
@@ -4627,35 +4804,80 @@ HTMLArea.DOM.BookMark = Ext.extend(HTMLArea.DOM.BookMark, {
 	 */
 	moveTo: function (bookMark) {
 		var range = this.selection.createRange();
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			if (bookMark) {
 				range.moveToBookmark(bookMark);
 			}
 		} else {
-			var startSpan  = this.getEndPoint(bookMark, true);
-			var endSpan    = this.getEndPoint(bookMark, false);
-			var parent;
-			if (startSpan) {
-					// If the previous sibling is a text node, let the anchorNode have it as parent
-				if (startSpan.previousSibling && startSpan.previousSibling.nodeType === HTMLArea.DOM.TEXT_NODE) {
-					range.setStart(startSpan.previousSibling, startSpan.previousSibling.data.length);
-				} else {
-					range.setStartBefore(startSpan);
-				}
-				HTMLArea.DOM.removeFromParent(startSpan);
+			if (bookMark.nonIntrusive) {
+				range = this.moveToNonIntrusiveBookMark(range, bookMark);
 			} else {
-					// For some reason, the startSpan was removed or its id attribute was removed so that it cannot be retrieved
-				range.setStart(this.document.body, 0);
+				range = this.moveToIntrusiveBookMark(range, bookMark);
 			}
-				// If the bookmarked range was collapsed, the end span will not be available
-			if (endSpan) {
-					// If the next sibling is a text node, let the focusNode have it as parent
-				if (endSpan.nextSibling && endSpan.nextSibling.nodeType === HTMLArea.DOM.TEXT_NODE) {
-					range.setEnd(endSpan.nextSibling, 0);
-				} else {
-					range.setEndBefore(endSpan);
-				}
-				HTMLArea.DOM.removeFromParent(endSpan);
+		}
+		return range;
+	},
+	/*
+	 * Move the range to the intrusive bookMark
+	 * Adapted from FCKeditor
+	 *
+	 * @param	object		range: the range to be moved
+	 * @param	object		bookMark: the bookmark to move to
+	 *
+	 * @return	object		the range that was bookmarked
+	 */
+	moveToIntrusiveBookMark: function (range, bookMark) {
+		var startSpan = this.getEndPoint(bookMark, true),
+			endSpan = this.getEndPoint(bookMark, false),
+			parent;
+		if (startSpan) {
+			// If the previous sibling is a text node, let the anchorNode have it as parent
+			if (startSpan.previousSibling && startSpan.previousSibling.nodeType === HTMLArea.DOM.TEXT_NODE) {
+				range.setStart(startSpan.previousSibling, startSpan.previousSibling.data.length);
+			} else {
+				range.setStartBefore(startSpan);
+			}
+			HTMLArea.DOM.removeFromParent(startSpan);
+		} else {
+			// For some reason, the startSpan was removed or its id attribute was removed so that it cannot be retrieved
+			range.setStart(this.document.body, 0);
+		}
+		// If the bookmarked range was collapsed, the end span will not be available
+		if (endSpan) {
+			// If the next sibling is a text node, let the focusNode have it as parent
+			if (endSpan.nextSibling && endSpan.nextSibling.nodeType === HTMLArea.DOM.TEXT_NODE) {
+				range.setEnd(endSpan.nextSibling, 0);
+			} else {
+				range.setEndBefore(endSpan);
+			}
+			HTMLArea.DOM.removeFromParent(endSpan);
+		} else {
+			range.collapse(true);
+		}
+		return range;
+	},
+	/*
+	 * Move the range to the non-intrusive bookMark
+	 * Adapted from FCKeditor
+	 *
+	 * @param	object		range: the range to be moved
+	 * @param	object		bookMark: the bookMark to move to
+	 *
+	 * @return	object		the range that was bookmarked
+	 */
+	moveToNonIntrusiveBookMark: function (range, bookMark) {
+		if (bookMark.start) {
+			// Get the start information
+			var startContainer = this.editor.getNodeByPosition(bookMark.start, bookMark.normalized),
+				startOffset = bookMark.startOffset;
+			// Set the start boundary
+			range.setStart(startContainer, startOffset);
+			// Get the end information
+			var endContainer = bookMark.end && this.editor.getNodeByPosition(bookMark.end, bookMark.normalized),
+				endOffset = bookMark.endOffset;
+			// Set the end boundary. If not available, collapse the range
+			if (endContainer) {
+				range.setEnd(endContainer, endOffset);
 			} else {
 				range.collapse(true);
 			}
@@ -4721,7 +4943,7 @@ HTMLArea.DOM.Node = Ext.extend(HTMLArea.DOM.Node, {
 	 * @return	void
 	 */
 	wrapWithInlineElement: function (element, range) {
-		if (Ext.isIE8 || Ext.isIE7 || Ext.isIE6) {
+		if (HTMLArea.isIEBeforeIE9) {
 			var nodeName = element.nodeName;
 			var bookMark = this.bookMark.get(range);
 			if (range.parentElement) {
@@ -4732,7 +4954,7 @@ HTMLArea.DOM.Node = Ext.extend(HTMLArea.DOM.Node, {
 				var rangeEnd = range.duplicate();
 				rangeEnd.collapse(true);
 				var newRange = this.selection.createRange();
-				
+
 				var parentEnd = rangeEnd.parentElement();
 				var upperParentStart = parentStart;
 				if (parentStart !== parent) {
@@ -4740,7 +4962,7 @@ HTMLArea.DOM.Node = Ext.extend(HTMLArea.DOM.Node, {
 						upperParentStart = upperParentStart.parentNode;
 					}
 				}
-				
+
 				element.innerHTML = range.htmlText;
 					// IE eats spaces on the start boundary
 				if (range.htmlText.charAt(0) === '\x20') {
@@ -4799,6 +5021,34 @@ HTMLArea.DOM.Node = Ext.extend(HTMLArea.DOM.Node, {
 			}
 			this.selection.selectNodeContents(element, false);
 		}
+	},
+	/*
+	 * Get the position of the node within the document tree.
+	 * The tree address returned is an array of integers, with each integer
+	 * indicating a child index of a DOM node, starting from
+	 * document.documentElement.
+	 * The position cannot be used for finding back the DOM tree node once
+	 * the DOM tree structure has been modified.
+	 * Adapted from FCKeditor
+	 *
+	 * @param	object		node: the DOM node
+	 * @param	boolean		normalized: if true, a normalized position is calculated
+	 *
+	 * @return	array		the position of the node
+	 */
+	getPositionWithinTree: function (node, normalized) {
+		var documentElement = this.document.documentElement,
+			current = node,
+			position = [];
+		while (current && current != documentElement) {
+			var parentNode = current.parentNode;
+			if (parentNode) {
+				// Get the current node position
+				position.unshift(HTMLArea.DOM.getPositionWithinParent(current, normalized));
+			}
+			current = parentNode;
+		}
+		return position;
 	},
 	/*
 	 * Clean Apple wrapping span and font elements under the specified node
@@ -4878,7 +5128,7 @@ HTMLArea.isBlockElement = HTMLArea.DOM.isBlockElement;
 HTMLArea.needsClosingTag = HTMLArea.DOM.needsClosingTag;
 /*
  * Get the current selection object
- * 
+ *
  ***********************************************
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
@@ -5273,7 +5523,7 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 				this.error = 'Document.readyState not complete';
 			}
 		} else {
-			if (Ext.isIE) {
+			if (HTMLArea.isIEBeforeIE9) {
 				try {
 					var rules = this.editor.document.styleSheets[0].rules;
 					var imports = this.editor.document.styleSheets[0].imports;
@@ -5295,15 +5545,14 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 			}
 		}
 		if (this.cssLoaded) {
-				// Expecting 3 stylesheets...
-			if (this.editor.document.styleSheets.length > 2) {
+				// Expecting 2 stylesheets...
+			if (this.editor.document.styleSheets.length > 1) {
 				Ext.each(this.editor.document.styleSheets, function (styleSheet, index) {
 					try {
-						if (Ext.isIE) {
+						if (HTMLArea.isIEBeforeIE9) {
 							var rules = styleSheet.rules;
 							var imports = styleSheet.imports;
-								// Default page style may contain only a comment
-							if (!rules.length && !imports.length && index != 1) {
+							if (!rules.length && !imports.length) {
 								this.cssLoaded = false;
 								this.error = 'Empty rules and imports arrays of styleSheets[' + index + ']';
 								return false;
@@ -5343,7 +5592,7 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 				this.parseSelectorText(cssRules[rule].selectorText);
 			} else {
 					// Import rule
-				if (cssRules[rule].styleSheet) {
+				if (cssRules[rule].styleSheet && cssRules[rule].styleSheet.cssRules) {
 					this.parseRules(cssRules[rule].styleSheet.cssRules);
 				}
 					// Media rule
@@ -5827,18 +6076,6 @@ var lorem_ipsum = function (element, text) {
  */
 HTMLArea.Plugin = function (editor, pluginName) {
 };
-/**
- ***********************************************
- * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.6 *
- ***********************************************
- * Extends class HTMLArea.Plugin
- *
- * Defined for backward compatibility only
- * Use Ext.extend(SubClassName, config) directly
- */
-HTMLArea.Plugin.extend = function (config) {
-	return Ext.extend(HTMLArea.Plugin, config);
-};
 HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 	/**
 	 * HTMLArea.Plugin constructor
@@ -5860,18 +6097,6 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 			this.I18N = new Object();
 		}
 		this.configurePlugin(editor);
-		/**
-		 ***********************************************
-		 * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.6 *
-		 ***********************************************
-		 * Extends class HTMLArea[pluginName]
-		 *
-		 * Defined for backward compatibility only
-		 * Use Ext.extend(SubClassName, config) directly
-		 */
-		HTMLArea[pluginName].extend = function (config) {
-			return Ext.extend(HTMLArea[pluginName], config);
-		};
 	},
 	/**
 	 * Configures the plugin
@@ -5887,19 +6112,6 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 	 */
 	configurePlugin: function (editor) {
 		return false;
-	},
-	/**
-	 ***********************************************
-	 * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.6 *
-	 ***********************************************
-	 * Invove the base class constructor
-	 *
-	 * Defined for backward compatibility only
-	 * Note: this.base will exclusively refer to the HTMLArea.Plugin class constructor
-	 */
-	base: function (editor, pluginName) {
-		HTMLArea.appendToLog(editor.editorId, 'HTMLArea.' + pluginName, 'base', 'Deprecated use of base function. Use Ext superclass reference instead.', 'warn');
-		HTMLArea.Plugin.prototype.constructor.call(this, editor, pluginName);
 	},
 	/**
 	 * Registers the plugin "About" information
@@ -6265,7 +6477,6 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 			cls: 'htmlarea-window',
 			width: dimensions.width,
 			border: false,
-			resizable: true,
 			iconCls: this.getButton(buttonId).iconCls,
 			listeners: {
 				afterrender: {

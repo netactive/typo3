@@ -1,4 +1,5 @@
 <?php
+namespace TYPO3\CMS\Fluid\ViewHelpers\Format;
 
 /*                                                                        *
  * This script is part of the TYPO3 project - inspiring people to share!  *
@@ -12,12 +13,11 @@
  * TABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General      *
  * Public License for more details.                                       *
  *                                                                        */
-
 /**
  * This is the base class for ViewHelpers that work with encodings.
  * Currently that are format.htmlentities, format.htmlentitiesDecode and format.htmlspecialchars
  */
-abstract class Tx_Fluid_ViewHelpers_Format_AbstractEncodingViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
+abstract class AbstractEncodingViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
 
 	/**
 	 * @var string
@@ -31,17 +31,10 @@ abstract class Tx_Fluid_ViewHelpers_Format_AbstractEncodingViewHelper extends Tx
 	 */
 	protected function resolveDefaultEncoding() {
 		if (self::$defaultEncoding === NULL) {
-			if (TYPO3_MODE === 'BE') {
-				self::$defaultEncoding = strtoupper($GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset']);
-			} else {
-				self::$defaultEncoding = strtoupper($GLOBALS['TSFE']->renderCharset);
-			}
-			if (self::$defaultEncoding === NULL) {
-				self::$defaultEncoding = 'UTF-8';
-			}
+			self::$defaultEncoding = 'UTF-8';
 		}
 		return self::$defaultEncoding;
 	}
-
 }
+
 ?>

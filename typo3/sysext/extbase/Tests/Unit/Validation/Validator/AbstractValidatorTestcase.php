@@ -1,4 +1,5 @@
 <?php
+namespace TYPO3\CMS\Extbase\Tests\Unit\Validation\Validator;
 
 /*                                                                        *
  * This script belongs to the Extbase framework.                            *
@@ -19,19 +20,17 @@
  *                                                                        *
  * The TYPO3 project - inspiring people to share!                         *
  *                                                                        */
-
 /**
  * Testcase for the Abstract Validator
  *
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License, version 3 or later
  */
-abstract class Tx_Extbase_Tests_Unit_Validation_Validator_AbstractValidatorTestcase extends Tx_Extbase_Tests_Unit_BaseTestCase {
+abstract class AbstractValidatorTestcase extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 
 	protected $validatorClassName;
 
 	/**
-	 *
-	 * @var Tx_Extbase_Validation_Validator_ValidatorInterface
+	 * @var \TYPO3\CMS\Extbase\Validation\Validator\ValidatorInterface
 	 */
 	protected $validator;
 
@@ -39,12 +38,18 @@ abstract class Tx_Extbase_Tests_Unit_Validation_Validator_AbstractValidatorTestc
 		$this->validator = $this->getValidator();
 	}
 
+	/**
+	 * @param array $options
+	 * @return mixed
+	 */
 	protected function getValidator($options = array()) {
 		$validator = new $this->validatorClassName($options);
-
 		return $validator;
 	}
 
+	/**
+	 * @param array $options
+	 */
 	protected function validatorOptions($options) {
 		$this->validator = $this->getValidator($options);
 	}

@@ -9,6 +9,15 @@
 			<trans-unit id="LGL.hidden" xml:space="preserve">
 				<source>Hide:</source>
 			</trans-unit>
+			<trans-unit id="LGL.timestamp" xml:space="preserve">
+				<source>Last Modified:</source>
+			</trans-unit>
+			<trans-unit id="LGL.creationDate" xml:space="preserve">
+				<source>Created At:</source>
+			</trans-unit>
+			<trans-unit id="LGL.creationUserId" xml:space="preserve">
+				<source>Created By:</source>
+			</trans-unit>
 			<trans-unit id="LGL.starttime" xml:space="preserve">
 				<source>Start:</source>
 			</trans-unit>
@@ -134,6 +143,12 @@
 			</trans-unit>
 			<trans-unit id="LGL.disable" xml:space="preserve">
 				<source>Disable:</source>
+			</trans-unit>
+			<trans-unit id="LGL.baseStorage" xml:space="preserve">
+				<source>Storage:</source>
+			</trans-unit>
+			<trans-unit id="LGL.folder" xml:space="preserve">
+				<source>Folder:</source>
 			</trans-unit>
 			<trans-unit id="LGL.startingpoint" xml:space="preserve">
 				<source>Startingpoint:</source>
