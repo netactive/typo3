@@ -96,7 +96,8 @@ class Tx_Extbase_Persistence_Mapper_DataMapFactory implements t3lib_Singleton {
 		$classSettings = $frameworkConfiguration['persistence']['classes'][$className];
 		if ($classSettings !== NULL) {
 			if (isset($classSettings['subclasses']) && is_array($classSettings['subclasses'])) {
-				$subclasses = $classSettings['subclasses'];
+				$subclasses = $this->resolveSubclassesRecursive(
+				$frameworkConfiguration['persistence']['classes'], $classSettings['subclasses']);
 			}
 			if (isset($classSettings['mapping']['recordType']) && strlen($classSettings['mapping']['recordType']) > 0) {
 				$recordType = $classSettings['mapping']['recordType'];
@@ -139,6 +140,26 @@ class Tx_Extbase_Persistence_Mapper_DataMapFactory implements t3lib_Singleton {
 		}
 		// debug($dataMap);
 		return $dataMap;
+	}
+
+	/**
+	 * Resolves all subclasses for the given set of (sub-)classes.
+	 * The whole classes configuration is used to determine all subclasses recursively.
+	 *
+	 * @param array $classes The framework configuration part [persistence][classes].
+	 * @param array $subclasses An array of subclasses defined via TypoScript
+	 * @return array An numeric array that contains all available subclasses-strings as values.
+	 */
+	protected function resolveSubclassesRecursive(array $classesConfiguration, array $subclasses) {
+		$allSubclasses = array();
+		foreach ($subclasses as $subclass) {
+			$allSubclasses[] = $subclass;
+			if (isset($classesConfiguration[$subclass]['subclasses']) && is_array($classesConfiguration[$subclass]['subclasses'])) {
+				$childSubclasses = $this->resolveSubclassesRecursive($classesConfiguration, $classesConfiguration[$subclass]['subclasses']);
+				$allSubclasses = array_merge($allSubclasses,$childSubclasses);
+			}
+		}
+		return $allSubclasses;
 	}
 
 	/**
@@ -293,6 +314,9 @@ class Tx_Extbase_Persistence_Mapper_DataMapFactory implements t3lib_Singleton {
 			$columnMap->setParentKeyFieldName($columnConfiguration['foreign_field']);
 			$columnMap->setChildKeyFieldName($childKeyFieldName);
 			$columnMap->setChildSortByFieldName($columnConfiguration['foreign_sortby']);
+			if (!empty($columnConfiguration['foreign_table_field'])) {
+				$columnMap->setParentTableFieldName($columnConfiguration['foreign_table_field']);
+			}
 		} else {
 			throw new Tx_Extbase_Persistence_Exception_UnsupportedRelation('The given information to build a many-to-many-relation was not sufficient. Check your TCA definitions. mm-relations with IRRE must have at least a defined "MM" or "foreign_selector".', 1268817963);
 		}
