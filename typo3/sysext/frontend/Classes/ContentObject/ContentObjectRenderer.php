@@ -803,12 +803,15 @@ class ContentObjectRenderer {
 			'FLOWPLAYER' => 'FlowPlayer',
 			'QTOBJECT' => 'QuicktimeObject',
 			'SVG' => 'ScalableVectorGraphics',
-			'EDITPANEL' => 'EditPanel'
+			'EDITPANEL' => 'EditPanel',
 		);
 		$name = $classMapping[$name];
 		if (!array_key_exists($name, $this->contentObjects)) {
 			try {
-				$this->contentObjects[$name] = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tslib_content_' . $name, $this);
+				$this->contentObjects[$name] = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
+					'TYPO3\\CMS\\Frontend\\ContentObject\\' . $name . 'ContentObject',
+					$this
+				);
 			} catch (\ReflectionException $e) {
 				$this->contentObjects[$name] = NULL;
 			}
@@ -2693,8 +2696,8 @@ class ContentObjectRenderer {
 	}
 
 	/**
-	 * cropHTML
-	 * Crops content to a given size without caring abhout HTML tags
+	 * crop
+	 * Crops content to a given size without caring about HTML tags
 	 *
 	 * @param string $content Input value undergoing processing in this function.
 	 * @param array $conf stdWrap properties for crop.
@@ -4255,11 +4258,11 @@ class ContentObjectRenderer {
 	}
 
 	/**
-	 * Performs basic mathematical evaluation of the input string. Does NOT take parathesis and operator precedence into account! (for that, see t3lib_utility_Math::calculateWithPriorityToAdditionAndSubtraction())
+	 * Performs basic mathematical evaluation of the input string. Does NOT take parathesis and operator precedence into account! (for that, see \TYPO3\CMS\Core\Utility\MathUtility::calculateWithPriorityToAdditionAndSubtraction())
 	 *
 	 * @param string $val The string to evaluate. Example: "3+4*10/5" will generate "35". Only integer numbers can be used.
 	 * @return integer The result (might be a float if you did a division of the numbers).
-	 * @see t3lib_utility_Math::calculateWithPriorityToAdditionAndSubtraction()
+	 * @see \TYPO3\CMS\Core\Utility\MathUtility::calculateWithPriorityToAdditionAndSubtraction()
 	 * @todo Define visibility
 	 */
 	public function calc($val) {
@@ -6090,7 +6093,7 @@ class ContentObjectRenderer {
 	 *
 	 * @param string $label Text string being wrapped by the link.
 	 * @param string $params Link parameter; eg. "123" for page id, "kasperYYYY@typo3.com" for email address, "http://...." for URL, "fileadmin/blabla.txt" for file.
-	 * @param array $urlParameters An array with key/value pairs representing URL parameters to set. Values NOT URL-encoded yet.
+	 * @param array|string $urlParameters As an array key/value pairs represent URL parameters to set. Values NOT URL-encoded yet, keys should be URL-encoded if needed. As a string the parameter is expected to be URL-encoded already.
 	 * @param string $target Specific target set, if any. (Default is using the current)
 	 * @return string The wrapped $label-text string
 	 * @see getTypoLink_URL()
@@ -6119,7 +6122,7 @@ class ContentObjectRenderer {
 	 * Returns the URL of a "typolink" create from the input parameter string, url-parameters and target
 	 *
 	 * @param string $params Link parameter; eg. "123" for page id, "kasperYYYY@typo3.com" for email address, "http://...." for URL, "fileadmin/blabla.txt" for file.
-	 * @param array $urlParameters An array with key/value pairs representing URL parameters to set. Values NOT URL-encoded yet.
+	 * @param array|string $urlParameters As an array key/value pairs represent URL parameters to set. Values NOT URL-encoded yet, keys should be URL-encoded if needed. As a string the parameter is expected to be URL-encoded already.
 	 * @param string $target Specific target set, if any. (Default is using the current)
 	 * @return string The URL
 	 * @see getTypoLink()
@@ -6146,7 +6149,7 @@ class ContentObjectRenderer {
 	/**
 	 * Returns the current page URL
 	 *
-	 * @param array $urlParameters Optionally you can specify additional URL parameters. An array with key/value pairs representing URL parameters to set. Values NOT URL-encoded yet.
+	 * @param array|string $urlParameters As an array key/value pairs represent URL parameters to set. Values NOT URL-encoded yet, keys should be URL-encoded if needed. As a string the parameter is expected to be URL-encoded already.
 	 * @param integer $id An alternative ID to the current id ($GLOBALS['TSFE']->id)
 	 * @return string The URL
 	 * @see getTypoLink_URL()
@@ -6167,7 +6170,7 @@ class ContentObjectRenderer {
 	 * @todo Define visibility
 	 */
 	public function getClosestMPvalueForPage($pageId, $raw = FALSE) {
-		// MointPoints:
+		// MountPoints:
 		if ($GLOBALS['TYPO3_CONF_VARS']['FE']['enable_mount_pids'] && $GLOBALS['TSFE']->MP) {
 			// Same page as current.
 			if (!strcmp($GLOBALS['TSFE']->id, $pageId)) {

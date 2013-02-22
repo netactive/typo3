@@ -740,7 +740,9 @@ class RteHtmlParser extends \TYPO3\CMS\Core\Html\HtmlParser {
 				$link_param = $tagCode[1];
 				$href = '';
 				// Parsing the typolink data. This parsing is roughly done like in tslib_content->typolink()
-				if (strstr($link_param, '@')) {
+				// Parse URL:
+				$pU = parse_url($link_param);
+				if (strstr($link_param, '@') && (!$pU['scheme'] || $pU['scheme'] == 'mailto')) {
 					// mailadr
 					$href = 'mailto:' . preg_replace('/^mailto:/i', '', $link_param);
 				} elseif (substr($link_param, 0, 1) == '#') {
@@ -754,8 +756,6 @@ class RteHtmlParser extends \TYPO3\CMS\Core\Html\HtmlParser {
 					} else {
 						$fileChar = intval(strpos($link_param, '/'));
 						$urlChar = intval(strpos($link_param, '.'));
-						// Parse URL:
-						$pU = parse_url($link_param);
 						// Detects if a file is found in site-root.
 						list($rootFileDat) = explode('?', $link_param);
 						$rFD_fI = pathinfo($rootFileDat);
@@ -1164,7 +1164,7 @@ class RteHtmlParser extends \TYPO3\CMS\Core\Html\HtmlParser {
 	 *
 	 * @param string $url Filepath/URL to read
 	 * @return string The content from the resource given as input.
-	 * @see t3lib_div::getUrl()
+	 * @see \TYPO3\CMS\Core\Utility\GeneralUtility::getUrl()
 	 * @todo Define visibility
 	 */
 	public function getUrl($url) {
@@ -1542,8 +1542,8 @@ class RteHtmlParser extends \TYPO3\CMS\Core\Html\HtmlParser {
 	/**
 	 * Returns SiteURL based on thisScript.
 	 *
-	 * @return string Value of t3lib_div::getIndpEnv('TYPO3_SITE_URL');
-	 * @see t3lib_div::getIndpEnv()
+	 * @return string Value of \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('TYPO3_SITE_URL');
+	 * @see \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv()
 	 * @todo Define visibility
 	 */
 	public function siteUrl() {

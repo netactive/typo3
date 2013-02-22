@@ -24,12 +24,13 @@ namespace TYPO3\CMS\Form\Tests\Unit\Filter;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+
 /**
- * Test case for class tx_form_System_Filter_Alphanumeric
+ * Test case
  *
  * @author Andreas Lappe <a.lappe@kuehlhaus.com>
  */
-class AlphanumericFilterTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
+class AlphanumericFilterTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 
 	/**
 	 * @var \TYPO3\CMS\Form\Filter\AlphanumericFilter

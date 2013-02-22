@@ -1507,7 +1507,7 @@ class PageRenderer implements \TYPO3\CMS\Core\SingletonInterface {
 		if ($source === 'local' && !in_array($version, $this->availableLocalJqueryVersions)) {
 			throw new \UnexpectedValueException('The requested jQuery version is not available in the local filesystem.', 1341505305);
 		}
-		if (!ctype_alnum($namespace)) {
+		if (!preg_match('/^[a-zA-Z0-9]+$/', $namespace)) {
 			throw new \UnexpectedValueException('The requested namespace contains non alphanumeric characters.', 1341571604);
 		}
 		$this->jQueryVersions[$namespace] = array(
@@ -1672,7 +1672,7 @@ class PageRenderer implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
 	 * Gets labels to be used in JavaScript fetched from a locallang file.
 	 *
-	 * @param string $fileRef Input is a file-reference (see t3lib_div::getFileAbsFileName). That file is expected to be a 'locallang.xml' file containing a valid XML TYPO3 language structure.
+	 * @param string $fileRef Input is a file-reference (see \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName). That file is expected to be a 'locallang.xml' file containing a valid XML TYPO3 language structure.
 	 * @param string $selectionPrefix Prefix to select the correct labels (default: '')
 	 * @param string $stripFromSelectionName Sub-prefix to be removed from label names in the result (default: '')
 	 * @param integer $errorMode Error mode (when file could not be found): 0 - syslog entry, 1 - do nothing, 2 - throw an exception

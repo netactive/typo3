@@ -227,11 +227,11 @@ class LocalDriver extends \TYPO3\CMS\Core\Resource\Driver\AbstractDriver {
 	}
 
 	/**
-	 * Wrapper for t3lib_div::validPathStr()
+	 * Wrapper for \TYPO3\CMS\Core\Utility\GeneralUtility::validPathStr()
 	 *
 	 * @param string $theFile Filepath to evaluate
 	 * @return boolean TRUE if no '/', '..' or '\' is in the $theFile
-	 * @see t3lib_div::validPathStr()
+	 * @see \TYPO3\CMS\Core\Utility\GeneralUtility::validPathStr()
 	 */
 	protected function isPathValid($theFile) {
 		return \TYPO3\CMS\Core\Utility\GeneralUtility::validPathStr($theFile);
@@ -573,7 +573,7 @@ class LocalDriver extends \TYPO3\CMS\Core\Resource\Driver\AbstractDriver {
 			throw new \InvalidArgumentException('Cannot add a file that is already part of this storage.', 1314778269);
 		}
 		$relativeTargetPath = ltrim($targetFolder->getIdentifier(), '/');
-		$relativeTargetPath .= $fileName ? $fileName : basename($localFilePath);
+		$relativeTargetPath .= $this->sanitizeFileName($fileName ? $fileName : basename($localFilePath));
 		$targetPath = $this->absoluteBasePath . $relativeTargetPath;
 		if (is_uploaded_file($localFilePath)) {
 			$moveResult = move_uploaded_file($localFilePath, $targetPath);
@@ -927,6 +927,7 @@ class LocalDriver extends \TYPO3\CMS\Core\Resource\Driver\AbstractDriver {
 	 *
 	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
 	 * @return boolean TRUE if deleting the file succeeded
+	 * @throws \RuntimeException
 	 */
 	public function deleteFile(\TYPO3\CMS\Core\Resource\FileInterface $file) {
 		$filePath = $this->getAbsolutePath($file);
@@ -1064,7 +1065,7 @@ class LocalDriver extends \TYPO3\CMS\Core\Resource\Driver\AbstractDriver {
 		if (!$this->isValidFilename($fileName)) {
 			throw new \TYPO3\CMS\Core\Resource\Exception\InvalidFileNameException('Invalid characters in fileName "' . $fileName . '"', 1320572272);
 		}
-		$filePath = $parentFolder->getIdentifier() . ltrim($fileName, '/');
+		$filePath = $parentFolder->getIdentifier() . $this->sanitizeFileName(ltrim($fileName, '/'));
 		// TODO set permissions of new file
 		$result = touch($this->absoluteBasePath . $filePath);
 		clearstatcache();

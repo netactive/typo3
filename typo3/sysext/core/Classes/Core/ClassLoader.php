@@ -189,7 +189,7 @@ class ClassLoader {
 	 *
 	 * @return void
 	 */
-	static protected function loadClassLoaderCache() {
+	static public function loadClassLoaderCache() {
 		$classRegistry = NULL;
 		$aliasToClassNameMapping = NULL;
 		/** @var $phpCodeCache \TYPO3\CMS\Core\Cache\Frontend\PhpFrontend */
@@ -281,7 +281,7 @@ class ClassLoader {
 	 * Get the full path to a class by looking it up in the registry.
 	 * If not found, returns NULL.
 	 *
-	 * Warning: This method is public as it is needed by t3lib_div::makeInstance(),
+	 * Warning: This method is public as it is needed by \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(),
 	 * but it is _not_ part of the public API and should not be used in own extensions!
 	 *
 	 * @param string $className Class name to find source file of

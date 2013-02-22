@@ -166,7 +166,7 @@ class ResourceStorage {
 	 */
 	const DEFAULT_ProcessingFolder = '_processed_';
 	/**
-	 * @var \TYPO3\CMS\Core\Resource\Folder
+	 * @var Folder
 	 */
 	protected $processingFolder;
 
@@ -500,12 +500,18 @@ class ResourceStorage {
 				$subject = $this->getRootLevelFolder();
 			}
 			$identifier = $subject->getIdentifier();
-			// Check if the identifier of the subject is within at
-			// least one of the file mounts
-			foreach ($this->fileMounts as $fileMount) {
-				if ($this->driver->isWithin($fileMount['folder'], $identifier)) {
-					$isWithinFilemount = TRUE;
-					break;
+
+			// Allow access to processing folder
+			if ($this->driver->isWithin($this->getProcessingFolder(), $identifier)) {
+				$isWithinFilemount = TRUE;
+			} else {
+				// Check if the identifier of the subject is within at
+				// least one of the file mounts
+				foreach ($this->fileMounts as $fileMount) {
+					if ($this->driver->isWithin($fileMount['folder'], $identifier)) {
+						$isWithinFilemount = TRUE;
+						break;
+					}
 				}
 			}
 		}
@@ -858,9 +864,7 @@ class ResourceStorage {
 	public function getFileList($path, $start = 0, $numberOfItems = 0, $useFilters = TRUE, $loadIndexRecords = TRUE, $recursive = FALSE) {
 		$rows = array();
 		if ($loadIndexRecords) {
-			/** @var $repository \TYPO3\CMS\Core\Resource\FileRepository */
-			$repository = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Resource\\FileRepository');
-			$rows = $repository->getFileIndexRecordsForFolder($this->getFolder($path));
+			$rows = $this->getFileRepository()->getFileIndexRecordsForFolder($this->getFolder($path));
 		}
 		$filters = $useFilters == TRUE ? $this->fileAndFolderNameFilters : array();
 		$items = $this->driver->getFileList($path, $start, $numberOfItems, $filters, $rows, $recursive);
@@ -929,6 +933,7 @@ class ResourceStorage {
 			$fileInfo = $this->driver->getFileInfo($file);
 			$fileInfo['sha1'] = $this->driver->hash($file, 'sha1');
 			$file->updateProperties($fileInfo);
+			$this->getFileRepository()->update($file);
 		} catch (\RuntimeException $e) {
 			throw $e;
 		}
@@ -1152,9 +1157,7 @@ class ResourceStorage {
 			$newProperties['storage'] = $storage->getUid();
 		}
 		$file->updateProperties($newProperties);
-		/** @var $fileRepository \TYPO3\CMS\Core\Resource\FileRepository */
-		$fileRepository = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Resource\\FileRepository');
-		$fileRepository->update($file);
+		$this->getFileRepository()->update($file);
 	}
 
 	/**
@@ -1222,9 +1225,7 @@ class ResourceStorage {
 		try {
 			$newIdentifier = $this->driver->renameFile($file, $targetFileName);
 			$this->updateFile($file, $newIdentifier);
-			/** @var $fileRepository \TYPO3\CMS\Core\Resource\FileRepository */
-			$fileRepository = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Resource\\FileRepository');
-			$fileRepository->update($file);
+			$this->getFileRepository()->update($file);
 		} catch (\RuntimeException $e) {
 
 		}
@@ -1330,6 +1331,7 @@ class ResourceStorage {
 			foreach ($fileObjects as $oldIdentifier => $fileObject) {
 				$newIdentifier = $fileMappings[$oldIdentifier];
 				$fileObject->updateProperties(array('storage' => $this, 'identifier' => $newIdentifier));
+				$this->getFileRepository()->update($fileObject);
 			}
 			$returnObject = $this->getFolder($fileMappings[$folderToMove->getIdentifier()]);
 		} catch (\TYPO3\CMS\Core\Exception $e) {
@@ -1409,7 +1411,11 @@ class ResourceStorage {
 	 */
 	public function renameFolder($folderObject, $newName) {
 		// TODO unit tests
-		// TODO access checks
+
+		if (!$this->checkFolderActionPermission('rename', $folderObject)) {
+			throw new \TYPO3\CMS\Core\Resource\Exception\InsufficientFileAccessPermissionsException('You are not allowed to rename the folder "' . $folderObject->getIdentifier() . '\'', 1357811441);
+		}
+
 		$returnObject = NULL;
 		if ($this->driver->folderExistsInFolder($newName, $folderObject)) {
 			throw new \InvalidArgumentException('The folder ' . $newName . ' already exists in folder ' . $folderObject->getIdentifier(), 1325418870);
@@ -1422,6 +1428,7 @@ class ResourceStorage {
 			foreach ($fileObjects as $oldIdentifier => $fileObject) {
 				$newIdentifier = $fileMappings[$oldIdentifier];
 				$fileObject->updateProperties(array('identifier' => $newIdentifier));
+				$this->getFileRepository()->update($fileObject);
 			}
 			$returnObject = $this->getFolder($fileMappings[$folderObject->getIdentifier()]);
 		} catch (\Exception $e) {
@@ -1888,6 +1895,13 @@ class ResourceStorage {
 	 */
 	protected function getFileFactory() {
 		return \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Resource\\ResourceFactory');
+	}
+
+	/**
+	 * @return \TYPO3\CMS\Core\Resource\FileRepository
+	 */
+	protected function getFileRepository() {
+		return \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Resource\\FileRepository');
 	}
 
 	/**

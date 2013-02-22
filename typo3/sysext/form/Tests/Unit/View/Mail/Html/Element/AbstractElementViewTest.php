@@ -1,10 +1,10 @@
 <?php
-namespace TYPO3\CMS\Core\Tests\Unit\Utility\Fixtures;
+namespace TYPO3\CMS\Form\Tests\View\Mail\Html\Element;
 
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2012 Steffen Ritter <steffen.ritter@typo3.org>
+ *  (c) 2012 Helmut Hummel <helmut.hummel@typo3.org>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -25,20 +25,31 @@ namespace TYPO3\CMS\Core\Tests\Unit\Utility\Fixtures;
  ***************************************************************/
 
 /**
- * Make method public
+ * Test case
  *
- * @author Steffen Ritter <steffen.ritter@typo3.org>
+ * @author Stefan Neufeind
  */
-class RootlineUtilityTestAccessibleFixture extends \TYPO3\CMS\Core\Utility\RootlineUtility {
+class AbstractElementViewTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 
-	public function processMountedPage($mountedPageData, $mountPointPageData) {
-		return parent::processMountedPage($mountedPageData, $mountPointPageData);
+	/**
+	 * @test
+	 */
+	public function getInputValueDoesNotHtmlSpecialCharBr() {
+		$model = $this->getMock('TYPO3\\CMS\\Form\\Domain\\Model\\Element\\AbstractElement');
+		$model
+			->expects($this->once())
+			->method('getAttributeValue')
+			->with('value')
+			->will($this->returnValue('a&' . LF . 'b'));
+
+		/** @var $fixture \TYPO3\CMS\Form\View\Mail\Html\Element\AbstractElementView|PHPUnit_Framework_MockObject_MockObject */
+		$fixture = $this->getMock(
+			'TYPO3\\CMS\\Form\\View\\Mail\\Html\\Element\\AbstractElementView',
+			array('dummy'),
+			array($model)
+		);
+
+		$this->assertSame('a&amp;<br />' . LF . 'b', $fixture->getInputValue());
 	}
-
-	public function columnHasRelationToResolve($configuration) {
-		return parent::columnHasRelationToResolve($configuration);
-	}
-
 }
-
 ?>

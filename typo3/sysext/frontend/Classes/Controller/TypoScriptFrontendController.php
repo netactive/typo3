@@ -755,13 +755,13 @@ class TypoScriptFrontendController {
 	 * Also sets internal clientInfo array (browser information) and a unique string (->uniqueString) for this script instance; A md5 hash of the microtime()
 	 *
 	 * @param array $TYPO3_CONF_VARS The global $TYPO3_CONF_VARS array. Will be set internally in ->TYPO3_CONF_VARS
-	 * @param mixed $id The value of t3lib_div::_GP('id')
-	 * @param integer $type The value of t3lib_div::_GP('type')
-	 * @param boolean $no_cache The value of t3lib_div::_GP('no_cache'), evaluated to 1/0
-	 * @param string $cHash The value of t3lib_div::_GP('cHash')
-	 * @param string $jumpurl The value of t3lib_div::_GP('jumpurl')
-	 * @param string $MP The value of t3lib_div::_GP('MP')
-	 * @param string $RDCT The value of t3lib_div::_GP('RDCT')
+	 * @param mixed $id The value of \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('id')
+	 * @param integer $type The value of \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('type')
+	 * @param boolean $no_cache The value of \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('no_cache'), evaluated to 1/0
+	 * @param string $cHash The value of \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('cHash')
+	 * @param string $jumpurl The value of \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('jumpurl')
+	 * @param string $MP The value of \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('MP')
+	 * @param string $RDCT The value of \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('RDCT')
 	 * @see index_ts.php
 	 * @todo Define visibility
 	 */
@@ -2494,7 +2494,7 @@ class TypoScriptFrontendController {
 	 * Includes TCA definitions from loaded extensions (ext_table.php files).
 	 * Normally in the frontend only a part of the global $TCA array is loaded,
 	 * namely the "ctrl" part. Thus it doesn't take up too much memory. To load
-	 * full TCA for the table, use t3lib_div::loadTCA($tableName) after calling
+	 * full TCA for the table, use \TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA($tableName) after calling
 	 * this function.
 	 *
 	 * @param integer $TCAloaded Probably, keep hands of this value. Just don't set it. (This may affect the first-ever time this function is called since if you set it to zero/FALSE any subsequent call will still trigger the inclusion; In other words, this value will be set in $this->TCAloaded after inclusion and therefore if its FALSE, another inclusion will be possible on the next call. See ->getCompressedTCarray())
@@ -2580,13 +2580,7 @@ class TypoScriptFrontendController {
 			\TYPO3\CMS\Core\Utility\GeneralUtility::sysLog($message, 'cms', \TYPO3\CMS\Core\Utility\GeneralUtility::SYSLOG_SEVERITY_ERROR);
 			$this->pageNotFoundAndExit($message);
 		}
-		// Updating content of the two rootLines IF the language key is set!
-		if ($this->sys_language_uid && is_array($this->tmpl->rootLine)) {
-			$this->tmpl->rootLine = $this->sys_page->getRootLine($this->id, $this->MP);
-		}
-		if ($this->sys_language_uid && is_array($this->rootLine)) {
-			$this->rootLine = $this->sys_page->getRootLine($this->id, $this->MP);
-		}
+		$this->updateRootLinesWithTranslations();
 		// Finding the ISO code:
 		if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('static_info_tables') && $this->sys_language_content) {
 			// using sys_language_content because the ISO code only (currently) affect content selection from FlexForms - which should follow "sys_language_content"
@@ -2613,6 +2607,18 @@ class TypoScriptFrontendController {
 			foreach ($this->TYPO3_CONF_VARS['SC_OPTIONS']['tslib/class.tslib_fe.php']['settingLanguage_postProcess'] as $_funcRef) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($_funcRef, $_params, $this);
 			}
+		}
+	}
+
+	/**
+	 * Updating content of the two rootLines IF the language key is set!
+	 */
+	protected function updateRootLinesWithTranslations() {
+		if ($this->sys_language_uid && is_array($this->tmpl->rootLine)) {
+			$this->tmpl->rootLine = array_reverse($this->sys_page->getRootLine($this->id, $this->MP));
+		}
+		if ($this->sys_language_uid && is_array($this->rootLine)) {
+			$this->rootLine = $this->sys_page->getRootLine($this->id, $this->MP);
 		}
 	}
 
@@ -3477,42 +3483,49 @@ class TypoScriptFrontendController {
 	 * Loads the JavaScript code for INTincScript
 	 *
 	 * @return void
-	 * @access private
 	 * @todo Define visibility
 	 */
 	public function INTincScript_loadJSCode() {
 		// If any images added, then add them to the javascript section
-		if ($this->JSImgCode) {
+		$jsImgCode = trim($this->JSImgCode);
+		if ($jsImgCode !== '') {
 			$this->additionalHeaderData['JSImgCode'] = '
 <script type="text/javascript">
 	/*<![CDATA[*/
 <!--
 if (version == "n3") {
-' . trim($this->JSImgCode) . '
+' . $jsImgCode . '
 }
 // -->
 	/*]]>*/
 </script>';
 		}
 		// Add javascript
-		if ($this->JSCode || count($this->additionalJavaScript)) {
+		$jsCode = trim($this->JSCode);
+		$additionalJavaScript = is_array($this->additionalJavaScript)
+			? implode(LF, $this->additionalJavaScript)
+			: $this->additionalJavaScript;
+		$additionalJavaScript = trim($additionalJavaScript);
+		if ($jsCode !== '' || $additionalJavaScript !== '') {
 			$this->additionalHeaderData['JSCode'] = '
 <script type="text/javascript">
 	/*<![CDATA[*/
 <!--
-' . implode(LF, $this->additionalJavaScript) . '
-' . trim($this->JSCode) . '
+' . $additionalJavaScript . '
+' . $jsCode . '
 // -->
 	/*]]>*/
 </script>';
 		}
-		// Add javascript
-		if (count($this->additionalCSS)) {
+		// Add CSS
+		$additionalCss = is_array($this->additionalCSS) ? implode(LF, $this->additionalCSS) : $this->additionalCSS;
+		$additionalCss = trim($additionalCss);
+		if ($additionalCss !== '') {
 			$this->additionalHeaderData['_CSS'] = '
 <style type="text/css">
 	/*<![CDATA[*/
 <!--
-' . implode(LF, $this->additionalCSS) . '
+' . $additionalCss . '
 // -->
 	/*]]>*/
 </style>';
@@ -4112,7 +4125,7 @@ if (version == "n3") {
 	 * @param string $typoScriptProperty Deprecated object or property
 	 * @param string $explanation Message or additional information
 	 * @return void
-	 * @see t3lib_div::deprecationLog(), t3lib_timeTrack::setTSlogMessage()
+	 * @see \TYPO3\CMS\Core\Utility\GeneralUtility::deprecationLog(), t3lib_timeTrack::setTSlogMessage()
 	 * @todo Define visibility
 	 */
 	public function logDeprecatedTyposcript($typoScriptProperty, $explanation = '') {
@@ -4508,7 +4521,7 @@ if (version == "n3") {
 	 * @param string $message The message
 	 * @param string $headers The headers (string with lines)
 	 * @return void
-	 * @see t3lib_div::plainMailEncoded()
+	 * @see \TYPO3\CMS\Core\Utility\GeneralUtility::plainMailEncoded()
 	 * @todo Define visibility
 	 */
 	public function plainMailEncoded($email, $subject, $message, $headers = '') {
@@ -4752,6 +4765,5 @@ if (version == "n3") {
 	}
 
 }
-
 
 ?>

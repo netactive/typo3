@@ -47,6 +47,11 @@ class ResourceStorageTest extends \TYPO3\CMS\Core\Tests\Unit\Resource\BaseTestCa
 		parent::setUp();
 		$this->singletonInstances = \TYPO3\CMS\Core\Utility\GeneralUtility::getSingletonInstances();
 		\TYPO3\CMS\Core\Utility\GeneralUtility::purgeInstances();
+		\TYPO3\CMS\Core\Utility\GeneralUtility::setSingletonInstance(
+			'TYPO3\\CMS\\Core\\Resource\\FileRepository',
+			$this->getMock('TYPO3\\CMS\\Core\\Resource\\FileRepository')
+		);
+
 	}
 
 	public function tearDown() {
@@ -90,7 +95,7 @@ class ResourceStorageTest extends \TYPO3\CMS\Core\Tests\Unit\Resource\BaseTestCa
 	 *
 	 * @param array $configuration
 	 * @return string
-	 * @see t3lib_div::array2xml()
+	 * @see \TYPO3\CMS\Core\Utility\GeneralUtility::array2xml()
 	 */
 	protected function convertConfigurationArrayToFlexformXml(array $configuration) {
 		$flexformArray = array('data' => array('sDEF' => array('lDEF' => array())));

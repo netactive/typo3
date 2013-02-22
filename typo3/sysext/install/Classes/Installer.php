@@ -293,7 +293,11 @@ class Installer {
 			// Check for mandatory PHP modules
 			$missingPhpModules = $this->getMissingPhpModules();
 			if (count($missingPhpModules) > 0) {
-				throw new \RuntimeException('TYPO3 Installation Error: The following PHP module(s) is/are missing: <em>' . implode(', ', $missingPhpModules) . '</em><br /><br />You need to install and enable these modules first to be able to install TYPO3.', 1294587482);
+				throw new \RuntimeException(
+					'TYPO3 Installation Error: The following PHP module(s) is/are missing: "' .
+						implode('", "', $missingPhpModules) .
+						'". You need to install and enable these modules first to be able to install TYPO3.',
+					1294587482);
 			}
 			// Load saltedpasswords if possible
 			$saltedpasswordsLoaderFile = $this->backPath . 'sysext/saltedpasswords/classes/class.tx_saltedpasswords_autoloader.php';
@@ -3712,7 +3716,7 @@ REMOTE_ADDR was \'' . \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REMOTE
 			The options in the TYPO3_CONF_VARS array and how to use it for your
 			own purposes is discussed in the base configuration file,
 			t3lib/stddb/DefaultConfiguration.php. This file sets up the default values and
-			subsequently includes the localconf.php file in which you can then
+			subsequently includes the LocalConfiguration.php file in which you can then
 			override values.
 			<br />
 			See this page for <a href="' . TYPO3_URL_SYSTEMREQUIREMENTS . '">more

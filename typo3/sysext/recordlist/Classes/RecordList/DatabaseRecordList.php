@@ -506,7 +506,7 @@ class DatabaseRecordList extends \TYPO3\CMS\Recordlist\RecordList\AbstractDataba
 									// $lRow isn't always what we want - if record was moved we've to work with the
 									// placeholder records otherwise the list is messed up a bit
 									if ($row['_MOVE_PLH_uid'] && $row['_MOVE_PLH_pid']) {
-										$tmpRow = \TYPO3\CMS\Backend\Utility\BackendUtility::getRecordRaw($table, 't3ver_move_id="' . intval($lRow['uid']) . '" AND pid="' . $row['_MOVE_PLH_pid'] . '" AND t3ver_wsid=' . $row['t3ver_wsid'] . \t3lib_beFunc::deleteClause($table), $selFieldList);
+										$tmpRow = \TYPO3\CMS\Backend\Utility\BackendUtility::getRecordRaw($table, 't3ver_move_id="' . intval($lRow['uid']) . '" AND pid="' . $row['_MOVE_PLH_pid'] . '" AND t3ver_wsid=' . $row['t3ver_wsid'] . \TYPO3\CMS\Backend\Utility\BackendUtility::deleteClause($table), $selFieldList);
 										$lRow = is_array($tmpRow) ? $tmpRow : $lRow;
 									}
 									// In offline workspace, look for alternative record:
@@ -619,6 +619,25 @@ class DatabaseRecordList extends \TYPO3\CMS\Recordlist\RecordList\AbstractDataba
 			$alttext = \TYPO3\CMS\Backend\Utility\BackendUtility::getRecordIconAltText($row, $table);
 			$iconImg = \TYPO3\CMS\Backend\Utility\IconUtility::getSpriteIconForRecord($table, $row, array('title' => htmlspecialchars($alttext), 'style' => $indent ? ' margin-left: ' . $indent . 'px;' : ''));
 			$theIcon = $this->clickMenuEnabled ? $GLOBALS['SOBE']->doc->wrapClickMenuOnIcon($iconImg, $table, $row['uid']) : $iconImg;
+
+			// Have labels respect possible itemsProcFunc results
+			/** @var $formEngine \TYPO3\CMS\Backend\Form\FormEngine */
+			$formEngine = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Backend\\Form\\FormEngine');
+			if (isset($GLOBALS['TCA'][$table]['columns'])) {
+				foreach ($GLOBALS['TCA'][$table]['columns'] as $field => $fieldSetup) {
+					if (isset($fieldSetup['config']['itemsProcFunc']) && $fieldSetup['config']['itemsProcFunc']) {
+						$GLOBALS['TCA'][$table]['columns'][$field]['config']['items'] = $formEngine->procItems(
+							$fieldSetup['config']['items'],
+							$fieldSetup['config']['itemsProcFunc'],
+							$fieldSetup['config'],
+							$table,
+							$row,
+							$field
+						);
+					}
+				}
+			}
+
 			// Preparing and getting the data-array
 			$theData = array();
 			foreach ($this->fieldArray as $fCol) {

@@ -60,6 +60,9 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 		),
 		'webkit' => array(
 			array(
+				'version' => 534
+			),
+			array(
 				'version' => 523,
 				'system' => array(
 					'disallowed' => array(
@@ -1360,7 +1363,7 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 	/**
 	 * Client Browser Information
 	 *
-	 * @param 	string		$userAgent: The useragent string, t3lib_div::getIndpEnv('HTTP_USER_AGENT')
+	 * @param 	string		$userAgent: The useragent string, \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('HTTP_USER_AGENT')
 	 * @return 	array		Contains keys "useragent", "browser", "version", "system
 	 * @todo Define visibility
 	 */
