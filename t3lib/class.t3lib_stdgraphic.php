@@ -123,6 +123,7 @@ class t3lib_stdGraphic {
 	var $csConvObj;
 	var $nativeCharset = ''; // Is set to the native character set of the input strings.
 
+	protected $IMversion = 0; // ImageMagick Version Nummer formated like this 6000700070005
 
 	/**
 	 * Init function. Must always call this when using the class.
@@ -147,6 +148,11 @@ class t3lib_stdGraphic {
 		}
 		if (!$gfxConf['im']) {
 			$this->NO_IMAGE_MAGICK = 1;
+		} else {
+			$cmd = t3lib_div::imageMagickCommand('identify','-version | grep Version:');
+			$ret = explode(' ',t3lib_utility_Command::exec($cmd));
+			$ret = explode('.',str_replace('-','.',$ret[2]));
+			$this->IMversion = $ret[0].str_pad($ret[1],4,'0',STR_PAD_LEFT).str_pad($ret[2],4,'0',STR_PAD_LEFT).str_pad($ret[3],4,'0',STR_PAD_LEFT);
 		}
 		if (!$this->NO_IMAGE_MAGICK && (!$gfxConf['im_version_5'] || $gfxConf['im_version_5'] === 'im4' || $gfxConf['im_version_5'] === 'im5')) {
 			throw new RuntimeException(
@@ -164,7 +170,7 @@ class t3lib_stdGraphic {
 
 			// Setting default JPG parameters:
 		$this->jpegQuality = t3lib_utility_Math::forceIntegerInRange($gfxConf['jpg_quality'], 10, 100, 75);
-		$this->cmds['jpg'] = $this->cmds['jpeg'] = '-colorspace RGB -sharpen 50 -quality ' . $this->jpegQuality;
+		$this->cmds['jpg'] = $this->cmds['jpeg'] = '-colorspace ' . ( $this->IMversion >= 6000700050005 ? 's' : '' ) . 'RGB -sharpen 50 -quality ' . $this->jpegQuality;
 
 		if ($gfxConf['im_combine_filename']) {
 			$this->combineScript = $gfxConf['im_combine_filename'];
@@ -200,7 +206,7 @@ class t3lib_stdGraphic {
 				// - therefore must be disabled in order not to perform sharpen, blurring and such.
 			$this->NO_IM_EFFECTS = 1;
 
-			$this->cmds['jpg'] = $this->cmds['jpeg'] = '-colorspace RGB -quality ' . $this->jpegQuality;
+			$this->cmds['jpg'] = $this->cmds['jpeg'] = '-colorspace ' . ( $this->IMversion >= 6000700050005 ? 's' : '' ) . 'RGB -quality ' . $this->jpegQuality;
 		}
 			// ... but if 'im_v5effects' is set, don't care about 'im_no_effects'
 		if ($gfxConf['im_v5effects']) {
@@ -208,7 +214,7 @@ class t3lib_stdGraphic {
 			$this->V5_EFFECTS = 1;
 
 			if ($gfxConf['im_v5effects'] > 0) {
-				$this->cmds['jpg'] = $this->cmds['jpeg'] = '-colorspace RGB -quality ' . intval($gfxConf['jpg_quality']) . $this->v5_sharpen(10);
+				$this->cmds['jpg'] = $this->cmds['jpeg'] = '-colorspace ' . ( $this->IMversion >= 6000700050005 ? 's' : '' ) . 'RGB -quality ' . intval($gfxConf['jpg_quality']) . $this->v5_sharpen(10);
 			}
 		}
 
@@ -225,6 +231,7 @@ class t3lib_stdGraphic {
 			$this->csConvObj = t3lib_div::makeInstance('t3lib_cs');
 		}
 		$this->nativeCharset = 'utf-8';
+
 	}
 
 
