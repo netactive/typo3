@@ -387,7 +387,7 @@ class tslib_menu {
 								// Get sub-pages:
 							$res = $this->parent_cObj->exec_getQuery('pages',Array('pidInList'=>$id,'orderBy'=>$altSortField));
 							while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-								$GLOBALS['TSFE']->sys_page->versionOL('pages',$row);
+								$GLOBALS['TSFE']->sys_page->versionOL('pages', $row, TRUE);
 
 								if (is_array($row))	{
 										// Keep mount point?
@@ -503,7 +503,7 @@ class tslib_menu {
 
 						$res = $this->parent_cObj->exec_getQuery('pages',Array('pidInList'=>'0', 'uidInList'=>$id_list, 'where'=>$sortField.'>=0'.$extraWhere, 'orderBy'=>($altSortFieldValue ? $altSortFieldValue : $sortField.' desc'),'max'=>$limit));
 						while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-							$GLOBALS['TSFE']->sys_page->versionOL('pages',$row);
+							$GLOBALS['TSFE']->sys_page->versionOL('pages', $row, TRUE);
 							if (is_array($row))	{
 								$temp[$row['uid']]=$this->sys_page->getPageOverlay($row);
 							}
@@ -585,7 +585,7 @@ class tslib_menu {
 							}
 							$res = $this->parent_cObj->exec_getQuery('pages',Array('pidInList'=>'0', 'uidInList'=>$id_list, 'where'=>'('.implode(' OR ',$keyWordsWhereArr).')'.$extraWhere, 'orderBy'=>($altSortFieldValue ? $altSortFieldValue : $sortField.' desc'),'max'=>$limit));
 							while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-								$GLOBALS['TSFE']->sys_page->versionOL('pages',$row);
+								$GLOBALS['TSFE']->sys_page->versionOL('pages', $row, TRUE);
 								if (is_array($row))	{
 									$temp[$row['uid']]=$this->sys_page->getPageOverlay($row);
 								}
@@ -1404,6 +1404,7 @@ class tslib_menu {
 		);
 
 		$hasSubPages = FALSE;
+		$bannedUids = $this->getBannedUids();
 		foreach ($recs as $theRec) {
 				// no valid subpage if the document type is excluded from the menu
 			if (t3lib_div::inList($this->doktypeExcludeList, $theRec['doktype'])) {
@@ -1428,7 +1429,10 @@ class tslib_menu {
 			if ($GLOBALS['TSFE']->sys_language_uid && $hideIfNotTranslated && !$theRec['_PAGES_OVERLAY']) {
 				continue;
 			}
-
+				// no valid subpage if the subpage is banned by excludeUidList
+			if (in_array($theRec['uid'], $bannedUids)) {
+				continue;
+			}
 			$hasSubPages = TRUE;
 			break;
 		}
@@ -2971,7 +2975,7 @@ class tslib_jsmenu extends tslib_menu {
 			$JScode.= $this->generate_level($levels,1,$this->id,$this->menuArr,$this->MP_array).LF;
 
 			$GLOBALS['TSFE']->additionalHeaderData['JSMenuCode']='<script type="text/javascript" src="'.$GLOBALS['TSFE']->absRefPrefix.'t3lib/jsfunc.menu.js"></script>';
-			$GLOBALS['TSFE']->JSCode.=$JScode;
+			$GLOBALS['TSFE']->additionalJavaScript['JSCode'] .= $JScode;
 
 				// Printing:
 			$allFormCode="";

@@ -54,6 +54,7 @@ $TYPO3_CONF_VARS = array(
 		'enable_typo3temp_db_tracking' => FALSE,	// Boolean: If set, then all files in typo3temp will be logged in a database table. In addition to being a log of the files with original filenames, it also serves to secure that the same image is not rendered simultaneously by two different processes.
 		'TTFdpi' => 96,							// Integer: Enter how many dpi the FreeType module uses. Freetype1 should be set to 72. Freetype2 should be set to 96 (otherwise fonts are rendered way bigger than FreeType1). This works as a global scaling factor for Freetype.
 		'png_truecolor' => TRUE,				// Boolean: If set PNGs will get created as truecolor PNGs. If you use GDlib2 you can create truecolor images if they look not well currently. Note that this results in an increased image size. JPEGs get always created in truecolor now (GDlib2 required)
+		'colorspace' => 'RGB', // String: Specifiy the colorspace to use. Some ImageMagick versions (like 6.7.0 and above) use the sRGB colorspace, so all images are darker then the original. <br />Possible Values: CMY, CMYK, Grey, HCL, HSB, HSL, HWB, Lab, LCH, LMS, Log, Luv, OHTA, Rec601Luma, Rec601YCbCr, Rec709Luma, Rec709YCbCr, RGB, sRGB, Transparent, XYZ, YCbCr, YCC, YIQ, YCbCr, YUV
 	),
 	'SYS' => array(			// System related concerning both frontend and backend.
 		'lang' => array(
@@ -726,10 +727,10 @@ if (TYPO3_MODE === 'BE') {
 $T3_VAR = array();	// Initialize.
 
 	// TYPO3 version
-$TYPO_VERSION = '4.7.10';	// @deprecated: Will be removed in TYPO3 6.0. Use the constants defined below
+$TYPO_VERSION = '4.7.11';	// @deprecated: Will be removed in TYPO3 6.0. Use the constants defined below
 define('TYPO3_version', $TYPO_VERSION);
 define('TYPO3_branch', '4.7');
-define('TYPO3_copyright_year', '1998-2012');
+define('TYPO3_copyright_year', '1998-2013');
 
 	// Handle $GLOBALS['TYPO3_CONF_VARS']['HTTP']['userAgent']. We can not set the default above
 	// because TYPO3_version is not yet defined.
@@ -753,8 +754,8 @@ define('TYPO3_URL_LICENSE', 'http://typo3.org/license');
 define('TYPO3_URL_EXCEPTION', 'http://typo3.org/go/exception/v4/');
 define('TYPO3_URL_MAILINGLISTS', 'http://lists.typo3.org/cgi-bin/mailman/listinfo');
 define('TYPO3_URL_DOCUMENTATION', 'http://typo3.org/documentation/');
-define('TYPO3_URL_DOCUMENTATION_TSREF', 'http://typo3.org/documentation/document-library/references/doc_core_tsref/current/view/');
-define('TYPO3_URL_DOCUMENTATION_TSCONFIG', 'http://typo3.org/documentation/document-library/references/doc_core_tsconfig/current/view/');
+define('TYPO3_URL_DOCUMENTATION_TSREF', 'http://docs.typo3.org/typo3cms/TyposcriptReference/');
+define('TYPO3_URL_DOCUMENTATION_TSCONFIG', 'http://docs.typo3.org/typo3cms/TSconfigReference/');
 define('TYPO3_URL_CONSULTANCY', 'http://typo3.com/Consultancies.1248.0.html');
 define('TYPO3_URL_CONTRIBUTE', 'http://typo3.org/community/participate/');
 define('TYPO3_URL_SECURITY', 'http://typo3.org/teams/security/');

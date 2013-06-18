@@ -63,6 +63,7 @@ class Tx_Extbase_Tests_Unit_MVC_Controller_AbstractControllerTest extends Tx_Ext
 			->with('Tx_Extbase_MVC_Web_Routing_UriBuilder')
 			->will($this->returnValue($this->getMock('Tx_Extbase_MVC_Web_Routing_UriBuilder')));
 
+		/** @var Tx_Extbase_MVC_Controller_AbstractController|PHPUnit_Framework_MockObject_MockObject|Tx_Phpunit_Interface_AccessibleObject */
 		$controller = $this->getAccessibleMock(
 			'Tx_Extbase_MVC_Controller_AbstractController',
 			array('initializeArguments', 'initializeControllerArgumentsBaseValidators', 'mapRequestArgumentsToControllerArguments', 'buildControllerContext'),
@@ -118,6 +119,7 @@ class Tx_Extbase_Tests_Unit_MVC_Controller_AbstractControllerTest extends Tx_Ext
 		$mockUriBuilder->expects($this->once())->method('reset')->will($this->returnValue($mockUriBuilder));
 		$mockUriBuilder->expects($this->once())->method('setTargetPageUid')->with(123)->will($this->returnValue($mockUriBuilder));
 		$mockUriBuilder->expects($this->once())->method('setCreateAbsoluteUri')->with(TRUE)->will($this->returnValue($mockUriBuilder));
+		$mockUriBuilder->expects($this->once())->method('setAbsoluteUriScheme')->with(NULL)->will($this->returnValue($mockUriBuilder));
 		$mockUriBuilder->expects($this->once())->method('uriFor')->with('theActionName', $arguments, 'TheControllerName', 'TheExtensionName')->will($this->returnValue('the uri'));
 
 		$controller = $this->getMock($this->buildAccessibleProxy('Tx_Extbase_MVC_Controller_AbstractController'), array('redirectToUri'), array(), '', FALSE);
@@ -206,6 +208,7 @@ class Tx_Extbase_Tests_Unit_MVC_Controller_AbstractControllerTest extends Tx_Ext
 			->will($this->returnValue(TRUE));
 		$mockDeprecatedPropertyMapper->expects($this->once())->method('getMappingResults')->will($this->returnValue($mockMappingResults));
 
+		/** @var Tx_Extbase_MVC_Controller_AbstractController|PHPUnit_Framework_MockObject_MockObject|Tx_Phpunit_Interface_AccessibleObject */
 		$controller = $this->getAccessibleMock(
 			'Tx_Extbase_MVC_Controller_AbstractController',
 			array('dummy'), array(), '', FALSE

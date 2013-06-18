@@ -28,7 +28,7 @@
 class Tx_Extbase_Tests_Unit_MVC_Web_RequestBuilderTest extends Tx_Extbase_Tests_Unit_BaseTestCase {
 
 	/**
-	 * @var Tx_Extbase_MVC_Web_RequestBuilder
+	 * @var Tx_Extbase_MVC_Web_RequestBuilder|PHPUnit_Framework_MockObject_MockObject|Tx_Phpunit_Interface_AccessibleObject
 	 */
 	protected $requestBuilder;
 
@@ -561,6 +561,28 @@ class Tx_Extbase_Tests_Unit_MVC_Web_RequestBuilderTest extends Tx_Extbase_Tests_
 		);
 		$this->mockRequest->expects($this->once())->method('setControllerName')->with('TheThirdController');
 		$this->mockRequest->expects($this->once())->method('setControllerActionName')->with('delete');
+		$this->requestBuilder->build();
+	}
+
+	/**
+	 * @test
+	 */
+	public function buildSetsRequestMode() {
+		$this->injectDependencies();
+		$expectedMethod = 'SomeRequestMethod';
+		$_SERVER['REQUEST_METHOD'] = $expectedMethod;
+		$this->mockRequest->expects($this->once())->method('setMethod')->with($expectedMethod);
+		$this->requestBuilder->build();
+	}
+
+	/**
+	 * @test
+	 */
+	public function buildSetsRequestModeReturnsGETIfNoMethodIsGiven() {
+		$this->injectDependencies();
+		$expectedMethod = '';
+		$_SERVER['REQUEST_METHOD'] = $expectedMethod;
+		$this->mockRequest->expects($this->once())->method('setMethod')->with($expectedMethod)->will($this->returnValue(array('GET')));
 		$this->requestBuilder->build();
 	}
 

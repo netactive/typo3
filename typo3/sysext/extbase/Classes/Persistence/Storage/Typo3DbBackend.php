@@ -247,7 +247,7 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 			$sql = $this->buildQuery($statementParts, $parameters);
 		}
 		$tableName = 'foo';
-		if (is_array($statementParts && !empty($statementParts['tables'][0]))) {
+		if (is_array($statementParts) && !empty($statementParts['tables'][0])) {
 			$tableName = $statementParts['tables'][0];
 		}
 		$this->replacePlaceholders($sql, $parameters, $tableName);
@@ -937,9 +937,6 @@ class Tx_Extbase_Persistence_Storage_Typo3DbBackend implements Tx_Extbase_Persis
 		$rows = array();
 		while ($row = $this->databaseHandle->sql_fetch_assoc($result)) {
 			if (is_array($row)) {
-				// TODO Check if this is necessary, maybe the last line is enough
-				$arrayKeys = range(0, count($row));
-				array_fill_keys($arrayKeys, $row);
 				$rows[] = $row;
 			}
 		}

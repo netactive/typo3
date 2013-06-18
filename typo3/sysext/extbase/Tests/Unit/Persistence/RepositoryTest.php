@@ -25,7 +25,7 @@
 class Tx_Extbase_Tests_Unit_Persistence_RepositoryTest extends Tx_Extbase_Tests_Unit_BaseTestCase {
 
 	/**
-	 * @var Tx_Extbase_Persistence_Repository
+	 * @var Tx_Extbase_Persistence_Repository|PHPUnit_Framework_MockObject_MockObject|Tx_Phpunit_Interface_AccessibleObject
 	 */
 	protected $repository;
 
@@ -337,6 +337,7 @@ class Tx_Extbase_Tests_Unit_Persistence_RepositoryTest extends Tx_Extbase_Tests_
 		$modifiedObject = $this->getMock('Tx_Extbase_DomainObject_DomainObjectInterface');
 		$modifiedObject->expects($this->once())->method('getUid')->will($this->returnValue('123'));
 
+		/** @var Tx_Extbase_Persistence_Repository|PHPUnit_Framework_MockObject_MockObject|Tx_Phpunit_Interface_AccessibleObject */
 		$repository = $this->getAccessibleMock('Tx_Extbase_Persistence_Repository', array('findByUid', 'replace'), array($this->mockObjectManager));
 		$repository->expects($this->once())->method('findByUid')->with('123')->will($this->returnValue($existingObject));
 		$repository->expects($this->once())->method('replace')->with($existingObject, $modifiedObject);
@@ -391,6 +392,34 @@ class Tx_Extbase_Tests_Unit_Persistence_RepositoryTest extends Tx_Extbase_Tests_
 		$this->mockQuery->expects($this->once())->method('execute')->will($this->returnValue($mockQueryResult));
 
 		$this->assertSame($object, $this->repository->findOneByFoo('bar'));
+	}
+
+	/**
+	 * @test
+	 */
+	public function magicCallMethodReturnsFirstArrayKeyInFindOneBySomethingIfQueryReturnsRawResult() {
+		$queryResultArray = array(
+			0 => array(
+				'foo' => 'bar',
+			),
+		);
+		$this->mockQuery->expects($this->once())->method('equals')->with('foo', 'bar')->will($this->returnValue('matchCriteria'));
+		$this->mockQuery->expects($this->once())->method('matching')->with('matchCriteria')->will($this->returnValue($this->mockQuery));
+		$this->mockQuery->expects($this->once())->method('setLimit')->with(1)->will($this->returnValue($this->mockQuery));
+		$this->mockQuery->expects($this->once())->method('execute')->will($this->returnValue($queryResultArray));
+		$this->assertSame(array('foo' => 'bar'), $this->repository->findOneByFoo('bar'));
+	}
+
+	/**
+	 * @test
+	 */
+	public function magicCallMethodReturnsNullInFindOneBySomethingIfQueryReturnsEmptyRawResult() {
+		$queryResultArray = array();
+		$this->mockQuery->expects($this->once())->method('equals')->with('foo', 'bar')->will($this->returnValue('matchCriteria'));
+		$this->mockQuery->expects($this->once())->method('matching')->with('matchCriteria')->will($this->returnValue($this->mockQuery));
+		$this->mockQuery->expects($this->once())->method('setLimit')->with(1)->will($this->returnValue($this->mockQuery));
+		$this->mockQuery->expects($this->once())->method('execute')->will($this->returnValue($queryResultArray));
+		$this->assertNull($this->repository->findOneByFoo('bar'));
 	}
 
 	/**
