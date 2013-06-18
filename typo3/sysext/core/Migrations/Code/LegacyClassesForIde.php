@@ -94,6 +94,11 @@ class t3lib_contextmenu_Action extends \TYPO3\CMS\Backend\ContextMenu\ContextMen
 /**
  * @deprecated since 6.0 will be removed in 7.0
  */
+class t3lib_formmail extends \TYPO3\CMS\Frontend\Controller\DataSubmissionController {}
+
+/**
+ * @deprecated since 6.0 will be removed in 7.0
+ */
 class t3lib_contextmenu_ActionCollection extends \TYPO3\CMS\Backend\ContextMenu\ContextMenuActionCollection {}
 
 /**
@@ -5064,12 +5069,12 @@ class tslib_gmenu extends \TYPO3\CMS\Frontend\ContentObject\Menu\GraphicalMenuCo
 /**
  * @deprecated since 6.0 will be removed in 7.0
  */
-class tslib_gmenu_foldout extends \TYPO3\CMS\Frontend\ContentObject\Menu\GraphicalMenuFoldout {}
+class tslib_gmenu_foldout extends \TYPO3\CMS\Frontend\ContentObject\Menu\GraphicalMenuFoldoutContentObject {}
 
 /**
  * @deprecated since 6.0 will be removed in 7.0
  */
-class tslib_gmenu_layers extends \TYPO3\CMS\Frontend\ContentObject\Menu\GraphicalMenuLayers {}
+class tslib_gmenu_layers extends \TYPO3\CMS\Frontend\ContentObject\Menu\GraphicalMenuLayersContentObject {}
 
 /**
  * @deprecated since 6.0 will be removed in 7.0
@@ -5089,7 +5094,7 @@ class tslib_tmenu extends \TYPO3\CMS\Frontend\ContentObject\Menu\TextMenuContent
 /**
  * @deprecated since 6.0 will be removed in 7.0
  */
-class tslib_tmenu_layers extends \TYPO3\CMS\Frontend\ContentObject\Menu\TextMenuLayers {}
+class tslib_tmenu_layers extends \TYPO3\CMS\Frontend\ContentObject\Menu\TextMenuLayersContentObject {}
 
 /**
  * @deprecated since 6.0 will be removed in 7.0

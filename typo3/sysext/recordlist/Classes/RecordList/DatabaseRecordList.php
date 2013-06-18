@@ -619,25 +619,6 @@ class DatabaseRecordList extends \TYPO3\CMS\Recordlist\RecordList\AbstractDataba
 			$alttext = \TYPO3\CMS\Backend\Utility\BackendUtility::getRecordIconAltText($row, $table);
 			$iconImg = \TYPO3\CMS\Backend\Utility\IconUtility::getSpriteIconForRecord($table, $row, array('title' => htmlspecialchars($alttext), 'style' => $indent ? ' margin-left: ' . $indent . 'px;' : ''));
 			$theIcon = $this->clickMenuEnabled ? $GLOBALS['SOBE']->doc->wrapClickMenuOnIcon($iconImg, $table, $row['uid']) : $iconImg;
-
-			// Have labels respect possible itemsProcFunc results
-			/** @var $formEngine \TYPO3\CMS\Backend\Form\FormEngine */
-			$formEngine = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Backend\\Form\\FormEngine');
-			if (isset($GLOBALS['TCA'][$table]['columns'])) {
-				foreach ($GLOBALS['TCA'][$table]['columns'] as $field => $fieldSetup) {
-					if (isset($fieldSetup['config']['itemsProcFunc']) && $fieldSetup['config']['itemsProcFunc']) {
-						$GLOBALS['TCA'][$table]['columns'][$field]['config']['items'] = $formEngine->procItems(
-							$fieldSetup['config']['items'],
-							$fieldSetup['config']['itemsProcFunc'],
-							$fieldSetup['config'],
-							$table,
-							$row,
-							$field
-						);
-					}
-				}
-			}
-
 			// Preparing and getting the data-array
 			$theData = array();
 			foreach ($this->fieldArray as $fCol) {
@@ -648,8 +629,18 @@ class DatabaseRecordList extends \TYPO3\CMS\Recordlist\RecordList\AbstractDataba
 						$warning = '<a href="#" onclick="' . htmlspecialchars(('alert(' . $GLOBALS['LANG']->JScharCode($lockInfo['msg']) . '); return false;')) . '" title="' . htmlspecialchars($lockInfo['msg']) . '">' . \TYPO3\CMS\Backend\Utility\IconUtility::getSpriteIcon('status-warning-in-use') . '</a>';
 					}
 					$theData[$fCol] = $warning . $this->linkWrapItems($table, $row['uid'], $recTitle, $row);
-					// Render thumbsnails if a thumbnail column exists and there is content in it:
-					if ($this->thumbs && trim($row[$thumbsCol])) {
+					// Render thumbnails, if:
+					// - a thumbnail column exists
+					// - there is content in it
+					// - the thumbnail column is visible for the current type
+					$typeColumn = $GLOBALS['TCA'][$table]['ctrl']['type'];
+					$type = $row[$typeColumn];
+					$visibleColumns = $GLOBALS['TCA'][$table]['types'][$type]['showitem'];
+
+					if ($this->thumbs &&
+						trim($row[$thumbsCol]) &&
+						preg_match('/(^|(.*(;|,)?))' . $thumbsCol . '(((;|,).*)|$)/', $visibleColumns) === 1
+					) {
 						$theData[$fCol] .= '<br />' . $this->thumbCode($row, $table, $thumbsCol);
 					}
 					$localizationMarkerClass = '';

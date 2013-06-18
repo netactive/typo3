@@ -1409,14 +1409,14 @@ class BackendUtility {
 	static public function calcAge($seconds, $labels = ' min| hrs| days| yrs| min| hour| day| year') {
 		$labelArr = explode('|', $labels);
 		$absSeconds = abs($seconds);
-		$sign = $seconds > 0 ? 1 : -1;
-		if ($seconds < 3600) {
+		$sign = $seconds < 0 ? -1 : 1;
+		if ($absSeconds < 3600) {
 			$val = round($absSeconds / 60);
 			$seconds = $sign * $val . ($val == 1 ? $labelArr[4] : $labelArr[0]);
-		} elseif ($seconds < 24 * 3600) {
+		} elseif ($absSeconds < 24 * 3600) {
 			$val = round($absSeconds / 3600);
 			$seconds = $sign * $val . ($val == 1 ? $labelArr[5] : $labelArr[1]);
-		} elseif ($seconds < 365 * 24 * 3600) {
+		} elseif ($absSeconds < 365 * 24 * 3600) {
 			$val = round($absSeconds / (24 * 3600));
 			$seconds = $sign * $val . ($val == 1 ? $labelArr[6] : $labelArr[2]);
 		} else {
@@ -2329,18 +2329,14 @@ class BackendUtility {
 	}
 
 	/**
-	 * Returns CSH help text (description), if configured for.
-	 * $GLOBALS['TCA_DESCR'] must be loaded prior to this function and $GLOBALS['BE_USER'] must have "edit_showFieldHelp" set to "text",
-	 * otherwise nothing is returned.
+	 * Returns CSH help text
 	 *
 	 * @param string $table Table name
 	 * @param string $field Field name
 	 * @return string HTML content for help text
-	 * @depreacted since 6.0, will be removed two versions later
+	 * @see wrapInHelp()
 	 */
 	static public function helpText($table, $field) {
-		\TYPO3\CMS\Core\Utility\GeneralUtility::logDeprecatedFunction();
-
 		$helpTextArray = self::helpTextArray($table, $field);
 		$output = '';
 		$arrow = '';
@@ -2953,20 +2949,22 @@ class BackendUtility {
 	 * @see t3lib_transferData::lockRecord(), alt_doc.php, db_layout.php, db_list.php, wizard_rte.php
 	 */
 	static public function lockRecords($table = '', $uid = 0, $pid = 0) {
-		$user_id = intval($GLOBALS['BE_USER']->user['uid']);
-		if ($table && $uid) {
-			$fields_values = array(
-				'userid' => $user_id,
-				'feuserid' => 0,
-				'tstamp' => $GLOBALS['EXEC_TIME'],
-				'record_table' => $table,
-				'record_uid' => $uid,
-				'username' => $GLOBALS['BE_USER']->user['username'],
-				'record_pid' => $pid
-			);
-			$GLOBALS['TYPO3_DB']->exec_INSERTquery('sys_lockedrecords', $fields_values);
-		} else {
-			$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_lockedrecords', 'userid=' . intval($user_id));
+		if (isset($GLOBALS['BE_USER']->user['uid'])) {
+			$user_id = intval($GLOBALS['BE_USER']->user['uid']);
+			if ($table && $uid) {
+				$fields_values = array(
+					'userid' => $user_id,
+					'feuserid' => 0,
+					'tstamp' => $GLOBALS['EXEC_TIME'],
+					'record_table' => $table,
+					'record_uid' => $uid,
+					'username' => $GLOBALS['BE_USER']->user['username'],
+					'record_pid' => $pid
+				);
+				$GLOBALS['TYPO3_DB']->exec_INSERTquery('sys_lockedrecords', $fields_values);
+			} else {
+				$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_lockedrecords', 'userid=' . intval($user_id));
+			}
 		}
 	}
 
@@ -3050,13 +3048,16 @@ class BackendUtility {
 		$fTWHERE = str_replace('###PAGE_TSCONFIG_ID###', intval($TSconfig[$field]['PAGE_TSCONFIG_ID']), $fTWHERE);
 		$fTWHERE = str_replace('###PAGE_TSCONFIG_IDLIST###', $GLOBALS['TYPO3_DB']->cleanIntList($TSconfig[$field]['PAGE_TSCONFIG_IDLIST']), $fTWHERE);
 		$fTWHERE = str_replace('###PAGE_TSCONFIG_STR###', $GLOBALS['TYPO3_DB']->quoteStr($TSconfig[$field]['PAGE_TSCONFIG_STR'], $foreign_table), $fTWHERE);
-		// rootLevel = -1 is not handled 'properly' here - it goes as if it was rootLevel = 1 (that is pid=0)
 		$wgolParts = $GLOBALS['TYPO3_DB']->splitGroupOrderLimit($fTWHERE);
-		if ($rootLevel) {
+		// rootLevel = -1 means that elements can be on the rootlevel OR on any page (pid!=-1)
+		// rootLevel = 0 means that elements are not allowed on root level
+		// rootLevel = 1 means that elements are only on the root level (pid=0)
+		if ($rootLevel == 1 || $rootLevel == -1) {
+			$pidWhere = $foreign_table . '.pid' . (($rootLevel == -1) ? '<>-1' : '=0');
 			$queryParts = array(
 				'SELECT' => self::getCommonSelectFields($foreign_table, $foreign_table . '.'),
 				'FROM' => $foreign_table,
-				'WHERE' => $foreign_table . '.pid=0 ' . self::deleteClause($foreign_table) . ' ' . $wgolParts['WHERE'],
+				'WHERE' => $pidWhere . ' ' . self::deleteClause($foreign_table) . ' ' . $wgolParts['WHERE'],
 				'GROUPBY' => $wgolParts['GROUPBY'],
 				'ORDERBY' => $wgolParts['ORDERBY'],
 				'LIMIT' => $wgolParts['LIMIT']

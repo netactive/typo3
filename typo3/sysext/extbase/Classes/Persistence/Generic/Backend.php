@@ -108,10 +108,7 @@ class Backend implements \TYPO3\CMS\Extbase\Persistence\Generic\BackendInterface
 	 */
 	public function __construct(\TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface $configurationManager) {
 		$this->configurationManager = $configurationManager;
-		$frameworkConfiguration = $configurationManager->getConfiguration(\TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK);
-		if ($frameworkConfiguration['persistence']['updateReferenceIndex'] === '1') {
-			$this->referenceIndex = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Database\\ReferenceIndex');
-		}
+		$this->referenceIndex = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Database\\ReferenceIndex');
 		$this->deletedObjects = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
 	}
 
@@ -396,8 +393,13 @@ class Backend implements \TYPO3\CMS\Extbase\Persistence\Generic\BackendInterface
 			}
 			$columnMap = $dataMap->getColumnMap($propertyName);
 			if ($propertyValue instanceof \TYPO3\CMS\Extbase\Persistence\ObjectStorage) {
-				if ($object->_isNew() || $propertyValue->_isDirty()) {
+				$cleanProperty = $object->_getCleanProperty($propertyName);
+				// objectstorage needs to be persisted if the object is new, the objectstorge is dirty, meaning it has
+				// been changed after initial build, or a empty objectstorge is present and the cleanstate objectstorage
+				// has childelements, meaning all elements should been removed from the objectstorage
+				if ($object->_isNew() || $propertyValue->_isDirty() || ($propertyValue->count() == 0 && $cleanProperty && $cleanProperty->count() > 0)) {
 					$this->persistObjectStorage($propertyValue, $object, $propertyName, $row);
+					$propertyValue->_memorizeCleanState();
 				}
 				foreach ($propertyValue as $containedObject) {
 					if ($containedObject instanceof \TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface) {
@@ -413,7 +415,7 @@ class Backend implements \TYPO3\CMS\Extbase\Persistence\Generic\BackendInterface
 				}
 				$queue[] = $propertyValue;
 			} elseif ($object->_isNew() || $object->_isDirty($propertyName)) {
-				$row[$columnMap->getColumnName()] = $this->getPlainValue($propertyValue);
+				$row[$columnMap->getColumnName()] = $this->getPlainValue($propertyValue, $columnMap);
 			}
 		}
 		if (count($row) > 0) {
@@ -866,11 +868,21 @@ class Backend implements \TYPO3\CMS\Extbase\Persistence\Generic\BackendInterface
 	 * Returns a plain value, i.e. objects are flattened out if possible.
 	 *
 	 * @param mixed $input
+	 * @param \TYPO3\CMS\Extbase\Persistence\Generic\Mapper\ColumnMap $columnMap
 	 * @return mixed
 	 */
-	protected function getPlainValue($input) {
+	protected function getPlainValue($input, $columnMap = NULL) {
 		if ($input instanceof \DateTime) {
-			return $input->format('U');
+			if (!is_null($columnMap) && !is_null($columnMap->getDateTimeStorageFormat())) {
+				if ($columnMap->getDateTimeStorageFormat() == 'datetime') {
+					return $input->format('Y-m-d H:i:s');
+				}
+				if ($columnMap->getDateTimeStorageFormat() == 'date') {
+					return $input->format('Y-m-d');
+				}
+			} else {
+				return $input->format('U');
+			}
 		} elseif ($input instanceof \TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface) {
 			return $input->getUid();
 		} elseif (is_bool($input)) {

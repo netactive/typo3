@@ -300,7 +300,7 @@ class Installer {
 					1294587482);
 			}
 			// Load saltedpasswords if possible
-			$saltedpasswordsLoaderFile = $this->backPath . 'sysext/saltedpasswords/classes/class.tx_saltedpasswords_autoloader.php';
+			$saltedpasswordsLoaderFile = $this->backPath . 'sysext/saltedpasswords/Classes/class.tx_saltedpasswords_autoloader.php';
 			if (@is_file($saltedpasswordsLoaderFile)) {
 				include $saltedpasswordsLoaderFile;
 			}
@@ -2498,7 +2498,8 @@ REMOTE_ADDR was \'' . \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REMOTE
 			'uploads/pics/' => array('Typical location for uploaded files (images especially).', 0),
 			'uploads/media/' => array('Typical location for uploaded files (non-images especially).', 0),
 			$GLOBALS['TYPO3_CONF_VARS']['BE']['fileadminDir'] => array('Location for local files such as templates, independent uploads etc.', -1),
-			$GLOBALS['TYPO3_CONF_VARS']['BE']['fileadminDir'] . '_temp_/' => array('Typical temporary location for default upload of files by administrators.', 0)
+			$GLOBALS['TYPO3_CONF_VARS']['BE']['fileadminDir'] . '_temp_/' => array('Typical temporary location for default upload of administrative files like import/export data, used by administrators.', 0),
+			$GLOBALS['TYPO3_CONF_VARS']['BE']['fileadminDir'] . 'user_upload/' => array('Default upload location for images by editors via Rich Text Editor and upload fields in the backend.', 0)
 		);
 		foreach ($checkWrite as $relpath => $descr) {
 			// Check typo3temp/
@@ -3183,7 +3184,7 @@ REMOTE_ADDR was \'' . \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REMOTE
 				foreach ($this->INSTALL['Database'] as $key => $value) {
 					switch ((string) $key) {
 					case 'typo_db_username':
-						if (strlen($value) < 50) {
+						if (strlen($value) <= 50) {
 							if (strcmp(TYPO3_db_username, $value)) {
 								$localConfigurationPathValuePairs['DB/username'] = $value;
 							}
@@ -3195,7 +3196,7 @@ REMOTE_ADDR was \'' . \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REMOTE
 						}
 						break;
 					case 'typo_db_password':
-						if (strlen($value) < 50) {
+						if (strlen($value) <= 50) {
 							if (strcmp(TYPO3_db_password, $value)) {
 								$localConfigurationPathValuePairs['DB/password'] = $value;
 							}
@@ -3206,7 +3207,7 @@ REMOTE_ADDR was \'' . \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REMOTE
 						}
 						break;
 					case 'typo_db_host':
-						if (preg_match('/^[a-zA-Z0-9_\\.-]+(:.+)?$/', $value) && strlen($value) < 50) {
+						if (preg_match('/^[a-zA-Z0-9_\\.-]+(:.+)?$/', $value) && strlen($value) <= 50) {
 							if (strcmp(TYPO3_db_host, $value)) {
 								$localConfigurationPathValuePairs['DB/host'] = $value;
 							}
@@ -3219,7 +3220,7 @@ REMOTE_ADDR was \'' . \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REMOTE
 						}
 						break;
 					case 'typo_db':
-						if (strlen($value) < 50) {
+						if (strlen($value) <= 50) {
 							if (strcmp(TYPO3_db, $value)) {
 								$localConfigurationPathValuePairs['DB/database'] = $value;
 							}
@@ -4023,7 +4024,11 @@ REMOTE_ADDR was \'' . \TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REMOTE
 						TIF, BMP, PCX, TGA, PDF, AI. The tool \'identify\' will
 						be used to read the  pixeldimensions of non-web formats.
 						The tool \'convert\' is used to read the image and write
-						a temporary JPG-file
+						a temporary JPG-file.
+					</p>
+					<p>
+						In case the images appear remarkably darker than the reference images,
+						try to set [TYPO3_CONF_VARS][GFX][colorspace] = sRGB.
 					</p>
 				');
 			if ($imActive) {

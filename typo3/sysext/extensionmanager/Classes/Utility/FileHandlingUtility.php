@@ -250,8 +250,13 @@ class FileHandlingUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @return void
 	 */
 	public function removeDirectory($extDirPath) {
-		$res = GeneralUtility::rmdir($extDirPath, TRUE);
-		if ($res === FALSE) {
+		$extensionPathWithoutTrailingSlash = rtrim($extDirPath, DIRECTORY_SEPARATOR);
+		if (is_link($extensionPathWithoutTrailingSlash)) {
+			$result = unlink($extensionPathWithoutTrailingSlash);
+		} else {
+			$result = GeneralUtility::rmdir($extDirPath, TRUE);
+		}
+		if ($result === FALSE) {
 			throw new \TYPO3\CMS\Extensionmanager\Exception\ExtensionManagerException(sprintf($GLOBALS['LANG']->getLL('clearMakeExtDir_could_not_remove_dir'), $this->getRelativePath($extDirPath)), 1337280415);
 		}
 	}
@@ -375,7 +380,14 @@ class FileHandlingUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		$files = array_filter($files);
 
 		foreach ($files as $file) {
-			$zip->addFile($extensionPath . $file, $file);
+			$fullPath = $extensionPath . $file;
+			// Distinguish between files and directories, as creation of the archive
+			// fails on Windows when trying to add a directory with "addFile".
+			if (is_dir($fullPath)) {
+				$zip->addEmptyDir($file);
+			} else {
+				$zip->addFile($fullPath, $file);
+			}
 		}
 
 		$zip->close();

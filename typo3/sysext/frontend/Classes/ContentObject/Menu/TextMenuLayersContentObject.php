@@ -26,21 +26,14 @@ namespace TYPO3\CMS\Frontend\ContentObject\Menu;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+
 /**
- * Contains the TMENU_LAYERS extension class, tslib_tmenu_layers
- *
- * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
- * XHTML compliant
+ * Contains the TMENU_LAYERS menu object
+ * Class for the creation of text based DHTML menus
  *
  * @author Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-/**
- * Class extending tslib_tmenu for the creation of text based DHTML menus
- * NOTICE: The contents of this class is copied EXACTLY AS IS from gmenu_layers class! See notes in class (for BEGIN/END) and also 'diff.xmenu_layers.txt'
- *
- * @author Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-class TextMenuLayers extends \TYPO3\CMS\Frontend\ContentObject\Menu\TextMenuContentObject {
+class TextMenuLayersContentObject extends \TYPO3\CMS\Frontend\ContentObject\Menu\TextMenuContentObject {
 
 	// FULL DUPLICATE FROM gmenu_layers BEGIN:
 	/**
@@ -400,7 +393,7 @@ if (!GLV_doReset["' . $mIdStr . '"] && GLV_currentLayer["' . $mIdStr . '"]!=null
 		}
 		$GLOBALS['TSFE']->applicationData['GMENU_LAYERS']['WMid'] = array_merge($this->WMtempStore, $GLOBALS['TSFE']->applicationData['GMENU_LAYERS']['WMid']);
 		$GLOBALS['TSFE']->additionalHeaderData['gmenu_layer_shared'] = '<script type="text/javascript" src="' . \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::siteRelPath('statictemplates') . 'media/scripts/jsfunc.layermenu.js"></script>';
-		$GLOBALS['TSFE']->JSCode .= '
+		$GLOBALS['TSFE']->additionalJavaScript['JSCode'] .= '
 
 GLV_curLayerWidth["' . $this->WMid . '"]=0;
 GLV_curLayerHeight["' . $this->WMid . '"]=0;
@@ -423,7 +416,7 @@ GLV_menuXY["' . $this->WMid . '"] = new Array();
 ' . implode(LF, $this->WMxyArray) . '
 ' . $this->WMrestoreVars;
 		if ($this->mconf['freezeMouseover']) {
-			$GLOBALS['TSFE']->JSCode .= '
+			$GLOBALS['TSFE']->additionalJavaScript['JSCode'] .= '
 // Alternative rollover/out functions for use with GMENU_LAYER
 function GL' . $this->WMid . '_over(mitm_id) {
 	GL' . $this->WMid . '_out("");	// removes any old roll over state of an item. Needed for alwaysKeep and Opera browsers.
@@ -440,7 +433,7 @@ function GL' . $this->WMid . '_out(mitm_id) {
 }
 ';
 		}
-		$GLOBALS['TSFE']->JSCode .= '
+		$GLOBALS['TSFE']->additionalJavaScript['JSCode'] .= '
 function GL' . $this->WMid . '_getMouse(e) {
 	if (GLV_menuOn["' . $this->WMid . '"]!=null && !GLV_dontFollowMouse["' . $this->WMid . '"]){
 ' . implode(LF, $GLV_menuOn) . '

@@ -267,7 +267,7 @@ class Typo3DbBackend implements \TYPO3\CMS\Extbase\Persistence\Generic\Storage\B
 			$sql = $this->buildQuery($statementParts, $parameters);
 		}
 		$tableName = 'foo';
-		if (is_array($statementParts && !empty($statementParts['tables'][0]))) {
+		if (is_array($statementParts) && !empty($statementParts['tables'][0])) {
 			$tableName = $statementParts['tables'][0];
 		}
 		$this->replacePlaceholders($sql, $parameters, $tableName);
@@ -632,10 +632,15 @@ class Typo3DbBackend implements \TYPO3\CMS\Extbase\Persistence\Generic\Storage\B
 		if ($input instanceof \DateTime) {
 			return $input->format('U');
 		} elseif (is_object($input)) {
-			if ($input instanceof \TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface) {
-				return $input->getUid();
+			if ($input instanceof \TYPO3\CMS\Extbase\Persistence\Generic\LazyLoadingProxy) {
+				$realInput = $input->_loadRealInstance();
 			} else {
-				throw new \TYPO3\CMS\Extbase\Persistence\Generic\Exception\UnexpectedTypeException('An object of class "' . get_class($input) . '" could not be converted to a plain value.', 1274799934);
+				$realInput = $input;
+			}
+			if ($realInput instanceof \TYPO3\CMS\Extbase\DomainObject\DomainObjectInterface) {
+				return $realInput->getUid();
+			} else {
+				throw new \TYPO3\CMS\Extbase\Persistence\Generic\Exception\UnexpectedTypeException('An object of class "' . get_class($realInput) . '" could not be converted to a plain value.', 1274799934);
 			}
 		} elseif (is_bool($input)) {
 			return $input === TRUE ? 1 : 0;
@@ -989,6 +994,9 @@ class Typo3DbBackend implements \TYPO3\CMS\Extbase\Persistence\Generic\Storage\B
 			$this->tableColumnCache->set($tableName, $tableColumns);
 		}
 		if (is_array($GLOBALS['TCA'][$tableName]['ctrl']) && array_key_exists('pid', $tableColumns)) {
+			if (empty($storagePageIds)) {
+				throw new \TYPO3\CMS\Extbase\Persistence\Generic\Exception\InconsistentQuerySettingsException('Missing storage page ids.', 1365779762);
+			}
 			$sql['additionalWhereClause'][] = $tableName . '.pid IN (' . implode(', ', $storagePageIds) . ')';
 		}
 	}
@@ -1065,9 +1073,6 @@ class Typo3DbBackend implements \TYPO3\CMS\Extbase\Persistence\Generic\Storage\B
 		$rows = array();
 		while ($row = $this->databaseHandle->sql_fetch_assoc($result)) {
 			if (is_array($row)) {
-				// TODO Check if this is necessary, maybe the last line is enough
-				$arrayKeys = range(0, count($row));
-				array_fill_keys($arrayKeys, $row);
 				$rows[] = $row;
 			}
 		}

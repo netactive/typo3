@@ -1,16 +1,20 @@
 {namespace em=TYPO3\CMS\Extensionmanager\ViewHelpers}
 <f:layout name="main" />
-<f:section name="docHeaderRow1">
+
+<f:section name="docheader-buttons">
 	<f:be.buttons.icon uri="{f:uri.action(action:'index',controller:'List',additionalParams:{search:extension.key})}" icon="actions-view-go-back" title="{f:translate(key:'extConfTemplate.backToList')}" />
+	<f:be.buttons.icon uri="javascript:document.configurationform.submit();" icon="actions-document-save" title="{f:translate(key:'extConfTemplate.submitButton')}"/>
 </f:section>
-<f:section name="docHeaderRow2">
+
+<f:section name="module-headline">
+	<h2>
+		<f:translate key="extConfTemplate.headline" />
+		{extension.key}
+	</h2>
 </f:section>
+
 <f:section name="Content">
 	<div id="typo3-extension-configuration-forms">
-		<h2>
-			<f:translate key="extConfTemplate.headline" />
-			{extension.key}
-		</h2>
 		<div class="tabs">
 			<ul>
 				<f:for each="{configuration}" as="category">
@@ -37,10 +41,9 @@
 										</f:else>
 									</f:if>
 									<f:for each="{subcategory.items}" as="item">
-										<div>
-											<label for="{item.name}">
-												<h4>{item.labelHeadline} <span class="info">[{category.name}.{item.name}]</span></h4>
-												{item.labelText} </label><br />
+										<div class="group">
+											<h4>{item.labelHeadline} <span class="info">[{category.name}.{item.name}]</span></h4>
+											<label for="{item.name}">{item.labelText}</label>
 											<f:if condition="{item.highlight}">
 												<span style="background:red; padding:1px 2px; color:#fff; font-weight:bold;">{item.highlight}</span>
 											</f:if>
@@ -66,7 +69,6 @@
 						</div>
 					</f:if>
 				</f:for>
-				<f:form.submit value="{f:translate(key:'extConfTemplate.submitButton')}" class="submit"/>
 			</f:form>
 		</div>
 	</div>

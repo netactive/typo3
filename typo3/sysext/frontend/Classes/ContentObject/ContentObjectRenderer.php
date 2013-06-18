@@ -1321,16 +1321,21 @@ class ContentObjectRenderer {
 		$info = $this->getImgResource($file, $conf['file.']);
 		$GLOBALS['TSFE']->lastImageInfo = $info;
 		if (is_array($info)) {
-			$info[3] = \TYPO3\CMS\Core\Utility\GeneralUtility::png_to_gif_by_imagemagick($info[3]);
+			if (\TYPO3\CMS\Core\Utility\GeneralUtility::isAllowedAbsPath(PATH_site . $info['3'])) {
+				$source = \TYPO3\CMS\Core\Utility\GeneralUtility::rawUrlEncodeFP(\TYPO3\CMS\Core\Utility\GeneralUtility::png_to_gif_by_imagemagick($info[3]));
+				$source = $GLOBALS['TSFE']->absRefPrefix . $source;
+			} else {
+				$source = $info[3];
+			}
 			// This array is used to collect the image-refs on the page...
-			$GLOBALS['TSFE']->imagesOnPage[] = $info[3];
+			$GLOBALS['TSFE']->imagesOnPage[] = $source;
 			$altParam = $this->getAltParam($conf);
 			if ($conf['params'] && !isset($conf['params.'])) {
 				$params = ' ' . $conf['params'];
 			} else {
 				$params = isset($conf['params.']) ? ' ' . $this->stdWrap($conf['params'], $conf['params.']) : '';
 			}
-			$theValue = '<img src="' . htmlspecialchars(($GLOBALS['TSFE']->absRefPrefix . \TYPO3\CMS\Core\Utility\GeneralUtility::rawUrlEncodeFP($info[3]))) . '" width="' . $info[0] . '" height="' . $info[1] . '"' . $this->getBorderAttr((' border="' . intval($conf['border']) . '"')) . $params . $altParam . (!empty($GLOBALS['TSFE']->xhtmlDoctype) ? ' /' : '') . '>';
+			$theValue = '<img src="' . htmlspecialchars($source) . '" width="' . $info[0] . '" height="' . $info[1] . '"' . $this->getBorderAttr(' border="' . intval($conf['border']) . '"') . $params . $altParam . (!empty($GLOBALS['TSFE']->xhtmlDoctype) ? ' /' : '') . '>';
 			$linkWrap = isset($conf['linkWrap.']) ? $this->stdWrap($conf['linkWrap'], $conf['linkWrap.']) : $conf['linkWrap'];
 			if ($linkWrap) {
 				$theValue = $this->linkWrap($theValue, $linkWrap);
@@ -3810,17 +3815,17 @@ class ContentObjectRenderer {
 					$cropPosition = $absChars - $strLen;
 					// The snippet "&[^&\s;]{2,8};" in the RegEx below represents entities.
 					$patternMatchEntityAsSingleChar = '(&[^&\\s;]{2,8};|.)';
-					$cropRegEx = $chars < 0 ? '#' . $patternMatchEntityAsSingleChar . '{0,' . ($cropPosition + 1) . '}$#ui' : '#^' . $patternMatchEntityAsSingleChar . '{0,' . ($cropPosition + 1) . '}#ui';
+					$cropRegEx = $chars < 0 ? '#' . $patternMatchEntityAsSingleChar . '{0,' . ($cropPosition + 1) . '}$#uis' : '#^' . $patternMatchEntityAsSingleChar . '{0,' . ($cropPosition + 1) . '}#uis';
 					if (preg_match($cropRegEx, $tempContent, $croppedMatch)) {
 						$tempContentPlusOneCharacter = $croppedMatch[0];
 					} else {
 						$tempContentPlusOneCharacter = FALSE;
 					}
-					$cropRegEx = $chars < 0 ? '#' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}$#ui' : '#^' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}#ui';
+					$cropRegEx = $chars < 0 ? '#' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}$#uis' : '#^' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}#uis';
 					if (preg_match($cropRegEx, $tempContent, $croppedMatch)) {
 						$tempContent = $croppedMatch[0];
 						if ($crop2space && $tempContentPlusOneCharacter !== FALSE) {
-							$cropRegEx = $chars < 0 ? '#(?<=\\s)' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}$#ui' : '#^' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}(?=\\s)#ui';
+							$cropRegEx = $chars < 0 ? '#(?<=\\s)' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}$#uis' : '#^' . $patternMatchEntityAsSingleChar . '{0,' . $cropPosition . '}(?=\\s)#uis';
 							if (preg_match($cropRegEx, $tempContentPlusOneCharacter, $croppedMatch)) {
 								$tempContent = $croppedMatch[0];
 							}
@@ -4307,7 +4312,7 @@ class ContentObjectRenderer {
 	public function calcIntExplode($delim, $string) {
 		$temp = explode($delim, $string);
 		foreach ($temp as $key => $val) {
-			$temp[$key] = intval(self::calc($val));
+			$temp[$key] = intval($this->calc($val));
 		}
 		return $temp;
 	}
@@ -5095,6 +5100,11 @@ class ContentObjectRenderer {
 					$processingConfiguration['minHeight'] = isset($fileArray['minH.']) ? intval($this->stdWrap($fileArray['minH'], $fileArray['minH.'])) : intval($fileArray['minH']);
 					$processingConfiguration['noScale'] = isset($fileArray['noScale.']) ? $this->stdWrap($fileArray['noScale'], $fileArray['noScale.']) : $fileArray['noScale'];
 					$processingConfiguration['additionalParameters'] = isset($fileArray['params.']) ? $this->stdWrap($fileArray['params'], $fileArray['params.']) : $fileArray['params'];
+					// Possibility to cancel/force profile extraction
+					// see $TYPO3_CONF_VARS['GFX']['im_stripProfileCommand']
+					if (isset($fileArray['stripProfile'])) {
+						$processingConfiguration['stripProfile'] = $fileArray['stripProfile'];
+					}
 					// Check if we can handle this type of file for editing
 					if (\TYPO3\CMS\Core\Utility\GeneralUtility::inList($GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'], $fileObject->getExtension())) {
 						$maskArray = $fileArray['m.'];
@@ -5154,25 +5164,6 @@ class ContentObjectRenderer {
 			}
 		}
 		return $imageResource;
-	}
-
-	/**
-	 * Modifies the parameters for ImageMagick for stripping of profile information.
-	 *
-	 * @param string $parameters The parameters to be modified (if required)
-	 * @param array $configuration The TypoScript configuration of [IMAGE].file
-	 * @return string The modified parameters
-	 */
-	protected function modifyImageMagickStripProfileParameters($parameters, array $configuration) {
-		// Strips profile information of image to save some space:
-		if (isset($configuration['stripProfile'])) {
-			if ($configuration['stripProfile']) {
-				$parameters = $GLOBALS['TYPO3_CONF_VARS']['GFX']['im_stripProfileCommand'] . $parameters;
-			} else {
-				$parameters .= '###SkipStripProfile###';
-			}
-		}
-		return $parameters;
 	}
 
 	/***********************************************

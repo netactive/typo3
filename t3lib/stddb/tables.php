@@ -438,7 +438,6 @@ $TCA['sys_file_reference'] = array(
 		'cruser_id' => 'cruser_id',
 		'type' => 'uid_local:type',
 		'hideTable' => TRUE,
-		'rootLevel' => TRUE,
 		'sortby' => 'sorting',
 		'delete' => 'deleted',
 		'versioningWS' => TRUE,
@@ -484,6 +483,7 @@ $TCA['sys_file_collection'] = array(
 			'static' => 'apps-clipboard-images',
 			'folder' => 'apps-filetree-folder-media'
 		),
+		'requestUpdate' => 'storage',
 		'enablecolumns' => array(
 			'disabled' => 'hidden',
 			'starttime' => 'starttime',

@@ -133,6 +133,7 @@ class StandaloneViewTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	 * @return void
 	 */
 	public function tearDown() {
+		\TYPO3\CMS\Core\Utility\GeneralUtility::purgeInstances();
 		\TYPO3\CMS\Core\Utility\GeneralUtility::resetSingletonInstances($this->singletonInstances);
 	}
 
@@ -251,7 +252,7 @@ class StandaloneViewTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	 * @test
 	 */
 	public function renderLoadsSpecifiedTemplateFileAndPassesSourceToTemplateParser() {
-		$templatePathAndFilename = dirname(__FILE__) . '/Fixtures/StandaloneViewFixture.html';
+		$templatePathAndFilename = __DIR__ . '/Fixtures/StandaloneViewFixture.html';
 		$expectedResult = file_get_contents($templatePathAndFilename);
 		$this->view->setTemplatePathAndFilename($templatePathAndFilename);
 		$this->mockTemplateParser->expects($this->once())->method('parse')->with($expectedResult);
@@ -320,7 +321,7 @@ class StandaloneViewTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	 * @expectedException \TYPO3\CMS\Fluid\View\Exception\InvalidTemplateResourceException
 	 */
 	public function getLayoutSourceThrowsExceptionIfLayoutFileDoesNotExist() {
-		$layoutRootPath = dirname(__FILE__) . '/Fixtures';
+		$layoutRootPath = __DIR__ . '/Fixtures';
 		$this->view->setLayoutRootPath($layoutRootPath);
 		$this->view->_call('getLayoutSource', 'NonExistingLayout');
 	}
@@ -329,7 +330,7 @@ class StandaloneViewTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	 * @test
 	 */
 	public function getLayoutSourceReturnsContentOfLayoutFileForTheDefaultFormat() {
-		$layoutRootPath = dirname(__FILE__) . '/Fixtures';
+		$layoutRootPath = __DIR__ . '/Fixtures';
 		$this->view->setLayoutRootPath($layoutRootPath);
 		$this->mockRequest->expects($this->once())->method('getFormat')->will($this->returnValue('html'));
 		$expectedResult = file_get_contents($layoutRootPath . '/LayoutFixture.html');
@@ -341,7 +342,7 @@ class StandaloneViewTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	 * @test
 	 */
 	public function getLayoutSourceReturnsContentOfLayoutFileForTheSpecifiedFormat() {
-		$layoutRootPath = dirname(__FILE__) . '/Fixtures';
+		$layoutRootPath = __DIR__ . '/Fixtures';
 		$this->view->setLayoutRootPath($layoutRootPath);
 		$this->mockRequest->expects($this->once())->method('getFormat')->will($this->returnValue('xml'));
 		$expectedResult = file_get_contents($layoutRootPath . '/LayoutFixture.xml');
@@ -353,7 +354,7 @@ class StandaloneViewTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	 * @test
 	 */
 	public function getLayoutSourceReturnsContentOfDefaultLayoutFileIfNoLayoutExistsForTheSpecifiedFormat() {
-		$layoutRootPath = dirname(__FILE__) . '/Fixtures';
+		$layoutRootPath = __DIR__ . '/Fixtures';
 		$this->view->setLayoutRootPath($layoutRootPath);
 		$this->mockRequest->expects($this->once())->method('getFormat')->will($this->returnValue('foo'));
 		$expectedResult = file_get_contents($layoutRootPath . '/LayoutFixture');
@@ -406,7 +407,7 @@ class StandaloneViewTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	 * @expectedException \TYPO3\CMS\Fluid\View\Exception\InvalidTemplateResourceException
 	 */
 	public function getPartialSourceThrowsExceptionIfPartialFileDoesNotExist() {
-		$partialRootPath = dirname(__FILE__) . '/Fixtures';
+		$partialRootPath = __DIR__ . '/Fixtures';
 		$this->view->setPartialRootPath($partialRootPath);
 		$this->view->_call('getPartialSource', 'NonExistingPartial');
 	}
@@ -415,7 +416,7 @@ class StandaloneViewTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	 * @test
 	 */
 	public function getPartialSourceReturnsContentOfPartialFileForTheDefaultFormat() {
-		$partialRootPath = dirname(__FILE__) . '/Fixtures';
+		$partialRootPath = __DIR__ . '/Fixtures';
 		$this->view->setPartialRootPath($partialRootPath);
 		$this->mockRequest->expects($this->once())->method('getFormat')->will($this->returnValue('html'));
 		$expectedResult = file_get_contents($partialRootPath . '/LayoutFixture.html');
@@ -427,7 +428,7 @@ class StandaloneViewTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	 * @test
 	 */
 	public function getPartialSourceReturnsContentOfPartialFileForTheSpecifiedFormat() {
-		$partialRootPath = dirname(__FILE__) . '/Fixtures';
+		$partialRootPath = __DIR__ . '/Fixtures';
 		$this->view->setPartialRootPath($partialRootPath);
 		$this->mockRequest->expects($this->once())->method('getFormat')->will($this->returnValue('xml'));
 		$expectedResult = file_get_contents($partialRootPath . '/LayoutFixture.xml');
@@ -439,7 +440,7 @@ class StandaloneViewTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	 * @test
 	 */
 	public function getPartialSourceReturnsContentOfDefaultPartialFileIfNoPartialExistsForTheSpecifiedFormat() {
-		$partialRootPath = dirname(__FILE__) . '/Fixtures';
+		$partialRootPath = __DIR__ . '/Fixtures';
 		$this->view->setPartialRootPath($partialRootPath);
 		$this->mockRequest->expects($this->once())->method('getFormat')->will($this->returnValue('foo'));
 		$expectedResult = file_get_contents($partialRootPath . '/LayoutFixture');

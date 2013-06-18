@@ -26,6 +26,9 @@ namespace TYPO3\CMS\Core\Resource;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+
+use TYPO3\CMS\Core\Utility\PathUtility;
+
 /**
  * A "mount point" inside the TYPO3 file handling.
  *
@@ -459,7 +462,7 @@ class ResourceStorage {
 	 * @throws Exception\FolderDoesNotExistException
 	 * @return void
 	 */
-	public function injectFileMount($folderIdentifier, $additionalData = array()) {
+	public function addFileMount($folderIdentifier, $additionalData = array()) {
 		// check for the folder before we add it as a filemount
 		if ($this->driver->folderExists($folderIdentifier) === FALSE) {
 			// if there is an error, this is important and should be handled
@@ -525,12 +528,12 @@ class ResourceStorage {
 	}
 
 	/**
-	 * Adds user permissions to the storage
+	 * Sets the user permissions of the storage
 	 *
 	 * @param array $userPermissions
 	 * @return void
 	 */
-	public function injectUserPermissions(array $userPermissions) {
+	public function setUserPermissions(array $userPermissions) {
 		$this->userPermissions = $userPermissions;
 	}
 
@@ -713,7 +716,7 @@ class ResourceStorage {
 			throw new \InvalidArgumentException('File "' . $localFilePath . '" does not exist.', 1319552745);
 		}
 		$targetFolder = $targetFolder ? $targetFolder : $this->getDefaultFolder();
-		$fileName = $fileName ? $fileName : basename($localFilePath);
+		$fileName = $fileName ? $fileName : PathUtility::basename($localFilePath);
 		if ($conflictMode === 'cancel' && $this->driver->fileExistsInFolder($fileName, $targetFolder)) {
 			throw new Exception\ExistingTargetFileNameException('File "' . $fileName . '" already exists in folder ' . $targetFolder->getIdentifier(), 1322121068);
 		} elseif ($conflictMode === 'changeName') {
@@ -985,12 +988,18 @@ class ResourceStorage {
 		if (!$this->checkFileActionPermission('remove', $fileObject)) {
 			throw new Exception\InsufficientFileAccessPermissionsException('You are not allowed to delete the file "' . $fileObject->getIdentifier() . '\'', 1319550425);
 		}
+
+		$this->emitPreFileDeleteSignal($fileObject);
+
 		$result = $this->driver->deleteFile($fileObject);
 		if ($result === FALSE) {
 			throw new Exception\FileOperationErrorException('Deleting the file "' . $fileObject->getIdentifier() . '\' failed.', 1329831691);
 		}
 		// Mark the file object as deleted
 		$fileObject->setDeleted();
+
+		$this->emitPostFileDeleteSignal($fileObject);
+
 		return TRUE;
 	}
 
@@ -1026,7 +1035,7 @@ class ResourceStorage {
 		// Call driver method to create a new file from an existing file object,
 		// and return the new file object
 		try {
-			if ($sourceStorage == $this) {
+			if ($sourceStorage === $this) {
 				$newFileObject = $this->driver->copyFileWithinStorage($file, $targetFolder, $targetFileName);
 			} else {
 				$tempPath = $file->getForLocalProcessing();
@@ -1149,7 +1158,7 @@ class ResourceStorage {
 		// Call driver method to move the file that also updates the file
 		// object properties
 		try {
-			if ($sourceStorage == $this) {
+			if ($sourceStorage === $this) {
 				$newIdentifier = $this->driver->moveFileWithinStorage($file, $targetFolder, $targetFileName);
 				$this->updateFile($file, $newIdentifier);
 			} else {
@@ -1260,6 +1269,9 @@ class ResourceStorage {
 		if (!$this->checkFileActionPermission('write', $file)) {
 			throw new Exception\InsufficientFileWritePermissionsException('You are not allowed to rename the file "' . $file->getIdentifier() . '\'', 1319219349);
 		}
+
+		$this->emitPreFileRenameSignal($file, $targetFileName);
+
 		// Call driver method to rename the file that also updates the file
 		// object properties
 		try {
@@ -1269,6 +1281,9 @@ class ResourceStorage {
 		} catch (\RuntimeException $e) {
 
 		}
+
+		$this->emitPostFileRenameSignal($file, $targetFileName);
+
 		return $file;
 	}
 
@@ -1365,7 +1380,7 @@ class ResourceStorage {
 		// Get all file objects now so we are able to update them after moving the folder
 		$fileObjects = $this->getAllFileObjectsInFolder($folderToMove);
 		try {
-			if ($sourceStorage == $this) {
+			if ($sourceStorage === $this) {
 				$fileMappings = $this->driver->moveFolderWithinStorage($folderToMove, $targetParentFolder, $newFolderName);
 			} else {
 				$fileMappings = $this->moveFolderBetweenStorages($folderToMove, $targetParentFolder, $newFolderName);
@@ -1391,14 +1406,10 @@ class ResourceStorage {
 	 * @param Folder $targetParentFolder
 	 * @param string $newFolderName
 	 *
-	 * @throws \BadMethodCallException
-	 * @return array Mapping of old file identifiers to new ones
+	 * @return boolean
 	 */
-	protected function moveFolderBetweenStorages(Folder $folderToMove, Folder $targetParentFolder, $newFolderName = NULL) {
-		// This is not implemented for now as moving files between storages might cause quite some headaches when
-		// something goes wrong. It is also not that common of a use case, so it does not hurt that much to leave it out
-		// for now.
-		throw new \BadMethodCallException('Moving folders between storages is not implemented.');
+	protected function moveFolderBetweenStorages(Folder $folderToMove, Folder $targetParentFolder, $newFolderName) {
+		return $this->getDriver()->moveFolderBetweenStorages($folderToMove, $targetParentFolder, $newFolderName);
 	}
 
 	/**
@@ -1420,7 +1431,7 @@ class ResourceStorage {
 		// call driver method to move the file
 		// that also updates the file object properties
 		try {
-			if ($sourceStorage == $this) {
+			if ($sourceStorage === $this) {
 				$this->driver->copyFolderWithinStorage($folderToCopy, $targetParentFolder, $newFolderName);
 				$returnObject = $this->getFolder($targetParentFolder->getSubfolder($newFolderName)->getIdentifier());
 			} else {
@@ -1434,17 +1445,16 @@ class ResourceStorage {
 	}
 
 	/**
-	 * Moves files between storages
+	 * Copy folders between storages
 	 *
-	 * @param Folder $folderToMove
+	 * @param Folder $folderToCopy
 	 * @param Folder $targetParentFolder
-	 * @param null $newFolderName
+	 * @param string $newFolderName
 	 *
-	 * @throws \RuntimeException
-	 * @return void
+	 * @return boolean
 	 */
-	protected function copyFolderBetweenStorages(Folder $folderToMove, Folder $targetParentFolder, $newFolderName = NULL) {
-		throw new \RuntimeException('Not yet implemented!', 1330262731);
+	protected function copyFolderBetweenStorages(Folder $folderToCopy, Folder $targetParentFolder, $newFolderName) {
+		return $this->getDriver()->copyFolderBetweenStorages($folderToCopy, $targetParentFolder, $newFolderName);
 	}
 
 	/**
@@ -1467,7 +1477,9 @@ class ResourceStorage {
 		if ($this->driver->folderExistsInFolder($newName, $folderObject)) {
 			throw new \InvalidArgumentException('The folder ' . $newName . ' already exists in folder ' . $folderObject->getIdentifier(), 1325418870);
 		}
+
 		$this->emitPreFolderRenameSignal($folderObject, $newName);
+
 		$fileObjects = $this->getAllFileObjectsInFolder($folderObject);
 		try {
 			$fileMappings = $this->driver->renameFolder($folderObject, $newName);
@@ -1481,7 +1493,9 @@ class ResourceStorage {
 		} catch (\Exception $e) {
 			throw $e;
 		}
+
 		$this->emitPostFolderRenameSignal($folderObject, $newName);
+
 		return $returnObject;
 	}
 
@@ -1501,9 +1515,13 @@ class ResourceStorage {
 		if ($this->driver->isFolderEmpty($folderObject) && !$deleteRecursively) {
 			throw new \RuntimeException('Could not delete folder "' . $folderObject->getIdentifier() . '" because it is not empty.', 1325952534);
 		}
+
 		$this->emitPreFolderDeleteSignal($folderObject);
+
 		$result = $this->driver->deleteFolder($folderObject, $deleteRecursively);
+
 		$this->emitPostFolderDeleteSignal($folderObject);
+
 		return $result;
 	}
 
@@ -1988,6 +2006,9 @@ class ResourceStorage {
 				$processingFolderParts = explode('/', $processingFolder);
 				$parentFolder = $this->driver->getRootLevelFolder();
 				foreach ($processingFolderParts as $folderPart) {
+					if ($folderPart === '') {
+						continue;
+					}
 					if (!$this->driver->folderExistsInFolder($folderPart, $parentFolder)) {
 						$parentFolder = $this->driver->createFolder($folderPart, $parentFolder);
 					} else {

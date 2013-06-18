@@ -26,6 +26,9 @@ namespace TYPO3\CMS\Core\Resource;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+
+use TYPO3\CMS\Core\Utility\PathUtility;
+
 // TODO implement constructor-level caching
 /**
  * Factory class for FAL objects.
@@ -247,6 +250,7 @@ class ResourceFactory implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param array $fileData The record row from database.
 	 *
 	 * @throws \InvalidArgumentException
+	 * @throws \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException
 	 * @return File
 	 */
 	public function getFileObject($uid, array $fileData = array()) {
@@ -259,7 +263,7 @@ class ResourceFactory implements \TYPO3\CMS\Core\SingletonInterface {
 				/** @var $GLOBALS['TYPO3_DB'] \TYPO3\CMS\Core\Database\DatabaseConnection */
 				$fileData = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*', 'sys_file', 'uid=' . intval($uid) . ' AND deleted=0');
 				if (!is_array($fileData)) {
-					throw new \InvalidArgumentException('No file found for given UID.', 1317178604);
+					throw new \TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException('No file found for given UID.', 1317178604);
 				}
 			}
 			$this->fileInstances[$uid] = $this->createFileObject($fileData);
@@ -322,17 +326,21 @@ class ResourceFactory implements \TYPO3\CMS\Core\SingletonInterface {
 				return $this->getObjectFromCombinedIdentifier($input);
 			} elseif ($prefix == 'EXT') {
 				$input = \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName($input);
-				$input = \t3lib_Utility_Path::getRelativePath(PATH_site, dirname($input)) . basename($input);
+				$input = PathUtility::getRelativePath(PATH_site, PathUtility::dirname($input)) . PathUtility::basename($input);
 				return $this->getFileObjectFromCombinedIdentifier($input);
 			}
-		} else {
-			// only the path
+		// this is a backwards-compatible way to access "0-storage" files or folders
+		} elseif (@is_file(PATH_site . $input)) {
+			// only the local file
 			return $this->getFileObjectFromCombinedIdentifier($input);
+		} else {
+			// only the local path
+			return $this->getFolderObjectFromCombinedIdentifier($input);
 		}
 	}
 
 	/**
-	 * Gets an file object from an identifier [storage]:[fileId]
+	 * Gets a folder object from an identifier [storage]:[fileId]
 	 *
 	 * @TODO check naming, inserted by SteffenR while working on filelist
 	 * @param string $identifier
@@ -347,7 +355,11 @@ class ResourceFactory implements \TYPO3\CMS\Core\SingletonInterface {
 			// We only got a path: Go into backwards compatibility mode and
 			// use virtual Storage (uid=0)
 			$storageUid = 0;
-			$folderIdentifier = substr($parts[0], strlen(PATH_site));
+			$folderIdentifier = $parts[0];
+			// make sure to not use an absolute path, and remove PATH_site if it is prepended
+			if (\TYPO3\CMS\Core\Utility\GeneralUtility::isFirstPartOfStr($folderIdentifier, PATH_site)) {
+				$folderIdentifier = substr($parts[0], strlen(PATH_site));
+			}
 		}
 		return $this->getStorageObject($storageUid)->getFolder($folderIdentifier);
 	}
@@ -372,7 +384,7 @@ class ResourceFactory implements \TYPO3\CMS\Core\SingletonInterface {
 	 *
 	 * @param string $identifier
 	 *
-	 * @throws \RuntimeException
+	 * @throws \TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException
 	 * @return FileInterface|Folder
 	 */
 	public function getObjectFromCombinedIdentifier($identifier) {
@@ -383,7 +395,7 @@ class ResourceFactory implements \TYPO3\CMS\Core\SingletonInterface {
 		} elseif ($storage->hasFolder($objectIdentifier)) {
 			return $storage->getFolder($objectIdentifier);
 		} else {
-			throw new \RuntimeException('Object with identifier "' . $identifier . '" does not exist in storage', 1329647780);
+			throw new \TYPO3\CMS\Core\Resource\Exception\ResourceDoesNotExistException('Object with identifier "' . $identifier . '" does not exist in storage', 1329647780);
 		}
 	}
 

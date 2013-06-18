@@ -26,6 +26,9 @@ namespace TYPO3\CMS\Core\Resource;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+
+use TYPO3\CMS\Core\Utility\PathUtility;
+
 /**
  * A folder that groups files in a storage. This may be a folder on the local
  * disk, a bucket in Amazon S3 or a user or a tag in Flickr.
@@ -253,11 +256,8 @@ class Folder implements FolderInterface {
 		if (count($folderArray) > 0) {
 			/** @var $factory ResourceFactory */
 			$factory = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Resource\\ResourceFactory');
-			// TODO this will not work with non-hierarchical storages
-			// -> the identifier for subfolders is not composed of the
-			// current item's identifier for these
 			foreach ($folderArray as $folder) {
-				$folderObjects[$folder['name']] = $factory->createFolderObject($this->storage, $this->identifier . $folder['name'] . '/', $folder['name']);
+				$folderObjects[$folder['name']] = $factory->createFolderObject($this->storage, $folder['identifier'], $folder['name']);
 			}
 		}
 
@@ -276,7 +276,7 @@ class Folder implements FolderInterface {
 	 * @return File The file object
 	 */
 	public function addFile($localFilePath, $fileName = NULL, $conflictMode = 'cancel') {
-		$fileName = $fileName ? $fileName : basename($localFilePath);
+		$fileName = $fileName ? $fileName : PathUtility::basename($localFilePath);
 		return $this->storage->addFile($localFilePath, $this, $fileName, $conflictMode);
 	}
 
@@ -340,7 +340,7 @@ class Folder implements FolderInterface {
 	 * @return Folder New (copied) folder object.
 	 */
 	public function copyTo(Folder $targetFolder, $targetFolderName = NULL, $conflictMode = 'renameNewFile') {
-		return $this->storage->copyFolder($this, $targetFolder, $targetFolderName, $conflictMode);
+		return $targetFolder->getStorage()->copyFolder($this, $targetFolder, $targetFolderName, $conflictMode);
 	}
 
 	/**
@@ -352,7 +352,7 @@ class Folder implements FolderInterface {
 	 * @return Folder New (copied) folder object.
 	 */
 	public function moveTo(Folder $targetFolder, $targetFolderName = NULL, $conflictMode = 'renameNewFile') {
-		return $this->storage->moveFolder($this, $targetFolder, $targetFolderName, $conflictMode);
+		return $targetFolder->getStorage()->moveFolder($this, $targetFolder, $targetFolderName, $conflictMode);
 	}
 
 	/**

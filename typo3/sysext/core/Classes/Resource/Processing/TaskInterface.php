@@ -70,6 +70,13 @@ interface TaskInterface {
 	public function getTargetFile();
 
 	/**
+	 * Returns the original file this task is based on.
+	 *
+	 * @return Resource\File
+	 */
+	public function getSourceFile();
+
+	/**
 	 * Returns the configuration for this task.
 	 *
 	 * @return array
@@ -89,6 +96,13 @@ interface TaskInterface {
 	 * @return string
 	 */
 	public function getTargetFileName();
+
+	/**
+	 * Gets the file extension the processed file should have in the filesystem.
+	 *
+	 * @return string
+	 */
+	public function getTargetFileExtension();
 
 	/**
 	 * Returns TRUE if the file has to be processed at all, such as e.g. the original file does.

@@ -257,7 +257,7 @@ class ExtensionManagementUtility {
 						$positionArray = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(':', $position);
 						if ($positionArray[0] == 'replace') {
 							foreach ($GLOBALS['TCA'][$table]['palettes'] as $palette => $paletteDetails) {
-								if (preg_match('/\\b' . $palette . '\\b/', $typeDetails['showitem']) > 0 && preg_match('/\\b' . $positionArray[1] . '\\b/', $paletteDetails['showitem']) > 0) {
+								if (preg_match('/\\b' . preg_quote($palette, '/') . '\\b/', $typeDetails['showitem']) > 0 && preg_match('/\\b' . preg_quote($positionArray[1], '/') . '\\b/', $paletteDetails['showitem']) > 0) {
 									self::addFieldsToPalette($table, $palette, $str, $position);
 									// Save that palette in case other types use it
 									$palettesChanged[] = $palette;
@@ -271,7 +271,7 @@ class ExtensionManagementUtility {
 								$fieldExists = TRUE;
 							} else {
 								foreach ($GLOBALS['TCA'][$table]['palettes'] as $palette => $paletteDetails) {
-									if (preg_match('/\\b' . $palette . '\\b/', $typeDetails['showitem']) > 0 && preg_match('/\\b' . $positionArray[1] . '\\b/', $paletteDetails['showitem']) > 0) {
+									if (preg_match('/\\b' . preg_quote($palette, '/') . '\\b/', $typeDetails['showitem']) > 0 && preg_match('/\\b' . preg_quote($positionArray[1], '/') . '\\b/', $paletteDetails['showitem']) > 0) {
 										$position = $positionArray[0] . ':--palette--;;' . $palette;
 									}
 								}
@@ -282,7 +282,7 @@ class ExtensionManagementUtility {
 							$fieldExists = TRUE;
 						} elseif (is_array($GLOBALS['TCA'][$table]['palettes'])) {
 							foreach ($GLOBALS['TCA'][$table]['palettes'] as $palette => $paletteDetails) {
-								if (preg_match('/\\b' . $palette . '\\b/', $typeDetails['showitem']) > 0 && strpos($paletteDetails['showitem'], $str) !== FALSE) {
+								if (preg_match('/\\b' . preg_quote($palette, '/') . '\\b/', $typeDetails['showitem']) > 0 && strpos($paletteDetails['showitem'], $str) !== FALSE) {
 									$fieldExists = TRUE;
 								}
 							}
@@ -1579,20 +1579,22 @@ tt_content.' . $key . $prefix . ' {
 		$phpCodeToCache[] = '';
 		// Iterate through loaded extensions and add ext_localconf content
 		foreach ($extensionInformation as $extensionKey => $extensionDetails) {
-			// Include a header per extension to make the cache file more readable
-			$phpCodeToCache[] = '/**';
-			$phpCodeToCache[] = ' * Extension: ' . $extensionKey;
-			$phpCodeToCache[] = ' * File: ' . $extensionDetails['ext_localconf.php'];
-			$phpCodeToCache[] = ' */';
-			$phpCodeToCache[] = '';
-			// Set $_EXTKEY and $_EXTCONF for this extension
-			$phpCodeToCache[] = '$_EXTKEY = \'' . $extensionKey . '\';';
-			$phpCodeToCache[] = '$_EXTCONF = $GLOBALS[\'TYPO3_CONF_VARS\'][\'EXT\'][\'extConf\'][$_EXTKEY];';
-			$phpCodeToCache[] = '';
-			// Add ext_localconf.php content of extension
-			$phpCodeToCache[] = trim(\TYPO3\CMS\Core\Utility\GeneralUtility::getUrl($extensionDetails['ext_localconf.php']));
-			$phpCodeToCache[] = '';
-			$phpCodeToCache[] = '';
+			if (isset($extensionDetails['ext_localconf.php']) && $extensionDetails['ext_localconf.php']) {
+				// Include a header per extension to make the cache file more readable
+				$phpCodeToCache[] = '/**';
+				$phpCodeToCache[] = ' * Extension: ' . $extensionKey;
+				$phpCodeToCache[] = ' * File: ' . $extensionDetails['ext_localconf.php'];
+				$phpCodeToCache[] = ' */';
+				$phpCodeToCache[] = '';
+				// Set $_EXTKEY and $_EXTCONF for this extension
+				$phpCodeToCache[] = '$_EXTKEY = \'' . $extensionKey . '\';';
+				$phpCodeToCache[] = '$_EXTCONF = $GLOBALS[\'TYPO3_CONF_VARS\'][\'EXT\'][\'extConf\'][$_EXTKEY];';
+				$phpCodeToCache[] = '';
+				// Add ext_localconf.php content of extension
+				$phpCodeToCache[] = trim(\TYPO3\CMS\Core\Utility\GeneralUtility::getUrl($extensionDetails['ext_localconf.php']));
+				$phpCodeToCache[] = '';
+				$phpCodeToCache[] = '';
+			}
 		}
 		$phpCodeToCache = implode(LF, $phpCodeToCache);
 		// Remove all start and ending php tags from content
@@ -1681,20 +1683,22 @@ tt_content.' . $key . $prefix . ' {
 		$phpCodeToCache[] = '';
 		// Iterate through loaded extensions and add ext_tables content
 		foreach ($extensionInformation as $extensionKey => $extensionDetails) {
-			// Include a header per extension to make the cache file more readable
-			$phpCodeToCache[] = '/**';
-			$phpCodeToCache[] = ' * Extension: ' . $extensionKey;
-			$phpCodeToCache[] = ' * File: ' . $extensionDetails['ext_tables.php'];
-			$phpCodeToCache[] = ' */';
-			$phpCodeToCache[] = '';
-			// Set $_EXTKEY and $_EXTCONF for this extension
-			$phpCodeToCache[] = '$_EXTKEY = \'' . $extensionKey . '\';';
-			$phpCodeToCache[] = '$_EXTCONF = $GLOBALS[\'TYPO3_CONF_VARS\'][\'EXT\'][\'extConf\'][$_EXTKEY];';
-			$phpCodeToCache[] = '';
-			// Add ext_tables.php content of extension
-			$phpCodeToCache[] = trim(\TYPO3\CMS\Core\Utility\GeneralUtility::getUrl($extensionDetails['ext_tables.php']));
-			$phpCodeToCache[] = '';
-			$phpCodeToCache[] = '';
+			if (isset($extensionDetails['ext_tables.php']) && $extensionDetails['ext_tables.php']) {
+				// Include a header per extension to make the cache file more readable
+				$phpCodeToCache[] = '/**';
+				$phpCodeToCache[] = ' * Extension: ' . $extensionKey;
+				$phpCodeToCache[] = ' * File: ' . $extensionDetails['ext_tables.php'];
+				$phpCodeToCache[] = ' */';
+				$phpCodeToCache[] = '';
+				// Set $_EXTKEY and $_EXTCONF for this extension
+				$phpCodeToCache[] = '$_EXTKEY = \'' . $extensionKey . '\';';
+				$phpCodeToCache[] = '$_EXTCONF = $GLOBALS[\'TYPO3_CONF_VARS\'][\'EXT\'][\'extConf\'][$_EXTKEY];';
+				$phpCodeToCache[] = '';
+				// Add ext_tables.php content of extension
+				$phpCodeToCache[] = trim(\TYPO3\CMS\Core\Utility\GeneralUtility::getUrl($extensionDetails['ext_tables.php']));
+				$phpCodeToCache[] = '';
+				$phpCodeToCache[] = '';
+			}
 		}
 		$phpCodeToCache = implode(LF, $phpCodeToCache);
 		// Remove all start and ending php tags from content
@@ -1994,7 +1998,7 @@ tt_content.' . $key . $prefix . ' {
 		// Update the category registry
 		$result = \TYPO3\CMS\Core\Category\CategoryRegistry::getInstance()->add($extensionKey, $tableName, $fieldName);
 		if ($result === FALSE) {
-			$message = 't3lib_categoryRegistry: no category registered for table "%s". Double check if there is a TCA configured';
+			$message = '\TYPO3\CMS\Core\Category\CategoryRegistry: no category registered for table "%s". Double check if there is a TCA configured';
 			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog(sprintf($message, $tableName), 'Core', 2);
 		}
 		// Makes sure to add more TCA to an existing structure
