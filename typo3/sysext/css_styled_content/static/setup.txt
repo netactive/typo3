@@ -838,11 +838,9 @@ tt_content.image.20 {
 	# caption/alttext/title/longdescURL splitting
 	imageTextSplit = {$styles.content.imgtext.imageTextSplit}
 
-	borderCol = {$styles.content.imgtext.borderColor}
 	borderThick = {$styles.content.imgtext.borderThick}
 	borderClass = {$styles.content.imgtext.borderClass}
 	colSpace = {$styles.content.imgtext.colSpace}
-	rowSpace = {$styles.content.imgtext.rowSpace}
 	textMargin = {$styles.content.imgtext.textMargin}
 
 	borderSpace = {$styles.content.imgtext.borderSpace}
@@ -1190,6 +1188,8 @@ tt_content.uploads {
 		# get from path (backwards compatibility, contains strings like "fileadmin/user_uploads/")
 		folders.field = select_key
 
+		sorting.field = filelink_sorting
+
 		# render the files
 		renderObj = COA
 		renderObj {
@@ -1204,9 +1204,10 @@ tt_content.uploads {
 					typolink {
 						parameter.data = file:current:originalUid // file:current:uid
 						parameter.wrap = file:|
-						target < lib.parseTarget
-						target =
-						target.override = {$styles.content.uploads.target}
+						fileTarget < lib.parseTarget
+						fileTarget =
+						fileTarget.override = {$styles.content.uploads.target}
+						fileTarget.override.override.field = target
 						removePrependedNumbers = 1
 
 						/*

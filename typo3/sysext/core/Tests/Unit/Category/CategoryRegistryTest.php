@@ -4,7 +4,7 @@ namespace TYPO3\CMS\Core\Tests\Unit\Category;
 /***************************************************************
  * Copyright notice
  *
- * (c) 2012 Oliver Hader <oliver.hader@typo3.org>
+ * (c) 2012-2013 Oliver Hader <oliver.hader@typo3.org>
  * All rights reserved
  *
  * This script is part of the TYPO3 project. The TYPO3 project is
@@ -30,13 +30,6 @@ namespace TYPO3\CMS\Core\Tests\Unit\Category;
  * @author Oliver Hader <oliver.hader@typo3.org>
  */
 class CategoryRegistryTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
-
-	/**
-	 * Enable backup of global and system variables
-	 *
-	 * @var boolean
-	 */
-	protected $backupGlobals = TRUE;
 
 	/**
 	 * @var \TYPO3\CMS\Core\Category\CategoryRegistry

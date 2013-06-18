@@ -5,7 +5,7 @@ use TYPO3\CMS\Backend\Utility;
 /***************************************************************
  * Copyright notice
  *
- * (c) 2009-2011 Oliver Klee (typo3-coding@oliverklee.de)
+ * (c) 2009-2013 Oliver Klee (typo3-coding@oliverklee.de)
  * All rights reserved
  *
  * This script is part of the TYPO3 project. The TYPO3 project is
@@ -43,6 +43,95 @@ class BackendUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 
 	public function tearDown() {
 		unset($this->fixture);
+	}
+
+	///////////////////////////////////////
+	// Tests concerning calcAge
+	///////////////////////////////////////
+	/**
+	 * Data provider for calcAge function
+	 *
+	 * @return array
+	 */
+	public function calcAgeDataProvider() {
+		return array(
+			'Single year' => array(
+				'seconds' => 60 * 60 * 24 * 365,
+				'expectedLabel' => '1 year'
+			),
+			'Plural years' => array(
+				'seconds' => 60 * 60 * 24 * 365 * 2,
+				'expectedLabel' => '2 yrs'
+			),
+			'Single negative year' => array(
+				'seconds' => 60 * 60 * 24 * 365 * -1,
+				'expectedLabel' => '-1 year'
+			),
+			'Plural negative years' => array(
+				'seconds' => 60 * 60 * 24 * 365 * 2 * -1,
+				'expectedLabel' => '-2 yrs'
+			),
+			'Single day' => array(
+				'seconds' => 60 * 60 * 24,
+				'expectedLabel' => '1 day'
+			),
+			'Plural days' => array(
+				'seconds' => 60 * 60 * 24 * 2,
+				'expectedLabel' => '2 days'
+			),
+			'Single negative day' => array(
+				'seconds' => 60 * 60 * 24 * -1,
+				'expectedLabel' => '-1 day'
+			),
+			'Plural negative days' => array(
+				'seconds' => 60 * 60 * 24 * 2 * -1,
+				'expectedLabel' => '-2 days'
+			),
+			'Single hour' => array(
+				'seconds' => 60 * 60,
+				'expectedLabel' => '1 hour'
+			),
+			'Plural hours' => array(
+				'seconds' => 60 * 60 * 2,
+				'expectedLabel' => '2 hrs'
+			),
+			'Single negative hour' => array(
+				'seconds' => 60 * 60 * -1,
+				'expectedLabel' => '-1 hour'
+			),
+			'Plural negative hours' => array(
+				'seconds' => 60 * 60 * 2 * -1,
+				'expectedLabel' => '-2 hrs'
+			),
+			'Single minute' => array(
+				'seconds' => 60,
+				'expectedLabel' => '1 min'
+			),
+			'Plural minutes' => array(
+				'seconds' => 60 * 2,
+				'expectedLabel' => '2 min'
+			),
+			'Single negative minute' => array(
+				'seconds' => 60 * -1,
+				'expectedLabel' => '-1 min'
+			),
+			'Plural negative minutes' => array(
+				'seconds' => 60 * 2 * -1,
+				'expectedLabel' => '-2 min'
+			),
+			'Zero seconds' => array(
+				'seconds' => 0,
+				'expectedLabel' => '0 min'
+			)
+		);
+	}
+
+	/**
+	 * @test
+	 * @dataProvider calcAgeDataProvider
+	 */
+	public function calcAgeReturnsExpectedValues($seconds, $expectedLabel) {
+		$this->assertSame($expectedLabel, $this->fixture->calcAge($seconds));
 	}
 
 	///////////////////////////////////////
@@ -164,7 +253,6 @@ class BackendUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 * @dataProvider getCommonSelectFieldsReturnsCorrectFieldsDataProvider
 	 */
 	public function getCommonSelectFieldsReturnsCorrectFields($table, $prefix = '', array $presetFields, array $tca, $expectedFields = '') {
-		\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA($table);
 		$tcaBackup = $GLOBALS['TCA'][$table];
 		unset($GLOBALS['TCA'][$table]);
 		$GLOBALS['TCA'][$table] = $tca;
@@ -251,7 +339,6 @@ class BackendUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 * @dataProvider getLabelFromItemlistReturnsCorrectFieldsDataProvider
 	 */
 	public function getLabelFromItemlistReturnsCorrectFields($table, $col = '', $key = '', array $tca, $expectedLabel = '') {
-		\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA($table);
 		$tcaBackup = $GLOBALS['TCA'][$table];
 		unset($GLOBALS['TCA'][$table]);
 		$GLOBALS['TCA'][$table] = $tca;
@@ -320,7 +407,6 @@ class BackendUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 * @dataProvider getLabelFromItemListMergedReturnsCorrectFieldsDataProvider
 	 */
 	public function getLabelFromItemListMergedReturnsCorrectFields($pageId, $table, $column = '', $key = '', array $tca, $expectedLabel = '') {
-		\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA($table);
 		$tcaBackup = $GLOBALS['TCA'][$table];
 		unset($GLOBALS['TCA'][$table]);
 		$GLOBALS['TCA'][$table] = $tca;
@@ -341,6 +427,112 @@ class BackendUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 		$this->assertStringMatchesFormat('<input %Svalue="1"%S/>', Utility\BackendUtility::getFuncCheck('params', 'test', TRUE));
 	}
 
+	/**
+	 * Tests concerning getExcludeFields
+	 */
+
+	/**
+	 * @return array
+	 */
+	public function getExcludeFieldsDataProvider() {
+		return array(
+			'getExcludeFields does not return fields not configured as exclude field' => array(
+				array(
+					'tx_foo' => array(
+						'ctrl' => array(
+							'title' => 'foo',
+						),
+						'columns' => array(
+							'bar' => array(
+								'label' => 'bar',
+								'exclude' => 1
+							),
+							'baz' => array(
+								'label' => 'bar',
+							),
+						)
+					)
+				),
+				array(
+					array(
+						'foo: bar',
+						'tx_foo:bar',
+					),
+				)
+			),
+			'getExcludeFields returns fields from root level tables if root level restriction should be ignored' => array(
+				array(
+					'tx_foo' => array(
+						'ctrl' => array(
+							'title' => 'foo',
+							'rootLevel' => TRUE,
+							'security' => array(
+								'ignoreRootLevelRestriction' => TRUE,
+							),
+						),
+						'columns' => array(
+							'bar' => array(
+								'label' => 'bar',
+								'exclude' => 1
+							),
+						)
+					)
+				),
+				array(
+					array(
+						'foo: bar',
+						'tx_foo:bar',
+					),
+				)
+			),
+			'getExcludeFields does not return fields from root level tables' => array(
+				array(
+					'tx_foo' => array(
+						'ctrl' => array(
+							'title' => 'foo',
+							'rootLevel' => TRUE,
+						),
+						'columns' => array(
+							'bar' => array(
+								'label' => 'bar',
+								'exclude' => 1
+							),
+						)
+					)
+				),
+				array()
+			),
+			'getExcludeFields does not return fields from admin only level tables' => array(
+				array(
+					'tx_foo' => array(
+						'ctrl' => array(
+							'title' => 'foo',
+							'adminOnly' => TRUE,
+						),
+						'columns' => array(
+							'bar' => array(
+								'label' => 'bar',
+								'exclude' => 1
+							),
+						)
+					)
+				),
+				array()
+			),
+		);
+	}
+
+	/**
+	 * @param $tca
+	 * @param $expected
+	 *
+	 * @test
+	 * @dataProvider getExcludeFieldsDataProvider
+	 */
+	public function getExcludeFieldsReturnsCorrectFieldList($tca, $expected) {
+		$GLOBALS['TCA'] = $tca;
+		$this->assertSame($expected, \TYPO3\CMS\Backend\Utility\BackendUtility::getExcludeFields());
+	}
 }
 
 ?>

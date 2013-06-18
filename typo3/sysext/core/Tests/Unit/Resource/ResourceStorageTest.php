@@ -1,10 +1,12 @@
 <?php
 namespace TYPO3\CMS\Core\Tests\Unit\Resource;
 
+use TYPO3\CMS\Core\Resource\ResourceStorage;
+
 /***************************************************************
  * Copyright notice
  *
- * (c) 2011 Andreas Wolf <andreas.wolf@ikt-werk.de>
+ * (c) 2011-2013 Andreas Wolf <andreas.wolf@ikt-werk.de>
  * All rights reserved
  *
  * This script is part of the TYPO3 project. The TYPO3 project is
@@ -23,7 +25,6 @@ namespace TYPO3\CMS\Core\Tests\Unit\Resource;
  *
  * This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
-
 require_once 'vfsStream/vfsStream.php';
 
 /**
@@ -47,6 +48,11 @@ class ResourceStorageTest extends \TYPO3\CMS\Core\Tests\Unit\Resource\BaseTestCa
 		parent::setUp();
 		$this->singletonInstances = \TYPO3\CMS\Core\Utility\GeneralUtility::getSingletonInstances();
 		\TYPO3\CMS\Core\Utility\GeneralUtility::purgeInstances();
+		\TYPO3\CMS\Core\Utility\GeneralUtility::setSingletonInstance(
+			'TYPO3\\CMS\\Core\\Resource\\FileRepository',
+			$this->getMock('TYPO3\\CMS\\Core\\Resource\\FileRepository')
+		);
+
 	}
 
 	public function tearDown() {
@@ -62,7 +68,7 @@ class ResourceStorageTest extends \TYPO3\CMS\Core\Tests\Unit\Resource\BaseTestCa
 	 * @return void
 	 */
 	protected function prepareFixture($configuration, $mockPermissionChecks = FALSE, $driverObject = NULL, array $storageRecord = array()) {
-		$permissionMethods = array('isFileActionAllowed', 'isFolderActionAllowed', 'checkFileActionPermission', 'checkUserActionPermission');
+		$permissionMethods = array('checkFolderActionPermission', 'checkFileActionPermission', 'checkUserActionPermission');
 		$mockedMethods = NULL;
 		$configuration = $this->convertConfigurationArrayToFlexformXml($configuration);
 		$storageRecord = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($storageRecord, array(
@@ -90,7 +96,7 @@ class ResourceStorageTest extends \TYPO3\CMS\Core\Tests\Unit\Resource\BaseTestCa
 	 *
 	 * @param array $configuration
 	 * @return string
-	 * @see t3lib_div::array2xml()
+	 * @see \TYPO3\CMS\Core\Utility\GeneralUtility::array2xml()
 	 */
 	protected function convertConfigurationArrayToFlexformXml(array $configuration) {
 		$flexformArray = array('data' => array('sDEF' => array('lDEF' => array())));
@@ -329,7 +335,7 @@ class ResourceStorageTest extends \TYPO3\CMS\Core\Tests\Unit\Resource\BaseTestCa
 	 */
 	public function checkUserActionPermissionReturnsFalseIfPermissionIsSetToZero() {
 		$this->prepareFixture(array());
-		$this->fixture->injectUserPermissions(array('readFolder' => TRUE, 'writeFile' => TRUE));
+		$this->fixture->setUserPermissions(array('readFolder' => TRUE, 'writeFile' => TRUE));
 		$this->assertTrue($this->fixture->checkUserActionPermission('read', 'folder'));
 	}
 
@@ -359,7 +365,7 @@ class ResourceStorageTest extends \TYPO3\CMS\Core\Tests\Unit\Resource\BaseTestCa
 	 */
 	public function checkUserActionPermissionAcceptsArbitrarilyCasedArguments($permissions, $action, $type) {
 		$this->prepareFixture(array());
-		$this->fixture->injectUserPermissions($permissions);
+		$this->fixture->setUserPermissions($permissions);
 		$this->assertTrue($this->fixture->checkUserActionPermission($action, $type));
 	}
 
@@ -368,7 +374,7 @@ class ResourceStorageTest extends \TYPO3\CMS\Core\Tests\Unit\Resource\BaseTestCa
 	 */
 	public function userActionIsDisallowedIfPermissionIsSetToFalse() {
 		$this->prepareFixture(array());
-		$this->fixture->injectUserPermissions(array('readFolder' => FALSE));
+		$this->fixture->setUserPermissions(array('readFolder' => FALSE));
 		$this->assertFalse($this->fixture->checkUserActionPermission('read', 'folder'));
 	}
 
@@ -377,7 +383,7 @@ class ResourceStorageTest extends \TYPO3\CMS\Core\Tests\Unit\Resource\BaseTestCa
 	 */
 	public function userActionIsDisallowedIfPermissionIsNotSet() {
 		$this->prepareFixture(array());
-		$this->fixture->injectUserPermissions(array('readFolder' => TRUE));
+		$this->fixture->setUserPermissions(array('readFolder' => TRUE));
 		$this->assertFalse($this->fixture->checkUserActionPermission('write', 'folder'));
 	}
 
@@ -471,7 +477,7 @@ class ResourceStorageTest extends \TYPO3\CMS\Core\Tests\Unit\Resource\BaseTestCa
 		$mockedDriver = $this->createDriverMock(array('basePath' => $this->getMountRootUrl()), NULL, NULL);
 		$this->initializeVfs();
 		$this->prepareFixture(array(), NULL, $mockedDriver);
-		$this->fixture->injectFileMount('/mountFolder');
+		$this->fixture->addFileMount('/mountFolder');
 		$this->assertEquals(1, count($this->fixture->getFileMounts()));
 		$this->fixture->isWithinFileMountBoundaries($mockedFile);
 	}
@@ -642,6 +648,46 @@ class ResourceStorageTest extends \TYPO3\CMS\Core\Tests\Unit\Resource\BaseTestCa
 		$this->fixture->getFileList('/', 0, 0, TRUE, TRUE, TRUE);
 	}
 
+	/**
+	 * @test
+	 */
+	public function getRoleReturnsDefaultForRegularFolders() {
+		$folderIdentifier = uniqid();
+		$this->addToMount(array(
+			$folderIdentifier => array()
+		));
+		$this->prepareFixture(array());
+
+		$role = $this->fixture->getRole($this->getSimpleFolderMock('/' . $folderIdentifier . '/'));
+
+		$this->assertSame(\TYPO3\CMS\Core\Resource\FolderInterface::ROLE_DEFAULT, $role);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getRoleReturnsCorrectValueForDefaultProcessingFolder() {
+		$this->prepareFixture(array());
+
+		$role = $this->fixture->getRole($this->getSimpleFolderMock('/' . ResourceStorage::DEFAULT_ProcessingFolder . '/'));
+
+		$this->assertSame(\TYPO3\CMS\Core\Resource\FolderInterface::ROLE_PROCESSING, $role);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getRoleReturnsCorrectValueForConfiguredProcessingFolder() {
+		$folderIdentifier = uniqid();
+		$this->addToMount(array(
+			$folderIdentifier => array()
+		));
+		$this->prepareFixture(array(), FALSE, NULL, array('processingfolder' => '/' . $folderIdentifier . '/'));
+
+		$role = $this->fixture->getRole($this->getSimpleFolderMock('/' . $folderIdentifier . '/'));
+
+		$this->assertSame(\TYPO3\CMS\Core\Resource\FolderInterface::ROLE_PROCESSING, $role);
+	}
 }
 
 ?>
