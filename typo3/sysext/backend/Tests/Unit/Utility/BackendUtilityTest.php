@@ -146,6 +146,35 @@ class BackendUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	}
 
 	/**
+	 * @test
+	 */
+	public function getProcessedValueForGroup() {
+		$this->assertSame('1, 2', $this->fixture->getProcessedValue('tt_content', 'multimedia', '1,2'));
+	}
+
+	/**
+	 * @test
+	 */
+	public function getProcessedValueForGroupWithOneAllowedTable() {
+		/** @var \PHPUnit_Framework_MockObject_MockObject|Utility\BackendUtility $fixture */
+		$fixture = $this->getMock('TYPO3\\CMS\\Backend\\Utility\\BackendUtility', array('getRecordWSOL'));
+		$fixture->staticExpects($this->at(0))->method('getRecordWSOL')->will($this->returnValue(array('title' => 'Page 1')));
+		$fixture->staticExpects($this->at(1))->method('getRecordWSOL')->will($this->returnValue(array('title' => 'Page 2')));
+		$this->assertSame('Page 1, Page 2', $fixture->getProcessedValue('tt_content', 'pages', '1,2'));
+	}
+
+	/**
+	 * @test
+	 */
+	public function getProcessedValueForGroupWithMultipleAllowedTables() {
+		/** @var \PHPUnit_Framework_MockObject_MockObject|Utility\BackendUtility $fixture */
+		$fixture = $this->getMock('TYPO3\\CMS\\Backend\\Utility\\BackendUtility', array('getRecordWSOL'));
+		$fixture->staticExpects($this->at(0))->method('getRecordWSOL')->will($this->returnValue(array('title' => 'Page 1')));
+		$fixture->staticExpects($this->at(1))->method('getRecordWSOL')->will($this->returnValue(array('header' => 'Content 2')));
+		$this->assertSame('Page 1, Content 2', $fixture->getProcessedValue('sys_category', 'items', 'pages_1,tt_content_2'));
+	}
+
+	/**
 	 * Tests concerning getCommenSelectFields
 	 */
 
@@ -519,6 +548,115 @@ class BackendUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 				),
 				array()
 			),
+			'getExcludeFields sorts tables and properties with flexform fields properly' => array(
+				array(
+					'tx_foo' => array(
+						'ctrl' => array(
+							'title' => 'foo'
+						),
+						'columns' => array(
+							'foo' => array(
+								'label' => 'foo',
+								'exclude' => 1
+							),
+							'bar' => array(
+								'label' => 'bar',
+								'exclude' => 1
+							),
+							'abarfoo' => array(
+								'label' => 'abarfoo',
+								'config' => array(
+									'type' => 'flex',
+									'ds' => array(
+										'*,dummy' => '<?xml version="1.0" encoding="utf-8"?>
+<T3DataStructure>
+	<sheets>
+		<sGeneral>
+			<ROOT>
+				<type>array</type>
+				<el>
+					<xmlTitle>
+						<TCEforms>
+							<exclude>1</exclude>
+							<label>The Title:</label>
+							<config>
+								<type>input</type>
+								<size>48</size>
+							</config>
+						</TCEforms>
+					</xmlTitle>
+				</el>
+			</ROOT>
+		</sGeneral>
+	</sheets>
+</T3DataStructure>'
+									)
+								)
+							)
+						)
+					),
+					'tx_foobar' => array(
+						'ctrl' => array(
+							'title' => 'foobar'
+						),
+						'columns' => array(
+							'foo' => array(
+								'label' => 'foo',
+								'exclude' => 1
+							),
+							'bar' => array(
+								'label' => 'bar',
+								'exclude' => 1
+							)
+						)
+					),
+					'tx_bar' => array(
+						'ctrl' => array(
+							'title' => 'bar'
+						),
+						'columns' => array(
+							'foo' => array(
+								'label' => 'foo',
+								'exclude' => 1
+							),
+							'bar' => array(
+								'label' => 'bar',
+								'exclude' => 1
+							)
+						)
+					)
+				),
+				array(
+					array(
+						'bar: bar',
+						'tx_bar:bar'
+					),
+					array(
+						'bar: foo',
+						'tx_bar:foo'
+					),
+					array(
+						'abarfoo dummy: The Title:',
+						'tx_foo:abarfoo;dummy;sGeneral;xmlTitle'
+					),
+					array(
+						'foo: bar',
+						'tx_foo:bar'
+					),
+					array(
+						'foo: foo',
+						'tx_foo:foo'
+					),
+					array(
+						'foobar: bar',
+						'tx_foobar:bar'
+					),
+					array(
+						'foobar: foo',
+						'tx_foobar:foo'
+					),
+				)
+			)
 		);
 	}
 
